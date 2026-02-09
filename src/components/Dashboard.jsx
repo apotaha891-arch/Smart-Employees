@@ -4,7 +4,7 @@ import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getCurr
 import { Link } from 'react-router-dom';
 import LowCreditModal from './LowCreditModal';
 import SalesLeadsManager from './SalesLeadsManager';
-import NouraReports from './NouraReports';
+import ExecutiveReports from './NouraReports';
 import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
@@ -268,7 +268,7 @@ const Dashboard = () => {
 
             <div className="grid grid-2 gap-xl mb-3xl">
                 <SalesLeadsManager />
-                <NouraReports />
+                <ExecutiveReports />
             </div>
 
             <div className="page-header">

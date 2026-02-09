@@ -3,11 +3,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// Use Gemini 3 Flash Preview - User's Available Model
+// Use Gemini 1.5 Flash - Stable and reliable version
 const model = genAI.getGenerativeModel({
-    model: "gemini-3-flash-preview",
+    model: "gemini-1.5-flash",
     generationConfig: {
-        temperature: 0.7,
+        temperature: 0.4, // Reduced temperature for more consistent JSON extraction
         maxOutputTokens: 2048,
     }
 });
@@ -72,22 +72,53 @@ export const sendMessage = async (message, sessionId = 'default') => {
     }
 };
 
+/**
+ * Helper to extract JSON from text even if model adds conversational filler
+ */
+const parseSafeJSON = (text) => {
+    try {
+        // Try direct parse
+        return JSON.parse(text);
+    } catch (e) {
+        // Try regex extraction of the first JSON block
+        const match = text.match(/\{[\s\S]*\}/);
+        if (match) {
+            try {
+                return JSON.parse(match[0]);
+            } catch (err) {
+                throw new Error("Could not parse extracted JSON block");
+            }
+        }
+        throw new Error("No JSON block found in response");
+    }
+};
+
 export const extractBusinessRules = async (conversationHistory) => {
     try {
         const prompt = `
 أنت خبير في تحليل المحادثات واستخراج قواعد العمل Business Rules. 
-قم بتحليل المحادثة التالية واستخرج البيانات بصيغة JSON:
-${JSON.stringify(conversationHistory, null, 2)}
-أعد فقط JSON بدون أي نص إضافي.`;
+قم بتحليل المحادثة التالية واستخرج البيانات بصيغة JSON حصراً.
+المطلوب في الـ JSON:
+- businessName: اسم المنشأة
+- businessType: نوع النشاط
+- services: قائمة الخدمات المذكورة
+- rules: قواعد العمل المستنتجة
+
+المحادثة:
+${JSON.stringify(conversationHistory.slice(-10), null, 2)}
+
+أعد فقط كائن JSON واحد يبدأ بـ { وينتهي بـ }. لا تضف أي نص قبله أو بعده.`;
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        let text = response.text();
-        text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        const businessRules = JSON.parse(text);
+        const text = response.text().trim();
+
+        // Use the safe parser to handle markdown or filler text
+        const businessRules = parseSafeJSON(text);
 
         return { success: true, data: businessRules };
     } catch (error) {
+        console.error("Extraction Error:", error);
         return { success: false, error: error.message };
     }
 };
