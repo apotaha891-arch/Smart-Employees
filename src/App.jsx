@@ -57,6 +57,7 @@ function AppContent() {
                 <Route path="/dashboard" element={<ModernDashboardLayout><Dashboard /></ModernDashboardLayout>} />
                 <Route path="/bookings" element={<ModernDashboardLayout><Bookings /></ModernDashboardLayout>} />
                 <Route path="/customers" element={<ModernDashboardLayout><Customers /></ModernDashboardLayout>} />
+
             </Routes>
 
             <PlatformConcierge />

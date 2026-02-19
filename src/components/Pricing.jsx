@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import * as adminService from '../services/adminService';
 
 const Pricing = () => {
-    const plans = [
+    const defaultPlans = [
         {
             name: 'باقة الاستقطاب',
             price: '29',
@@ -43,6 +44,22 @@ const Pricing = () => {
             popular: false
         }
     ];
+
+    const [plans, setPlans] = useState(defaultPlans);
+
+    useEffect(() => {
+        const loadPlans = async () => {
+            try {
+                const config = await adminService.getPlatformSettings('pricing_plans');
+                if (config && Array.isArray(config)) {
+                    setPlans(config);
+                }
+            } catch (err) {
+                console.error('Failed to load pricing config', err);
+            }
+        };
+        loadPlans();
+    }, []);
 
     return (
         <div className="bg-light py-3xl">

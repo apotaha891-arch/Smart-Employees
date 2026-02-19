@@ -50,11 +50,12 @@ const Dashboard = () => {
             if (user) {
                 const profileResult = await getProfile(user.id);
                 if (profileResult.success) {
-                    setProfile(profileResult.data);
+                    const profileData = profileResult.data || { total_credits: 0, credits_used: 0, subscription_tier: '' };
+                    setProfile(profileData);
 
                     // Show modal if credits are low (< 10) and not unlimited
-                    const remaining = profileResult.data.total_credits - profileResult.data.credits_used;
-                    if (remaining < 10 && remaining > 0 && profileResult.data.subscription_tier !== 'enterprise') {
+                    const remaining = (profileData.total_credits || 0) - (profileData.credits_used || 0);
+                    if (remaining < 10 && remaining > 0 && profileData.subscription_tier !== 'enterprise') {
                         // Check if we already showed it this session
                         if (!sessionStorage.getItem('lowCreditAlertShown')) {
                             setShowLowCreditModal(true);

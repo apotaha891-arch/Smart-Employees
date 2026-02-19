@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
 
+/* import n8n design system styles (only the compiled CSS file exists) */
+@import '@n8n/design-system/dist/design-system.css';
 :root {
   /* --- Enterprise Dark Palette (n8n Inspired) --- */
   --bg-dark: #09090B;
@@ -196,6 +198,70 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+.input-field {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  color: var(--text-main);
+  width: 100%;
+}
+
+/* --- n8n-specific helpers & layout tokens --- */
+
+/* sidebar similar to n8n.io */
+.n8n-sidebar {
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-subtle);
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.n8n-sidebar .nav-link {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.n8n-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* generic node style used by react‑flow canvas */
+.n8n-node {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  color: var(--text-main);
+  font-size: 0.85rem;
+}
+
+.n8n-node.selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* full-screen flow editor container */
+.flow-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: var(--bg-dark);
+}
+
+/* draggable edge styling for react‑flow */
+.react-flow__edge-path {
+  stroke: var(--accent);
+  stroke-width: 2px;
+}
+
+/* end n8n-specific helpers */
 
 .input-field {
   width: 100%;

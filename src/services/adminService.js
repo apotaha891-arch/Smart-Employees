@@ -63,3 +63,32 @@ export const getAllCustomers = async () => {
     if (error) throw error;
     return data;
 };
+
+// ---------- PLATFORM SETTINGS CRUD ----------
+export const getAllSettings = async () => {
+    const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .order('key', { ascending: true });
+    if (error) throw error;
+    return data;
+};
+
+export const saveSetting = async (key, value) => {
+    const { data, error } = await supabase
+        .from('platform_settings')
+        .upsert({ key, value, updated_at: new Date() })
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+};
+
+export const deleteSetting = async (key) => {
+    const { error } = await supabase
+        .from('platform_settings')
+        .delete()
+        .eq('key', key);
+    if (error) throw error;
+    return true;
+};

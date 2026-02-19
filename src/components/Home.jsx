@@ -182,21 +182,19 @@ const Home = () => {
                     <p style={{ color: 'var(--text-muted)' }}>حلول استراتيجية صُممت خصيصاً لتناسب احتياجات عملائك</p>
                 </div>
 
-                <div className="grid grid-2 gap-xl">
+                <div className="grid grid-2 gap-2xl">
                     {content.recommendations.map((rec, i) => (
-                        <div key={i} className="card p-xl animate-fade-in" style={{
+                        <div key={i} className="n8n-card animate-fade-in" style={{
                             animationDelay: `${i * 0.2}s`,
-                            background: 'white',
-                            border: '1px solid var(--border-light)',
-                            borderRadius: 'var(--radius-lg)',
                             display: 'flex',
-                            gap: '1.5rem',
+                            gap: '2rem',
                             alignItems: 'center',
-                            boxShadow: 'var(--shadow-sm)'
+                            minHeight: '120px',
+                            boxShadow: 'var(--shadow-glow)',
                         }}>
-                            <span style={{ fontSize: '2.5rem', background: '#F9FAFB', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '15px' }}>{rec.icon}</span>
+                            <span style={{ fontSize: '2.5rem', background: 'rgba(139,92,246,0.08)', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '15px' }}>{rec.icon}</span>
                             <div>
-                                <h4 style={{ marginBottom: '0.4rem', fontSize: '1.2rem', fontWeight: 800 }}>{rec.title}</h4>
+                                <h4 style={{ marginBottom: '0.4rem', fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)' }}>{rec.title}</h4>
                                 <p className="text-secondary" style={{ fontSize: '0.95rem', margin: 0, lineHeight: '1.6' }}>{rec.desc}</p>
                             </div>
                         </div>

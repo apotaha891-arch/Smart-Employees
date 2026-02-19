@@ -52,18 +52,7 @@ const ModernDashboardLayout = ({ children }) => {
         <div className="dashboard-container" style={{ display: 'flex', minHeight: '100vh', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
 
             {/* Sidebar */}
-            <aside style={{
-                width: isSidebarOpen ? '280px' : '80px',
-                background: '#111827',
-                borderLeft: '1px solid rgba(255,255,255,0.05)',
-                transition: 'width 0.3s ease',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'fixed',
-                height: '100vh',
-                right: 0,
-                zIndex: 50
-            }}>
+            <aside className="n8n-sidebar" style={{ width: isSidebarOpen ? '280px' : '80px' }}>
                 {/* Logo Area */}
                 <div style={{ padding: '2rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{
@@ -135,12 +124,16 @@ const ModernDashboardLayout = ({ children }) => {
             {/* Main Content Area */}
             <main style={{
                 flex: 1,
-                marginRight: isSidebarOpen ? '280px' : '80px',
-                transition: 'margin 0.3s ease',
+                /* explicitly shrink the main area so it ends where the sidebar begins; this
+                   avoids a visible padding gap while still preventing overlap */
+                width: `calc(100% - ${isSidebarOpen ? '280px' : '80px'})`,
+                transition: 'width 0.3s ease',
                 background: '#0B0F19',
                 minHeight: '100vh',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                overflowX: 'auto',
+                boxSizing: 'border-box'
             }}>
                 {/* Topbar */}
                 <header style={{

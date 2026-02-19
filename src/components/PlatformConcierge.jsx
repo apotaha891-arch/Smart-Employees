@@ -97,22 +97,22 @@ const PlatformConcierge = () => {
                 left: '2.5rem',
                 width: '400px',
                 height: '550px',
-                backgroundColor: 'white',
+                backgroundColor: 'var(--n8n-surface-card)',
                 borderRadius: '24px',
                 boxShadow: '0 30px 60px rgba(0,0,0,0.12)',
                 zIndex: 2000,
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                border: '1px solid var(--border-light)'
+                border: '1px solid var(--n8n-border)'
             }}
             className="animate-fade-in"
         >
             {/* Header */}
             <div style={{
                 padding: '1.5rem',
-                backgroundColor: 'white',
-                borderBottom: '1px solid var(--border-light)',
+                backgroundColor: 'var(--n8n-surface-card)',
+                borderBottom: '1px solid var(--n8n-border)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center'
@@ -123,10 +123,11 @@ const PlatformConcierge = () => {
                         height: '44px',
                         borderRadius: '50%',
                         fontSize: '1.5rem',
-                        background: '#F3F4F6',
+                        background: 'var(--n8n-background-dark)',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        color: 'var(--n8n-primary)'
                     }}>👩‍💼</div>
                     <div>
                         <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>نورة</h4>
@@ -142,7 +143,7 @@ const PlatformConcierge = () => {
             </div>
 
             {/* Chat Body */}
-            <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', background: '#F8FAFC' }}>
+            <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', background: 'var(--n8n-background-dark)' }}>
                 {messages.map((msg, i) => (
                     <div key={i} style={{
                         display: 'flex',
@@ -154,9 +155,9 @@ const PlatformConcierge = () => {
                             padding: '0.75rem 1rem',
                             borderRadius: '16px',
                             fontSize: '0.9rem',
-                            backgroundColor: msg.role === 'user' ? 'var(--primary)' : 'white',
-                            color: msg.role === 'user' ? 'white' : 'var(--text-main)',
-                            border: msg.role === 'user' ? 'none' : '1px solid var(--border-light)',
+                            backgroundColor: msg.role === 'user' ? 'var(--n8n-primary)' : 'var(--n8n-surface-card)',
+                            color: msg.role === 'user' ? 'white' : 'var(--n8n-text-main)',
+                            border: msg.role === 'user' ? 'none' : '1px solid var(--n8n-border)',
                             boxShadow: msg.role === 'user' ? 'none' : 'var(--shadow-sm)'
                         }}>
                             {msg.content}

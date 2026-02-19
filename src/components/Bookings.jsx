@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getBookings, updateBooking, cancelBooking, getCurrentUser } from '../services/supabaseService';
+import { getBookings, updateBooking, cancelBooking, getCurrentUser, supabase } from '../services/supabaseService';
 import { Calendar, Clock, User, Phone, CheckCircle, XCircle, AlertCircle, Filter } from 'lucide-react';
 
 const Bookings = () => {

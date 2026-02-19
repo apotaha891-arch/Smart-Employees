@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as adminService from '../services/adminService';
 import { sendMessage, initializeChat } from '../services/geminiService';
 import * as automationService from '../services/automationService';
+import SettingsPanel from './SettingsPanel';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('manager'); // manager, templates, customers
@@ -201,6 +202,13 @@ const AdminDashboard = () => {
                     👥 بيانات المالكين
                 </button>
                 <button
+                    className={`nav-link ${activeTab === 'settings' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('settings')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                    ⚙️ إعدادات المنصة
+                </button>
+                <button
                     className={`nav-link ${activeTab === 'operations' ? 'active' : ''}`}
                     onClick={() => setActiveTab('operations')}
                     style={{ background: 'none', border: 'none', cursor: 'pointer' }}
@@ -259,7 +267,7 @@ const AdminDashboard = () => {
                         {/* Department Managers Quick Info */}
                         <div className="grid gap-md">
                             {departments.map(dept => (
-                                <div key={dept.id} className="card p-lg flex align-center justify-between" style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: '16px' }}>
+                                <div key={dept.id} className="n8n-card p-lg flex align-center justify-between" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '16px' }}>
                                     <div className="flex align-center gap-md">
                                         <div style={{ fontSize: '1.5rem', width: '45px', height: '45px', background: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{dept.icon}</div>
                                         <div>
@@ -302,7 +310,7 @@ const AdminDashboard = () => {
                 )}
 
                 {activeTab === 'customers' && (
-                    <div className="card p-xl">
+                    <div className="n8n-card p-xl" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)' }}>
                         <h3 className="mb-md">سجل مالكي المنشآت (Platform Owners)</h3>
                         <table className="w-full text-right" style={{ borderCollapse: 'collapse' }}>
                             <thead>
@@ -331,10 +339,14 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
+                {activeTab === 'settings' && (
+                    <SettingsPanel />
+                )}
+
                 {activeTab === 'operations' && (
                     <div className="grid gap-xl">
                         {/* 5-Station Operational Pipeline Visualization */}
-                        <div className="card p-xl" style={{ border: '2px solid #0F172A', background: '#F8FAFC' }}>
+                        <div className="n8n-card p-xl" style={{ border: '2px solid #0F172A', background: 'var(--n8n-surface-card)' }}>
                             <div className="flex justify-between align-center mb-xl">
                                 <div>
                                     <h3 style={{ margin: 0 }}>🚉 مسار التشغيل الخماسي (Live Pipeline)</h3>
@@ -347,7 +359,7 @@ const AdminDashboard = () => {
 
                             <div className="grid gap-lg">
                                 {livePipeline.map(req => (
-                                    <div key={req.id} className="p-lg" style={{ background: 'white', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                                    <div key={req.id} className="n8n-card p-lg" style={{ background: 'var(--n8n-surface-card)', borderRadius: '24px', border: '1px solid var(--n8n-border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                                         <div className="flex justify-between align-center mb-md">
                                             <div className="flex align-center gap-md">
                                                 <div style={{ width: '40px', height: '40px', background: '#0F172A', color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👤</div>
@@ -397,11 +409,11 @@ const AdminDashboard = () => {
 
                         <div className="grid grid-2 gap-xl">
                             {/* External Integrations List */}
-                            <div className="card p-xl" style={{ border: '1px solid #E2E8F0' }}>
+                            <div className="n8n-card p-xl" style={{ border: '1px solid var(--n8n-border)', background: 'var(--n8n-surface-card)' }}>
                                 <h3 className="mb-md">🔌 مركز الربط والاتصال (Integration Hub)</h3>
                                 <div className="grid gap-md">
                                     {integrations.map(integ => (
-                                        <div key={integ.id} className="p-md flex align-center justify-between" style={{ background: '#F8FAFC', borderRadius: '12px', border: '1px solid #EDF2F7' }}>
+                                        <div key={integ.id} className="n8n-card p-md flex align-center justify-between" style={{ background: 'var(--n8n-surface-card)', borderRadius: '12px', border: '1px solid var(--n8n-border)' }}>
                                             <div className="flex align-center gap-md">
                                                 <span style={{ fontSize: '1.2rem' }}>{integ.icon}</span>
                                                 <div>
@@ -435,7 +447,7 @@ const AdminDashboard = () => {
 
                             {/* Integration Modal/Config Panel */}
                             {selectedIntegration ? (
-                                <div className="card p-xl animate-fade-in" style={{ border: '2px solid var(--accent)', background: '#FFFDF5' }}>
+                                <div className="n8n-card p-xl animate-fade-in" style={{ border: '2px solid var(--accent)', background: 'var(--n8n-surface-card)' }}>
                                     <div className="flex justify-between align-start mb-lg">
                                         <div className="flex align-center gap-md">
                                             <div style={{ fontSize: '2rem' }}>{selectedIntegration.icon}</div>
@@ -488,7 +500,7 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="card p-xl flex-center text-center" style={{ border: '1px dashed #CBD5E1', background: '#F8FAFC' }}>
+                                <div className="n8n-card p-xl flex-center text-center" style={{ border: '1px dashed var(--n8n-border)', background: 'var(--n8n-surface-card)' }}>
                                     <div>
                                         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚙️</div>
                                         <h4>بانتظار اختيار الأداة</h4>
@@ -501,7 +513,7 @@ const AdminDashboard = () => {
                         {/* Logs and Data Section */}
                         <div className="grid grid-2 gap-xl">
                             {/* Live Ops Logs */}
-                            <div className="card p-xl" style={{ maxHeight: '400px', overflowY: 'auto', background: '#0F172A', color: '#38BDF8', fontFamily: 'monospace' }}>
+                            <div className="n8n-card p-xl" style={{ maxHeight: '400px', overflowY: 'auto', background: 'var(--n8n-surface-card)', color: '#38BDF8', fontFamily: 'monospace' }}>
                                 <h3 className="mb-md" style={{ color: 'white' }}>📟 سجل العمليات المباشر (Live Ops)</h3>
                                 <div className="grid gap-xs">
                                     {opsLogs.map((log, i) => (
@@ -513,7 +525,7 @@ const AdminDashboard = () => {
                             </div>
 
                             {/* Global Leads Collected */}
-                            <div className="card p-xl" style={{ border: '1px solid #E2E8F0' }}>
+                            <div className="n8n-card p-xl" style={{ border: '1px solid var(--n8n-border)', background: 'var(--n8n-surface-card)' }}>
                                 <div className="flex justify-between align-center mb-md">
                                     <h3 style={{ margin: 0 }}>📍 مجمع الفرص العالمي (Leads)</h3>
                                     <button className="btn btn-xs btn-success" onClick={handleExportGlobalLeads}>ترحيل إلى Google Sheets 🚀</button>
@@ -558,7 +570,7 @@ const AdminDashboard = () => {
 
                             <div className="grid gap-md">
                                 {executiveInbox.length > 0 ? executiveInbox.map(msg => (
-                                    <div key={msg.id} className="p-lg flex justify-between align-center" style={{ background: 'white', border: '1px solid #DDD6FE', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                                    <div key={msg.id} className="n8n-card p-lg flex justify-between align-center" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                                         <div className="flex align-center gap-md">
                                             <div style={{ width: '40px', height: '40px', background: '#F3F4F6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🤖</div>
                                             <div>
@@ -591,14 +603,14 @@ const AdminDashboard = () => {
                 )}
 
                 {activeTab === 'boardroom' && (
-                    <div className="card p-xl">
+                    <div className="n8n-card p-xl" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)' }}>
                         <div className="flex justify-between align-center mb-xl">
                             <h3 style={{ margin: 0 }}>🏛️ قاعة اجتماعات مجلس الإدارة</h3>
                             <button className="btn btn-primary btn-sm">عقد اجتماع طارئ 📞</button>
                         </div>
                         <div className="grid grid-3 gap-lg">
                             {departments.map(dept => (
-                                <div key={dept.id} className="card p-xl text-center" style={{ border: '1px solid #E2E8F0', borderRadius: '24px' }}>
+                                <div key={dept.id} className="n8n-card p-xl text-center" style={{ border: '1px solid var(--n8n-border)', borderRadius: '24px', background: 'var(--n8n-surface-card)' }}>
                                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{dept.icon}</div>
                                     <h4 style={{ marginBottom: '0.5rem' }}>{dept.name}</h4>
                                     <div className="badge badge-primary mb-md">{dept.tasks} مهمة جارية</div>
