@@ -176,7 +176,8 @@ export const removeServiceFromAgent = async (agentId, serviceId) => {
     }
 };
 
-export default {
+
+export const agentService = {
     getAgentTemplates,
     getAgentTemplate,
     hireAgent,
@@ -188,3 +189,5 @@ export default {
     addServiceToAgent,
     removeServiceFromAgent
 };
+
+export default agentService;
