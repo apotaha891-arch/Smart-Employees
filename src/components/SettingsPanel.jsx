@@ -154,20 +154,34 @@ const SettingsPanel = () => {
     const otherSettings = settings.filter(s => s.key !== 'pricing_plans');
 
     return (
-        <div>
+        <div style={{ background: 'var(--n8n-background-dark)', padding: '2rem', borderRadius: '16px' }}>
+            {/* Header */}
+            <div style={{ marginBottom: '3rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '2.5rem' }}>⚙️</div>
+                    <div>
+                        <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 900, color: 'var(--n8n-text-main)' }}>لوحة التحكم الإدارية</h1>
+                        <p style={{ margin: '0.5rem 0 0 0', color: 'var(--n8n-text-muted)', fontSize: '0.95rem' }}>إدارة جميع إعدادات المنصة والتكاملات بسهولة</p>
+                    </div>
+                </div>
+            </div>
+
             {/* Pricing Plans Editor */}
-            <div className="card p-xl mb-lg">
-                <h3 className="mb-md">⚙️ خطط التسعير</h3>
-                <p className="text-secondary mb-lg" style={{ fontSize: '0.9rem' }}>
-                    عدّل خطط التسعير بسهولة بدون الحاجة للـ JSON
-                </p>
+            <div className="n8n-card" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <span style={{ fontSize: '1.8rem' }}>💰</span>
+                    <div>
+                        <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--n8n-text-main)' }}>خطط التسعير</h2>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--n8n-text-muted)' }}>أدِر باقاتك وأسعارك بدون الحاجة للـ JSON</p>
+                    </div>
+                </div>
 
                 {pricingSetting ? (
                     <div>
-                        <div className="grid gap-lg mb-lg">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
                             {plans.map((plan, idx) => (
-                                <div key={idx} className="n8n-card p-lg" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)' }}>
-                                    <div className="flex gap-md mb-md">
+                                <div key={idx} style={{ background: 'var(--n8n-background-dark)', border: '1px solid var(--n8n-border)', padding: '1.5rem', borderRadius: '12px' }}>
+                                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
                                         <input 
                                             className="input-field" 
                                             style={{ flex: 1, marginTop: 0 }} 
@@ -177,68 +191,73 @@ const SettingsPanel = () => {
                                         />
                                         <input 
                                             className="input-field" 
-                                            style={{ width: '120px', marginTop: 0 }} 
-                                            placeholder="السعر ($)" 
+                                            style={{ width: '100px', marginTop: 0 }} 
+                                            placeholder="السعر" 
                                             value={plan.price} 
                                             onChange={e => handlePlanChange(idx, 'price', e.target.value)} 
                                         />
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
                                         <input 
                                             className="input-field" 
-                                            style={{ width: '120px', marginTop: 0 }} 
+                                            style={{ flex: 1, marginTop: 0 }} 
                                             placeholder="الرصيد" 
                                             value={plan.credits} 
                                             onChange={e => handlePlanChange(idx, 'credits', e.target.value)} 
                                         />
                                         <input 
                                             className="input-field" 
-                                            style={{ width: '150px', marginTop: 0 }} 
+                                            style={{ flex: 1, marginTop: 0 }} 
                                             placeholder="نص الزر" 
                                             value={plan.cta} 
                                             onChange={e => handlePlanChange(idx, 'cta', e.target.value)} 
                                         />
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+                                    </div>
+                                    
+                                    <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--n8n-border)' }}>
+                                        <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--n8n-text-main)' }}>
                                             <input 
                                                 type="checkbox" 
                                                 checked={!!plan.popular} 
                                                 onChange={e => handlePlanChange(idx, 'popular', e.target.checked)} 
                                             />
-                                            <span style={{ fontSize: '0.9rem' }}>الأكثر</span>
+                                            <span>⭐ الأكثر طلباً</span>
                                         </label>
-                                        <button className="btn btn-danger btn-xs" onClick={() => handleRemovePlan(idx)}>حذف</button>
                                     </div>
 
-                                    <div className="mb-md">
-                                        <label style={{ fontSize: '0.9rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>المميزات:</label>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '0.75rem', color: 'var(--n8n-text-main)' }}>المميزات:</label>
                                         {plan.features && plan.features.map((f, fidx) => (
-                                            <div key={fidx} className="flex gap-sm mb-sm">
+                                            <div key={fidx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                                 <input 
                                                     className="input-field" 
-                                                    style={{ flex: 1, marginTop: 0 }} 
+                                                    style={{ flex: 1, marginTop: 0, fontSize: '0.85rem' }} 
                                                     placeholder="ميزة" 
                                                     value={f} 
                                                     onChange={e => handlePlanFeatureChange(idx, fidx, e.target.value)} 
                                                 />
-                                                <button className="btn btn-xs btn-danger" onClick={() => handleRemoveFeature(idx, fidx)}>حذف</button>
+                                                <button className="btn btn-danger btn-xs" onClick={() => handleRemoveFeature(idx, fidx)}>✕</button>
                                             </div>
                                         ))}
-                                        <button className="btn btn-xs btn-secondary mt-sm" onClick={() => handleAddFeature(idx)}>+ ميزة</button>
+                                        <button className="btn btn-secondary btn-xs" style={{ width: '100%', marginTop: '0.5rem' }} onClick={() => handleAddFeature(idx)}>+ إضافة ميزة</button>
                                     </div>
+
+                                    <button className="btn btn-danger btn-sm" style={{ width: '100%' }} onClick={() => handleRemovePlan(idx)}>حذف الباقة</button>
                                 </div>
                             ))}
                         </div>
-
-                        <div className="flex gap-md">
-                            <button className="btn btn-primary" onClick={handleAddPlan}>+ إضافة باقة جديدة</button>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button className="btn btn-primary" onClick={handleAddPlan}>+ إضافة باقة</button>
                             <button className="btn btn-success" onClick={handleSavePlans}>💾 حفظ الخطط</button>
                         </div>
                     </div>
                 ) : (
-                    <div className="n8n-card p-lg text-center" style={{ background: 'var(--n8n-surface-card)', border: '1px dashed var(--n8n-border)' }}>
-                        <p className="text-secondary mb-md">لم يتم العثور على خطط التسعير. قم بإنشاء الإعداد الأول.</p>
+                    <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--n8n-background-dark)', borderRadius: '8px', border: '1px dashed var(--n8n-border)' }}>
+                        <p style={{ color: 'var(--n8n-text-muted)', marginBottom: '1rem' }}>📊 لم يتم العثور على خطط التسعير</p>
                         <button className="btn btn-primary" onClick={async () => {
                             const defaultPlans = [
-                                { name: 'باقة الاستقطاب', price: '29', credits: '500', features: ['500 موعد/شهرياً'], cta: 'تجديد العقد', popular: false },
-                                { name: 'باقة الموظف المثالي', price: '79', credits: '2500', features: ['2500 موعد/شهرياً'], cta: 'الاشتراك', popular: true }
+                                { name: 'باقة الاستقطاب', price: '29', credits: '500', features: ['500 موعد/شهرياً'], cta: 'تجديد', popular: false },
+                                { name: 'باقة الموظف المثالي', price: '79', credits: '2500', features: ['2500 موعد/شهرياً'], cta: 'اشتراك', popular: true }
                             ];
                             await adminService.saveSetting('pricing_plans', defaultPlans);
                             await load();
@@ -248,67 +267,71 @@ const SettingsPanel = () => {
                 )}
             </div>
 
-            {/* Other Settings */}
-            {otherSettings.length > 0 && (
-                <div className="card p-xl mb-lg">
-                    <h3 className="mb-md">🔌 روابط التكامل الخارجية</h3>
-                    <p className="text-secondary mb-lg" style={{ fontSize: '0.9rem' }}>
-                        أدخل مفاتيح الوصول والروابط لكل خدمة
-                    </p>
-
-                    {integrationsSetting ? (
+            {/* External Integrations */}
+            {integrationsSetting && (
+                <div className="n8n-card" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <span style={{ fontSize: '1.8rem' }}>🔌</span>
                         <div>
-                            <div className="grid gap-lg mb-lg">
-                                {integrations.map((intg, idx) => (
-                                    <div key={idx} className="n8n-card p-lg" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)' }}>
-                                        <div className="flex gap-md mb-md align-center">
-                                            <span style={{ fontSize: '1.5rem', width: '40px' }}>{intg.icon}</span>
-                                            <h4 style={{ margin: 0, flex: 1 }}>{intg.name}</h4>
-                                            <span className={`badge ${intg.status === 'Connected' ? 'badge-success' : 'badge-secondary'}`}>
-                                                {intg.status === 'Connected' ? '✅ متصل' : '❌ غير متصل'}
-                                            </span>
-                                        </div>
-                                        <div className="flex gap-md">
-                                            <input 
-                                                className="input-field" 
-                                                style={{ flex: 1, marginTop: 0 }} 
-                                                placeholder="مفتاح API / Access Token" 
-                                                type="password"
-                                                value={intg.key} 
-                                                onChange={e => handleIntegrationChange(idx, 'key', e.target.value)} 
-                                            />
-                                            <input 
-                                                className="input-field" 
-                                                style={{ flex: 1, marginTop: 0 }} 
-                                                placeholder="رابط الخدمة / Webhook URL" 
-                                                value={intg.url} 
-                                                onChange={e => handleIntegrationChange(idx, 'url', e.target.value)} 
-                                            />
-                                        </div>
+                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--n8n-text-main)' }}>روابط التكامل</h2>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--n8n-text-muted)' }}>ربط الخدمات الخارجية بمفاتيح API وروابط Webhook</p>
+                        </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                        {integrations.map((intg, idx) => (
+                            <div key={idx} style={{ background: 'var(--n8n-background-dark)', border: '1px solid var(--n8n-border)', padding: '1.5rem', borderRadius: '12px' }}>
+                                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--n8n-border)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                        <span style={{ fontSize: '1.5rem' }}>{intg.icon}</span>
+                                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--n8n-text-main)', flex: 1 }}>{intg.name}</h3>
+                                        <span className={`badge ${intg.status === 'Connected' ? 'badge-success' : 'badge-secondary'}`} style={{ fontSize: '0.75rem' }}>
+                                            {intg.status === 'Connected' ? '✅ متصل' : '⚠️ معطّل'}
+                                        </span>
                                     </div>
-                                ))}
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <div>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.25rem' }}>مفتاح API</label>
+                                        <input 
+                                            className="input-field" 
+                                            style={{ marginTop: 0, fontSize: '0.85rem' }} 
+                                            placeholder="أدخل مفتاح الوصول" 
+                                            type="password"
+                                            value={intg.key} 
+                                            onChange={e => handleIntegrationChange(idx, 'key', e.target.value)} 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.25rem' }}>Webhook URL</label>
+                                        <input 
+                                            className="input-field" 
+                                            style={{ marginTop: 0, fontSize: '0.85rem' }} 
+                                            placeholder="رابط الخدمة" 
+                                            value={intg.url} 
+                                            onChange={e => handleIntegrationChange(idx, 'url', e.target.value)} 
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <button className="btn btn-success" onClick={handleSaveIntegrations}>💾 حفظ الروابط</button>
-                        </div>
-                    ) : (
-                        <div className="n8n-card p-lg text-center" style={{ background: 'var(--n8n-surface-card)', border: '1px dashed var(--n8n-border)' }}>
-                            <p className="text-secondary">لم يتم العثور على روابط التكامل</p>
-                        </div>
-                    )}
+                        ))}
+                    </div>
+                    <button className="btn btn-success" onClick={handleSaveIntegrations}>💾 حفظ الروابط</button>
                 </div>
             )}
 
             {/* Manager AI Config */}
             {managerSetting && (
-                <div className="card p-xl mb-lg">
-                    <h3 className="mb-md">🤖 إعدادات المدير الذكي</h3>
-                    <p className="text-secondary mb-lg" style={{ fontSize: '0.9rem' }}>
-                        قم بتخصيص إعدادات المدير التنفيذي للمنصة
-                    </p>
-
-                    <div className="n8n-card p-lg" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)' }}>
-                        <div className="mb-md">
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>الاسم:</label>
+                <div className="n8n-card" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <span style={{ fontSize: '1.8rem' }}>🤖</span>
+                        <div>
+                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--n8n-text-main)' }}>المدير الذكي</h2>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--n8n-text-muted)' }}>خصّص إعدادات المدير التنفيذي الذكي</p>
+                        </div>
+                    </div>
+                    <div style={{ background: 'var(--n8n-background-dark)', border: '1px solid var(--n8n-border)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الاسم</label>
                             <input 
                                 className="input-field"
                                 style={{ marginTop: 0 }}
@@ -317,106 +340,110 @@ const SettingsPanel = () => {
                                 onChange={e => handleManagerChange('name', e.target.value)}
                             />
                         </div>
-                        <div className="mb-md">
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>الدور:</label>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الدور</label>
                             <input 
                                 className="input-field"
                                 style={{ marginTop: 0 }}
-                                placeholder="مثال: مدير المنصة الذكي"
+                                placeholder="مثال: مدير المنصة"
                                 value={managerConfig.role || ''}
                                 onChange={e => handleManagerChange('role', e.target.value)}
                             />
                         </div>
-                        <div className="mb-lg">
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>المعرفة / الوصف:</label>
+                        <div>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الوصف والمعرفة</label>
                             <textarea 
                                 className="input-field"
-                                style={{ marginTop: 0 }}
-                                rows={4}
-                                placeholder="وصف دقيق عن دور ومعرفة المدير"
+                                style={{ marginTop: 0, minHeight: '120px' }}
+                                placeholder="وصف تفصيلي عن دور والمعرفة المطلوبة للمدير..."
                                 value={managerConfig.knowledge || ''}
                                 onChange={e => handleManagerChange('knowledge', e.target.value)}
                             ></textarea>
                         </div>
-                        <button className="btn btn-success" onClick={handleSaveManager}>💾 حفظ الإعدادات</button>
                     </div>
+                    <button className="btn btn-success" onClick={handleSaveManager}>💾 حفظ الإعدادات</button>
                 </div>
             )}
 
             {/* Generic JSON Settings */}
             {otherSettings.filter(s => s.key !== 'external_integrations' && s.key !== 'manager_ai_config').length > 0 && (
-                <div className="card p-xl">
-                    <h3 className="mb-md">⚙️ الإعدادات الأخرى</h3>
-                    <p className="text-secondary mb-md" style={{ fontSize: '0.9rem' }}>
-                        تعديل الإعدادات الأخرى بصيغة JSON
-                    </p>
+                <div className="n8n-card" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', padding: '2rem', borderRadius: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <span style={{ fontSize: '1.8rem' }}>📋</span>
+                        <div>
+                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--n8n-text-main)' }}>الإعدادات الأخرى</h2>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--n8n-text-muted)' }}>تعديل الإعدادات المتقدمة بصيغة JSON</p>
+                        </div>
+                    </div>
 
-                    <table className="w-full text-right" style={{ borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid var(--border-light)' }}>
-                                <th className="py-sm">المفتاح</th>
-                                <th className="py-sm">القيمة (JSON)</th>
-                                <th className="py-sm">إجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {otherSettings.filter(s => s.key !== 'external_integrations' && s.key !== 'manager_ai_config').map((s) => (
-                                <tr key={s.key} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                                    <td className="py-md" style={{ verticalAlign: 'top' }}>{s.key}</td>
-                                    <td className="py-md" style={{ verticalAlign: 'top', maxWidth: '50%' }}>
-                                        {editKey === s.key ? (
-                                            <textarea
-                                                rows={4}
-                                                style={{ width: '100%', fontFamily: 'monospace' }}
-                                                value={editValue}
-                                                onChange={(e) => setEditValue(e.target.value)}
-                                            ></textarea>
-                                        ) : (
-                                            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                                                {JSON.stringify(s.value, null, 2)}
-                                            </pre>
-                                        )}
-                                    </td>
-                                    <td className="py-md" style={{ verticalAlign: 'top' }}>
-                                        {editKey === s.key ? (
-                                            <>
-                                                <button className="btn btn-sm btn-success mb-sm" onClick={() => handleSave(s.key, editValue)}>حفظ</button><br />
-                                                <button className="btn btn-sm btn-secondary" onClick={() => setEditKey(null)}>إلغاء</button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button className="btn btn-sm btn-secondary mb-sm" onClick={() => { setEditKey(s.key); setEditValue(JSON.stringify(s.value, null, 2)); }}>تعديل</button><br />
-                                                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(s.key)}>حذف</button>
-                                            </>
-                                        )}
-                                    </td>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '2px solid var(--n8n-border)', backgroundColor: 'var(--n8n-background-dark)' }}>
+                                    <th style={{ padding: '0.75rem', color: 'var(--n8n-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>المفتاح</th>
+                                    <th style={{ padding: '0.75rem', color: 'var(--n8n-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>القيمة (JSON)</th>
+                                    <th style={{ padding: '0.75rem', color: 'var(--n8n-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>الإجراءات</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {otherSettings.filter(s => s.key !== 'external_integrations' && s.key !== 'manager_ai_config').map((s) => (
+                                    <tr key={s.key} style={{ borderBottom: '1px solid var(--n8n-border)' }}>
+                                        <td style={{ padding: '0.75rem', color: 'var(--n8n-text-main)', fontSize: '0.9rem', fontWeight: 500 }}>{s.key}</td>
+                                        <td style={{ padding: '0.75rem', maxWidth: '50%' }}>
+                                            {editKey === s.key ? (
+                                                <textarea
+                                                    rows={4}
+                                                    style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--n8n-background-dark)', color: 'var(--n8n-text-main)', border: '1px solid var(--n8n-border)', padding: '0.5rem', borderRadius: '6px' }}
+                                                    value={editValue}
+                                                    onChange={(e) => setEditValue(e.target.value)}
+                                                ></textarea>
+                                            ) : (
+                                                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.8rem', color: 'var(--n8n-text-muted)', margin: 0 }}>
+                                                    {JSON.stringify(s.value, null, 2)}
+                                                </pre>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                                            {editKey === s.key ? (
+                                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                    <button className="btn btn-success btn-xs" onClick={() => handleSave(s.key, editValue)}>حفظ</button>
+                                                    <button className="btn btn-secondary btn-xs" onClick={() => setEditKey(null)}>إلغاء</button>
+                                                </div>
+                                            ) : (
+                                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                    <button className="btn btn-secondary btn-xs" onClick={() => { setEditKey(s.key); setEditValue(JSON.stringify(s.value, null, 2)); }}>تعديل</button>
+                                                    <button className="btn btn-danger btn-xs" onClick={() => handleDelete(s.key)}>حذف</button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
                     {/* Add new setting */}
-                    <div className="mt-xl" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1rem' }}>
-                        <h4>إضافة إعداد جديد</h4>
-                        <div className="flex gap-md align-center mb-md">
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--n8n-border)' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--n8n-text-main)' }}>➕ إضافة إعداد جديد</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
                             <input
                                 type="text"
                                 placeholder="المفتاح"
                                 value={newKey}
                                 onChange={(e) => setNewKey(e.target.value)}
                                 className="input-field"
-                                style={{ width: '30%', marginTop: 0 }}
+                                style={{ marginTop: 0 }}
                             />
                             <textarea
-                                rows={3}
+                                rows={2}
                                 placeholder="القيمة بصيغة JSON"
                                 value={newValue}
                                 onChange={(e) => setNewValue(e.target.value)}
                                 className="input-field"
-                                style={{ width: '60%', fontFamily: 'monospace' }}
+                                style={{ marginTop: 0, fontFamily: 'monospace', fontSize: '0.85rem' }}
                             ></textarea>
                         </div>
-                        <button className="btn btn-primary" onClick={handleAdd}>إنشاء</button>
+                        <button className="btn btn-primary" onClick={handleAdd}>إنشاء إعداد</button>
                     </div>
                 </div>
             )}

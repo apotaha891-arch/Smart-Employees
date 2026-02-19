@@ -179,49 +179,35 @@ const AdminDashboard = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-md mb-xl" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>
-                <button
-                    className={`nav-link ${activeTab === 'manager' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('manager')}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                    🤖 المدير الذكي
-                </button>
-                <button
-                    className={`nav-link ${activeTab === 'templates' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('templates')}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                    💼 إدارة الموظفين
-                </button>
-                <button
-                    className={`nav-link ${activeTab === 'customers' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('customers')}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                    👥 بيانات المالكين
-                </button>
-                <button
-                    className={`nav-link ${activeTab === 'settings' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('settings')}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                    ⚙️ إعدادات المنصة
-                </button>
-                <button
-                    className={`nav-link ${activeTab === 'operations' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('operations')}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                    🚀 العمليات والربط
-                </button>
-                <button
-                    className={`nav-link ${activeTab === 'boardroom' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('boardroom')}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                    🏛️ اجتماع الإدارة
-                </button>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid var(--n8n-border)', paddingBottom: '0rem', overflowX: 'auto' }}>
+                {[
+                    { id: 'manager', label: '🤖 المدير الذكي' },
+                    { id: 'templates', label: '💼 الموظفون' },
+                    { id: 'customers', label: '👥 المالكون' },
+                    { id: 'settings', label: '⚙️ الإعدادات' },
+                    { id: 'operations', label: '🚀 العمليات' },
+                    { id: 'boardroom', label: '🏛️ الاجتماعات' }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        className="nav-link"
+                        onClick={() => setActiveTab(tab.id)}
+                        style={{
+                            background: activeTab === tab.id ? 'transparent' : 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '0.75rem 1rem',
+                            fontSize: '0.95rem',
+                            fontWeight: activeTab === tab.id ? 700 : 500,
+                            color: activeTab === tab.id ? 'var(--n8n-primary, #00C9A7)' : 'var(--n8n-text-muted, #666)',
+                            borderBottom: activeTab === tab.id ? '3px solid var(--n8n-primary, #00C9A7)' : 'none',
+                            transition: 'all 0.3s ease',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {/* Tab Content */}
@@ -230,7 +216,7 @@ const AdminDashboard = () => {
                 {activeTab === 'manager' && (
                     <div className="grid grid-2 gap-xl">
                         {/* Executive Delegation Chat */}
-                        <div className="card card-solid p-xl" style={{ border: '1px solid #E2E8F0', borderRadius: '24px' }}>
+                        <div className="card card-solid p-xl" style={{ border: '1px solid var(--n8n-border)', borderRadius: '24px', background: 'var(--n8n-surface-card)' }}>
                             <div className="flex align-center justify-between mb-md">
                                 <div className="flex align-center gap-sm">
                                     <span style={{ fontSize: '1.5rem' }}>🤵‍♂️</span>
@@ -238,7 +224,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <span className="badge badge-success">المدير التنفيذي نشط</span>
                             </div>
-                            <div className="chat-container mb-md" style={{ background: '#f8fafc', borderRadius: '12px', height: '350px' }}>
+                            <div className="chat-container mb-md" style={{ background: 'var(--n8n-background-dark, #0F172A)', borderRadius: '12px', height: '350px', border: '1px solid var(--n8n-border, #1E293B)' }}>
                                 {chatMessages.map((msg, i) => (
                                     <div key={i} className={`bubble ${msg.role === 'user' ? 'bubble-user' : 'bubble-agent'}`}>
                                         {msg.content}
@@ -269,7 +255,7 @@ const AdminDashboard = () => {
                             {departments.map(dept => (
                                 <div key={dept.id} className="n8n-card p-lg flex align-center justify-between" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '16px' }}>
                                     <div className="flex align-center gap-md">
-                                        <div style={{ fontSize: '1.5rem', width: '45px', height: '45px', background: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{dept.icon}</div>
+                                        <div style={{ fontSize: '1.5rem', width: '45px', height: '45px', background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{dept.icon}</div>
                                         <div>
                                             <h4 style={{ margin: 0, fontSize: '1rem' }}>{dept.name}</h4>
                                             <span style={{ fontSize: '0.75rem', color: dept.status === 'Active' ? 'var(--success)' : 'var(--accent)' }}>● {dept.status}</span>
@@ -374,17 +360,17 @@ const AdminDashboard = () => {
                                         </div>
 
                                         {/* Station Progress Bar */}
-                                        <div className="flex justify-between align-center px-md py-sm" style={{ background: '#F1F5F9', borderRadius: '16px', position: 'relative' }}>
-                                            <div style={{ position: 'absolute', top: '50%', left: '10%', right: '10%', height: '2px', background: '#CBD5E1', zIndex: 0 }}></div>
+                                        <div className="flex justify-between align-center px-md py-sm" style={{ background: 'var(--n8n-background-dark)', border: '1px solid var(--n8n-border)', borderRadius: '16px', position: 'relative' }}>
+                                            <div style={{ position: 'absolute', top: '50%', left: '10%', right: '10%', height: '2px', background: 'var(--n8n-border)', zIndex: 0 }}></div>
                                             {[1, 2, 3, 4, 5].map(step => (
                                                 <div key={step} style={{
                                                     zIndex: 1,
                                                     width: '32px',
                                                     height: '32px',
                                                     borderRadius: '50%',
-                                                    background: req.stage >= step ? '#0F172A' : 'white',
+                                                    background: req.stage >= step ? 'var(--n8n-primary, #00C9A7)' : 'var(--n8n-background-dark)', 
                                                     color: req.stage >= step ? 'white' : '#94A3B8',
-                                                    border: `2px solid ${req.stage >= step ? '#0F172A' : '#CBD5E1'}`,
+                                                    border: `2px solid ${req.stage >= step ? 'var(--n8n-primary, #00C9A7)' : 'var(--n8n-border)'}`, 
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
@@ -532,7 +518,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <table className="w-full text-right" style={{ fontSize: '0.85rem' }}>
                                     <thead>
-                                        <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
+                                        <tr style={{ borderBottom: '1px solid var(--n8n-border)' }}>
                                             <th className="py-xs">المنشأة</th>
                                             <th className="py-xs">الحالة</th>
                                             <th className="py-xs">المدينة</th>
@@ -540,7 +526,7 @@ const AdminDashboard = () => {
                                     </thead>
                                     <tbody>
                                         {globalLeads.slice(0, 5).map(lead => (
-                                            <tr key={lead.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                            <tr key={lead.id} style={{ borderBottom: '1px solid var(--n8n-border)' }}>
                                                 <td className="py-xs" style={{ fontWeight: 700 }}>{lead.business}</td>
                                                 <td className="py-xs">
                                                     <span style={{ color: lead.tier === 'Hot' ? 'red' : 'blue' }}>
@@ -556,7 +542,7 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Executive Response Center (Inbox) */}
-                        <div className="card p-xl" style={{ border: '2px solid #6366F1', background: '#F5F3FF' }}>
+                        <div className="card p-xl" style={{ border: '2px solid #6366F1', background: 'var(--n8n-surface-card)', borderRadius: '16px' }}>
                             <div className="flex justify-between align-center mb-lg">
                                 <div className="flex align-center gap-md">
                                     <div style={{ width: '50px', height: '50px', background: '#6366F1', color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>📥</div>
@@ -572,7 +558,7 @@ const AdminDashboard = () => {
                                 {executiveInbox.length > 0 ? executiveInbox.map(msg => (
                                     <div key={msg.id} className="n8n-card p-lg flex justify-between align-center" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                                         <div className="flex align-center gap-md">
-                                            <div style={{ width: '40px', height: '40px', background: '#F3F4F6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🤖</div>
+                                            <div style={{ width: '40px', height: '40px', background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🤖</div>
                                             <div>
                                                 <div className="flex align-center gap-sm">
                                                     <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>{msg.sender}</span>

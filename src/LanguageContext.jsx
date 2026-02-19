@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { translations } from './translations';
+import translations from './i18n';
 
 const LanguageContext = createContext();
 
@@ -11,6 +11,11 @@ export const useLanguage = () => {
     return context;
 };
 
+// Helper function to get nested translations with dot notation
+const getNestedTranslation = (obj, path) => {
+    return path.split('.').reduce((current, prop) => current?.[prop], obj);
+};
+
 export const LanguageProvider = ({ children }) => {
     const [language, setLanguage] = useState(() => {
         // Get saved language from localStorage or default to Arabic
@@ -18,7 +23,14 @@ export const LanguageProvider = ({ children }) => {
     });
 
     const t = (key) => {
-        return translations[language][key] || key;
+        const value = getNestedTranslation(translations[language], key);
+        if (!value) {
+            console.warn(`Translation missing for key: ${key} in language: ${language}`);
+            // Fallback to Arabic if key missing
+            const fallback = getNestedTranslation(translations.ar, key);
+            return fallback || key;
+        }
+        return value;
     };
 
     const toggleLanguage = () => {

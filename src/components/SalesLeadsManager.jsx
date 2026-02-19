@@ -70,7 +70,7 @@ const SalesLeadsManager = () => {
     };
 
     return (
-        <div className="card p-xl animate-fade-in" style={{ background: 'white', borderRadius: '24px', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-md)' }}>
+        <div className="card p-xl animate-fade-in" style={{ background: 'var(--n8n-surface-card)', borderRadius: '24px', border: '1px solid var(--n8n-border)' }}>
             <div className="flex align-center justify-between mb-xl">
                 <div className="flex align-center gap-md">
                     <div style={{ width: '60px', height: '60px', background: 'linear-gradient(45deg, #0F172A, #334155)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', color: 'white' }}>🌎</div>
@@ -93,7 +93,7 @@ const SalesLeadsManager = () => {
                 </div>
             </div>
 
-            <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #E2E8F0' }}>
+            <div style={{ background: 'var(--n8n-background-dark)', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid var(--n8n-border)' }}>
                 <p style={{ margin: '0 0 1rem 0', fontWeight: 700, fontSize: '0.9rem' }}>🎯 تحديد الهدف الجغرافي للاستحواذ:</p>
                 <div className="flex gap-md">
                     <input
@@ -102,7 +102,7 @@ const SalesLeadsManager = () => {
                         placeholder="مثال: مكاتب عقارية في جدة، حي الروضة..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ flex: 1, background: 'white' }}
+                        style={{ flex: 1, background: 'var(--n8n-surface-card)', marginTop: 0 }}
                     />
                     <button
                         className="btn btn-primary"
@@ -160,8 +160,8 @@ const SalesLeadsManager = () => {
                                                 borderRadius: '6px',
                                                 fontSize: '0.7rem',
                                                 fontWeight: 800,
-                                                background: lead.status === 'Hot' ? '#FEE2E2' : '#E0F2FE',
-                                                color: lead.status === 'Hot' ? '#991B1B' : '#075985'
+                                                background: lead.status === 'Hot' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                                                color: lead.status === 'Hot' ? '#EF4444' : '#3B82F6'
                                             }}>
                                                 {lead.status === 'Hot' ? '🔥 عميل جاد' : '💎 فرصة نمو'}
                                             </span>
@@ -181,7 +181,7 @@ const SalesLeadsManager = () => {
             )}
 
             {!isSearching && leads.length === 0 && !isAutoMode && (
-                <div style={{ padding: '3rem', background: '#F8FAFC', borderRadius: '20px', textAlign: 'center', border: '2px dashed #E2E8F0' }}>
+                <div style={{ padding: '3rem', background: 'var(--n8n-background-dark)', borderRadius: '20px', textAlign: 'center', border: '2px dashed var(--n8n-border)' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌎</div>
                     <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>أهلاً بك في نظام الاستحواذ الجغرافي. بصفتي مديرك التنفيذي، سأقوم بجلب قائمة العملاء المحتملين لك آلياً بمجرد تحديد الهدف.</p>
                 </div>

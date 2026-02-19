@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Store, Users, User, Settings, LogOut,
-    Bell, Search, Menu, X, ChevronLeft, CreditCard, Calendar
+    Bell, Search, Menu, X, ChevronLeft, CreditCard, Calendar, 
+    BarChart3, Lock, Zap
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import { signOut, supabase } from '../services/supabaseService';
 
 const ModernDashboardLayout = ({ children }) => {
     const { t, language } = useLanguage();
     const location = useLocation();
     const navigate = useNavigate();
+    const { isAdmin, isCustomer } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [userData, setUserData] = useState({ name: 'جاري التحميل...', email: '' });
 
@@ -39,14 +42,28 @@ const ModernDashboardLayout = ({ children }) => {
 
     const isActive = (path) => location.pathname === path;
 
-    const navItems = [
+    // Customer Navigation Items
+    const customerNavItems = [
         { icon: LayoutDashboard, label: 'لوحة التحكم', path: '/dashboard' },
+        { icon: User, label: 'موظفيني الرقميين', path: '/salon-setup' },
         { icon: Calendar, label: 'الحجوزات', path: '/bookings' },
-        { icon: Users, label: 'الزبائن', path: '/customers' },
-        { icon: Store, label: 'سوق الموظفين', path: '/templates' },
-        { icon: User, label: 'موظفيني', path: '/salon-setup' },
-        { icon: Settings, label: 'بروتوكول المنشأة', path: '/setup' },
+        { icon: Users, label: 'العملاء', path: '/customers' },
+        { icon: Settings, label: 'الإعدادات', path: '/setup' },
     ];
+
+    // Admin Navigation Items
+    const adminNavItems = [
+        { icon: LayoutDashboard, label: 'لوحة التحكم', path: '/admin' },
+        { icon: Users, label: 'المستخدمين', path: '/admin/users' },
+        { icon: Store, label: 'المتاجر', path: '/admin/stores' },
+        { icon: BarChart3, label: 'التحليلات', path: '/admin/analytics' },
+        { icon: Zap, label: 'الأتمتة', path: '/admin/automation' },
+        { icon: Lock, label: 'الأمان', path: '/admin/security' },
+        { icon: Settings, label: 'الإعدادات', path: '/admin/settings' },
+    ];
+
+    // Select nav items based on role
+    const navItems = isAdmin ? adminNavItems : customerNavItems;
 
     return (
         <div className="dashboard-container" style={{ display: 'flex', minHeight: '100vh', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
@@ -68,6 +85,15 @@ const ModernDashboardLayout = ({ children }) => {
 
                 {/* Navigation */}
                 <nav style={{ flex: 1, padding: '1rem' }}>
+                    {/* Role Section Header */}
+                    {isSidebarOpen && (
+                        <div style={{ padding: '1rem 0.5rem', marginBottom: '1rem' }}>
+                            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#9CA3AF', fontWeight: 700, letterSpacing: '0.05em' }}>
+                                {isAdmin ? '⚙️ إدارة النظام' : '📊 أدوات العمل'}
+                            </span>
+                        </div>
+                    )}
+                    
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {navItems.map((item) => (
                             <li key={item.path} style={{ marginBottom: '0.5rem' }}>
@@ -100,9 +126,19 @@ const ModernDashboardLayout = ({ children }) => {
                             />
                         </div>
                         {isSidebarOpen && (
-                            <div style={{ overflow: 'hidden' }}>
+                            <div style={{ overflow: 'hidden', flex: 1 }}>
                                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{userData.name}</div>
-                                <div style={{ fontSize: '0.75rem', color: '#6B7280', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userData.email}</div>
+                                <div style={{ fontSize: '0.7rem', color: '#6B7280', marginBottom: '0.25rem' }}>{userData.email}</div>
+                                <span style={{ 
+                                    fontSize: '0.65rem', 
+                                    background: isAdmin ? 'rgba(239, 68, 68, 0.2)' : 'rgba(139, 92, 246, 0.2)', 
+                                    color: isAdmin ? '#FCA5A5' : '#C4B5FD',
+                                    padding: '0.15rem 0.4rem', 
+                                    borderRadius: '4px',
+                                    fontWeight: 700
+                                }}>
+                                    {isAdmin ? '👤 مدير' : '👨‍💼 مستخدم'}
+                                </span>
                             </div>
                         )}
                     </div>

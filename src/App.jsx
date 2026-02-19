@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { LanguageProvider } from './LanguageContext';
+import { createAuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/shared/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import AgentTemplates from './components/AgentTemplates';
@@ -19,13 +21,18 @@ import Bookings from './components/Bookings';
 import Customers from './components/Customers';
 import { useLocation } from 'react-router-dom';
 
+// Create AuthProvider
+const AuthProvider = createAuthProvider();
+
 
 function App() {
     return (
         <LanguageProvider>
-            <Router>
-                <AppContent />
-            </Router>
+            <AuthProvider>
+                <Router>
+                    <AppContent />
+                </Router>
+            </AuthProvider>
         </LanguageProvider>
     );
 }
@@ -41,23 +48,80 @@ function AppContent() {
             {!isDashboard && <Navbar />}
 
             <Routes>
-                {/* Public / Standard Routes */}
+                {/* ============ PUBLIC ROUTES ============ */}
                 <Route path="/" element={<Home />} />
-                <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/custom-request" element={<CustomRequest />} />
                 <Route path="/interview" element={<InterviewRoom />} />
                 <Route path="/reports" element={<Reports />} />
 
-                {/* Dashboard Routes (Wrapped) */}
-                <Route path="/setup" element={<ModernDashboardLayout><BusinessSetup /></ModernDashboardLayout>} />
-                <Route path="/salon-setup" element={<ModernDashboardLayout><SalonSetup /></ModernDashboardLayout>} />
-                <Route path="/templates" element={<ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout>} />
-                <Route path="/pricing" element={<ModernDashboardLayout><Pricing /></ModernDashboardLayout>} />
-                <Route path="/dashboard" element={<ModernDashboardLayout><Dashboard /></ModernDashboardLayout>} />
-                <Route path="/bookings" element={<ModernDashboardLayout><Bookings /></ModernDashboardLayout>} />
-                <Route path="/customers" element={<ModernDashboardLayout><Customers /></ModernDashboardLayout>} />
+                {/* ============ ADMIN PROTECTED ROUTES ============ */}
+                <Route 
+                    path="/admin" 
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <AdminDashboard />
+                        </ProtectedRoute>
+                    } 
+                />
 
+                {/* ============ CUSTOMER PROTECTED ROUTES ============ */}
+                <Route 
+                    path="/setup" 
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><BusinessSetup /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/salon-setup" 
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><SalonSetup /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/templates" 
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/pricing" 
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><Pricing /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/dashboard" 
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><Dashboard /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/bookings" 
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><Bookings /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/customers" 
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><Customers /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    } 
+                />
             </Routes>
 
             <PlatformConcierge />
