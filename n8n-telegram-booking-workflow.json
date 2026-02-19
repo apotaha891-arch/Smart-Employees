@@ -1,0 +1,445 @@
+{
+    "name": "Telegram Salon Booking Bot",
+    "nodes": [
+        {
+            "parameters": {
+                "updates": [
+                    "message"
+                ]
+            },
+            "id": "telegram-trigger",
+            "name": "Telegram Trigger",
+            "type": "n8n-nodes-base.telegramTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                240,
+                300
+            ],
+            "webhookId": "telegram-bot",
+            "credentials": {
+                "telegramApi": {
+                    "id": "TELEGRAM_CREDENTIAL_ID",
+                    "name": "Telegram Bot"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "tableId": "salon_configs",
+                "returnAll": false,
+                "limit": 1,
+                "filterType": "manual",
+                "matchType": "allFilters",
+                "filters": {
+                    "conditions": [
+                        {
+                            "keyName": "is_active",
+                            "condition": "equals",
+                            "keyValue": "true"
+                        }
+                    ]
+                }
+            },
+            "id": "get-salon-config",
+            "name": "Get Salon Config",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                460,
+                300
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "SUPABASE_CREDENTIAL_ID",
+                    "name": "Supabase"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "tableId": "salon_services",
+                "returnAll": true,
+                "filterType": "manual",
+                "matchType": "allFilters",
+                "filters": {
+                    "conditions": [
+                        {
+                            "keyName": "salon_config_id",
+                            "condition": "equals",
+                            "keyValue": "={{ $('Get Salon Config').item.json.id }}"
+                        },
+                        {
+                            "keyName": "is_active",
+                            "condition": "equals",
+                            "keyValue": "true"
+                        }
+                    ]
+                }
+            },
+            "id": "get-services",
+            "name": "Get Services",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                680,
+                300
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "SUPABASE_CREDENTIAL_ID",
+                    "name": "Supabase"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "tableId": "bookings",
+                "returnAll": true,
+                "filterType": "manual",
+                "matchType": "allFilters",
+                "filters": {
+                    "conditions": [
+                        {
+                            "keyName": "salon_config_id",
+                            "condition": "equals",
+                            "keyValue": "={{ $('Get Salon Config').item.json.id }}"
+                        },
+                        {
+                            "keyName": "booking_date",
+                            "condition": "equals",
+                            "keyValue": "={{ $today.format('YYYY-MM-DD') }}"
+                        },
+                        {
+                            "keyName": "status",
+                            "condition": "isIn",
+                            "keyValue": "pending,confirmed"
+                        }
+                    ]
+                }
+            },
+            "id": "get-bookings",
+            "name": "Get Today Bookings",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                900,
+                300
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "SUPABASE_CREDENTIAL_ID",
+                    "name": "Supabase"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const services = $('Get Services').all().map(item => ({\n  name: item.json.service_name,\n  price: item.json.price,\n  duration: item.json.duration_minutes\n}));\n\nconst bookedSlots = $('Get Today Bookings').all().map(item => \n  `${item.json.booking_time} (${item.json.duration_minutes} دقيقة)`\n);\n\nconst salonConfig = $('Get Salon Config').first().json;\nconst userMessage = $('Telegram Trigger').item.json.message.text;\n\nreturn [{\n  json: {\n    userMessage: userMessage,\n    services: services,\n    bookedSlots: bookedSlots,\n    workingHours: salonConfig.working_hours || { start: '10:00', end: '22:00' },\n    agentName: salonConfig.agent_name || 'سارة',\n    specialty: salonConfig.specialty || 'شامل',\n    tone: salonConfig.tone || 'friendly'\n  }\n}];"
+            },
+            "id": "prepare-context",
+            "name": "Prepare Context",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1120,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpQueryAuth",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "key",
+                            "value": "YOUR_GEMINI_API_KEY"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "contents",
+                            "value": "={{ JSON.stringify([{ role: 'user', parts: [{ text: $json.userMessage }] }]) }}"
+                        },
+                        {
+                            "name": "systemInstruction",
+                            "value": "={{ JSON.stringify({ parts: [{ text: `أنت ${$json.agentName}، موظفة استقبال في صالون ${$json.specialty}.\\n\\nالخدمات المتاحة:\\n${$json.services.map(s => `- ${s.name}: ${s.price} ريال (${s.duration} دقيقة)`).join('\\n')}\\n\\nساعات العمل: ${$json.workingHours.start} - ${$json.workingHours.end}\\n\\nالأوقات المحجوزة اليوم: ${$json.bookedSlots.join(', ') || 'لا يوجد'}\\n\\nمهمتك:\\n1. الترحيب بالعميلة بأسلوب ودود ومحترف\\n2. عرض الخدمات المتاحة عند الطلب\\n3. مساعدتها في اختيار الوقت المناسب (تجنب الأوقات المحجوزة)\\n4. تأكيد الحجز بعد الحصول على جميع المعلومات\\n\\nعند تأكيد الحجز، استخدم هذا التنسيق بالضبط:\\n[BOOKING]\\nاسم العميلة: [الاسم الكامل]\\nرقم الهاتف: [رقم بصيغة +966XXXXXXXXX]\\nالخدمة: [اسم الخدمة بالضبط كما في القائمة]\\nالتاريخ: [YYYY-MM-DD]\\nالوقت: [HH:MM]\\n[/BOOKING]\\n\\nملاحظات مهمة:\\n- لا تحجز في وقت محجوز مسبقاً\\n- تأكد من أن الوقت ضمن ساعات العمل\\n- اطلب رقم الهاتف بصيغة دولية` }] }) }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "gemini-chat",
+            "name": "Gemini Chat",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1340,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const geminiResponse = $input.item.json.candidates[0].content.parts[0].text;\n\n// البحث عن تنسيق الحجز\nconst bookingMatch = geminiResponse.match(/\\[BOOKING\\]([\\s\\S]*?)\\[\\/BOOKING\\]/);\n\nif (bookingMatch) {\n  const bookingText = bookingMatch[1];\n  \n  // استخراج البيانات\n  const nameMatch = bookingText.match(/اسم العميلة:\\s*(.+)/);\n  const phoneMatch = bookingText.match(/رقم الهاتف:\\s*(.+)/);\n  const serviceMatch = bookingText.match(/الخدمة:\\s*(.+)/);\n  const dateMatch = bookingText.match(/التاريخ:\\s*(\\d{4}-\\d{2}-\\d{2})/);\n  const timeMatch = bookingText.match(/الوقت:\\s*(\\d{2}:\\d{2})/);\n\n  // البحث عن الخدمة المطابقة\n  const services = $('Get Services').all();\n  const serviceName = serviceMatch ? serviceMatch[1].trim() : '';\n  const selectedService = services.find(s => \n    s.json.service_name === serviceName || s.json.service_name.includes(serviceName)\n  );\n\n  return [{\n    json: {\n      hasBooking: true,\n      customer_name: nameMatch ? nameMatch[1].trim() : 'غير محدد',\n      customer_phone: phoneMatch ? phoneMatch[1].trim() : '',\n      service_id: selectedService?.json.id || null,\n      service_name: serviceName,\n      booking_date: dateMatch ? dateMatch[1] : new Date().toISOString().split('T')[0],\n      booking_time: timeMatch ? timeMatch[1] : '10:00',\n      duration_minutes: selectedService?.json.duration_minutes || 60,\n      full_response: geminiResponse.replace(/\\[BOOKING\\][\\s\\S]*?\\[\\/BOOKING\\]/, '').trim()\n    }\n  }];\n} else {\n  return [{\n    json: {\n      hasBooking: false,\n      full_response: geminiResponse\n    }\n  }];\n}"
+            },
+            "id": "extract-booking",
+            "name": "Extract Booking Info",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1560,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.hasBooking }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "if-booking",
+            "name": "IF Booking",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                1780,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "create",
+                "tableId": "bookings",
+                "fieldsUi": {
+                    "fieldValues": [
+                        {
+                            "fieldId": "salon_config_id",
+                            "fieldValue": "={{ $('Get Salon Config').item.json.id }}"
+                        },
+                        {
+                            "fieldId": "service_id",
+                            "fieldValue": "={{ $('Extract Booking Info').item.json.service_id }}"
+                        },
+                        {
+                            "fieldId": "customer_name",
+                            "fieldValue": "={{ $('Extract Booking Info').item.json.customer_name }}"
+                        },
+                        {
+                            "fieldId": "customer_phone",
+                            "fieldValue": "={{ $('Extract Booking Info').item.json.customer_phone }}"
+                        },
+                        {
+                            "fieldId": "booking_date",
+                            "fieldValue": "={{ $('Extract Booking Info').item.json.booking_date }}"
+                        },
+                        {
+                            "fieldId": "booking_time",
+                            "fieldValue": "={{ $('Extract Booking Info').item.json.booking_time }}"
+                        },
+                        {
+                            "fieldId": "duration_minutes",
+                            "fieldValue": "={{ $('Extract Booking Info').item.json.duration_minutes }}"
+                        },
+                        {
+                            "fieldId": "status",
+                            "fieldValue": "confirmed"
+                        },
+                        {
+                            "fieldId": "created_by",
+                            "fieldValue": "telegram_bot"
+                        }
+                    ]
+                }
+            },
+            "id": "create-booking",
+            "name": "Create Booking",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                2000,
+                200
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "SUPABASE_CREDENTIAL_ID",
+                    "name": "Supabase"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resource": "message",
+                "operation": "sendMessage",
+                "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+                "text": "={{ $('Extract Booking Info').item.json.full_response }}\\n\\n✅ تم تأكيد الحجز بنجاح!\\n\\n📋 تفاصيل الحجز:\\n👤 العميلة: {{ $('Extract Booking Info').item.json.customer_name }}\\n💇‍♀️ الخدمة: {{ $('Extract Booking Info').item.json.service_name }}\\n📅 التاريخ: {{ $('Extract Booking Info').item.json.booking_date }}\\n🕐 الوقت: {{ $('Extract Booking Info').item.json.booking_time }}\\n📞 الهاتف: {{ $('Extract Booking Info').item.json.customer_phone }}"
+            },
+            "id": "send-booking-confirm",
+            "name": "Send Booking Confirmation",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.2,
+            "position": [
+                2220,
+                200
+            ],
+            "credentials": {
+                "telegramApi": {
+                    "id": "TELEGRAM_CREDENTIAL_ID",
+                    "name": "Telegram Bot"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resource": "message",
+                "operation": "sendMessage",
+                "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+                "text": "={{ $('Extract Booking Info').item.json.full_response }}"
+            },
+            "id": "send-chat-response",
+            "name": "Send Chat Response",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.2,
+            "position": [
+                2220,
+                400
+            ],
+            "credentials": {
+                "telegramApi": {
+                    "id": "TELEGRAM_CREDENTIAL_ID",
+                    "name": "Telegram Bot"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Telegram Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Get Salon Config",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Salon Config": {
+            "main": [
+                [
+                    {
+                        "node": "Get Services",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Services": {
+            "main": [
+                [
+                    {
+                        "node": "Get Today Bookings",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Today Bookings": {
+            "main": [
+                [
+                    {
+                        "node": "Prepare Context",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Prepare Context": {
+            "main": [
+                [
+                    {
+                        "node": "Gemini Chat",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Gemini Chat": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Booking Info",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract Booking Info": {
+            "main": [
+                [
+                    {
+                        "node": "IF Booking",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "IF Booking": {
+            "main": [
+                [
+                    {
+                        "node": "Create Booking",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Send Chat Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Create Booking": {
+            "main": [
+                [
+                    {
+                        "node": "Send Booking Confirmation",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [],
+    "triggerCount": 1,
+    "updatedAt": "2026-02-10T02:38:00.000Z",
+    "versionId": "1"
+}

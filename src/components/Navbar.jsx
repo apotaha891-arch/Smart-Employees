@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { getCurrentUser, signOut } from '../services/supabaseService';
+import { Smartphone, Briefcase } from 'lucide-react';
 
 const Navbar = () => {
     const { t, language, setLanguage } = useLanguage();
@@ -32,17 +33,18 @@ const Navbar = () => {
             <div className="container nav-content">
                 <Link to="/" className="nav-logo">
                     <div style={{
-                        width: '32px',
-                        height: '32px',
-                        background: 'var(--accent)',
-                        borderRadius: '6px',
+                        width: '38px',
+                        height: '38px',
+                        background: 'linear-gradient(135deg, #FFF 0%, #A1A1AA 100%)',
+                        borderRadius: '12px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'var(--primary)',
-                        fontSize: '1rem'
+                        color: 'black',
+                        fontSize: '1.2rem',
+                        fontWeight: '900'
                     }}>✦</div>
-                    Elite Agents
+                    <span style={{ fontWeight: 900, fontSize: '1.4rem' }}>AGENTIC</span>
                 </Link>
 
                 <ul className="nav-links">
@@ -50,31 +52,42 @@ const Navbar = () => {
                         <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>الرئيسية</Link>
                     </li>
                     {user && (
-                        <li>
-                            <Link to="/setup" className={`nav-link ${isActive('/setup') ? 'active' : ''}`}>⚙️ إعدادات المنشأة</Link>
-                        </li>
+                        <>
+                            <li>
+                                <Link to="/setup" className={`nav-link ${isActive('/setup') ? 'active' : ''}`}>
+                                    <Smartphone size={18} />
+                                    <span>{t('smartEmployee')}</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/salon-setup" className={`nav-link ${isActive('/salon-setup') ? 'active' : ''}`}>
+                                    <Briefcase size={18} />
+                                    <span>إعداد الصالون</span>
+                                </Link>
+                            </li>
+                        </>
                     )}
                     <li>
-                        <Link to="/templates" className={`nav-link ${isActive('/templates') ? 'active' : ''}`}>💼 الكوادر</Link>
+                        <Link to="/templates" className={`nav-link ${isActive('/templates') ? 'active' : ''}`}>الفرص الرقمية</Link>
                     </li>
                     <li>
-                        <Link to="/pricing" className={`nav-link ${isActive('/pricing') ? 'active' : ''}`}>💰 الباقات</Link>
+                        <Link to="/pricing" className={`nav-link ${isActive('/pricing') ? 'active' : ''}`}>الاشتراكات</Link>
                     </li>
                     <li>
-                        <Link to="/interview" className={`nav-link ${isActive('/interview') ? 'active' : ''}`}>🤝 المقابلة</Link>
+                        <Link to="/interview" className={`nav-link ${isActive('/interview') ? 'active' : ''}`}>غرفة العمليات</Link>
                     </li>
 
-                    <div style={{ width: '1px', height: '24px', background: 'var(--border-light)', margin: '0 0.5rem' }}></div>
+                    <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)', margin: '0 0.5rem' }}></div>
 
                     {user ? (
                         <li>
-                            <button onClick={handleLogout} className="btn btn-secondary btn-sm" style={{ border: 'none', background: '#FEE2E2', color: '#B91C1C' }}>
-                                تسجيل الخروج
+                            <button onClick={handleLogout} className="btn btn-secondary btn-sm" style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: '0.8rem' }}>
+                                خروج
                             </button>
                         </li>
                     ) : (
                         <li>
-                            <Link to="/login" className="btn btn-primary btn-sm">تسجيل الدخول</Link>
+                            <Link to="/login" className="btn btn-primary" style={{ padding: '0.5rem 1.25rem', borderRadius: '10px' }}>ابدأ الآن</Link>
                         </li>
                     )}
                 </ul>

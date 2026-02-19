@@ -3,11 +3,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// Use Gemini 1.5 Flash - Stable and reliable version
+// Use Gemini 1.5 Flash for stability
 const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
     generationConfig: {
-        temperature: 0.4, // Reduced temperature for more consistent JSON extraction
+        temperature: 0.7,
         maxOutputTokens: 2048,
     }
 });
@@ -120,6 +120,65 @@ ${JSON.stringify(conversationHistory.slice(-10), null, 2)}
     } catch (error) {
         console.error("Extraction Error:", error);
         return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Cleans AI text for WhatsApp compatibility (removes Markdown markers)
+ */
+export const cleanAIText = (text) => {
+    if (!text) return '';
+    let txt = text;
+    // 1. Remove bold / italic / strike markers (**bold**, *italic*, ~~strike~~)
+    txt = txt.replace(/[*_~]+/g, '');
+    // 2. Convert [Text](https://url) → Text https://url
+    txt = txt.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '$1 $2');
+    // 3. Collapse 3+ blank lines
+    txt = txt.replace(/\n{3,}/g, '\n\n').trim();
+    // 4. Remove unwanted source-reference preambles (case insensitive)
+    txt = txt.replace(/^.*?based on the document you provided[,:]?\s*/i, '');
+    txt = txt.replace(/^.*?وفقاً للمستند[,:]?\s*/i, '');
+    return txt;
+};
+
+/**
+ * Specifically for the Support Agent using a Knowledge Base
+ */
+export const getSupportResponse = async (userMessage, knowledgeBaseText) => {
+    try {
+        const date = new Date();
+        const formattedDate = date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        const prompt = `
+أنت المساعد الذكي لخدمة العملاء. وظيفتك الإجابة على الأسئلة بناءً على قاعدة المعرفة المقدمة فقط.
+تعليمات صارمة:
+- لا تستخدم مقدمات مثل "بناءً على المستند" أو "وفقاً للمعلومات".
+- ادخل في الإجابة مباشرة.
+- لا تذكر تاريخ اليوم إلا إذا سُئلت عنه.
+- تاريخ اليوم هو: ${formattedDate}
+
+قاعدة المعرفة:
+${knowledgeBaseText || 'لا توجد معلومات محددة حالياً.'}
+
+سؤال العميل:
+${userMessage}
+`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const rawText = response.text().trim();
+
+        return {
+            success: true,
+            text: cleanAIText(rawText)
+        };
+    } catch (error) {
+        console.error("Support API Error:", error);
+        return {
+            success: false,
+            error: error.message,
+            text: 'عذراً، حدث خطأ في معالجة طلب الدعم.'
+        };
     }
 };
 

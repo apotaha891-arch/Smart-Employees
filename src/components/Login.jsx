@@ -29,15 +29,27 @@ const Login = () => {
     };
 
     return (
-        <div className="container py-2xl" style={{ maxWidth: '450px' }}>
-            <div className="card card-solid p-2xl">
-                <div className="text-center mb-xl">
-                    <h2 className="mb-sm">{isSignUp ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}</h2>
-                    <p className="text-secondary">انضم لمنصة Elite Agents لإدارة موظفيك الرقميين</p>
+        <div className="container py-xl flex-center" style={{ minHeight: '80vh', maxWidth: '480px' }}>
+            <div className="card shadow-premium animate-fade-in" style={{ width: '100%', border: '1px solid var(--accent-border)' }}>
+                <div className="text-center mb-2xl">
+                    <div style={{
+                        width: '60px',
+                        height: '60px',
+                        background: 'var(--accent)',
+                        borderRadius: '16px',
+                        margin: '0 auto 1.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        boxShadow: '0 0 30px var(--accent-soft)'
+                    }}>✦</div>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>{isSignUp ? 'إنضمام للنخبة' : 'بوابة القيادة'}</h2>
+                    <p style={{ color: 'var(--text-secondary)' }}>أهلاً بك في منصة AGENTIC لإدارة الكوادر الرقمية</p>
                 </div>
 
                 {error && (
-                    <div className="badge badge-danger mb-xl w-full p-md text-center">
+                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', textAlign: 'center', fontSize: '0.9rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
                         {error}
                     </div>
                 )}
@@ -56,7 +68,7 @@ const Login = () => {
                         </div>
                     )}
                     <div className="mb-md">
-                        <label className="label">البريد الإلكتروني</label>
+                        <label className="label">بريد العمل</label>
                         <input
                             type="email"
                             className="input-field"
@@ -65,8 +77,8 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <div className="mb-xl">
-                        <label className="label">كلمة المرور</label>
+                    <div className="mb-2xl">
+                        <label className="label">كلمة السر</label>
                         <input
                             type="password"
                             className="input-field"
@@ -78,10 +90,11 @@ const Login = () => {
 
                     <button
                         type="submit"
-                        className={`btn btn-primary btn-block btn-lg ${loading ? 'loading' : ''}`}
+                        className={`btn btn-primary btn-block ${loading ? 'loading' : ''}`}
                         disabled={loading}
+                        style={{ padding: '1rem' }}
                     >
-                        {loading ? 'جاري التحميل...' : (isSignUp ? 'إنشاء الحساب' : 'تسجيل الدخول')}
+                        {loading ? 'جاري التحقق...' : (isSignUp ? 'أنشئ حسابك المؤسسي' : 'دخول للمركز ←')}
                     </button>
                 </form>
 
@@ -89,9 +102,9 @@ const Login = () => {
                     <button
                         className="btn-link"
                         onClick={() => setIsSignUp(!isSignUp)}
-                        style={{ background: 'none', border: 'none', color: 'var(--accent-blue)', cursor: 'pointer' }}
+                        style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem' }}
                     >
-                        {isSignUp ? 'لديك حساب بالفعل؟ سجل دخولك' : 'ليس لديك حساب؟ أنشئ واحداً الآن'}
+                        {isSignUp ? 'لديك حساب؟ سجل دخولك' : 'حساب جديد؟ انضم الآن'}
                     </button>
                 </div>
             </div>

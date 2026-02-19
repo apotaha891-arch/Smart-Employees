@@ -65,7 +65,7 @@ const PlatformConcierge = () => {
                 style={{
                     position: 'fixed',
                     bottom: '2.5rem',
-                    right: '2.5rem',
+                    left: '2.5rem',
                     width: '64px',
                     height: '64px',
                     borderRadius: '50%',
@@ -94,7 +94,7 @@ const PlatformConcierge = () => {
             style={{
                 position: 'fixed',
                 bottom: '2.5rem',
-                right: '2.5rem',
+                left: '2.5rem',
                 width: '400px',
                 height: '550px',
                 backgroundColor: 'white',

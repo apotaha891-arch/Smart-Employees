@@ -448,41 +448,37 @@ const AdminDashboard = () => {
                                     </div>
 
                                     <div className="mb-md">
-                                        <label className="label">مفتاح الـ API (API Key)</label>
+                                        <label className="label">
+                                            {selectedIntegration.id === 'whatsapp' ? 'رمز الوصول الدائم (Permanent Access Token)' : 'مفتاح الـ API (API Key)'}
+                                        </label>
                                         <input
                                             type="password"
                                             className="input-field"
-                                            placeholder="sk-xxxxxxxxxxxx"
+                                            placeholder={selectedIntegration.id === 'whatsapp' ? 'EAABw...' : 'sk-xxxxxxxxxxxx'}
                                             value={selectedIntegration.key}
                                             onChange={(e) => setSelectedIntegration({ ...selectedIntegration, key: e.target.value })}
                                         />
                                     </div>
 
                                     <div className="mb-lg">
-                                        <label className="label">رابط الاتصال (Webhook / Spreadsheet URL)</label>
+                                        <label className="label">
+                                            {selectedIntegration.id === 'whatsapp' ? 'معرف رقم الهاتف (Phone Number ID)' : 'رابط الاتصال (Webhook / Spreadsheet URL)'}
+                                        </label>
                                         <input
                                             type="text"
                                             className="input-field"
-                                            placeholder="https://hooks.n8n.io/..."
+                                            placeholder={selectedIntegration.id === 'whatsapp' ? '105xxxxxxx' : 'https://hooks.n8n.io/...'}
                                             value={selectedIntegration.url}
                                             onChange={(e) => setSelectedIntegration({ ...selectedIntegration, url: e.target.value })}
                                         />
                                     </div>
 
-                                    {selectedIntegration.id === 'n8n' && (
-                                        <div className="mb-lg p-md" style={{ background: 'rgba(99, 102, 241, 0.05)', borderRadius: '12px', border: '1px dashed #6366F1' }}>
-                                            <label className="label" style={{ color: '#4F46E5', fontWeight: 800 }}>🎯 نوع المحفز النشط (Active Trigger)</label>
-                                            <select
-                                                className="input-field"
-                                                value={selectedIntegration.triggerType || 'DEFAULT'}
-                                                onChange={(e) => setSelectedIntegration({ ...selectedIntegration, triggerType: e.target.value })}
-                                            >
-                                                <option value="DEFAULT">افتراضي (General Webhook)</option>
-                                                <option value="MARKETING">حملات التسويق (Marketing Hub)</option>
-                                                <option value="SALES">ترحيل مبيعات (Sales Bridge)</option>
-                                                <option value="DELEGATION">تفويض آلي (Auto Delegation)</option>
-                                            </select>
-                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>سيقوم n8n بالاستماع لهذا النوع من الأحداث حصراً.</p>
+                                    {selectedIntegration.id === 'whatsapp' && (
+                                        <div className="mb-lg p-md" style={{ background: 'rgba(34, 197, 94, 0.05)', borderRadius: '12px', border: '1px dashed #22c55e' }}>
+                                            <label className="label" style={{ color: '#15803d', fontWeight: 800 }}>🔐 إعدادات الربط المباشر (No-n8n)</label>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>
+                                                سيقوم الموظف باستخدام هذه البيانات للرد مباشرة على الرسائل الواردة وصرف الوحدات من رصيد العميل.
+                                            </p>
                                         </div>
                                     )}
 

@@ -133,7 +133,7 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="container py-xl">
+        <div className="container py-xl animate-fade-in">
             {showLowCreditModal && profile && (
                 <LowCreditModal
                     remaining={profile.total_credits - profile.credits_used}
@@ -144,307 +144,146 @@ const Dashboard = () => {
                 />
             )}
 
-            {/* Usage Monitoring Panel - Humanized & Premium */}
-            {profile && (
-                <div className="card p-xl mb-xl animate-fade-in" style={{
-                    background: 'white',
-                    border: '1px solid var(--border-light)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-premium)'
-                }}>
-                    <div className="flex justify-between align-center mb-md">
-                        <div className="flex align-center gap-md">
-                            <div style={{
-                                background: 'var(--accent-soft)',
-                                padding: '0.75rem',
-                                borderRadius: '12px',
-                                color: 'var(--accent)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>سعة العمل والالتزام المهني</h3>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>نظام المتابعة الذكي لضمان جودة الأداء</p>
-                            </div>
-                        </div>
-                        <div className="text-left">
-                            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>
-                                {profile.credits_used?.toLocaleString()}
-                            </span>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}> / {profile.total_credits?.toLocaleString()} نقطة التزام</span>
-                        </div>
-                    </div>
-
-                    <div style={{
-                        width: '100%',
-                        background: '#F3F4F6',
-                        height: '8px',
-                        borderRadius: 'var(--radius-full)',
-                        overflow: 'hidden',
-                        marginBottom: '1.25rem'
-                    }}>
-                        <div style={{
-                            width: `${Math.min(100, (profile.credits_used / profile.total_credits) * 100)}%`,
-                            height: '100%',
-                            background: (profile.credits_used / profile.total_credits) >= 0.9 ? '#F87171' : 'var(--primary)',
-                            borderRadius: 'var(--radius-full)',
-                            transition: 'width 1.5s cubic-bezier(0.1, 0, 0, 1)'
-                        }}></div>
-                    </div>
-
-                    <div className="flex justify-between align-center mb-lg">
-                        <p style={{ fontSize: '0.9rem', color: (profile.credits_used / profile.total_credits) >= 0.9 ? '#B91C1C' : 'var(--text-secondary)', margin: 0 }}>
-                            {(profile.credits_used / profile.total_credits) >= 1 ? (
-                                <strong>⚠️ تم استنفاد سعة العمل المتاحة لهذا الشهر. يرجى تجديد الاتفاقية لمواصلة النمو.</strong>
-                            ) : (profile.credits_used / profile.total_credits) >= 0.8 ? (
-                                <strong>💡 يقترب الزميل من حدود السعة القصوى. نوصي بترقية الباقة لضمان استمرارية الخدمة.</strong>
-                            ) : (
-                                `تم استثمار ${Math.round((profile.credits_used / profile.total_credits) * 100)}% من طاقة العمل المخصصة`
-                            )}
-                        </p>
-                        <Link to="/pricing" style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none', borderBottom: '1px solid var(--accent)' }}>
-                            توسيع سعة العمل ←
-                        </Link>
-                    </div>
-
-                    {/* ROI Section (Humanized) */}
-                    <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem', display: 'flex', gap: '3rem' }}>
-                        <div>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>القيمة المضافة (وقت):</p>
-                            <h4 style={{ fontSize: '1.1rem' }}>⏳ {Math.round((profile.credits_used * 5) / 60)} ساعة مستثمرة</h4>
-                        </div>
-                        <div>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>معيار الدقة المهنية:</p>
-                            <h4 style={{ fontSize: '1.1rem', color: 'var(--success)' }}>✨ 99.8%</h4>
-                        </div>
-                    </div>
+            {/* Header Area */}
+            <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+                <div>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>مركز القيادة العملياتية</h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>مرحباً بك مجدداً. إليك تفاصيل أداء كوادرك الرقمية اليوم.</p>
                 </div>
-            )}
+                <div className="flex gap-md" style={{ marginBottom: '0.5rem' }}>
+                    <button className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)', color: 'white' }} onClick={loadDashboardData}>
+                        🔄 تحديث البيانات
+                    </button>
+                    <button className="btn btn-primary" onClick={exportToExcel}>
+                        📊 تصدير التقارير
+                    </button>
+                </div>
+            </div>
 
-            {/* Executive Suite - CEO Command Center */}
-            <div className="card mb-2xl animate-fade-in" style={{
-                background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '2.5rem',
-                borderRadius: '32px',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: '0 25px 60px rgba(0,0,0,0.2)'
-            }}>
-                {/* Visual "Authority" Accent */}
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '6px', height: '100%', background: 'var(--accent)' }}></div>
-                <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '300px', height: '300px', background: 'var(--accent)', opacity: 0.05, borderRadius: '50%', filter: 'blur(80px)' }}></div>
+            <div className="grid" style={{ gridTemplateColumns: '1fr 1.5fr', gridAutoRows: 'auto' }}>
 
-                <div className="flex align-center justify-between" style={{ position: 'relative', zIndex: 1 }}>
-                    <div className="flex align-center gap-xl">
-                        <div style={{ position: 'relative' }}>
-                            <div style={{ width: '80px', height: '80px', background: 'linear-gradient(to bottom, #D4AF37, #AA8A2E)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', boxShadow: '0 10px 20px rgba(0,0,0,0.3)' }}>🤵‍♂️</div>
-                            <div style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'var(--accent)', color: 'var(--primary)', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.6rem', fontWeight: 900, border: '2px solid #0F172A' }}>CHIEF</div>
+                {/* Executive Command Bento Card */}
+                <div className="card shadow-premium" style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, #09090B 0%, #18181B 100%)', border: '1px solid var(--accent-border)' }}>
+                    <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                        <div style={{ padding: '1.5rem', background: 'var(--accent-soft)', borderRadius: '24px', border: '1px solid var(--accent-border)' }}>
+                            <span style={{ fontSize: '3rem' }}>🤵‍♂️</span>
                         </div>
                         <div>
                             <div className="flex align-center gap-sm mb-xs">
-                                <h3 style={{ color: 'white', fontSize: '1.75rem', fontWeight: 900, margin: 0 }}>مكتب المدير التنفيذي (CEO Suite)</h3>
-                                <span style={{ background: 'rgba(255,255,255,0.1)', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)' }}>وضع الصلاحيات الكاملة</span>
+                                <h2 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0 }}>مكتب المدير التنفيذي (CEO Suite)</h2>
+                                <span style={{ background: 'var(--accent)', color: 'black', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 900 }}>ENTERPRISE CLASS</span>
                             </div>
-                            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem', margin: 0, maxWidth: '700px', lineHeight: '1.7' }}>
-                                مرحباً أيها المالك. بصفتي <b>المدير التنفيذي الرقمي</b> لمنشأتك، أتولى هنا التحكم الكامل في العمليات، أتمتة جلب العملاء، وإصدار التقارير الاستراتيجية لـ <b>{profile?.business_name}</b>. "نورا" متوفرة في الأسفل لخدمة عملائك واستفساراتهم العامة.
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '800px', lineHeight: '1.6' }}>
+                                التحكم الكامل في العمليات، أتمتة جلب العملاء، وإصدار التقارير الاستراتيجية لـ <b>{profile?.business_name}</b>.
+                                <span style={{ color: 'white', display: 'block', marginTop: '0.5rem' }}>نظام "نورا" يعمل حالياً بكفاءة 100% في خدمة عملائك.</span>
                             </p>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Strategic Command Tools */}
-            <div className="section-header flex align-center gap-sm mb-xl">
-                <span style={{ fontSize: '1.5rem' }}>🛠️</span>
-                <h3 style={{ margin: 0, fontWeight: 900 }}>أدوات التحكم والنمو الاستراتيجي</h3>
-            </div>
-
-            <div className="grid grid-2 gap-xl mb-3xl">
-                <SalesLeadsManager />
-                <ExecutiveReports />
-            </div>
-
-            <div className="page-header">
-                <h2>{t('dashboardTitle')}</h2>
-                <p>{t('dashboardSubtitle')}</p>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="stats-grid">
-                <div className="stat-card primary">
-                    <div className="stat-value">{stats.tasksToday}</div>
-                    <div className="stat-label">{t('tasksCompleted')} (اليوم)</div>
-                </div>
-
-                <div className="stat-card success">
-                    <div className="stat-value">
-                        <span className="badge badge-success">
-                            <span className="status-dot"></span>
-                            {t(agentStatus)}
-                        </span>
-                    </div>
-                    <div className="stat-label">{t('agentStatus')}</div>
-                </div>
-
-                <div className="stat-card warning">
-                    <div className="stat-value" style={{ fontSize: '1.25rem' }}>
-                        {formatDate(lastUpdate)}
-                    </div>
-                    <div className="stat-label">{t('lastUpdate')}</div>
-                </div>
-            </div>
-
-            {/* Export Buttons */}
-            <div className="flex gap-md mb-lg">
-                <button className="btn btn-primary" onClick={exportToExcel}>
-                    📊 {t('exportExcel')}
-                </button>
-                <button className="btn btn-secondary" onClick={exportToCSV}>
-                    📄 {t('exportCSV')}
-                </button>
-                <button className="btn btn-secondary" onClick={loadDashboardData}>
-                    🔄 تحديث
-                </button>
-            </div>
-
-            {/* Tasks Table & Empty State */}
-            <div className="table-container">
-                {tasks.length === 0 ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '2rem', marginTop: '2rem' }}>
-                        <div className="card p-2xl" style={{ background: 'white', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-lg)', position: 'relative', overflow: 'hidden' }}>
-                            <div style={{ position: 'relative', zIndex: 2 }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🎯</div>
-                                <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>بانتظار المهمة الأولى</h3>
-                                <p className="text-secondary" style={{ marginBottom: '2rem', maxWidth: '400px' }}>
-                                    سيظهر هنا سجل العمليات التي يقوم بها موظفك الرقمي فور بدئه في استقبال طلبات عملائك.
-                                </p>
-                                <div style={{ padding: '1.25rem', background: 'var(--bg-main)', borderRadius: '16px', textAlign: 'right', border: '1px solid var(--border-light)' }}>
-                                    <p style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--primary)' }}>💡 كيف يبدأ العمل؟</p>
-                                    <ul style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', paddingRight: '1rem', lineHeight: '1.8' }}>
-                                        <li style={{ marginBottom: '0.5rem' }}>قم بإكمال إعدادات المنشأة بدقة لتدريب الموظف.</li>
-                                        <li style={{ marginBottom: '0.5rem' }}>أكمل المقابلة الوظيفية واعتمد التوظيف الرسمي.</li>
-                                        <li>اربط رقم الواتساب لتبدأ الكفاءة بالعمل فوراً.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            {/* Decorative soft element */}
-                            <div style={{ position: 'absolute', top: '-50px', left: '-50px', width: '200px', height: '200px', background: 'var(--accent-soft)', borderRadius: '50%', filter: 'blur(60px)', opacity: 0.3 }}></div>
+                {/* Usage Bento Card */}
+                <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <label className="label"><span>📊</span> طاقة العمل المخصصة</label>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <div className="flex justify-between align-end mb-sm">
+                            <span style={{ fontSize: '2.5rem', fontWeight: 900 }}>{Math.round((profile?.credits_used / profile?.total_credits) * 100)}%</span>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>{profile?.credits_used?.toLocaleString()} / {profile?.total_credits?.toLocaleString()} نقطة التزام</span>
                         </div>
-
-                        <div className="card" style={{ background: 'var(--primary)', padding: 0, borderRadius: 'var(--radius-lg)', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-lg)' }}>
-                            <div style={{ height: '200px', width: '100%', position: 'relative', background: '#1a1a1a' }}>
-                                <img
-                                    src="https://images.pexels.com/photos/5439444/pexels-photo-5439444.jpeg?auto=compress&cs=tinysrgb&w=800"
-                                    alt="Satisfied Client"
-                                    onLoad={() => setDashImgLoaded(true)}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        opacity: dashImgLoaded ? 0.7 : 0,
-                                        transition: 'opacity 0.5s ease'
-                                    }}
-                                />
-                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, var(--primary))' }}></div>
-                                {!dashImgLoaded && (
-                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <div className="loading-spinner"></div>
-                                    </div>
-                                )}
-                            </div>
-                            <div style={{ padding: '2rem', textAlign: 'center', marginTop: '-1rem', position: 'relative', zIndex: 2 }}>
-                                <h3 style={{ color: 'white', marginBottom: '1rem' }}>ابدأ قصة نجاحك</h3>
-                                <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '2rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                                    انضم لأكثر من 500 رائد أعمال استعادوا وقتهم الثمين من خلال توظيف كفاءاتنا الرقمية.
-                                </p>
-                                <Link to="/templates" className="btn" style={{ background: 'var(--accent)', color: 'var(--primary)', width: '100%', fontWeight: 800, padding: '1rem' }}>
-                                    تصفح المرشحين المتاحين ←
-                                </Link>
-                            </div>
+                        <div style={{ width: '100%', background: 'rgba(255,255,255,0.05)', height: '10px', borderRadius: '10px', overflow: 'hidden' }}>
+                            <div style={{
+                                width: `${Math.min(100, (profile?.credits_used / profile?.total_credits) * 100)}%`,
+                                height: '100%',
+                                background: 'var(--accent)',
+                                boxShadow: '0 0 15px var(--accent)',
+                                transition: 'width 2s cubic-bezier(0.1, 0, 0, 1)'
+                            }}></div>
                         </div>
                     </div>
-                ) : (
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>{t('taskType')}</th>
-                                <th>{t('taskData')}</th>
-                                <th>{t('completedAt')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {tasks.map((task) => (
-                                <tr key={task.id}>
-                                    <td>
-                                        <span className="badge badge-primary">
-                                            {task.task_type}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <details>
-                                            <summary style={{ cursor: 'pointer', color: 'var(--accent-blue)' }}>
-                                                عرض البيانات
-                                            </summary>
-                                            <pre style={{
-                                                marginTop: 'var(--spacing-sm)',
-                                                padding: 'var(--spacing-md)',
-                                                background: 'var(--bg-primary)',
-                                                borderRadius: 'var(--radius-md)',
-                                                fontSize: '0.875rem',
-                                                overflow: 'auto',
-                                                maxHeight: '300px'
-                                            }}>
-                                                {JSON.stringify(task.task_data, null, 2)}
-                                            </pre>
-                                        </details>
-                                    </td>
-                                    <td>{formatDate(task.completed_at)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
-
-            {/* Summary Stats */}
-            {tasks.length > 0 && (
-                <div className="card card-gradient mt-xl">
-                    <h3 className="mb-md">📈 ملخص الإحصائيات</h3>
-                    <div className="stats-grid">
+                    <div className="flex gap-xl">
                         <div>
-                            <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--accent-blue)' }}>
-                                {stats.totalTasks}
-                            </div>
-                            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                                إجمالي المهام
-                            </div>
+                            <p className="text-muted">الوقت المستثمر</p>
+                            <h4 style={{ color: 'white' }}>⏳ {Math.round((profile?.credits_used * 5) / 60)} ساعة</h4>
                         </div>
                         <div>
-                            <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--success-green)' }}>
-                                {stats.tasksThisWeek}
-                            </div>
-                            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                                مهام هذا الأسبوع
-                            </div>
-                        </div>
-                        <div>
-                            <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--warning-amber)' }}>
-                                {Object.keys(stats.tasksByType).length}
-                            </div>
-                            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                                أنواع المهام
-                            </div>
+                            <p className="text-muted">دقة الذكاء</p>
+                            <h4 style={{ color: 'var(--success)' }}>✨ 99.8%</h4>
                         </div>
                     </div>
                 </div>
-            )}
+
+                {/* Stats Grid Bento */}
+                <div className="grid grid-2" style={{ gap: '1.5rem' }}>
+                    <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <div className="stat-value" style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.25rem' }}>{stats.tasksToday}</div>
+                        <div className="text-muted">مهام تم إنجازها اليوم</div>
+                    </div>
+                    <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <div className="stat-value" style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.25rem', color: '#10B981' }}>{t(agentStatus)}</div>
+                        <div className="text-muted">حالة الموظف الرقمي</div>
+                    </div>
+                    <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gridColumn: 'span 2' }}>
+                        <div className="text-muted" style={{ marginBottom: '0.5rem' }}>آخر تحديث للنظام</div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white' }}>{formatDate(lastUpdate)}</div>
+                    </div>
+                </div>
+
+                {/* Integration Tools Section */}
+                <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
+                    <div className="flex align-center gap-sm mb-lg">
+                        <div style={{ width: '4px', height: '24px', background: 'var(--accent)', borderRadius: '2px' }}></div>
+                        <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.5rem' }}>أدوات النمو الاستراتيجي</h3>
+                    </div>
+                    <div className="grid grid-2">
+                        <SalesLeadsManager />
+                        <ExecutiveReports />
+                    </div>
+                </div>
+
+                {/* Activity Feed Bento Card */}
+                <div className="card" style={{ gridColumn: '1 / -1' }}>
+                    <h3 style={{ marginBottom: '1.5rem', fontWeight: 900 }}>سجل العمليات الأخير</h3>
+                    <div className="table-container" style={{ border: 'none', padding: 0 }}>
+                        {tasks.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+                                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎯</div>
+                                <h4 style={{ color: 'white' }}>بانتظار المهمة الأولى</h4>
+                                <p className="text-muted">سيبدأ ذكاء الموظف بالظهور هنا فور تفعيل رقم الواتساب.</p>
+                                <Link to="/setup" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>ضبط البروتوكول ←</Link>
+                            </div>
+                        ) : (
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-subtle)' }}>
+                                        <th style={{ textAlign: 'right', padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>نوع العملية</th>
+                                        <th style={{ textAlign: 'right', padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>البيانات الذكية</th>
+                                        <th style={{ textAlign: 'right', padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>طابع الوقت</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tasks.map((task) => (
+                                        <tr key={task.id} style={{ borderBottom: '1px solid var(--border-subtle)', transition: 'var(--transition)' }} className="hover-bg-glass">
+                                            <td style={{ padding: '1rem' }}>
+                                                <span style={{ background: 'var(--accent-soft)', color: 'var(--accent)', padding: '0.3rem 0.7rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700 }}>
+                                                    {task.task_type}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <details>
+                                                    <summary style={{ cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>معاينة المخرجات</summary>
+                                                    <pre style={{ marginTop: '1rem', padding: '1rem', background: 'black', borderRadius: '12px', fontSize: '0.8rem', color: '#10B981', border: '1px solid #10B98122' }}>
+                                                        {JSON.stringify(task.task_data, null, 2)}
+                                                    </pre>
+                                                </details>
+                                            </td>
+                                            <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{formatDate(task.completed_at)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

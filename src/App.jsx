@@ -13,29 +13,54 @@ import Login from './components/Login';
 import BusinessSetup from './components/BusinessSetup';
 import AdminDashboard from './components/AdminDashboard';
 import PlatformConcierge from './components/PlatformConcierge';
+import SalonSetup from './components/SalonSetup';
+import ModernDashboardLayout from './components/ModernDashboardLayout';
+import Bookings from './components/Bookings';
+import Customers from './components/Customers';
+import { useLocation } from 'react-router-dom';
+
 
 function App() {
     return (
         <LanguageProvider>
             <Router>
-                <div className="App">
-                    <Navbar />
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/admin" element={<AdminDashboard />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/setup" element={<BusinessSetup />} />
-                        <Route path="/templates" element={<AgentTemplates />} />
-                        <Route path="/pricing" element={<Pricing />} />
-                        <Route path="/custom-request" element={<CustomRequest />} />
-                        <Route path="/interview" element={<InterviewRoom />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/reports" element={<Reports />} />
-                    </Routes>
-                    <PlatformConcierge />
-                </div>
+                <AppContent />
             </Router>
         </LanguageProvider>
+    );
+}
+
+function AppContent() {
+    const location = useLocation();
+    // Routes that use the new Dashboard Layout
+    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/bookings', '/customers'];
+    const isDashboard = dashboardRoutes.includes(location.pathname);
+
+    return (
+        <div className="App">
+            {!isDashboard && <Navbar />}
+
+            <Routes>
+                {/* Public / Standard Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/custom-request" element={<CustomRequest />} />
+                <Route path="/interview" element={<InterviewRoom />} />
+                <Route path="/reports" element={<Reports />} />
+
+                {/* Dashboard Routes (Wrapped) */}
+                <Route path="/setup" element={<ModernDashboardLayout><BusinessSetup /></ModernDashboardLayout>} />
+                <Route path="/salon-setup" element={<ModernDashboardLayout><SalonSetup /></ModernDashboardLayout>} />
+                <Route path="/templates" element={<ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout>} />
+                <Route path="/pricing" element={<ModernDashboardLayout><Pricing /></ModernDashboardLayout>} />
+                <Route path="/dashboard" element={<ModernDashboardLayout><Dashboard /></ModernDashboardLayout>} />
+                <Route path="/bookings" element={<ModernDashboardLayout><Bookings /></ModernDashboardLayout>} />
+                <Route path="/customers" element={<ModernDashboardLayout><Customers /></ModernDashboardLayout>} />
+            </Routes>
+
+            <PlatformConcierge />
+        </div>
     );
 }
 

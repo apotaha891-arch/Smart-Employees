@@ -1,0 +1,253 @@
+{
+    "name": "Omni-Channel Salon Bot with Identity",
+    "nodes": [
+        {
+            "parameters": {
+                "updates": [
+                    "message"
+                ]
+            },
+            "id": "telegram-trigger",
+            "name": "Telegram Trigger",
+            "type": "n8n-nodes-base.telegramTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                0,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "id": "YOUR_INSTAGRAM_BUSINESS_ACCOUNT_ID",
+                "events": [
+                    "messages"
+                ]
+            },
+            "id": "instagram-trigger",
+            "name": "Instagram Trigger",
+            "type": "n8n-nodes-base.instagramTrigger",
+            "typeVersion": 1,
+            "position": [
+                0,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "whatsapp-webhook",
+                "responseMode": "onReceived"
+            },
+            "id": "whatsapp-webhook",
+            "name": "WhatsApp Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                0,
+                600
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Modular Data Normalization\n// This node converts inputs from different platforms into a standard format\n\nconst items = $input.all();\nconst nodeName = $node.name;\n\nlet platform = '';\nlet identityValue = '';\nlet userMessage = '';\nlet chatId = '';\n\nif (nodeName === 'Telegram Trigger') {\n  platform = 'telegram';\n  identityValue = items[0].json.message.from.id.toString();\n  userMessage = items[0].json.message.text;\n  chatId = items[0].json.message.chat.id;\n} else if (nodeName === 'Instagram Trigger') {\n  platform = 'instagram';\n  identityValue = items[0].json.sender.id;\n  userMessage = items[0].json.message.text;\n  chatId = items[0].json.sender.id;\n} else if (nodeName === 'WhatsApp Webhook') {\n  platform = 'phone';\n  // Assuming standard WhatsApp Business API payload\n  identityValue = items[0].json.contacts[0].wa_id;\n  userMessage = items[0].json.messages[0].text.body;\n  chatId = items[0].json.contacts[0].wa_id;\n}\n\nreturn [{\n  json: {\n    platform,\n    identityValue,\n    userMessage,\n    chatId\n  }\n}];"
+            },
+            "id": "data-mapper",
+            "name": "Data Mapper",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                250,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "tableId": "salon_configs",
+                "returnAll": false,
+                "limit": 1,
+                "filterType": "manual",
+                "matchType": "allFilters",
+                "filters": {
+                    "conditions": [
+                        {
+                            "keyName": "is_active",
+                            "condition": "equals",
+                            "keyValue": "true"
+                        }
+                    ]
+                }
+            },
+            "id": "get-salon-config",
+            "name": "Get Salon Config",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                450,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "tableId": "customers",
+                "returnAll": false,
+                "limit": 1,
+                "filterType": "manual",
+                "matchType": "allFilters",
+                "filters": {
+                    "conditions": [
+                        {
+                            "keyName": "salon_config_id",
+                            "condition": "equals",
+                            "keyValue": "={{ $('Get Salon Config').item.json.id }}"
+                        },
+                        {
+                            "keyName": "={{ $('Data Mapper').item.json.platform === 'phone' ? 'customer_phone' : $('Data Mapper').item.json.platform + '_id' }}",
+                            "condition": "equals",
+                            "keyValue": "={{ $('Data Mapper').item.json.identityValue }}"
+                        }
+                    ]
+                }
+            },
+            "id": "identity-verification",
+            "name": "Identity Verification",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                650,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "tableId": "salon_services",
+                "returnAll": true,
+                "filterType": "manual",
+                "matchType": "allFilters",
+                "filters": {
+                    "conditions": [
+                        {
+                            "keyName": "salon_config_id",
+                            "condition": "equals",
+                            "keyValue": "={{ $('Get Salon Config').item.json.id }}"
+                        }
+                    ]
+                }
+            },
+            "id": "get-services",
+            "name": "Get Services",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                850,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "key",
+                            "value": "YOUR_GEMINI_API_KEY"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "jsonBody": "={\n  \"contents\": [{\n    \"role\": \"user\",\n    \"parts\": [{\n      \"text\": \"{{ $('Data Mapper').item.json.userMessage }}\"\n    }]\n  }],\n  \"systemInstruction\": {\n    \"parts\": [{\n      \"text\": \"أنتِ مساعدة ذكية لمشغل نسائي. إليكِ بيانات الزبونة الحالية المسترجعة من قاعدة بياناتنا:\\n\\n- الاسم: {{ $('Identity Verification').first()?.json?.customer_name || 'غير معروف' }}\\n- حالة الزبونة: {{ $('Identity Verification').first() ? 'قديمة' : 'جديدة' }}\\n- آخر زيارة: {{ $('Identity Verification').first()?.json?.last_service_date || 'لا يوجد' }}\\n\\nالخدمات المتاحة:\\n{{ $('Get Services').all().map(s => '- ' + s.json.service_name + ': ' + s.json.price + ' ريال').join('\\\\n') }}\\n\\nالتعليمات:\\n1. إذا كان الاسم 'غير معروف'، رحبي بها كزبونة جديدة واسأليها بلطف عن اسمها لنسجله لدينا.\\n2. إذا كان الاسم معروفاً، خاطبيها به فوراً (مثال: أهلاً بكِ مجدداً يا نورة).\\n3. ساعديها في حجز موعد من الجدول المتاح.\\n4. الهوية الحالية على منصة: {{ $('Data Mapper').item.json.platform }}.\\n\\nعند تأكيد الحجز، استخدمي [BOOKING]...[/BOOKING]\"\n    }]\n  }\n}"
+            },
+            "id": "gemini-chat",
+            "name": "Gemini Chat",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1050,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Telegram Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Data Mapper",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Instagram Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Data Mapper",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "WhatsApp Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Data Mapper",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Data Mapper": {
+            "main": [
+                [
+                    {
+                        "node": "Get Salon Config",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Salon Config": {
+            "main": [
+                [
+                    {
+                        "node": "Identity Verification",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Identity Verification": {
+            "main": [
+                [
+                    {
+                        "node": "Get Services",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Services": {
+            "main": [
+                [
+                    {
+                        "node": "Gemini Chat",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

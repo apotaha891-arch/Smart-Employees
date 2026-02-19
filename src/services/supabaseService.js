@@ -86,6 +86,7 @@ export const createAgent = async (agentData) => {
                     name: agentData.name || 'AI Agent',
                     specialty: agentData.specialty || 'General',
                     status: 'active',
+                    cost_per_request: agentData.costPerMessage || 1, // Store the cost
                 }
             ])
             .select()
@@ -403,7 +404,7 @@ export const getProfile = async (userId) => {
             .from('profiles')
             .select('*')
             .eq('id', userId)
-            .single();
+            .maybeSingle(); // Use maybeSingle to avoid 406 error on missing row
 
         if (error) throw error;
         return { success: true, data };
@@ -412,24 +413,44 @@ export const getProfile = async (userId) => {
     }
 };
 
-export const checkAndDeductCredit = async (userId) => {
+export const checkAndDeductCredit = async (userId, cost = 1) => {
     try {
+        // 1. Try to get existing profile
         const { data: profile, error: getError } = await supabase
             .from('profiles')
             .select('subscription_tier, total_credits, credits_used')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
 
         if (getError) throw getError;
 
-        // Enterprise has unlimited credits
-        if (profile.subscription_tier === 'enterprise') {
+        let activeProfile = profile;
+
+        // 2. If no profile exists, create a default one
+        if (!profile) {
+            const { data: newProfile, error: createError } = await supabase
+                .from('profiles')
+                .insert([{
+                    id: userId,
+                    subscription_tier: 'trial',
+                    total_credits: 50,
+                    credits_used: 0
+                }])
+                .select()
+                .single();
+
+            if (createError) throw createError;
+            activeProfile = newProfile;
+        }
+
+        // 3. Enterprise has unlimited credits
+        if (activeProfile.subscription_tier === 'enterprise') {
             return { success: true, remaining: Infinity };
         }
 
-        const remaining = (profile.total_credits || 0) - (profile.credits_used || 0);
+        const remaining = (activeProfile.total_credits || 0) - (activeProfile.credits_used || 0);
 
-        if (remaining <= 0) {
+        if (remaining < cost) {
             return {
                 success: false,
                 error: 'لقد انتهى رصيد الموظف الرقمي. يرجى تجديد العقد لمواصلة العمل.',
@@ -437,19 +458,19 @@ export const checkAndDeductCredit = async (userId) => {
             };
         }
 
+        // 4. Deduct credit
         const { error: updateError } = await supabase
             .from('profiles')
-            .update({ credits_used: (profile.credits_used || 0) + 1 })
+            .update({ credits_used: (activeProfile.credits_used || 0) + cost })
             .eq('id', userId);
-
-        if (updateError) throw updateError;
 
         return {
             success: true,
-            remaining: remaining - 1,
-            isLow: (remaining - 1) <= 5
+            remaining: remaining - cost,
+            isLow: (remaining - cost) <= 5
         };
     } catch (error) {
+        console.error('Credit Check Error:', error);
         return { success: false, error: error.message };
     }
 };
@@ -467,6 +488,304 @@ export const submitCustomRequest = async (requestData) => {
         if (error) throw error;
         return { success: true, data };
     } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+// ==================== SALON SETUP & N8N INTEGRATION ====================
+
+export const saveSalonConfig = async (config) => {
+    try {
+        const { data, error } = await supabase
+            .from('salon_configs')
+            .upsert([config])
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Save Salon Config Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const activateSalonAgent = async (salonId, calendarToken) => {
+    try {
+        // 1. Update status in DB
+        const { error } = await supabase
+            .from('salon_configs')
+            .update({
+                is_active: true,
+                google_calendar_token: calendarToken
+            })
+            .eq('id', salonId);
+
+        if (error) throw error;
+
+        // 2. Trigger n8n Webhook
+        const N8N_WEBHOOK_URL = 'https://primary-production-4375.up.railway.app/webhook/activate-salon';
+
+        const response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                salon_id: salonId,
+                google_calendar_token: calendarToken
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`n8n Trigger Failed: ${response.statusText}`);
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Activation Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// ==================== SERVICES MANAGEMENT ====================
+
+export const getServices = async (salonConfigId) => {
+    try {
+        const { data, error } = await supabase
+            .from('salon_services')
+            .select('*')
+            .eq('salon_config_id', salonConfigId)
+            .eq('is_active', true)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Get Services Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const addService = async (serviceData) => {
+    try {
+        const { data, error } = await supabase
+            .from('salon_services')
+            .insert([serviceData])
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Add Service Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const updateService = async (serviceId, updates) => {
+    try {
+        const { data, error } = await supabase
+            .from('salon_services')
+            .update({ ...updates, updated_at: new Date().toISOString() })
+            .eq('id', serviceId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Update Service Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const deleteService = async (serviceId) => {
+    try {
+        // Soft delete by setting is_active to false
+        const { error } = await supabase
+            .from('salon_services')
+            .update({ is_active: false })
+            .eq('id', serviceId);
+
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('Delete Service Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// ==================== CUSTOMERS MANAGEMENT ====================
+
+export const getCustomers = async (salonConfigId) => {
+    try {
+        const { data, error } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('salon_config_id', salonConfigId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Get Customers Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const upsertCustomer = async (customerData) => {
+    try {
+        const { data, error } = await supabase
+            .from('customers')
+            .upsert(customerData)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Upsert Customer Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const searchCustomerByIdentity = async (salonConfigId, platform, identityValue) => {
+    try {
+        let query = supabase
+            .from('customers')
+            .select('*')
+            .eq('salon_config_id', salonConfigId);
+
+        if (platform === 'phone') {
+            query = query.eq('customer_phone', identityValue);
+        } else if (platform === 'instagram') {
+            query = query.eq('instagram_id', identityValue);
+        } else if (platform === 'telegram') {
+            query = query.eq('telegram_id', identityValue);
+        }
+
+        const { data, error } = await query.maybeSingle();
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Search Customer Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// ==================== BOOKINGS MANAGEMENT ====================
+
+export const getBookings = async (salonConfigId, filters = {}) => {
+    try {
+        let query = supabase
+            .from('bookings')
+            .select(`
+                *,
+                service:salon_services(service_name, price, duration_minutes)
+            `)
+            .eq('salon_config_id', salonConfigId)
+            .order('booking_date', { ascending: true })
+            .order('booking_time', { ascending: true });
+
+        // Apply filters
+        if (filters.status) {
+            query = query.eq('status', filters.status);
+        }
+        if (filters.date) {
+            query = query.eq('booking_date', filters.date);
+        }
+        if (filters.phone) {
+            query = query.ilike('customer_phone', `%${filters.phone}%`);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Get Bookings Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const getAvailableSlots = async (salonConfigId, date) => {
+    try {
+        // Get all bookings for the specified date
+        const { data: bookings, error } = await supabase
+            .from('bookings')
+            .select('booking_time, duration_minutes')
+            .eq('salon_config_id', salonConfigId)
+            .eq('booking_date', date)
+            .in('status', ['pending', 'confirmed']);
+
+        if (error) throw error;
+
+        // Get salon working hours
+        const { data: salonConfig } = await supabase
+            .from('salon_configs')
+            .select('working_hours')
+            .eq('id', salonConfigId)
+            .single();
+
+        // Generate available slots
+        const workingHours = salonConfig?.working_hours || { start: '10:00', end: '22:00' };
+        const bookedSlots = bookings.map(b => b.booking_time);
+
+        return { success: true, data: { workingHours, bookedSlots } };
+    } catch (error) {
+        console.error('Get Available Slots Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const createBooking = async (bookingData) => {
+    try {
+        const { data, error } = await supabase
+            .from('bookings')
+            .insert([bookingData])
+            .select(`
+                *,
+                service:salon_services(service_name, price)
+            `)
+            .single();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Create Booking Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const updateBooking = async (bookingId, updates) => {
+    try {
+        const { data, error } = await supabase
+            .from('bookings')
+            .update({ ...updates, updated_at: new Date().toISOString() })
+            .eq('id', bookingId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Update Booking Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const cancelBooking = async (bookingId) => {
+    try {
+        const { data, error } = await supabase
+            .from('bookings')
+            .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+            .eq('id', bookingId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Cancel Booking Error:', error);
         return { success: false, error: error.message };
     }
 };
