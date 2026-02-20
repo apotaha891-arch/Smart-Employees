@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../LanguageContext';
 import { getBookings, updateBooking, cancelBooking, getCurrentUser, supabase } from '../services/supabaseService';
 import { Calendar, Clock, User, Phone, CheckCircle, XCircle, AlertCircle, Filter } from 'lucide-react';
 
 const Bookings = () => {
+    const { t } = useLanguage();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [salonConfigId, setSalonConfigId] = useState(null);
@@ -26,7 +28,7 @@ const Bookings = () => {
         try {
             const { user } = await getCurrentUser();
             if (!user) {
-                alert('يرجى تسجيل الدخول أولاً');
+                alert(t('mustLogin'));
                 return;
             }
 
@@ -46,7 +48,7 @@ const Bookings = () => {
             if (configs) {
                 setSalonConfigId(configs.id);
             } else {
-                alert('يرجى إكمال إعداد المنشأة أولاً');
+                alert(t('completeSetup'));
             }
         } catch (error) {
             console.error('Error loading user:', error);
@@ -59,7 +61,7 @@ const Bookings = () => {
         if (result.success) {
             setBookings(result.data || []);
         } else {
-            alert('فشل في تحميل الحجوزات: ' + result.error);
+            alert(t('failedLoadBookings') + result.error);
         }
         setLoading(false);
     };
@@ -69,27 +71,27 @@ const Bookings = () => {
         if (result.success) {
             loadBookings();
         } else {
-            alert('فشل في تحديث الحالة: ' + result.error);
+            alert(t('failedUpdateStatus') + result.error);
         }
     };
 
     const handleCancelBooking = async (bookingId) => {
-        if (!confirm('هل أنت متأكد من إلغاء هذا الحجز؟')) return;
+        if (!confirm(t('confirmDeleteCustomer'))) return;
 
         const result = await cancelBooking(bookingId);
         if (result.success) {
             loadBookings();
         } else {
-            alert('فشل في إلغاء الحجز: ' + result.error);
+            alert(t('failedCancelBooking') + result.error);
         }
     };
 
     const getStatusBadge = (status) => {
         const statusConfig = {
-            pending: { color: '#F59E0B', icon: AlertCircle, label: 'قيد الانتظار' },
-            confirmed: { color: '#3B82F6', icon: CheckCircle, label: 'مؤكد' },
-            completed: { color: '#10B981', icon: CheckCircle, label: 'مكتمل' },
-            cancelled: { color: '#EF4444', icon: XCircle, label: 'ملغي' }
+            pending: { color: '#F59E0B', icon: AlertCircle, label: t('pendingStatus') },
+            confirmed: { color: '#3B82F6', icon: CheckCircle, label: t('confirmedStatus') },
+            completed: { color: '#10B981', icon: CheckCircle, label: t('completedStatus') },
+            cancelled: { color: '#EF4444', icon: XCircle, label: t('cancelledStatus') }
         };
 
         const config = statusConfig[status] || statusConfig.pending;
@@ -118,8 +120,8 @@ const Bookings = () => {
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
                 {/* Header */}
                 <div style={{ marginBottom: '2rem' }}>
-                    <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>إدارة الحجوزات</h1>
-                    <p style={{ color: '#9CA3AF' }}>عرض وإدارة جميع حجوزات العملاء</p>
+                    <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>{t('bookingsTitle')}</h1>
+                    <p style={{ color: '#9CA3AF' }}>{t('bookingsSubtitle')}</p>
                 </div>
 
                 {/* Filters */}
@@ -136,7 +138,7 @@ const Bookings = () => {
                     <div>
                         <label style={{ display: 'block', marginBottom: '0.5rem', color: '#9CA3AF', fontSize: '0.9rem' }}>
                             <Filter size={16} style={{ display: 'inline', marginLeft: '6px' }} />
-                            الحالة
+                            {t('statusLabel')}
                         </label>
                         <select
                             value={filters.status}
@@ -150,17 +152,17 @@ const Bookings = () => {
                                 color: 'white'
                             }}
                         >
-                            <option value="">الكل</option>
-                            <option value="pending">قيد الانتظار</option>
-                            <option value="confirmed">مؤكد</option>
-                            <option value="completed">مكتمل</option>
-                            <option value="cancelled">ملغي</option>
+                            <option value="" style={{ color: 'white', background: '#1F2937' }}>{t('allStatus')}</option>
+                            <option value="pending" style={{ color: 'white', background: '#1F2937' }}>{t('pendingStatus')}</option>
+                            <option value="confirmed" style={{ color: 'white', background: '#1F2937' }}>{t('confirmedStatus')}</option>
+                            <option value="completed" style={{ color: 'white', background: '#1F2937' }}>{t('completedStatus')}</option>
+                            <option value="cancelled" style={{ color: 'white', background: '#1F2937' }}>{t('cancelledStatus')}</option>
                         </select>
                     </div>
                     <div>
                         <label style={{ display: 'block', marginBottom: '0.5rem', color: '#9CA3AF', fontSize: '0.9rem' }}>
                             <Calendar size={16} style={{ display: 'inline', marginLeft: '6px' }} />
-                            التاريخ
+                            {t('dateLabel')}
                         </label>
                         <input
                             type="date"
@@ -179,11 +181,11 @@ const Bookings = () => {
                     <div>
                         <label style={{ display: 'block', marginBottom: '0.5rem', color: '#9CA3AF', fontSize: '0.9rem' }}>
                             <Phone size={16} style={{ display: 'inline', marginLeft: '6px' }} />
-                            رقم الهاتف
+                            {t('phoneLabel')}
                         </label>
                         <input
                             type="text"
-                            placeholder="بحث برقم الهاتف..."
+                            placeholder={t('phoneSearch')}
                             value={filters.phone}
                             onChange={(e) => setFilters({ ...filters, phone: e.target.value })}
                             style={{
@@ -201,20 +203,20 @@ const Bookings = () => {
                 {/* Bookings Table */}
                 <div style={{ background: '#111827', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
                     {loading ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF' }}>جاري التحميل...</div>
+                        <div style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF' }}>{t('loading')}</div>
                     ) : bookings.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF' }}>لا توجد حجوزات</div>
+                        <div style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF' }}>{t('noBookings')}</div>
                     ) : (
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ background: '#1F2937', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>العميل</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>الخدمة</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>التاريخ</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>الوقت</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>المدة</th>
-                                    <th style={{ padding: '1rem', textAlign: 'center', color: '#9CA3AF', fontWeight: 600 }}>الحالة</th>
-                                    <th style={{ padding: '1rem', textAlign: 'center', color: '#9CA3AF', fontWeight: 600 }}>الإجراءات</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('clientLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('serviceLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('dateLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('timeLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('durationLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', color: '#9CA3AF', fontWeight: 600 }}>{t('statusLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', color: '#9CA3AF', fontWeight: 600 }}>{t('actionsLabel')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -229,7 +231,7 @@ const Bookings = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '1rem' }}>{booking.service?.service_name || 'غير محدد'}</td>
+                                        <td style={{ padding: '1rem' }}>{booking.service?.service_name || t('notSpecified')}</td>
                                         <td style={{ padding: '1rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <Calendar size={14} color="#9CA3AF" />
@@ -242,7 +244,7 @@ const Bookings = () => {
                                                 {booking.booking_time}
                                             </div>
                                         </td>
-                                        <td style={{ padding: '1rem' }}>{booking.duration_minutes} دقيقة</td>
+                                        <td style={{ padding: '1rem' }}>{booking.duration_minutes} {t('minutes')}</td>
                                         <td style={{ padding: '1rem', textAlign: 'center' }}>
                                             {getStatusBadge(booking.status)}
                                         </td>
@@ -262,7 +264,7 @@ const Bookings = () => {
                                                             fontSize: '0.85rem'
                                                         }}
                                                     >
-                                                        تأكيد
+                                                        {t('confirmBooking')}
                                                     </button>
                                                     <button
                                                         onClick={() => handleCancelBooking(booking.id)}
@@ -276,7 +278,7 @@ const Bookings = () => {
                                                             fontSize: '0.85rem'
                                                         }}
                                                     >
-                                                        إلغاء
+                                                        {t('cancelBooking')}
                                                     </button>
                                                 </>
                                             )}
@@ -293,7 +295,7 @@ const Bookings = () => {
                                                         fontSize: '0.85rem'
                                                     }}
                                                 >
-                                                    إكمال
+                                                    {t('completeBooking')}
                                                 </button>
                                             )}
                                         </td>

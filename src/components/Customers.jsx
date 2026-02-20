@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../LanguageContext';
 import { Users, Plus, Download, Filter } from 'lucide-react';
 import { supabase, getCustomers, upsertCustomer } from '../services/supabaseService';
 import CustomersTable from './CustomersTable';
 
 const Customers = () => {
+    const { t } = useLanguage();
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [salonConfigId, setSalonConfigId] = useState(null);
@@ -19,7 +21,7 @@ const Customers = () => {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                setError('يجب تسجيل الدخول أولاً');
+                setError(t('mustLogin'));
                 setLoading(false);
                 return;
             }
@@ -40,11 +42,11 @@ const Customers = () => {
                 if (customersError) throw customersError;
                 setCustomers(customersData || []);
             } else {
-                setError('يرجى إكمال إعداد المنشأة أولاً');
+                setError(t('completeSetup'));
             }
         } catch (err) {
             console.error('Error fetching customers:', err);
-            setError('فشل في تحميل البيانات');
+            setError(t('failedLoadData'));
         } finally {
             setLoading(false);
         }
@@ -58,12 +60,12 @@ const Customers = () => {
             setCustomers(customers.map(c => c.id === id ? data : c));
         } catch (err) {
             console.error('Error updating customer:', err);
-            alert('فشل في تحديث بيانات الزبونة');
+            alert(t('failedUpdateCustomer'));
         }
     };
 
     const handleDeleteCustomer = async (id) => {
-        if (!window.confirm('هل أنت متأكد من حذف سجل هذه الزبونة؟')) return;
+        if (!window.confirm(t('confirmDeleteCustomer'))) return;
 
         try {
             const { error } = await supabase
@@ -75,14 +77,14 @@ const Customers = () => {
             setCustomers(customers.filter(c => c.id !== id));
         } catch (err) {
             console.error('Error deleting customer:', err);
-            alert('فشل في حذف السجل');
+            alert(t('failedDeleteRecord'));
         }
     };
 
     if (loading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#9CA3AF' }}>
-                جاري التحميل...
+                {t('loading')}
             </div>
         );
     }
@@ -110,8 +112,8 @@ const Customers = () => {
                         <Users size={24} />
                     </div>
                     <div>
-                        <h1 style={{ color: 'white', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>نظام الهوية الموحدة</h1>
-                        <p style={{ color: '#9CA3AF', fontSize: '0.9rem', margin: '4px 0 0 0' }}>إدارة سجلات الزبائن وتوحيد الهويات عبر المنصات</p>
+                        <h1 style={{ color: 'white', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>{t('customersTitle')}</h1>
+                        <p style={{ color: '#9CA3AF', fontSize: '0.9rem', margin: '4px 0 0 0' }}>{t('customersSubtitle')}</p>
                     </div>
                 </div>
 
@@ -124,7 +126,7 @@ const Customers = () => {
                         cursor: 'pointer', fontSize: '0.9rem'
                     }}>
                         <Download size={18} />
-                        تصدير البيانات
+                        {t('exportData')}
                     </button>
                     <button style={{
                         background: '#8B5CF6', color: 'white', border: 'none',
@@ -133,7 +135,7 @@ const Customers = () => {
                         cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem'
                     }}>
                         <Plus size={18} />
-                        إضافة زبونة
+                        {t('addCustomer')}
                     </button>
                 </div>
             </div>
@@ -141,15 +143,15 @@ const Customers = () => {
             {/* Stats Summary (Optional) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
                 <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>إجمالي الزبائن</div>
+                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>{t('totalCustomers')}</div>
                     <div style={{ color: 'white', fontSize: '1.8rem', fontWeight: 700 }}>{customers.length}</div>
                 </div>
                 <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>نشط عبر واتساب</div>
+                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>{t('activeWhatsapp')}</div>
                     <div style={{ color: '#10B981', fontSize: '1.8rem', fontWeight: 700 }}>{customers.filter(c => c.customer_phone).length}</div>
                 </div>
                 <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>نشط عبر إنستقرام</div>
+                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>{t('activeInstagram')}</div>
                     <div style={{ color: '#EC4899', fontSize: '1.8rem', fontWeight: 700 }}>{customers.filter(c => c.instagram_id).length}</div>
                 </div>
             </div>

@@ -53,6 +53,8 @@
 
 body {
   background-color: #0F0F1E;
+  direction: ltr;
+  text-align: left;
   background-image:
     /* Main gradient background */
     linear-gradient(135deg, #0F0F1E 0%, #1a0f2e 25%, #0a1a2e 50%, #0f0f1e 75%, #0F0F1E 100%),
@@ -699,4 +701,83 @@ body {
   border-color: #8B5CF6;
   background: #1E1E22;
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* RTL/LTR Direction Handling */
+html[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Flexbox direction handling for RTL */
+html[dir="rtl"] .flex {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .justify-start {
+  justify-content: flex-end;
+}
+
+html[dir="rtl"] .justify-end {
+  justify-content: flex-start;
+}
+
+html[dir="rtl"] .items-start {
+  align-items: flex-end;
+}
+
+html[dir="rtl"] .items-end {
+  align-items: flex-start;
+}
+
+/* Text alignment for RTL */
+html[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+html[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+html[dir="rtl"] .text-center {
+  text-align: center;
+}
+
+/* Grid and container adjustments */
+html[dir="rtl"] .container {
+  direction: rtl;
+}
+
+html[dir="rtl"] .grid {
+  direction: rtl;
+}
+
+/* Navigation adjustments */
+html[dir="rtl"] .navbar .nav-content {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .nav-logo {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+html[dir="rtl"] .nav-links {
+  flex-direction: row-reverse;
+}
+
+/* Ensure buttons and links work properly in RTL */
+html[dir="rtl"] button,
+html[dir="rtl"] a {
+  direction: rtl;
+}
+
+/* RTL button margins and spacing */
+html[dir="rtl"] button {
+  margin-right: 0;
 }

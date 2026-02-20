@@ -207,7 +207,7 @@ const AgentTemplates = () => {
                 {/* Agent Cadres */}
                 <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                     <h3 className="mb-xl" style={{ borderBottom: '2px solid #8B5CF6', display: 'inline-block', paddingBottom: '0.5rem', fontSize: '1.25rem' }}>
-                        {industry === 'general' ? 'قاعدة بيانات الكوادر المتاحة' : `الكوادر الموصى بها لقطاعك ✨`}
+                        {industry === 'general' ? 'قاعدة بيانات الكوادر المتاحة' : `الكوادر الموصى بها لقطاعك`}
                     </h3>
 
                     <div className="n8n-card-grid">
@@ -223,7 +223,7 @@ const AgentTemplates = () => {
                                     <div className="n8n-chip">{template.icon}</div>
                                     {template.services?.slice(0, 3).map((s, idx) => (
                                         <div key={idx} className="n8n-chip" style={{ fontSize: '0.8rem' }}>
-                                            {s.includes('بحث') ? '🌐' : s.includes('حجز') || s.includes('حشوات') ? '🦷' : '📄'}
+                                            {s}
                                         </div>
                                     ))}
                                 </div>

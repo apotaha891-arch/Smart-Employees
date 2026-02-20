@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import translations from './i18n';
+import { translations } from './translations';
 
 const LanguageContext = createContext();
 
@@ -53,9 +53,13 @@ export const LanguageProvider = ({ children }) => {
         if (language === 'ar') {
             html.setAttribute('lang', 'ar');
             html.setAttribute('dir', 'rtl');
+            document.body.style.direction = 'rtl';
+            document.body.style.textAlign = 'right';
         } else {
             html.setAttribute('lang', 'en');
             html.setAttribute('dir', 'ltr');
+            document.body.style.direction = 'ltr';
+            document.body.style.textAlign = 'left';
         }
     }, [language]);
 

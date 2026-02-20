@@ -38,22 +38,34 @@ const SalonSetup = () => {
     useEffect(() => {
         const updatePreview = () => {
             const tones = {
-                friendly: "يا هلا! 🌸 نورتي المشغل. أنا هنا عشان أنسق لك أحلى موعد.",
-                professional: "مرحباً بك. يسعدني مساعدتك في حجز خدماتنا المتميزة.",
-                bubbly: "أهلاً يا جميلة! ✨ مستعدة للدلال؟ قولي لي إيش بخاطرك اليوم!"
+                friendly: t('toneFriendlyGreeting'),
+                professional: t('toneProfessionalGreeting'),
+                bubbly: t('toneBubblyGreeting')
             };
+
+            const specialty = formData.specialty === 'شامل' || formData.specialty === 'Comprehensive Beauty' 
+                ? t('comprehensiveBeautyText')
+                : `${t('specialtyPrefixText')}${formData.specialty}`;
+
+            const agentIntro = t('agentIntroText')
+                .replace('{{name}}', formData.agentName)
+                .replace('{{specialty}}', specialty);
+
+            const workingHours = t('workingHoursText')
+                .replace('{{start}}', formData.workingHours.start)
+                .replace('{{end}}', formData.workingHours.end);
 
             const initialMsg = `
 ${tones[formData.tone] || tones.friendly}
-أنا ${formData.agentName}، مساعدتك الشخصية في ${formData.specialty === 'شامل' ? 'كل خدمات التجميل' : 'قسم ' + formData.specialty}.
-ساعات دوامنا من ${formData.workingHours.start} إلى ${formData.workingHours.end}.
-كيف أقدر أساعدك؟ 💅
+${agentIntro}
+${workingHours}
+${t('helpQuestion')}
             `;
 
             setMessages([{ role: 'agent', content: initialMsg, time: 'Now' }]);
         };
         updatePreview();
-    }, [formData]);
+    }, [formData, t]);
 
     // Load services when salon config is available
     useEffect(() => {
@@ -71,7 +83,7 @@ ${tones[formData.tone] || tones.friendly}
 
     const handleAddService = async () => {
         if (!newService.service_name || !newService.price || !newService.duration_minutes) {
-            alert('يرجى ملء جميع الحقول');
+            alert(t('fillAllFields'));
             return;
         }
 
@@ -84,7 +96,7 @@ ${tones[formData.tone] || tones.friendly}
             setServices([...services, result.data]);
             setNewService({ service_name: '', price: '', duration_minutes: '' });
         } else {
-            alert('فشل في إضافة الخدمة: ' + result.error);
+            alert(t('failedAddService') + result.error);
         }
     };
 
@@ -99,13 +111,13 @@ ${tones[formData.tone] || tones.friendly}
     };
 
     const handleDeleteService = async (serviceId) => {
-        if (!confirm('هل أنت متأكد من حذف هذه الخدمة؟')) return;
+        if (!confirm(t('confirmDeleteService'))) return;
 
         const result = await deleteService(serviceId);
         if (result.success) {
             setServices(services.filter(s => s.id !== serviceId));
         } else {
-            alert('فشل في حذف الخدمة: ' + result.error);
+            alert(t('failedDeleteService') + result.error);
         }
     };
 
@@ -129,7 +141,7 @@ ${tones[formData.tone] || tones.friendly}
             const activationResult = await activateSalonAgent(configResult.data.id, 'mock_token');
             if (!activationResult.success) throw new Error(activationResult.error);
 
-            alert('تم حفظ الإعدادات بنجاح! 🚀');
+            alert(t('settingsSavedSuccess'));
             setLoading(false);
         } catch (error) {
             console.error(error);
@@ -155,10 +167,10 @@ ${tones[formData.tone] || tones.friendly}
         <div className="fade-in">
             {/* Top Stats Row */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                <StatCard icon={Activity} label="سير العمل النشط" value="1" color="#8B5CF6" />
-                <StatCard icon={Users} label="الموظفين النشطين" value="2" color="#10B981" />
-                <StatCard icon={MessageCircle} label="إجمالي الرسائل" value="1,240" color="#3B82F6" />
-                <StatCard icon={CreditCard} label="الرصيد المتبقي" value="450" color="#F59E0B" />
+                <StatCard icon={Activity} label={t('activeWorkflow')} value="1" color="#8B5CF6" />
+                <StatCard icon={Users} label={t('activeEmployees')} value="2" color="#10B981" />
+                <StatCard icon={MessageCircle} label={t('totalMessages')} value="1,240" color="#3B82F6" />
+                <StatCard icon={CreditCard} label={t('remainingCredit')} value="450" color="#F59E0B" />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', alignItems: 'start' }}>
@@ -169,12 +181,12 @@ ${tones[formData.tone] || tones.friendly}
                     {/* Placeholder Chart Area */}
                     <div style={{ background: '#111827', padding: '2rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
                         <div style={{ width: '100%', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                            <h3 style={{ fontSize: '1.1rem' }}>إحصائيات الرسائل</h3>
-                            <select style={{ background: '#1F2937', border: 'none', color: '#9CA3AF', padding: '5px 10px', borderRadius: '8px' }}>
-                                <option>آخر 7 أيام</option>
+                            <h3 style={{ fontSize: '1.1rem' }}>{t('messageStatistics')}</h3>
+                            <select style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}>
+                                <option style={{ color: 'white', background: '#1F2937' }}>{t('lastDays')}</option>
                             </select>
                         </div>
-                        <div style={{ color: '#4B5563', fontSize: '0.9rem' }}>[Area Chart Placeholder: Incoming vs Outgoing Messages]</div>
+                        <div style={{ color: '#4B5563', fontSize: '0.9rem' }}>{t('chartPlaceholder')}</div>
                     </div>
 
                     {/* Settings Panel */}
@@ -182,9 +194,9 @@ ${tones[formData.tone] || tones.friendly}
                         {/* Tabs */}
                         <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                             {[
-                                { id: 'identity', label: 'الهوية', icon: User },
-                                { id: 'knowledge', label: 'المعلومات', icon: Briefcase },
-                                { id: 'activation', label: 'التفعيل', icon: Smartphone }
+                                { id: 'identity', label: t('tabIdentity'), icon: User },
+                                { id: 'knowledge', label: t('tabKnowledge'), icon: Briefcase },
+                                { id: 'activation', label: t('tabActivation'), icon: Smartphone }
                             ].map(tab => (
                                 <button
                                     key={tab.id}
@@ -208,7 +220,7 @@ ${tones[formData.tone] || tones.friendly}
                                 <div className="animate-fade-in">
                                     <div className="grid grid-2 gap-lg mb-lg">
                                         <div>
-                                            <label className="text-sm text-dim mb-sm block">اسم الموظفة</label>
+                                            <label className="text-sm text-dim mb-sm block">{t('agentNameLabel')}</label>
                                             <input
                                                 type="text"
                                                 className="input-field"
@@ -217,34 +229,39 @@ ${tones[formData.tone] || tones.friendly}
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-sm text-dim mb-sm block">التخصص</label>
+                                            <label className="text-sm text-dim mb-sm block">{t('specialtyLabel')}</label>
                                             <select
                                                 className="input-field"
                                                 value={formData.specialty}
                                                 onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                                                style={{ color: 'white', background: '#1F2937' }}
                                             >
-                                                <option value="شامل">تجميل شامل</option>
-                                                <option value="شعر">عناية بالشعر</option>
-                                                <option value="مكياج">ميك أب آرتست</option>
+                                                <option value="شامل" style={{ color: 'white', background: '#1F2937' }}>{t('comprehensiveBeauty')}</option>
+                                                <option value="شعر" style={{ color: 'white', background: '#1F2937' }}>{t('hairCare')}</option>
+                                                <option value="مكياج" style={{ color: 'white', background: '#1F2937' }}>{t('makeupArtist')}</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-sm text-dim mb-sm block">الأسلوب ونبرة الصوت</label>
+                                        <label className="text-sm text-dim mb-sm block">{t('styleAndTone')}</label>
                                         <div className="flex gap-md">
-                                            {['friendly', 'professional', 'bubbly'].map(t => (
+                                            {[
+                                                { value: 'friendly', label: t('toneFriendlyLabel') },
+                                                { value: 'professional', label: t('toneProfessionalLabel') },
+                                                { value: 'bubbly', label: t('toneBubblyLabel') }
+                                            ].map(tone => (
                                                 <button
-                                                    key={t}
-                                                    onClick={() => setFormData({ ...formData, tone: t })}
+                                                    key={tone.value}
+                                                    onClick={() => setFormData({ ...formData, tone: tone.value })}
                                                     style={{
                                                         flex: 1, padding: '10px', borderRadius: '8px',
-                                                        border: `1px solid ${formData.tone === t ? '#8B5CF6' : 'rgba(255,255,255,0.1)'}`,
-                                                        background: formData.tone === t ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
-                                                        color: formData.tone === t ? '#8B5CF6' : '#9CA3AF',
+                                                        border: `1px solid ${formData.tone === tone.value ? '#8B5CF6' : 'rgba(255,255,255,0.1)'}`,
+                                                        background: formData.tone === tone.value ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
+                                                        color: formData.tone === tone.value ? '#8B5CF6' : '#9CA3AF',
                                                         cursor: 'pointer'
                                                     }}
                                                 >
-                                                    {t}
+                                                    {tone.label}
                                                 </button>
                                             ))}
                                         </div>
@@ -254,7 +271,7 @@ ${tones[formData.tone] || tones.friendly}
 
                             {activeTab === 'knowledge' && (
                                 <div className="animate-fade-in">
-                                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>كتالوج الخدمات</h3>
+                                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>{t('servicesCatalog')}</h3>
 
                                     <ServicesTable
                                         services={services}
@@ -269,11 +286,11 @@ ${tones[formData.tone] || tones.friendly}
 
                                     <div className="grid grid-2 gap-lg">
                                         <div>
-                                            <label className="text-sm text-dim mb-sm block">بدء العمل</label>
+                                            <label className="text-sm text-dim mb-sm block">{t('startTimeLabel')}</label>
                                             <input type="time" className="input-field" value={formData.workingHours.start} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, start: e.target.value } })} />
                                         </div>
                                         <div>
-                                            <label className="text-sm text-dim mb-sm block">نهاية العمل</label>
+                                            <label className="text-sm text-dim mb-sm block">{t('endTimeLabel')}</label>
                                             <input type="time" className="input-field" value={formData.workingHours.end} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, end: e.target.value } })} />
                                         </div>
                                     </div>
@@ -286,10 +303,10 @@ ${tones[formData.tone] || tones.friendly}
                                         <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#22C55E', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
                                             <CheckCircle2 size={32} />
                                         </div>
-                                        <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>الموظفة جاهزة للإطلاق</h3>
-                                        <p className="text-dim mb-xl">سيتم تفعيل الرقم +966 50 123 4567 فوراً</p>
-                                        <button className="btn w-100" style={{ background: '#22C55E', border: 'none' }} onClick={handleSubmit} disabled={loading}>
-                                            {loading ? 'جاري التفعيل...' : 'تفعيل الموظفة الآن'}
+                                        <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{t('agentReadyTitle')}</h3>
+                                        <p className="text-dim mb-xl">{t('agentReadyDesc')}</p>
+                                        <button className="btn w-100" style={{ background: '#22C55E', border: 'none' }} onClick={handleSave} disabled={loading}>
+                                            {loading ? t('activating') : t('activateAgentBtn')}
                                         </button>
                                     </div>
                                 </div>
@@ -302,7 +319,7 @@ ${tones[formData.tone] || tones.friendly}
                 <div style={{ position: 'sticky', top: '2rem' }}>
                     <div style={{ background: '#111827', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
                         <h4 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                            <Smartphone size={16} /> معاينة حية
+                            <Smartphone size={16} /> {t('livePreview')}
                         </h4>
 
                         <div className="phone-mockup" style={{
@@ -320,7 +337,7 @@ ${tones[formData.tone] || tones.friendly}
                                 </div>
                                 <div style={{ textAlign: 'left' }}>
                                     <div style={{ fontSize: '13px', fontWeight: 600 }}>{formData.agentName}</div>
-                                    <div style={{ fontSize: '10px', opacity: 0.9 }}>متصل (Active) • Elite AI</div>
+                                    <div style={{ fontSize: '10px', opacity: 0.9 }}>{t('activeStatus')}</div>
                                 </div>
                             </div>
 

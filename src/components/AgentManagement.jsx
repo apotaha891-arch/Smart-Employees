@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { agentService } from '../services/agentService';
 import AgentLifecycle from './AgentLifecycle';
 import { Plus, Edit2, Pause, Trash2, Play } from 'lucide-react';
@@ -89,8 +89,7 @@ const AgentManagement = () => {
     if (isLoading) {
         return (
             <div style={{ textAlign: 'center', padding: '3rem' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🤖</div>
-                <p style={{ color: 'var(--text-secondary)' }}>جاري تحميل موظفيك الرقميين...</p>
+                <p style={{ color: 'var(--text-secondary)' }}>Loading your digital employees...</p>
             </div>
         );
     }
@@ -105,7 +104,7 @@ const AgentManagement = () => {
                 padding: '2rem'
             }}>
                 <h3 style={{ margin: '0 0 2rem 0', fontWeight: 900, fontSize: '1.25rem' }}>
-                    🚀 رحلة توظيف الموظف الرقمي
+                    Digital Employee Hiring Journey
                 </h3>
                 <AgentLifecycle />
             </div>
@@ -175,7 +174,7 @@ const AgentManagement = () => {
                                 }}
                             >
                                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                                    {template.icon || '🤖'}
+                                    {template.icon}
                                 </div>
                                 <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 700 }}>
                                     {template.name || template.title}
@@ -204,12 +203,11 @@ const AgentManagement = () => {
                         borderRadius: '12px',
                         border: '2px dashed rgba(255,255,255,0.1)',
                     }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
                         <h3 style={{ margin: 0, marginBottom: '0.5rem', fontSize: '1.1rem' }}>
-                            لم توظف أي موظفين رقميين بعد
+                            No digital employees hired yet
                         </h3>
                         <p style={{ margin: 0, color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                            ابدأ بالضغط على "استقطاب موظف جديد" لاختيار قالب وبدء رحلة التوظيف
+                            Start by clicking "Hire New Employee" to select a template and begin the hiring journey
                         </p>
                     </div>
                 ) : (
@@ -255,12 +253,12 @@ const AgentManagement = () => {
                                 fontSize: '0.75rem',
                                 fontWeight: 700,
                             }}>
-                                {agent.status === 'active' ? '🟢 نشط' : '⏸️ متوقف'}
+                                {agent.status === 'active' ? 'Active' : 'Paused'}
                             </div>
 
                             {/* Agent Icon */}
                             <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                                {agent.icon || '🤖'}
+                                {agent.icon}
                             </div>
 
                             {/* Agent Name */}

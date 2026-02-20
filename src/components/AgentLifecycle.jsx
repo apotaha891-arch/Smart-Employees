@@ -12,30 +12,26 @@ const AgentLifecycle = () => {
     const steps = [
         {
             number: 1,
-            emoji: '🔍',
-            label: 'استكشاف',
-            description: 'اختر من قالب الموظفين',
+            label: t('agentStep1Label'),
+            description: t('agentStep1Desc'),
             status: 'completed',
         },
         {
             number: 2,
-            emoji: '🎤',
-            label: 'مقابلة',
-            description: 'قم بإجراء مقابلة شاملة',
+            label: t('agentStep2Label'),
+            description: t('agentStep2Desc'),
             status: 'completed',
         },
         {
             number: 3,
-            emoji: '✅',
-            label: 'التوظيف',
-            description: 'وظف الموظف الرقمي',
+            label: t('agentStep3Label'),
+            description: t('agentStep3Desc'),
             status: 'active',
         },
         {
             number: 4,
-            emoji: '⚙️',
-            label: 'التخصيص',
-            description: 'خصص الإعدادات والمهام',
+            label: t('agentStep4Label'),
+            description: t('agentStep4Desc'),
             status: 'pending',
         },
     ];
@@ -92,7 +88,7 @@ const AgentLifecycle = () => {
                             transition: 'all 0.3s ease',
                         }}
                     >
-                        {step.emoji}
+                        {step.number}
                         
                         {/* Status indicator dot */}
                         {step.status === 'active' && (
@@ -122,7 +118,7 @@ const AgentLifecycle = () => {
                             letterSpacing: '0.05em',
                             marginBottom: '0.25rem',
                         }}>
-                            الخطوة {step.number}
+                            {t('step')} {step.number}
                         </div>
                         <h4 style={{
                             margin: '0 0 0.25rem 0',

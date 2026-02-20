@@ -31,7 +31,7 @@ ALTER TABLE profiles ADD COLUMN role VARCHAR(50) DEFAULT 'customer';
 -- Create admin role assignments
 UPDATE profiles 
 SET role = 'admin' 
-WHERE email IN ('admin@example.com', 'admin@agentic.com');
+WHERE email IN (apotaha981@gmail.com);
 
 -- Ensure all other users default to customer
 UPDATE profiles 

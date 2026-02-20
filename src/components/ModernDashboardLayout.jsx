@@ -6,7 +6,7 @@ import {
     BarChart3, Lock, Zap
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { signOut, supabase } from '../services/supabaseService';
 
 const ModernDashboardLayout = ({ children }) => {
@@ -44,29 +44,29 @@ const ModernDashboardLayout = ({ children }) => {
 
     // Customer Navigation Items
     const customerNavItems = [
-        { icon: LayoutDashboard, label: 'لوحة التحكم', path: '/dashboard' },
-        { icon: User, label: 'موظفيني الرقميين', path: '/salon-setup' },
-        { icon: Calendar, label: 'الحجوزات', path: '/bookings' },
-        { icon: Users, label: 'العملاء', path: '/customers' },
-        { icon: Settings, label: 'الإعدادات', path: '/setup' },
+        { icon: LayoutDashboard, label: t('dashboardLabel'), path: '/dashboard' },
+        { icon: User, label: t('myEmployeesLabel'), path: '/salon-setup' },
+        { icon: Calendar, label: t('bookingsLabel'), path: '/bookings' },
+        { icon: Users, label: t('customersLabel'), path: '/customers' },
+        { icon: Settings, label: t('settingsLabel'), path: '/setup' },
     ];
 
     // Admin Navigation Items
     const adminNavItems = [
-        { icon: LayoutDashboard, label: 'لوحة التحكم', path: '/admin' },
-        { icon: Users, label: 'المستخدمين', path: '/admin/users' },
-        { icon: Store, label: 'المتاجر', path: '/admin/stores' },
-        { icon: BarChart3, label: 'التحليلات', path: '/admin/analytics' },
-        { icon: Zap, label: 'الأتمتة', path: '/admin/automation' },
-        { icon: Lock, label: 'الأمان', path: '/admin/security' },
-        { icon: Settings, label: 'الإعدادات', path: '/admin/settings' },
+        { icon: LayoutDashboard, label: t('dashboardLabel'), path: '/admin' },
+        { icon: Users, label: t('usersLabel'), path: '/admin/users' },
+        { icon: Store, label: t('storesLabel'), path: '/admin/stores' },
+        { icon: BarChart3, label: t('analyticsLabel'), path: '/admin/analytics' },
+        { icon: Zap, label: t('automationLabel'), path: '/admin/automation' },
+        { icon: Lock, label: t('securityLabel'), path: '/admin/security' },
+        { icon: Settings, label: t('settingsLabel'), path: '/admin/settings' },
     ];
 
     // Select nav items based on role
     const navItems = isAdmin ? adminNavItems : customerNavItems;
 
     return (
-        <div className="dashboard-container" style={{ display: 'flex', minHeight: '100vh', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
+        <div className="dashboard-container" style={{ display: 'flex', minHeight: '100vh', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr', flexDirection: language === 'ar' ? 'row-reverse' : 'row' }}>
 
             {/* Sidebar */}
             <aside className="n8n-sidebar" style={{ width: isSidebarOpen ? '280px' : '80px' }}>
@@ -80,7 +80,7 @@ const ModernDashboardLayout = ({ children }) => {
                     }}>
                         ✦
                     </div>
-                    {isSidebarOpen && <span style={{ fontSize: '1.4rem', fontWeight: 900 }}>AGENTIC</span>}
+                    {isSidebarOpen && <span style={{ fontSize: '1.4rem', fontWeight: 900 }}>{t('brand.name')}</span>}
                 </div>
 
                 {/* Navigation */}
@@ -89,7 +89,7 @@ const ModernDashboardLayout = ({ children }) => {
                     {isSidebarOpen && (
                         <div style={{ padding: '1rem 0.5rem', marginBottom: '1rem' }}>
                             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#9CA3AF', fontWeight: 700, letterSpacing: '0.05em' }}>
-                                {isAdmin ? '⚙️ إدارة النظام' : '📊 أدوات العمل'}
+                                {isAdmin ? t('adminTools') : t('customerTools')}
                             </span>
                         </div>
                     )}
@@ -103,7 +103,8 @@ const ModernDashboardLayout = ({ children }) => {
                                     borderRadius: '12px',
                                     color: isActive(item.path) ? 'white' : '#9CA3AF',
                                     background: isActive(item.path) ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
-                                    borderRight: isActive(item.path) ? '3px solid #8B5CF6' : '3px solid transparent',
+                                    borderRight: language === 'ar' ? 'none' : (isActive(item.path) ? '3px solid #8B5CF6' : '3px solid transparent'),
+                                    borderLeft: language === 'ar' ? (isActive(item.path) ? '3px solid #8B5CF6' : '3px solid transparent') : 'none',
                                     transition: 'all 0.2s',
                                     textDecoration: 'none'
                                 }}>
@@ -137,7 +138,7 @@ const ModernDashboardLayout = ({ children }) => {
                                     borderRadius: '4px',
                                     fontWeight: 700
                                 }}>
-                                    {isAdmin ? '👤 مدير' : '👨‍💼 مستخدم'}
+                                    {isAdmin ? t('adminRole') : t('userRole')}
                                 </span>
                             </div>
                         )}
@@ -152,7 +153,7 @@ const ModernDashboardLayout = ({ children }) => {
                         }}
                     >
                         <LogOut size={18} />
-                        {isSidebarOpen && <span>تسجيل الخروج</span>}
+                        {isSidebarOpen && <span>{t('logout')}</span>}
                     </button>
                 </div>
             </aside>
@@ -186,13 +187,13 @@ const ModernDashboardLayout = ({ children }) => {
                             <Menu size={24} />
                         </button>
                         <div style={{ position: 'relative' }}>
-                            <Search size={18} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                            <Search size={18} style={{ position: 'absolute', [language === 'ar' ? 'left' : 'right']: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
                             <input
                                 type="text"
-                                placeholder="بحث..."
+                                placeholder={t('search')}
                                 style={{
                                     background: '#1F2937', border: 'none', borderRadius: '8px',
-                                    padding: '10px 40px 10px 16px', color: 'white', outline: 'none', width: '300px'
+                                    padding: `10px ${language === 'ar' ? '16px 40px' : '40px 16px'}`, color: 'white', outline: 'none', width: '300px'
                                 }}
                             />
                         </div>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../LanguageContext';
 import { getCurrentUser, updateBusinessProfile, getProfile } from '../services/supabaseService';
 
 const BusinessSetup = () => {
+    const { t } = useLanguage();
     const [formData, setFormData] = useState({
         business_name: '',
         business_type: '',
@@ -45,10 +47,10 @@ const BusinessSetup = () => {
         setLoading(true);
         const result = await updateBusinessProfile(user.id, formData);
         if (result.success) {
-            alert('تم تحديث بروتوكول العمل بنجاح! سيتم تطبيق هذه المعايير في جميع مهام موظفك الرقمي.');
+            alert(t('settingsSavedSuccess'));
             navigate('/dashboard');
         } else {
-            alert('خطأ: ' + result.error);
+            alert(t('errorPrefix') + result.error);
         }
         setLoading(false);
     };
@@ -57,10 +59,10 @@ const BusinessSetup = () => {
         <div className="container py-xl animate-fade-in" style={{ paddingBottom: '6rem' }}>
             <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1rem', background: 'linear-gradient(to bottom, #FFF, #52525B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                    إعدادات المنشأة
+                    {t('businessSetupTitle')}
                 </h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-                    قم ببرمجة المعايير والبروتوكولات التي سيعتمدها الموظف الرقمي حصرياً لمنشأتك
+                    {t('businessSetupSubtitle')}
                 </p>
             </div>
 
@@ -69,22 +71,22 @@ const BusinessSetup = () => {
                     <form onSubmit={handleSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
                             <div>
-                                <label className="label"><span>🏢</span> اسم المنشأة</label>
+                                <label className="label"><span>🏢</span> {t('businessNameLabel')}</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder="رويال للعقارات"
+                                    placeholder={t('businessNamePlaceholder')}
                                     value={formData.business_name}
                                     onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="label"><span>🏷️</span> نوع النشاط</label>
+                                <label className="label"><span>🏷️</span> {t('businessTypeLabel')}</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder="تطوير عقاري"
+                                    placeholder={t('businessTypePlaceholder')}
                                     value={formData.business_type}
                                     onChange={(e) => setFormData({ ...formData, business_type: e.target.value })}
                                     required
@@ -93,11 +95,11 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span>⏰</span> ساعات العمل الرسمية</label>
+                            <label className="label"><span>⏰</span> {t('workingHoursLabel')}</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="يومياً من 4 م إلى 11 م"
+                                placeholder={t('workingHoursPlaceholder')}
                                 value={formData.working_hours}
                                 onChange={(e) => setFormData({ ...formData, working_hours: e.target.value })}
                                 required
@@ -105,11 +107,11 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span>🛠️</span> الخدمات الأساسية</label>
+                            <label className="label"><span></span> {t('coreServicesLabel')}</label>
                             <textarea
                                 className="input-field"
                                 rows="3"
-                                placeholder="قائمة بكل ما تود من الموظف عرضه على العملاء..."
+                                placeholder={t('coreServicesPlaceholder')}
                                 value={formData.services}
                                 onChange={(e) => setFormData({ ...formData, services: e.target.value })}
                                 required
@@ -117,33 +119,37 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span>💬</span> نبرة التواصل والبراندينج</label>
+                            <label className="label"><span></span> {t('toneLabel')}</label>
                             <select
                                 className="input-field"
                                 value={formData.branding_tone}
                                 onChange={(e) => setFormData({ ...formData, branding_tone: e.target.value })}
-                                style={{ color: 'white' }}
+                                style={{ 
+                                    color: 'white',
+                                    background: '#1F2937',
+                                    border: '1px solid rgba(255,255,255,0.1)'
+                                }}
                             >
-                                <option value="professional">رسمي واحترافي 👔</option>
-                                <option value="friendly">ودود وعائلي 😊</option>
-                                <option value="fast">مباشر وعملي ⚡</option>
-                                <option value="luxury">راقي وفخم ✨</option>
+                                <option value="professional" style={{ color: 'white', background: '#1F2937' }}>{t('professionalTone')}</option>
+                                <option value="friendly" style={{ color: 'white', background: '#1F2937' }}>{t('friendlyTone')}</option>
+                                <option value="fast" style={{ color: 'white', background: '#1F2937' }}>{t('directTone')}</option>
+                                <option value="luxury" style={{ color: 'white', background: '#1F2937' }}>{t('luxuryTone')}</option>
                             </select>
                         </div>
 
                         <div className="mb-2xl">
-                            <label className="label"><span>📚</span> قاعدة المعرفة والبروتوكولات</label>
+                            <label className="label"><span></span> {t('knowledgeBaseLabel')}</label>
                             <textarea
                                 className="input-field"
                                 rows="12"
                                 style={{ background: 'rgba(212, 175, 55, 0.03)', borderColor: 'rgba(212, 175, 55, 0.15)' }}
-                                placeholder="أدخل هنا كافة المعلومات التي تود من الموظف الإلمام بها..."
+                                placeholder={t('knowledgeBasePlaceholder')}
                                 value={formData.knowledge_base}
                                 onChange={(e) => setFormData({ ...formData, knowledge_base: e.target.value })}
                             ></textarea>
                             <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }}></div>
-                                <small style={{ color: 'var(--text-secondary)' }}>تحديث هذه البيانات يعيد برمجة ذكاء الموظف فوراً.</small>
+                                <small style={{ color: 'var(--text-secondary)' }}>{t('knowledgeBaseHint')}</small>
                             </div>
                         </div>
 
@@ -152,7 +158,7 @@ const BusinessSetup = () => {
                             className={`btn btn-primary btn-block ${loading ? 'loading' : ''}`}
                             disabled={loading}
                         >
-                            {loading ? 'جاري المزامنة...' : 'تحديث البروتوكول المؤسسي ⚡'}
+                            {loading ? t('syncing') : t('updateProtocolBtn')}
                         </button>
                     </form>
                 </div>
@@ -162,9 +168,9 @@ const BusinessSetup = () => {
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
                             <div style={{ fontSize: '1.5rem' }}>🦁</div>
                             <div>
-                                <h4 style={{ marginBottom: '0.5rem', color: 'white' }}>هوية مؤسسية ذكية</h4>
+                                <h4 style={{ marginBottom: '0.5rem', color: 'white' }}>{t('smartIdentityTitle')}</h4>
                                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                    الموظف الرقمي بوضعه الحالي يستخدم هذه المدخلات كـ "مرجع" لكل كلمة ينطق بها مع العملاء.
+                                    {t('smartIdentityDesc')}
                                 </p>
                             </div>
                         </div>
@@ -174,18 +180,18 @@ const BusinessSetup = () => {
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
                             <div style={{ fontSize: '1.5rem' }}>🔐</div>
                             <div>
-                                <h4 style={{ marginBottom: '0.5rem', color: 'white' }}>أمان فائق للبيانات</h4>
+                                <h4 style={{ marginBottom: '0.5rem', color: 'white' }}>{t('dataSecurityTitle')}</h4>
                                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                    يتم تشفير وتخزين هذه البيانات في سحابة خاصة لضمان الخصوصية التامة لمعلومات عملك.
+                                    {t('dataSecurityDesc')}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div className="card" style={{ background: 'linear-gradient(45deg, #18181B, #09090B)', border: '1px solid var(--accent-border)' }}>
-                        <h4 style={{ color: 'var(--secondary-accent)', marginBottom: '0.75rem' }}>✦ ذكاء الموظف</h4>
+                        <h4 style={{ color: 'var(--secondary-accent)', marginBottom: '0.75rem' }}>{t('employeeIntelligence')}</h4>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                            عند إضافة معلومات جديدة لقاعدة المعرفة، يقوم الموظف بربط هذه المعلومات بالأسئلة الواردة تلقائياً، دون أي تدخل بشري.
+                            {t('employeeIntelligenceDesc')}
                         </p>
                     </div>
                 </div>

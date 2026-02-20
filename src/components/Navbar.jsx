@@ -44,7 +44,7 @@ const Navbar = () => {
                         fontSize: '1.2rem',
                         fontWeight: '900'
                     }}>✦</div>
-                    <span style={{ fontWeight: 900, fontSize: '1.4rem' }}>AGENTIC</span>
+                    <span style={{ fontWeight: 900, fontSize: '1.4rem' }}>{t('brand.name')}</span>
                 </Link>
 
                 <ul className="nav-links">

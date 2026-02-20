@@ -83,10 +83,11 @@ const CustomRequest = () => {
                                 className="input-field"
                                 value={formData.preferredLanguage}
                                 onChange={(e) => setFormData({ ...formData, preferredLanguage: e.target.value })}
+                                style={{ color: 'white', background: '#1F2937' }}
                             >
-                                <option value="ar">العربية</option>
-                                <option value="en">الإنجليزية</option>
-                                <option value="both">كلتا اللغتين</option>
+                                <option value="ar" style={{ color: 'white', background: '#1F2937' }}>العربية</option>
+                                <option value="en" style={{ color: 'white', background: '#1F2937' }}>الإنجليزية</option>
+                                <option value="both" style={{ color: 'white', background: '#1F2937' }}>كلتا اللغتين</option>
                             </select>
                         </div>
                         <div>
