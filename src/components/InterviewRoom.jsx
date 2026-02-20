@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { sendMessage, extractBusinessRules, initializeChat, resetChat, getSupportResponse } from '../services/geminiService';
 import { createAgent, saveContract, getCurrentUser, checkAndDeductCredit, getProfile, updateBusinessProfile } from '../services/supabaseService';
 import {
     Stethoscope, Activity, Search, Scissors, Building, Utensils, Zap, Headset,
-    User, Send, CheckCircle2, Briefcase, Clock, Shield, Sparkles
+    User, Send, CheckCircle2, Briefcase, Clock, Shield, Sparkles, Settings
 } from 'lucide-react';
 
 const iconMap = {
@@ -19,10 +19,32 @@ const iconMap = {
     'support-agent': Headset,
 };
 
+const agentMap = {
+    'support-agent': { title: 'ممثل خدمة العملاء', specialty: 'تلقي الاستفسارات والدعم', services: ['الرد على العملاء', 'حل المشكلات', 'توجيه الطلبات'] },
+    'sales-lead-gen': { title: 'أخصائي مبيعات', specialty: 'إغلاق الصفقات والترويج', services: ['عرض المنتجات', 'المتابعة مع العملاء المحتملين', 'تحقيق المبيعات'] },
+    'dental-receptionist': { title: 'موظف استقبال', specialty: 'تنسيق المواعيد الطبية', services: ['حجز المواعيد', 'تذكير المرضى', 'الرد على الاستفسارات الطبية الأساسية'] },
+    'medical-clinic': { title: 'استقبال عيادة', specialty: 'عيادة تخصصية', services: ['كشف طبي', 'متابعة', 'فحوصات'] },
+    'beauty-salon': { title: 'منسقة مواعيد', specialty: 'إدارة صالون التجميل', services: ['حجز الخدمات', 'تنسيق جداول الخبيرات', 'استقبال طلبات العميلات'] },
+    'real-estate-marketing': { title: 'مسوق عقاري', specialty: 'تسويق وبيع العقارات', services: ['عرض الوحدات', 'جمع بيانات المهتمين', 'شرح تفاصيل العقار'] },
+    'restaurant-reservations': { title: 'مسؤول حجوزات', specialty: 'إدارة طاولات المطعم', services: ['تأكيد الحجوزات', 'استقبال الطلبات', 'استفسارات المنيو'] },
+    'gym-coordinator': { title: 'منسق اشتراكات', specialty: 'إدارة المشتركين', services: ['تجديد الاشتراكات', 'حجز الحصص', 'الرد على الاستفسارات'] }
+};
+
+
 const InterviewRoom = () => {
     const { t, language } = useLanguage();
     const navigate = useNavigate();
+    const location = useLocation();
     const messagesEndRef = useRef(null);
+
+    const isArabic = language === 'ar';
+
+    const [showSetup, setShowSetup] = useState(!location.state?.fromTemplates);
+    const [setupConfig, setSetupConfig] = useState({
+        industry: 'beauty',
+        agentType: 'beauty-salon',
+        tone: 'friendly'
+    });
 
     const [template, setTemplate] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -33,84 +55,90 @@ const InterviewRoom = () => {
 
     const [agent, setAgent] = useState(null);
     const [profile, setProfile] = useState(null);
-    const [inputValue, setInputValue] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showResults, setShowResults] = useState(false);
-    const [businessData, setBusinessData] = useState(null);
-    const [credits, setCredits] = useState(null);
 
-    useEffect(() => {
-        const initializeWithProfile = async () => {
-            // 1. Check for authenticated user profile
-            const { user } = await getCurrentUser();
-            let profileDetails = "";
-            let detectedIndustry = 'general';
+    const fetchAndInitializeChat = async (forcedTemplate = null) => {
+        // 1. Check for authenticated user profile
+        const { user } = await getCurrentUser();
+        let profileDetails = "";
+        let detectedIndustry = 'general';
 
-            if (user) {
-                const p = await getProfile(user.id);
-                if (p.success && p.data) {
-                    setProfile(p.data);
-                    const d = p.data;
+        let targetTemplate = forcedTemplate;
+
+        if (!targetTemplate) {
+            const savedTemplate = localStorage.getItem('agentTemplate');
+            if (savedTemplate) {
+                targetTemplate = JSON.parse(savedTemplate);
+            }
+        }
+
+        if (user) {
+            const p = await getProfile(user.id);
+            if (p.success && p.data) {
+                setProfile(p.data);
+                const d = p.data;
+
+                if (!targetTemplate) {
                     const type = d.business_type?.toLowerCase() || '';
                     if (type.includes('طب') || type.includes('صحي') || type.includes('clinic')) detectedIndustry = 'medical';
                     else if (type.includes('عقار') || type.includes('estate')) detectedIndustry = 'realestate';
                     else if (type.includes('تجميل') || type.includes('salon') || type.includes('beauty')) detectedIndustry = 'beauty';
                     else if (type.includes('مطعم') || type.includes('restau')) detectedIndustry = 'restaurant';
                     else if (type.includes('رياض') || type.includes('gym') || type.includes('club') || type.includes('fit')) detectedIndustry = 'fitness';
+                } else {
+                    detectedIndustry = targetTemplate.industry || targetTemplate.detectedIndustry || 'general';
+                }
 
-                    profileDetails = `
+                profileDetails = `
 المعلومات الرسمية للمنشأة المتعاقد معها:
-- اسم المنشأة: ${d.business_name}
-- نوع النشاط: ${d.business_type}
-- ساعات العمل: ${d.working_hours}
-- الخدمات: ${d.services}
-- نبذة إضافية: ${d.description}
-- نبرة التواصل المطلوبة: ${d.branding_tone}
+- اسم المنشأة: ${d.business_name || 'غير محدد'}
+- نوع النشاط: ${d.business_type || 'غير محدد'}
+- ساعات العمل: ${d.working_hours || 'غير محدد'}
+- الخدمات: ${d.services || 'غير محدد'}
+- نبذة إضافية: ${d.description || 'لا يوجد'}
+- نبرة التواصل المطلوبة: ${targetTemplate?.tone || d.branding_tone || 'احترافية'}
 
 **قاعدة المعرفة والتدريب الداخلي (هام جداً):**
 ${d.knowledge_base || "لا توجد بروتوكولات إضافية حالياً."}
 
 يجب الالتزام التام بهذه المعلومات وبناءً ردودك بناءً على قاعدة المعرفة المذكورة أعلاه.`;
-                }
             }
+        }
 
-            // 2. Load template from local storage
-            const savedTemplate = localStorage.getItem('agentTemplate');
-            if (savedTemplate) {
-                const parsed = JSON.parse(savedTemplate);
-                setTemplate({ ...parsed, detectedIndustry });
-                setAgent(parsed); // Set agent for the new logic
+        if (targetTemplate) {
+            targetTemplate.detectedIndustry = detectedIndustry;
+            setTemplate(targetTemplate);
+            setAgent(targetTemplate);
 
-                const toneDescription = {
-                    friendly: 'ودودة ودافئة',
-                    professional: 'مهنية ورسمية',
-                    casual: 'بسيطة وغير رسمية',
-                    enthusiastic: 'مليء بالنشاط والحيوية',
-                    fast: 'سريعة ومباشرة',
-                    luxury: 'فخمة وراقية جداً'
-                };
+            const toneDescription = {
+                friendly: 'ودودة ودافئة',
+                professional: 'مهنية ورسمية',
+                casual: 'بسيطة وغير رسمية',
+                enthusiastic: 'مليء بالنشاط والحيوية',
+                fast: 'سريعة ومباشرة',
+                luxury: 'فخمة وراقية جداً'
+            };
 
-                const industryContext = {
-                    medical: "أنت في بيئة طبية محترفة، تهتم بدقة المواعيد وخصوصية وحالة المرضى الصحية.",
-                    realestate: "أنت في بيئة عقارية تنافسية، تهتم بجذب المستثمرين، إقناع المشترين، وسرعة الرد على الاستفسارات.",
-                    beauty: "أنت في بيئة جمال ورقّي، تهتم بدلال العميلات، تنسيق المواعيد المزدحمة، والاحترافية في العرض.",
-                    restaurant: "أنت في بيئة ضيافة سريعة، تهتم بإدارة الطاولات، الحجز المسبق، وضمان رضا الضيوف.",
-                    fitness: "أنت في بيئة رياضية مليئة بالطاقة، تهتم بتشجيع المشتركين، تنسيق حصص التدريب، وبيع الاشتراكات.",
-                    general: "أنت في بيئة أعمال احترافية تسعى للنمو والتنظيم."
-                };
+            const industryContext = {
+                medical: "أنت في بيئة طبية محترفة، تهتم بدقة المواعيد وخصوصية وحالة المرضى الصحية.",
+                realestate: "أنت في بيئة عقارية تنافسية، تهتم بجذب المستثمرين، إقناع المشترين، وسرعة الرد على الاستفسارات.",
+                beauty: "أنت في بيئة جمال ورقّي، تهتم بدلال العميلات، تنسيق المواعيد المزدحمة، والاحترافية في العرض.",
+                restaurant: "أنت في بيئة ضيافة سريعة، تهتم بإدارة الطاولات، الحجز المسبق، وضمان رضا الضيوف.",
+                fitness: "أنت في بيئة رياضية مليئة بالطاقة، تهتم بتشجيع المشتركين، تنسيق حصص التدريب، وبيع الاشتراكات.",
+                general: "أنت في بيئة أعمال احترافية تسعى للنمو والتنظيم."
+            };
 
-                const customPrompt = `أنت الآن تخضع لمقابلة توظيف لدور: ${parsed.title}.
-تخصصك الدقيق هو: ${parsed.specialty}.
+            const customPrompt = `أنت الآن تخضع لمقابلة توظيف لدور: ${targetTemplate.title}.
+تخصصك الدقيق هو: ${targetTemplate.specialty}.
 القطاع الذي تعمل فيه المنشأة: ${detectedIndustry}.
 ${industryContext[detectedIndustry] || ""}
 
-الخدمات المتوقعة منك: ${parsed.services.join('، ')}.
-ساعات العمل المطلوبة (افتراضية): من ${parsed.workingHours.start} إلى ${parsed.workingHours.end}.
-مدة الموعد: ${parsed.appointmentDuration} دقيقة.
+الخدمات المتوقعة منك: ${(targetTemplate.services || []).join('، ')}.
+ساعات العمل المطلوبة (افتراضية): من ${targetTemplate.workingHours?.start || '09:00'} إلى ${targetTemplate.workingHours?.end || '17:00'}.
+مدة الموعد: ${targetTemplate.appointmentDuration || 30} دقيقة.
 
 ${profileDetails}
 
-نبرة صوتك وأسلوبك يجب أن تكون: ${toneDescription[parsed.tone] || toneDescription[parsed.branding_tone] || 'احترافية'}.
+نبرة صوتك وأسلوبك يجب أن تكون: ${toneDescription[targetTemplate.tone] || toneDescription[targetTemplate.branding_tone] || 'احترافية'}.
 
 **قواعد المقابلة وعناصر الشخصية:**
 1. ابدأ بتقديم نفسك كمرشح خبير في قطاع "${detectedIndustry}".
@@ -120,50 +148,50 @@ ${profileDetails}
 5. لا تطلب التوظيف مباشرة، بل أظهر أنك إضافة استراتيجية للمنشأة.
 6. اجعل ردودك مركزة، قصيرة، ومباشرة.`;
 
-                initializeChat(customPrompt, 'interview');
+            initializeChat(customPrompt, 'interview');
 
-                const initialMessages = {
-                    medical: `تحية طيبة دكتور. لقد اطلعت على ملف عيادتكم وأدرك تماماً أهمية الدقة في مواعيد المرضى والخصوصية الطبية. بصفتي ${parsed.title}، كيف يمكنني مساعدتكم في تنظيم تدفق الحالات اليوم؟ 🩺`,
-                    realestate: `أهلاً بك. في سوق العقار، الثانية الواحدة قد تساوي صفقة ضائعة. أنا جاهز لإدارة استفسارات المشترين وعرض الوحدات العقارية بأفضل صورة كـ ${parsed.title}. من أي شريحة عملاء نبدأ اليوم؟ 🏢`,
-                    beauty: `أهلاً بكي. يسعدني جداً أن أكون الواجهة الرقمية الأنيقة لمركزكم. كـ ${parsed.title}، سأحرص على توفير تجربة حجز راقية تليق بعميلاتكم. كيف ننسق جداول الخبيرات اليوم؟ ✨`,
-                    restaurant: `مرحباً. يسعدني الانضمام لفريق الضيافة كـ ${parsed.title}. سأقوم بإدارة الطاولات وضمان عدم ضياع أي حجز حتى في أوقات الذروة. هل نركز على حجوزات الـ VIP أولاً؟ 🍽️`,
-                    fitness: `أهلاً يا بطل! كـ ${parsed.title}، أنا هنا لأضمن أن الكل ملتزم بتمارينه واشتراكاته. سأقوم بتنظيم حصص التدريب وتحفيز الأعضاء للانضمام. مستعدون للبدء؟ 💪`,
-                    general: `تحية طيبة. أنا مستعد لتولي مهام ${parsed.title} ورفع كفاءة عملياتكم الرقمية. لقد قمت بدراسة متطلبات منشأتكم، كيف تود أن نبدأ جلسة التقييم المهني؟ 💼`
-                };
+            const initialMessages = {
+                medical: `تحية طيبة. لقد اطلعت على التفاصيل وأدرك تماماً أهمية الدقة في المواعيد الطبية والخصوصية. بصفتي ${targetTemplate.title}، كيف يمكنني مساعدتكم في تنظيم تدفق الحالات اليوم؟ 🩺`,
+                realestate: `أهلاً بك. في سوق العقار، الثانية الواحدة قد تساوي صفقة ضائعة. أنا جاهز لإدارة استفسارات المشترين وعرض الوحدات العقارية بأفضل صورة كـ ${targetTemplate.title}. من أي شريحة عملاء نبدأ اليوم؟ 🏢`,
+                beauty: `أهلاً بكي. يسعدني جداً أن أكون الواجهة الرقمية الأنيقة لمركزكم. كـ ${targetTemplate.title}، سأحرص على توفير تجربة حجز راقية تليق بعميلاتكم. كيف ننسق جداول الخبيرات اليوم؟ ✨`,
+                restaurant: `مرحباً. يسعدني الانضمام لفريق الضيافة كـ ${targetTemplate.title}. سأقوم بإدارة الطاولات وضمان عدم ضياع أي حجز حتى في أوقات الذروة. هل نركز على حجوزات الـ VIP أولاً؟ 🍽️`,
+                fitness: `أهلاً يا كابتن! كـ ${targetTemplate.title}، أنا هنا لأضمن أن الكل ملتزم بتمارينه واشتراكاته. سأقوم بتنظيم حصص التدريب وتحفيز الأعضاء للانضمام. مستعدون للبدء؟ 💪`,
+                general: `تحية طيبة. أنا مستعد لتولي مهام ${targetTemplate.title} ورفع كفاءة عملياتكم الرقمية. لقد قمت بدراسة متطلبات منشأتكم، كيف تود أن نبدأ جلسة التقييم المهني؟ 💼`
+            };
 
-                setMessages([
-                    {
-                        role: 'agent',
-                        content: initialMessages[detectedIndustry] || initialMessages.general,
-                        timestamp: new Date(),
-                    }
-                ]);
-            } else {
-                initializeChat(null, 'interview');
-                setMessages([
-                    {
-                        role: 'agent',
-                        content: t('agentWelcome'),
-                        timestamp: new Date(),
-                    }
-                ]);
-            }
-        };
+            setMessages([
+                {
+                    role: 'agent',
+                    content: initialMessages[detectedIndustry] || initialMessages.general,
+                    timestamp: new Date(),
+                }
+            ]);
+        } else {
+            initializeChat(null, 'interview');
+            setMessages([
+                {
+                    role: 'agent',
+                    content: t('agentWelcome'),
+                    timestamp: new Date(),
+                }
+            ]);
+        }
+    };
 
-        initializeWithProfile();
-
+    useEffect(() => {
+        if (!showSetup) {
+            fetchAndInitializeChat();
+        }
         return () => {
             resetChat('interview');
         };
-    }, [t]);
+    }, [t, showSetup]);
 
     useEffect(() => {
-        // Scroll to bottom when new messages arrive
         scrollToBottom();
     }, [messages]);
 
     useEffect(() => {
-        // Show hire button after 3+ exchanges
         const userMessages = messages.filter(m => m.role === 'user');
         if (userMessages.length >= 3) {
             setShowHireButton(true);
@@ -172,6 +200,33 @@ ${profileDetails}
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const handleStartConfiguredInterview = () => {
+        const selectedAgent = agentMap[setupConfig.agentType] || agentMap['support-agent'];
+
+        const newTemplate = {
+            id: setupConfig.agentType,
+            title: selectedAgent.title,
+            specialty: selectedAgent.specialty,
+            services: selectedAgent.services,
+            workingHours: { start: '09:00', end: '22:00' },
+            appointmentDuration: 30,
+            tone: setupConfig.tone,
+            detectedIndustry: setupConfig.industry,
+            industry: setupConfig.industry
+        };
+
+        localStorage.setItem('agentTemplate', JSON.stringify(newTemplate));
+
+        // Reset state
+        setMessages([]);
+        setShowHireButton(false);
+        setIsHiring(false);
+        setIsLoading(false);
+
+        // Hide setup and start chat
+        setShowSetup(false);
     };
 
     const handleSendMessage = async (e) => {
@@ -190,10 +245,8 @@ ${profileDetails}
         setIsLoading(true);
 
         try {
-            // 1. Credit Check & Deduction
             const { user } = await getCurrentUser();
             if (user) {
-                // Use template cost or default to 1
                 const cost = template?.costPerMessage || 1;
                 const creditResult = await checkAndDeductCredit(user.id, cost);
                 if (!creditResult.success) {
@@ -209,7 +262,6 @@ ${profileDetails}
                     return;
                 }
 
-                // 2. "Tired Agent" logic if credits are low
                 if (creditResult.isLow) {
                     setMessages(prev => [
                         ...prev,
@@ -222,13 +274,7 @@ ${profileDetails}
                 }
             }
 
-            // 3. Specialized logic for Support Agent vs Standard Interview
-            let response;
-            if (agent?.id === 'support-agent' && profile?.knowledge_base) {
-                response = await getSupportResponse(inputMessage, profile.knowledge_base);
-            } else {
-                response = await sendMessage(inputMessage, 'interview');
-            }
+            const response = await sendMessage(inputMessage, 'interview');
 
             const agentMessage = {
                 role: 'agent',
@@ -241,7 +287,7 @@ ${profileDetails}
             console.error('Send message error:', error);
             const errorMessage = {
                 role: 'agent',
-                content: t('error'),
+                content: t('error') || 'خطأ في الإرسال.',
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -254,18 +300,19 @@ ${profileDetails}
         setIsHiring(true);
 
         try {
-            // Extract business rules from conversation
             const extractionResult = await extractBusinessRules(messages);
 
-            if (!extractionResult.success) {
-                alert('حدث خطأ في استخراج البيانات. يرجى المحاولة مرة أخرى.');
-                setIsHiring(false);
-                return;
+            let businessRules = {};
+            if (extractionResult && extractionResult.success && extractionResult.data) {
+                businessRules = extractionResult.data;
+            } else {
+                console.warn('Extraction failed or partial. Using manual override');
+                businessRules = {
+                    businessName: template?.title || 'AI Agent',
+                    businessType: template?.specialty || 'General'
+                };
             }
 
-            const businessRules = extractionResult.data;
-
-            // Create agent in database
             const agentResult = await createAgent({
                 name: businessRules.businessName || 'AI Agent',
                 specialty: businessRules.businessType || 'General',
@@ -277,10 +324,9 @@ ${profileDetails}
                 return;
             }
 
-            const agent = agentResult.data;
+            const newAgentFromDB = agentResult.data;
 
-            // Save contract
-            const contractResult = await saveContract(agent.id, businessRules);
+            const contractResult = await saveContract(newAgentFromDB.id, businessRules);
 
             if (!contractResult.success) {
                 alert('حدث خطأ في حفظ العقد. يرجى المحاولة مرة أخرى.');
@@ -288,13 +334,10 @@ ${profileDetails}
                 return;
             }
 
-            // Store agent ID in localStorage for dashboard
-            localStorage.setItem('currentAgentId', agent.id);
+            localStorage.setItem('currentAgentId', newAgentFromDB.id);
 
-            // Show success message
-            alert(t('agentHired'));
+            alert(t('agentHired') || 'تم التوظيف بنجاح');
 
-            // Navigate to dashboard
             navigate('/dashboard');
         } catch (error) {
             console.error('Hire agent error:', error);
@@ -305,7 +348,7 @@ ${profileDetails}
     };
 
     const formatTime = (date) => {
-        return new Date(date).toLocaleTimeString('ar-SA', {
+        return new Date(date).toLocaleTimeString(isArabic ? 'ar-SA' : 'en-US', {
             hour: '2-digit',
             minute: '2-digit'
         });
@@ -313,8 +356,121 @@ ${profileDetails}
 
     const AgentIcon = template?.id ? (iconMap[template.id] || User) : User;
 
+    // --- SETUP SCREEN ---
+    if (showSetup) {
+        return (
+            <div className="ai-aura-container" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
+                <div className="container" style={{ position: 'relative', zIndex: 1, paddingBottom: '4rem', paddingTop: '4rem', maxWidth: '600px', margin: '0 auto' }}>
+                    <div className="card p-xl" style={{
+                        background: '#18181B',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '24px',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+                    }}>
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <div style={{ width: '64px', height: '64px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
+                                <Settings size={32} color="#8B5CF6" />
+                            </div>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>إعداد جلسة المقابلة</h2>
+                            <p style={{ color: '#A1A1AA' }}>حدد تفاصيل المرشح الرقمي الذي ترغب في مقبلته قبل توظيفه</p>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: isArabic ? 'right' : 'left' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>القطاع / الصناعة</label>
+                                <select
+                                    value={setupConfig.industry}
+                                    onChange={(e) => setSetupConfig({ ...setupConfig, industry: e.target.value })}
+                                    style={{
+                                        width: '100%', padding: '14px 16px', background: '#27272A',
+                                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', outline: 'none',
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    <option value="general">عام (إدارة وأعمال)</option>
+                                    <option value="medical">الرعاية الصحية والعيادات</option>
+                                    <option value="realestate">العقارات والأملاك</option>
+                                    <option value="beauty">صالونات التجميل والعناية</option>
+                                    <option value="restaurant">المطاعم والضيافة</option>
+                                    <option value="fitness">الأندية الرياضية واللياقة</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>المسمى الوظيفي والتخصص</label>
+                                <select
+                                    value={setupConfig.agentType}
+                                    onChange={(e) => setSetupConfig({ ...setupConfig, agentType: e.target.value })}
+                                    style={{
+                                        width: '100%', padding: '14px 16px', background: '#27272A',
+                                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', outline: 'none',
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    <option value="support-agent">ممثل خدمة عملاء الدعم</option>
+                                    <option value="sales-lead-gen">أخصائي مبيعات واستقطاب</option>
+                                    <option value="dental-receptionist">موظف استقبال (طبي / أسنان)</option>
+                                    <option value="medical-clinic">استقبال عيادة تخصصية</option>
+                                    <option value="beauty-salon">منسقة مواعيد (صالون تجميل)</option>
+                                    <option value="real-estate-marketing">مسوق عقاري</option>
+                                    <option value="restaurant-reservations">مسؤول حجوزات (مطاعم)</option>
+                                    <option value="gym-coordinator">منسق اشتراكات (رياضي)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>الشخصية ونبرة الحديث</label>
+                                <select
+                                    value={setupConfig.tone}
+                                    onChange={(e) => setSetupConfig({ ...setupConfig, tone: e.target.value })}
+                                    style={{
+                                        width: '100%', padding: '14px 16px', background: '#27272A',
+                                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', outline: 'none',
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    <option value="professional">رسمي واحترافي</option>
+                                    <option value="friendly">ودود ومرحب</option>
+                                    <option value="enthusiastic">مليء بالحيوية والنشاط</option>
+                                    <option value="luxury">راقي وفخم</option>
+                                    <option value="casual">عفوي وبسيط</option>
+                                </select>
+                            </div>
+
+                            <button
+                                onClick={handleStartConfiguredInterview}
+                                className="btn"
+                                style={{
+                                    width: '100%', padding: '16px', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'white',
+                                    borderRadius: '12px', fontWeight: 800, fontSize: '1.1rem', marginTop: '1rem', border: 'none', cursor: 'pointer',
+                                    boxShadow: '0 10px 20px rgba(139, 92, 246, 0.3)'
+                                }}
+                            >
+                                تجهيز وإدخال المرشح
+                            </button>
+
+                            {localStorage.getItem('agentTemplate') && (
+                                <button
+                                    onClick={() => setShowSetup(false)}
+                                    className="btn"
+                                    style={{
+                                        width: '100%', padding: '14px', background: 'transparent', color: '#A1A1AA',
+                                        borderRadius: '12px', fontWeight: 600, fontSize: '1rem', marginTop: '0.25rem', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer'
+                                    }}
+                                >
+                                    إلغاء والعودة للمقابلة السابقة
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- INTERVIEW ROOM ---
     return (
-        <div className="ai-aura-container">
+        <div className="ai-aura-container" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
             <div className="container" style={{ position: 'relative', zIndex: 1, paddingBottom: '4rem', paddingTop: '2rem' }}>
                 <div className="page-header text-center" style={{ marginBottom: '3rem' }}>
                     <div style={{
@@ -339,7 +495,7 @@ ${profileDetails}
                                             template?.detectedIndustry === 'fitness' ? 'الرياضة والرشاقة 💪' : 'الأعمال الذكية 💼'
                         }
                     </div>
-                    <h2 style={{ fontSize: '2.5rem', fontWeight: 900 }}>{t('interviewTitle')}</h2>
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: 900 }}>{t('interviewTitle') || 'غرفة المقابلة الشخصية'}</h2>
                     <p style={{ fontSize: '1.1rem', color: '#A1A1AA' }}>أنت الآن أمام كادر بشري رقمي متخصص تم اختياره بعناية لخدمتك</p>
                 </div>
 
@@ -360,9 +516,17 @@ ${profileDetails}
                                 <Activity size={20} color="#8B5CF6" />
                                 <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white' }}>التقييم المهني المباشر</span>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22C55E' }}></div>
-                                <span style={{ fontSize: '0.75rem', color: '#A1A1AA' }}>متصل الآن</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <button
+                                    onClick={() => setShowSetup(true)}
+                                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#A1A1AA', padding: '4px 10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}
+                                >
+                                    تغيير المرشح
+                                </button>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22C55E' }}></div>
+                                    <span style={{ fontSize: '0.75rem', color: '#A1A1AA' }}>متصل الآن</span>
+                                </div>
                             </div>
                         </div>
 
@@ -370,7 +534,7 @@ ${profileDetails}
                             {messages.map((message, index) => (
                                 <div key={index} className={`chat-message ${message.role}`} style={{
                                     display: 'flex',
-                                    flexDirection: message.role === 'user' ? 'row-reverse' : 'row',
+                                    flexDirection: message.role === 'user' ? (isArabic ? 'row' : 'row-reverse') : (isArabic ? 'row-reverse' : 'row'),
                                     gap: '1rem',
                                     marginBottom: '1.5rem'
                                 }}>
@@ -382,19 +546,23 @@ ${profileDetails}
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        border: '1px solid rgba(255,255,255,0.1)'
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        flexShrink: 0
                                     }}>
                                         {message.role === 'user' ? <User size={20} color="white" /> : <AgentIcon size={20} color="#A1A1AA" />}
                                     </div>
                                     <div style={{ maxWidth: '80%' }}>
                                         <div style={{
                                             padding: '1rem 1.25rem',
-                                            borderRadius: message.role === 'user' ? '20px 4px 20px 20px' : '4px 20px 20px 20px',
+                                            borderRadius: message.role === 'user'
+                                                ? (isArabic ? '4px 20px 20px 20px' : '20px 4px 20px 20px')
+                                                : (isArabic ? '20px 4px 20px 20px' : '4px 20px 20px 20px'),
                                             background: message.role === 'user' ? '#8B5CF6' : '#27272A',
                                             color: message.role === 'user' ? 'white' : '#E4E4E7',
                                             fontSize: '0.95rem',
                                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                            lineHeight: '1.6'
+                                            lineHeight: '1.6',
+                                            textAlign: message.role === 'user' ? (isArabic ? 'right' : 'left') : (isArabic ? 'right' : 'left'),
                                         }}>
                                             {message.content}
                                         </div>
@@ -402,7 +570,7 @@ ${profileDetails}
                                             fontSize: '0.7rem',
                                             color: '#71717A',
                                             marginTop: '0.5rem',
-                                            textAlign: message.role === 'user' ? 'left' : 'right'
+                                            textAlign: message.role === 'user' ? (isArabic ? 'right' : 'right') : (isArabic ? 'left' : 'left')
                                         }}>
                                             {formatTime(message.timestamp)}
                                         </div>
@@ -411,7 +579,7 @@ ${profileDetails}
                             ))}
 
                             {isLoading && (
-                                <div className="chat-message agent" style={{ display: 'flex', gap: '1rem' }}>
+                                <div className="chat-message agent" style={{ display: 'flex', flexDirection: isArabic ? 'row-reverse' : 'row', gap: '1rem' }}>
                                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#27272A', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
                                         <AgentIcon size={20} color="#A1A1AA" />
                                     </div>
@@ -425,11 +593,11 @@ ${profileDetails}
                             <div ref={messagesEndRef} />
                         </div>
 
-                        <form onSubmit={handleSendMessage} style={{ padding: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '1rem', background: '#18181B' }}>
+                        <form onSubmit={handleSendMessage} style={{ padding: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '1rem', background: '#18181B', direction: isArabic ? 'rtl' : 'ltr' }}>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder={t('chatPlaceholder')}
+                                placeholder={t('chatPlaceholder') || 'اكتب رسالتك للمرشح...'}
                                 value={inputMessage}
                                 onChange={(e) => setInputMessage(e.target.value)}
                                 disabled={isLoading}
@@ -439,7 +607,10 @@ ${profileDetails}
                                     background: '#27272A',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     color: 'white',
-                                    paddingRight: '1rem'
+                                    paddingRight: isArabic ? '1rem' : '16px',
+                                    paddingLeft: isArabic ? '16px' : '1rem',
+                                    outline: 'none',
+                                    fontSize: '1rem'
                                 }}
                             />
                             <button
@@ -471,7 +642,7 @@ ${profileDetails}
                             borderRadius: '24px',
                             boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
                         }}>
-                            <h4 style={{ marginBottom: '1.5rem', fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.75rem', color: '#A1A1AA' }}>ملف المرشح</h4>
+                            <h4 style={{ marginBottom: '1.5rem', fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.75rem', color: '#A1A1AA', textAlign: isArabic ? 'right' : 'left' }}>ملف المرشح</h4>
 
                             <div className="text-center mb-xl">
                                 <div style={{
@@ -491,7 +662,7 @@ ${profileDetails}
                                 <p style={{ fontSize: '0.9rem', color: '#8B5CF6', fontWeight: 600 }}>{template?.specialty}</p>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: isArabic ? 'right' : 'left' }}>
                                 <div>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#A1A1AA', fontWeight: 600, marginBottom: '0.75rem' }}>
                                         <Briefcase size={14} />
@@ -522,7 +693,7 @@ ${profileDetails}
                         </div>
 
                         {showHireButton && (
-                            <div className="card p-xl animate-fade-in" style={{ background: '#8B5CF6', color: 'white', borderRadius: '24px', textAlign: 'center', border: 'none', boxShadow: '0 20px 40px rgba(139, 92, 246, 0.3)' }}>
+                            <div className="card p-xl animate-fade-in" style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'white', borderRadius: '24px', textAlign: 'center', border: 'none', boxShadow: '0 20px 40px rgba(139, 92, 246, 0.3)' }}>
                                 <div style={{
                                     marginBottom: '1rem',
                                     display: 'flex',
@@ -537,9 +708,9 @@ ${profileDetails}
                                     className="btn"
                                     onClick={handleHireAgent}
                                     disabled={isHiring}
-                                    style={{ background: 'white', color: '#7C3AED', width: '100%', fontWeight: 900, fontSize: '1rem', padding: '1rem', borderRadius: '14px', border: 'none' }}
+                                    style={{ background: 'white', color: '#7C3AED', width: '100%', fontWeight: 900, fontSize: '1rem', padding: '1rem', borderRadius: '14px', border: 'none', cursor: 'pointer' }}
                                 >
-                                    {isHiring ? t('loading') : t('hireAgent')}
+                                    {isHiring ? (t('loading') || 'جاري التحضير...') : (t('hireAgent') || 'اعتماد التوظيف')}
                                 </button>
                             </div>
                         )}
@@ -548,7 +719,6 @@ ${profileDetails}
             </div>
         </div>
     );
-
 };
 
 export default InterviewRoom;

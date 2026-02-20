@@ -3,9 +3,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// Use Gemini 1.5 Flash for stability
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
+    apiVersion: "v1beta",
     generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 2048,
@@ -22,22 +22,22 @@ const DEFAULT_SYSTEM_PROMPT = `أنت موظف ذكاء اصطناعي متخص�
  */
 export const initializeChat = (customPrompt, sessionId = 'default') => {
     const prompt = customPrompt || DEFAULT_SYSTEM_PROMPT;
-    chatSessions[sessionId] = model.startChat({
-        history: [
-            {
-                role: "user",
-                parts: [{ text: prompt }]
-            },
-            {
-                role: "model",
-                parts: [{ text: "فهمت تماماً! أنا جاهز للعمل وفقاً للتعليمات المحددة. سأقوم بمهامي باحترافية تامة." }]
-            }
-        ],
+
+    // Create a specific model instance for this session with the system instruction
+    const sessionModel = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash",
+        apiVersion: "v1beta",
+        systemInstruction: prompt,
         generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 2048,
-        },
+        }
     });
+
+    chatSessions[sessionId] = sessionModel.startChat({
+        history: [] // Start with clean history since we use systemInstruction
+    });
+
     return chatSessions[sessionId];
 };
 

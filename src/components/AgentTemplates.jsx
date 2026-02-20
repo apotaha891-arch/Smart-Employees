@@ -193,7 +193,7 @@ const AgentTemplates = () => {
             tone: selectedTone,
         }));
 
-        navigate('/interview');
+        navigate('/interview', { state: { fromTemplates: true } });
     };
 
     return (

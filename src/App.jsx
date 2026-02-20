@@ -19,6 +19,7 @@ import SalonSetup from './components/SalonSetup';
 import ModernDashboardLayout from './components/ModernDashboardLayout';
 import Bookings from './components/Bookings';
 import Customers from './components/Customers';
+import DeployAgent from './components/DeployAgent';
 import { useLocation } from 'react-router-dom';
 
 // Create AuthProvider
@@ -40,7 +41,7 @@ function App() {
 function AppContent() {
     const location = useLocation();
     // Routes that use the new Dashboard Layout
-    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/bookings', '/customers'];
+    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/bookings', '/customers', '/deploy-agent'];
     const isDashboard = dashboardRoutes.includes(location.pathname);
 
     return (
@@ -56,71 +57,79 @@ function AppContent() {
                 <Route path="/reports" element={<Reports />} />
 
                 {/* ============ ADMIN PROTECTED ROUTES ============ */}
-                <Route 
-                    path="/admin" 
+                <Route
+                    path="/admin"
                     element={
                         <ProtectedRoute requiredRole="admin">
                             <AdminDashboard />
                         </ProtectedRoute>
-                    } 
+                    }
                 />
 
                 {/* ============ CUSTOMER PROTECTED ROUTES ============ */}
-                <Route 
-                    path="/setup" 
+                <Route
+                    path="/setup"
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><BusinessSetup /></ModernDashboardLayout>
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/salon-setup" 
+                <Route
+                    path="/salon-setup"
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><SalonSetup /></ModernDashboardLayout>
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/templates" 
+                <Route
+                    path="/templates"
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout>
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/pricing" 
+                <Route
+                    path="/pricing"
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><Pricing /></ModernDashboardLayout>
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/dashboard" 
+                <Route
+                    path="/dashboard"
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><Dashboard /></ModernDashboardLayout>
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/bookings" 
+                <Route
+                    path="/bookings"
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><Bookings /></ModernDashboardLayout>
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/customers" 
+                <Route
+                    path="/deploy-agent"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><DeployAgent /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/customers"
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><Customers /></ModernDashboardLayout>
                         </ProtectedRoute>
-                    } 
+                    }
                 />
             </Routes>
 

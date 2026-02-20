@@ -1,15 +1,15 @@
 export const translations = {
     ar: {
-            // Agent Lifecycle Steps
-            agentStep1Label: "استكشاف",
-            agentStep1Desc: "اختر من قالب الموظفين",
-            agentStep2Label: "مقابلة",
-            agentStep2Desc: "قم بإجراء مقابلة شاملة",
-            agentStep3Label: "التوظيف",
-            agentStep3Desc: "وظف الموظف الرقمي",
-            agentStep4Label: "التخصيص",
-            agentStep4Desc: "خصص الإعدادات والمهام",
-            step: "الخطوة",
+        // Agent Lifecycle Steps
+        agentStep1Label: "استكشاف",
+        agentStep1Desc: "اختر من قالب الموظفين",
+        agentStep2Label: "مقابلة",
+        agentStep2Desc: "قم بإجراء مقابلة شاملة",
+        agentStep3Label: "التوظيف",
+        agentStep3Desc: "وظف الموظف الرقمي",
+        agentStep4Label: "التخصيص",
+        agentStep4Desc: "خصص الإعدادات والمهام",
+        step: "الخطوة",
         // Branding
         brand: {
             name: "AGENTIC",
@@ -212,6 +212,7 @@ export const translations = {
         userRole: "👨‍💼 مستخدم",
         logout: "تسجيل الخروج",
         search: "بحث...",
+        deployAgentLabel: "تفعيل الموظف",
 
         // Dashboard Component
         dashboardTitle: "مركز القيادة العملياتية",
@@ -288,16 +289,16 @@ export const translations = {
     },
 
     en: {
-            // Agent Lifecycle Steps
-            agentStep1Label: "Browse",
-            agentStep1Desc: "Select from agent templates",
-            agentStep2Label: "Interview",
-            agentStep2Desc: "Conduct a thorough interview",
-            agentStep3Label: "Hire",
-            agentStep3Desc: "Hire the digital agent",
-            agentStep4Label: "Customize",
-            agentStep4Desc: "Customize settings and tasks",
-            step: "Step",
+        // Agent Lifecycle Steps
+        agentStep1Label: "Browse",
+        agentStep1Desc: "Select from agent templates",
+        agentStep2Label: "Interview",
+        agentStep2Desc: "Conduct a thorough interview",
+        agentStep3Label: "Hire",
+        agentStep3Desc: "Hire the digital agent",
+        agentStep4Label: "Customize",
+        agentStep4Desc: "Customize settings and tasks",
+        step: "Step",
         // Navigation
         nav: {
             home: "Home",
@@ -478,7 +479,7 @@ export const translations = {
         helpQuestion: "How can I help you today? 💅",
         comprehensiveBeautyText: "all beauty services",
         specialtyPrefixText: "{{specialty}} section",
-        
+
         // ModernDashboardLayout Navigation
         dashboardLabel: "Dashboard",
         customersLabel: "Customers",
@@ -499,6 +500,7 @@ export const translations = {
         toneFriendlyLabel: "Friendly",
         toneProfessionalLabel: "Professional",
         toneBubblyLabel: "Bubbly",
+        deployAgentLabel: "Deploy Agent",
 
         // Dashboard Component
         dashboardTitle: "Operational Leadership Center",

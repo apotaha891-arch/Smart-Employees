@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Store, Users, User, Settings, LogOut,
-    Bell, Search, Menu, X, ChevronLeft, CreditCard, Calendar, 
-    BarChart3, Lock, Zap
+    Bell, Search, Menu, X, ChevronLeft, CreditCard, Calendar,
+    BarChart3, Lock, Zap, Bot
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -45,6 +45,7 @@ const ModernDashboardLayout = ({ children }) => {
     // Customer Navigation Items
     const customerNavItems = [
         { icon: LayoutDashboard, label: t('dashboardLabel'), path: '/dashboard' },
+        { icon: Bot, label: t('deployAgentLabel') || 'Deploy Agent', path: '/deploy-agent' },
         { icon: User, label: t('myEmployeesLabel'), path: '/salon-setup' },
         { icon: Calendar, label: t('bookingsLabel'), path: '/bookings' },
         { icon: Users, label: t('customersLabel'), path: '/customers' },
@@ -93,7 +94,7 @@ const ModernDashboardLayout = ({ children }) => {
                             </span>
                         </div>
                     )}
-                    
+
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {navItems.map((item) => (
                             <li key={item.path} style={{ marginBottom: '0.5rem' }}>
@@ -130,11 +131,11 @@ const ModernDashboardLayout = ({ children }) => {
                             <div style={{ overflow: 'hidden', flex: 1 }}>
                                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{userData.name}</div>
                                 <div style={{ fontSize: '0.7rem', color: '#6B7280', marginBottom: '0.25rem' }}>{userData.email}</div>
-                                <span style={{ 
-                                    fontSize: '0.65rem', 
-                                    background: isAdmin ? 'rgba(239, 68, 68, 0.2)' : 'rgba(139, 92, 246, 0.2)', 
+                                <span style={{
+                                    fontSize: '0.65rem',
+                                    background: isAdmin ? 'rgba(239, 68, 68, 0.2)' : 'rgba(139, 92, 246, 0.2)',
                                     color: isAdmin ? '#FCA5A5' : '#C4B5FD',
-                                    padding: '0.15rem 0.4rem', 
+                                    padding: '0.15rem 0.4rem',
                                     borderRadius: '4px',
                                     fontWeight: 700
                                 }}>
