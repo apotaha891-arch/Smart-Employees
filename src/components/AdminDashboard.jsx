@@ -1,48 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import * as adminService from '../services/adminService';
-import { sendMessage, initializeChat } from '../services/geminiService';
-import * as automationService from '../services/automationService';
-import SettingsPanel from './SettingsPanel';
+import {
+    LayoutDashboard,
+    Settings,
+    CreditCard,
+    Link as LinkIcon,
+    Users,
+    Bot,
+    ChevronRight,
+    TrendingUp,
+    Activity,
+    Save
+} from 'lucide-react';
 
 const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('manager'); // manager, templates, customers
-    const [templates, setTemplates] = useState([]);
-    const [customers, setCustomers] = useState([]);
-    const [managerConfig, setManagerConfig] = useState(null);
-    const [globalLeads, setGlobalLeads] = useState([
-        { id: 1, business: 'عيادات الابتسامة', city: 'الرياض', tier: 'Hot', contact: '055XXX1234', owner: 'عبدالله' },
-        { id: 2, business: 'صالون لافندر', city: 'جدة', tier: 'Interested', contact: '050XXX5678', owner: 'سارة' },
-        { id: 3, business: 'مجمع الصحة', city: 'الدمام', tier: 'Hot', contact: '054XXX9012', owner: 'فهد' }
-    ]);
-    const [integrations, setIntegrations] = useState([
-        { id: 'n8n', name: 'n8n Automation', status: 'Disconnected', icon: '🔗', key: '', url: '' },
-        { id: 'google_sheets', name: 'Google Sheets', status: 'Disconnected', icon: '📊', key: '', url: '' },
-        { id: 'whatsapp', name: 'WhatsApp Cloud', status: 'Disconnected', icon: '💬', key: '', url: '' },
-        { id: 'maps', name: 'Google Maps API', status: 'Disconnected', icon: '📍', key: '', url: '' }
-    ]);
-    const [opsLogs, setOpsLogs] = useState([
-        'المدير التنفيذي: كافة أنظمة الربط التقني جاهزة للتفعيل واستقبال الأوامر الاستراتيجية.'
-    ]);
-    const [departments, setDepartments] = useState([
-        { id: 'marketing', name: 'مدير التسويق', icon: '📢', status: 'Active', tasks: 12, performance: '98%' },
-        { id: 'sales', name: 'مدير المبيعات', icon: '💰', status: 'Scanning', tasks: 45, performance: '94%' },
-        { id: 'finance', name: 'المدير المالي', icon: '🏦', status: 'Monitoring', tasks: 8, performance: '100%' },
-        { id: 'operations', name: 'مدير العمليات', icon: '⚙️', status: 'Active', tasks: 22, performance: '96%' }
-    ]);
-    const [selectedIntegration, setSelectedIntegration] = useState(null);
+    const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(true);
-    const [executiveInbox, setExecutiveInbox] = useState([
-        { id: 1, sender: 'n8n Bot', message: 'تم استلام بيانات عيادة الابتسامة.. جاري إرسال حملة الواتساب.', time: 'منذ دقيقة', status: 'unread' },
-        { id: 2, sender: 'Sales Manager', message: 'هل أؤكد ترحيل قائمة جدة إلى Google Sheets؟', time: 'منذ 5 دقائق', status: 'need_action' }
-    ]);
-    const [livePipeline, setLivePipeline] = useState([
-        { id: 'req_101', stage: 2, patient: 'سارة أحمد', request: 'حجز موعد أسنان', lastAction: 'بانتظار تأكيد التوفر' },
-        { id: 'req_102', stage: 4, patient: 'محمد علي', request: 'استشارة فورية', lastAction: 'جاري إنشاء رابط Stripe' }
-    ]);
+    const [saving, setSaving] = useState(false);
 
-    // AI Manager State
-    const [chatMessages, setChatMessages] = useState([]);
-    const [inputValue, setInputValue] = useState('');
+    // Data states
+    const [stats, setStats] = useState({ users: 0, activeAgents: 0, revenue: 0 });
+    const [customers, setCustomers] = useState([]);
+    const [siteContent, setSiteContent] = useState({ heroTitle: '', heroSubtitle: '', contactEmail: '' });
+    const [pricingPlans, setPricingPlans] = useState([]);
+    const [integrations, setIntegrations] = useState([]);
+    const [templates, setTemplates] = useState([]);
 
     useEffect(() => {
         loadAdminData();
@@ -51,566 +33,387 @@ const AdminDashboard = () => {
     const loadAdminData = async () => {
         setLoading(true);
         try {
-            const [tData, cData, config] = await Promise.all([
-                adminService.getTemplates(),
+            // Fetch everything concurrently
+            const [cData, tData, plansConfig, integConfig, siteConfig] = await Promise.all([
                 adminService.getAllCustomers(),
-                adminService.getPlatformSettings('manager_ai_config')
+                adminService.getTemplates(),
+                adminService.getPlatformSettings('pricing_plans'),
+                adminService.getPlatformSettings('external_integrations'),
+                adminService.getPlatformSettings('site_content')
             ]);
-            setTemplates(tData);
-            setCustomers(cData);
-            setManagerConfig(config);
 
-            // Load Integrations
-            const savedIntegrations = await adminService.getPlatformSettings('external_integrations');
-            if (savedIntegrations) {
-                setIntegrations(savedIntegrations);
-            }
+            setCustomers(cData || []);
+            setTemplates(tData || []);
 
-            // Initialize Manager AI
-            if (config) {
-                const systemPrompt = `أنت المدير التنفيذي (CEO) لمنصة Elite Agents المتخصصة في "بروتوكول التشغيل الخماسي".
-مهمتك إدارة رحلة العميل عبر 5 محطات:
-1. الاستقبال (واتساب)
-2. القرار الذكي (تحليل الطلب)
-3. التحقق (التقويم/التوافر)
-4. التوثيق المالي (Supabase/Sheets/Stripe)
-5. الإغلاق (تأكيد واتساب)
+            if (plansConfig) setPricingPlans(plansConfig);
+            else setPricingPlans([
+                { id: 'starter', name: 'باقة الانطلاق', monthlyPrice: 199, yearlyPrice: 159, trialPrice: 99 },
+                { id: 'pro', name: 'باقة الاحتراف', monthlyPrice: 399, yearlyPrice: 319, trialPrice: 199 },
+                { id: 'enterprise', name: 'باقة النخبة', monthlyPrice: 899, yearlyPrice: 719, trialPrice: 449 }
+            ]);
 
-عندما يطلب المالك حجزاً، اطلب من n8n تفعيل "محرك التحقق" (Station 3).
-عندما يتم التأكيد، اطلب تفعيل "الضربة الثلاثية" (Station 4).
-أنت خبير في n8n وتعرف متى تطلق كل Webhook بناءً على المحطة المطلوبة.`;
-                initializeChat(systemPrompt, 'admin');
-                setChatMessages([{ role: 'agent', content: `سيدي المالك. بروتوكول التشغيل الخماسي جاهز للتفعيل. سأقوم بإدارة رحلة المريض من واتساب وحتى التأكيد النهائي.` }]);
-            }
+            if (integConfig) setIntegrations(integConfig);
+            else setIntegrations([
+                { id: 'n8n', name: 'n8n Webhook', url: '', key: '', status: 'Disconnected' },
+                { id: 'whatsapp', name: 'WhatsApp API', url: '', key: '', status: 'Disconnected' }
+            ]);
+
+            if (siteConfig) setSiteContent(siteConfig);
+            else setSiteContent({ heroTitle: 'كوادر رقمية لا تنام', heroSubtitle: 'وظف أذكى الوكلاء الافتراضيين لخدمة عملائك', contactEmail: 'support@eliteagents.com' });
+
+            // Mock Stats based on data
+            setStats({
+                users: cData?.length || 12,
+                activeAgents: (cData?.length || 12) * 2,
+                revenue: (cData?.length || 12) * 399
+            });
+
         } catch (error) {
             console.error('Admin Load Error:', error);
         }
         setLoading(false);
     };
 
-    const handleSaveIntegration = async () => {
+    const handleSaveConfig = async (key, data) => {
+        setSaving(true);
         try {
-            const updatedIntegrations = integrations.map(integ =>
-                integ.id === selectedIntegration.id ? { ...selectedIntegration, status: selectedIntegration.key ? 'Connected' : 'Disconnected' } : integ
-            );
-            await adminService.updatePlatformSettings('external_integrations', updatedIntegrations);
-            setIntegrations(updatedIntegrations);
-            setSelectedIntegration(null);
-
-            // Log action
-            setOpsLogs(prev => [`المدير التنفيذي: تم تحديث بروتوكول الربط لـ ${selectedIntegration.name}.. الأنظمة متصلة الآن.`, ...prev]);
-        } catch (error) {
-            alert('خطأ في حفظ الربط');
+            await adminService.updatePlatformSettings(key, data);
+            alert('تم الحفظ بنجاح ✓');
+        } catch (err) {
+            alert('حدث خطأ أثناء الحفظ');
         }
+        setSaving(false);
     };
 
-    const handleTestIntegration = async (integ) => {
-        setOpsLogs(prev => [`نظام العمليات: جاري اختبار الاتصال بـ ${integ.name}...`, ...prev]);
-        const result = await automationService.triggerIntegration(integ.id, { test: true, message: 'EliteAgents Test Signal' });
-        if (result.success) {
-            setOpsLogs(prev => [`✅ نظام العمليات: نجح الاتصال بـ ${integ.name} (Code: ${result.status})`, ...prev]);
-        } else {
-            setOpsLogs(prev => [`❌ نظام العمليات: فشل الاتصال بـ ${integ.name} (${result.error})`, ...prev]);
-        }
+    const handlePlanChange = (index, field, value) => {
+        const updated = [...pricingPlans];
+        updated[index][field] = value;
+        setPricingPlans(updated);
     };
 
-    const handleExportGlobalLeads = async () => {
-        setOpsLogs(prev => [`المدير التنفيذي: جاري ترحيل قائمة الفرص العالمية إلى Google Sheets...`, ...prev]);
-        const result = await automationService.exportLeadsToSheets(globalLeads);
-        if (result.success) {
-            setOpsLogs(prev => [`✅ مدير المبيعات: تم ترحيل ${globalLeads.length} فرصة بيعية بنجاح.`, ...prev]);
-        } else {
-            setOpsLogs(prev => [`❌ مدير المبيعات: فشل ترحيل البيانات. تأكد من إعدادات الربط.`, ...prev]);
-        }
+    const handleIntegrationChange = (index, field, value) => {
+        const updated = [...integrations];
+        updated[index][field] = value;
+        setIntegrations(updated);
     };
 
-    const handleActionResponse = (action, id) => {
-        setOpsLogs(prev => [`نظام الاستجابة: تم تنفيذ إجراء "${action}" على الرسالة رقم ${id}.`, ...prev]);
-        setExecutiveInbox(prev => prev.filter(msg => msg.id !== id));
-    };
+    const sidebarItems = [
+        { id: 'overview', label: 'لوحة القيادة', icon: <LayoutDashboard size={20} /> },
+        { id: 'content', label: 'محتوى الموقع', icon: <Settings size={20} /> },
+        { id: 'pricing', label: 'إدارة الباقات', icon: <CreditCard size={20} /> },
+        { id: 'integrations', label: 'مفاتيح الربط', icon: <LinkIcon size={20} /> },
+        { id: 'templates', label: 'قوالب الموظفين', icon: <Bot size={20} /> },
+        { id: 'customers', label: 'العملاء والاشتراكات', icon: <Users size={20} /> }
+    ];
 
-    const handleSendToManager = async (e) => {
-        e.preventDefault();
-        if (!inputValue.trim()) return;
-
-        const userMsg = { role: 'user', content: inputValue };
-        setChatMessages(prev => [...prev, userMsg]);
-        setInputValue('');
-
-        // CEO Intelligence: Deciding if we should trigger an external workflow
-        if (inputValue.includes('أتمتة') || inputValue.includes('ربط')) {
-            setOpsLogs(prev => [`المدير التنفيذي: جاري تفعيل سير عمل خارجي لـ n8n بناءً على طلبك...`, ...prev]);
-            await automationService.triggerEvent('EXECUTIVE_ORDER', { command: inputValue });
-        }
-
-        const response = await sendMessage(inputValue, 'admin');
-        if (response.success) {
-            setChatMessages(prev => [...prev, { role: 'agent', content: response.text }]);
-        }
-    };
-
-    if (loading) return <div className="container py-3xl text-center">جاري تحميل لوحة الإدارة...</div>;
+    if (loading) return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#09090B' }}>
+            <h2 style={{ color: 'white' }}>جاري تحميل غرفة التحكم...</h2>
+        </div>
+    );
 
     return (
-        <div className="container py-xl">
-            <div className="card mb-2xl" style={{
-                background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-                color: 'white',
-                padding: '2.5rem',
-                borderRadius: '32px',
-                border: 'none',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: '0 25px 60px rgba(0,0,0,0.2)'
+        <div style={{ display: 'flex', minHeight: '100vh', background: '#09090B', direction: 'rtl', color: '#E4E4E7' }}>
+
+            {/* Sidebar */}
+            <aside style={{
+                width: '280px',
+                background: '#18181B',
+                borderLeft: '1px solid rgba(255,255,255,0.05)',
+                padding: '2rem 1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'fixed',
+                height: '100vh',
+                top: 0,
+                right: 0,
+                zIndex: 50
             }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '6px', height: '100%', background: '#D4AF37' }}></div>
-                <div className="flex align-center justify-between" style={{ position: 'relative', zIndex: 1 }}>
-                    <div className="flex align-center gap-xl">
-                        <div style={{ width: '80px', height: '80px', background: 'linear-gradient(to bottom, #D4AF37, #AA8A2E)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>👔</div>
-                        <div>
-                            <div className="flex align-center gap-sm mb-xs">
-                                <h1 style={{ color: 'white', fontSize: '2rem', fontWeight: 900, margin: 0 }}>جناح القيادة التنفيذية</h1>
-                                <span style={{ background: 'rgba(212,175,55,0.2)', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', color: '#D4AF37', fontWeight: 900, border: '1px solid #D4AF37' }}>PLATFORM CHIEF</span>
-                            </div>
-                            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', margin: 0 }}>مكتب المدير التنفيذي: الإشراف الشامل على الموظفين، العمليات، وقاعدة بيانات النمو</p>
-                        </div>
-                    </div>
+                <div style={{ marginBottom: '3rem', padding: '0 1rem' }}>
+                    <div className="badge badge-success mb-xs" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6' }}>Admin Panel</div>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', margin: 0 }}>نظام الجذور</h2>
                 </div>
-            </div>
 
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid var(--n8n-border)', paddingBottom: '0rem', overflowX: 'auto' }}>
-                {[
-                    { id: 'manager', label: '🤖 المدير الذكي' },
-                    { id: 'templates', label: '💼 الموظفون' },
-                    { id: 'customers', label: '👥 المالكون' },
-                    { id: 'settings', label: '⚙️ الإعدادات' },
-                    { id: 'operations', label: '🚀 العمليات' },
-                    { id: 'boardroom', label: '🏛️ الاجتماعات' }
-                ].map(tab => (
-                    <button
-                        key={tab.id}
-                        className="nav-link"
-                        onClick={() => setActiveTab(tab.id)}
-                        style={{
-                            background: activeTab === tab.id ? 'transparent' : 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '0.75rem 1rem',
-                            fontSize: '0.95rem',
-                            fontWeight: activeTab === tab.id ? 700 : 500,
-                            color: activeTab === tab.id ? 'var(--n8n-primary, #00C9A7)' : 'var(--n8n-text-muted, #666)',
-                            borderBottom: activeTab === tab.id ? '3px solid var(--n8n-primary, #00C9A7)' : 'none',
-                            transition: 'all 0.3s ease',
-                            whiteSpace: 'nowrap'
-                        }}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
+                <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                    {sidebarItems.map(item => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
+                                padding: '1rem',
+                                background: activeTab === item.id ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
+                                color: activeTab === item.id ? '#A78BFA' : '#A1A1AA',
+                                border: 'none',
+                                borderRadius: '12px',
+                                cursor: 'pointer',
+                                fontWeight: activeTab === item.id ? 800 : 500,
+                                fontSize: '1rem',
+                                transition: 'all 0.2s',
+                                textAlign: 'right'
+                            }}
+                        >
+                            {item.icon}
+                            <span style={{ flex: 1 }}>{item.label}</span>
+                            {activeTab === item.id && <ChevronRight size={16} />}
+                        </button>
+                    ))}
+                </nav>
+            </aside>
 
-            {/* Tab Content */}
-            <div className="animate-fade-in">
+            {/* Main Content Area */}
+            <main style={{ flex: 1, padding: '3rem 4rem', marginRight: '280px' }}>
 
-                {activeTab === 'manager' && (
-                    <div className="grid grid-2 gap-xl">
-                        {/* Executive Delegation Chat */}
-                        <div className="card card-solid p-xl" style={{ border: '1px solid var(--n8n-border)', borderRadius: '24px', background: 'var(--n8n-surface-card)' }}>
-                            <div className="flex align-center justify-between mb-md">
-                                <div className="flex align-center gap-sm">
-                                    <span style={{ fontSize: '1.5rem' }}>🤵‍♂️</span>
-                                    <h3 style={{ margin: 0 }}>مكتب الوفد التنفيذي (Delegation)</h3>
+                {/* 1. OVERVIEW */}
+                {activeTab === 'overview' && (
+                    <div className="animate-fade-in">
+                        <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '2rem', color: 'white' }}>نظرة عامة على المنصة</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+                            <div className="card" style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', color: '#10B981' }}>
+                                    <Users size={24} />
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>إجمالي العملاء</h3>
                                 </div>
-                                <span className="badge badge-success">المدير التنفيذي نشط</span>
+                                <div style={{ fontSize: '3rem', fontWeight: 900, color: 'white' }}>{stats.users}</div>
                             </div>
-                            <div className="chat-container mb-md" style={{ background: 'var(--n8n-background-dark, #0F172A)', borderRadius: '12px', height: '350px', border: '1px solid var(--n8n-border, #1E293B)' }}>
-                                {chatMessages.map((msg, i) => (
-                                    <div key={i} className={`bubble ${msg.role === 'user' ? 'bubble-user' : 'bubble-agent'}`}>
-                                        {msg.content}
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex gap-sm mb-md">
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>تفويض سريع إلى:</span>
-                                <button className="btn btn-xs btn-secondary">📢 التسويق</button>
-                                <button className="btn btn-xs btn-secondary">💰 المبيعات</button>
-                                <button className="btn btn-xs btn-secondary">🏦 المالية</button>
-                            </div>
-                            <form onSubmit={handleSendToManager} className="flex gap-sm">
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    style={{ marginTop: 0 }}
-                                    placeholder="أصدر أمراً تنفيذياً أو فوض مهمة لمدير قسم..."
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                />
-                                <button type="submit" className="btn btn-primary">تفويض</button>
-                            </form>
-                        </div>
-
-                        {/* Department Managers Quick Info */}
-                        <div className="grid gap-md">
-                            {departments.map(dept => (
-                                <div key={dept.id} className="n8n-card p-lg flex align-center justify-between" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '16px' }}>
-                                    <div className="flex align-center gap-md">
-                                        <div style={{ fontSize: '1.5rem', width: '45px', height: '45px', background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{dept.icon}</div>
-                                        <div>
-                                            <h4 style={{ margin: 0, fontSize: '1rem' }}>{dept.name}</h4>
-                                            <span style={{ fontSize: '0.75rem', color: dept.status === 'Active' ? 'var(--success)' : 'var(--accent)' }}>● {dept.status}</span>
-                                        </div>
-                                    </div>
-                                    <div className="text-left">
-                                        <div style={{ fontSize: '0.8rem', fontWeight: 800 }}>{dept.performance}</div>
-                                        <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>أداء القسم</div>
-                                    </div>
+                            <div className="card" style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', color: '#8B5CF6' }}>
+                                    <Bot size={24} />
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>الموظفون النشطون</h3>
                                 </div>
-                            ))}
+                                <div style={{ fontSize: '3rem', fontWeight: 900, color: 'white' }}>{stats.activeAgents}</div>
+                            </div>
+                            <div className="card" style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', color: '#F59E0B' }}>
+                                    <TrendingUp size={24} />
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>الدخل الشهري المتوقع</h3>
+                                </div>
+                                <div style={{ fontSize: '3rem', fontWeight: 900, color: 'white' }}>${stats.revenue}</div>
+                            </div>
                         </div>
                     </div>
                 )}
 
-                {activeTab === 'templates' && (
-                    <div>
-                        <div className="flex justify-between align-center mb-md">
-                            <h3>الموظفون المتاحون في السوق</h3>
-                            <button className="btn btn-primary btn-sm">+ إضافة موظف جديد</button>
+                {/* 2. SITE CONTENT */}
+                {activeTab === 'content' && (
+                    <div className="animate-fade-in">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '2rem', fontWeight: 900, color: 'white', margin: 0 }}>محتوى الموقع</h2>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => handleSaveConfig('site_content', siteContent)}
+                                disabled={saving}
+                            >
+                                <Save size={18} style={{ marginLeft: '0.5rem' }} />
+                                {saving ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+                            </button>
                         </div>
-                        <div className="stats-grid">
-                            {templates.map((t) => (
-                                <div key={t.id} className="card p-md">
-                                    <div className="flex justify-between">
-                                        <h4>{t.title}</h4>
-                                        <span className="badge badge-success">${t.base_price}</span>
-                                    </div>
-                                    <p className="text-secondary mb-sm" style={{ fontSize: '0.8rem' }}>{t.description}</p>
-                                    <div className="flex gap-sm">
-                                        <button className="btn btn-secondary btn-sm w-full">تعديل</button>
-                                        <button className="btn-link" style={{ color: 'red' }}>حذف</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'customers' && (
-                    <div className="n8n-card p-xl" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)' }}>
-                        <h3 className="mb-md">سجل مالكي المنشآت (Platform Owners)</h3>
-                        <table className="w-full text-right" style={{ borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '2px solid var(--border-light)' }}>
-                                    <th className="py-sm">الاسم</th>
-                                    <th className="py-sm">البريد الإلكتروني</th>
-                                    <th className="py-sm">الباقة</th>
-                                    <th className="py-sm">تاريخ التسجيل</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {customers.map((c) => (
-                                    <tr key={c.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                                        <td className="py-md">{c.full_name || 'غير معروف'}</td>
-                                        <td className="py-md">{c.email}</td>
-                                        <td className="py-md">
-                                            <span className={`badge ${c.subscription_tier === 'pro' ? 'badge-success' : 'badge-secondary'}`}>
-                                                {c.subscription_tier}
-                                            </span>
-                                        </td>
-                                        <td className="py-md">{new Date(c.created_at).toLocaleDateString('ar-SA')}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                {activeTab === 'settings' && (
-                    <SettingsPanel />
-                )}
-
-                {activeTab === 'operations' && (
-                    <div className="grid gap-xl">
-                        {/* 5-Station Operational Pipeline Visualization */}
-                        <div className="n8n-card p-xl" style={{ border: '2px solid #0F172A', background: 'var(--n8n-surface-card)' }}>
-                            <div className="flex justify-between align-center mb-xl">
-                                <div>
-                                    <h3 style={{ margin: 0 }}>🚉 مسار التشغيل الخماسي (Live Pipeline)</h3>
-                                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>مراقبة حية لرحلة المريض من WhatsApp حتى التأكيد النهائي</p>
-                                </div>
-                                <div className="flex gap-sm">
-                                    <span className="badge badge-success">● {livePipeline.length} عمليات جارية</span>
-                                </div>
-                            </div>
-
+                        <div className="card" style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.05)', padding: '2.5rem', borderRadius: '24px' }}>
                             <div className="grid gap-lg">
-                                {livePipeline.map(req => (
-                                    <div key={req.id} className="n8n-card p-lg" style={{ background: 'var(--n8n-surface-card)', borderRadius: '24px', border: '1px solid var(--n8n-border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                                        <div className="flex justify-between align-center mb-md">
-                                            <div className="flex align-center gap-md">
-                                                <div style={{ width: '40px', height: '40px', background: '#0F172A', color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👤</div>
-                                                <div>
-                                                    <h4 style={{ margin: 0 }}>{req.patient} <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>#{req.id}</span></h4>
-                                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#6366F1' }}>{req.request}</p>
-                                                </div>
-                                            </div>
-                                            <div style={{ textAlign: 'left' }}>
-                                                <span className="badge badge-primary">{req.lastAction}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Station Progress Bar */}
-                                        <div className="flex justify-between align-center px-md py-sm" style={{ background: 'var(--n8n-background-dark)', border: '1px solid var(--n8n-border)', borderRadius: '16px', position: 'relative' }}>
-                                            <div style={{ position: 'absolute', top: '50%', left: '10%', right: '10%', height: '2px', background: 'var(--n8n-border)', zIndex: 0 }}></div>
-                                            {[1, 2, 3, 4, 5].map(step => (
-                                                <div key={step} style={{
-                                                    zIndex: 1,
-                                                    width: '32px',
-                                                    height: '32px',
-                                                    borderRadius: '50%',
-                                                    background: req.stage >= step ? 'var(--n8n-primary, #00C9A7)' : 'var(--n8n-background-dark)', 
-                                                    color: req.stage >= step ? 'white' : '#94A3B8',
-                                                    border: `2px solid ${req.stage >= step ? 'var(--n8n-primary, #00C9A7)' : 'var(--n8n-border)'}`, 
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 900
-                                                }}>
-                                                    {req.stage > step ? '✓' : step}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="flex justify-between text-center mt-sm" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                                            <div style={{ width: '20%' }}>واتساب</div>
-                                            <div style={{ width: '20%' }}>القرار الذكي</div>
-                                            <div style={{ width: '20%' }}>التوافر</div>
-                                            <div style={{ width: '20%' }}>المالية</div>
-                                            <div style={{ width: '20%' }}>التأكيد</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-2 gap-xl">
-                            {/* External Integrations List */}
-                            <div className="n8n-card p-xl" style={{ border: '1px solid var(--n8n-border)', background: 'var(--n8n-surface-card)' }}>
-                                <h3 className="mb-md">🔌 مركز الربط والاتصال (Integration Hub)</h3>
-                                <div className="grid gap-md">
-                                    {integrations.map(integ => (
-                                        <div key={integ.id} className="n8n-card p-md flex align-center justify-between" style={{ background: 'var(--n8n-surface-card)', borderRadius: '12px', border: '1px solid var(--n8n-border)' }}>
-                                            <div className="flex align-center gap-md">
-                                                <span style={{ fontSize: '1.2rem' }}>{integ.icon}</span>
-                                                <div>
-                                                    <span style={{ fontWeight: 700, fontSize: '0.9rem', display: 'block' }}>{integ.name}</span>
-                                                    <span style={{ fontSize: '0.7rem', color: integ.status === 'Connected' ? 'var(--success)' : 'var(--text-muted)' }}>
-                                                        {integ.status === 'Connected' ? '✅ متصل وجاهز' : '❌ غير متصل'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="flex align-center gap-sm">
-                                                {integ.status === 'Connected' && (
-                                                    <button
-                                                        onClick={() => handleTestIntegration(integ)}
-                                                        className="btn btn-xs btn-success"
-                                                        title="إرسال إشارة اختبار"
-                                                    >
-                                                        ⚡ اختبار
-                                                    </button>
-                                                )}
-                                                <button
-                                                    onClick={() => setSelectedIntegration(integ)}
-                                                    className={`btn btn-xs ${integ.status === 'Connected' ? 'btn-secondary' : 'btn-primary'}`}
-                                                >
-                                                    {integ.status === 'Connected' ? 'تعديل الربط' : 'تفعيل الآن'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div>
+                                    <label className="label">عنوان الصفحة الرئيسية (Hero Title)</label>
+                                    <input
+                                        type="text"
+                                        className="input-field"
+                                        value={siteContent.heroTitle}
+                                        onChange={(e) => setSiteContent({ ...siteContent, heroTitle: e.target.value })}
+                                    />
                                 </div>
-                            </div>
-
-                            {/* Integration Modal/Config Panel */}
-                            {selectedIntegration ? (
-                                <div className="n8n-card p-xl animate-fade-in" style={{ border: '2px solid var(--accent)', background: 'var(--n8n-surface-card)' }}>
-                                    <div className="flex justify-between align-start mb-lg">
-                                        <div className="flex align-center gap-md">
-                                            <div style={{ fontSize: '2rem' }}>{selectedIntegration.icon}</div>
-                                            <div>
-                                                <h3 style={{ margin: 0 }}>إعدادات {selectedIntegration.name}</h3>
-                                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>أدخل المفاتيح المطلوبة لتمكين الأتمتة</p>
-                                            </div>
-                                        </div>
-                                        <button onClick={() => setSelectedIntegration(null)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
-                                    </div>
-
-                                    <div className="mb-md">
-                                        <label className="label">
-                                            {selectedIntegration.id === 'whatsapp' ? 'رمز الوصول الدائم (Permanent Access Token)' : 'مفتاح الـ API (API Key)'}
-                                        </label>
-                                        <input
-                                            type="password"
-                                            className="input-field"
-                                            placeholder={selectedIntegration.id === 'whatsapp' ? 'EAABw...' : 'sk-xxxxxxxxxxxx'}
-                                            value={selectedIntegration.key}
-                                            onChange={(e) => setSelectedIntegration({ ...selectedIntegration, key: e.target.value })}
-                                        />
-                                    </div>
-
-                                    <div className="mb-lg">
-                                        <label className="label">
-                                            {selectedIntegration.id === 'whatsapp' ? 'معرف رقم الهاتف (Phone Number ID)' : 'رابط الاتصال (Webhook / Spreadsheet URL)'}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            className="input-field"
-                                            placeholder={selectedIntegration.id === 'whatsapp' ? '105xxxxxxx' : 'https://hooks.n8n.io/...'}
-                                            value={selectedIntegration.url}
-                                            onChange={(e) => setSelectedIntegration({ ...selectedIntegration, url: e.target.value })}
-                                        />
-                                    </div>
-
-                                    {selectedIntegration.id === 'whatsapp' && (
-                                        <div className="mb-lg p-md" style={{ background: 'rgba(34, 197, 94, 0.05)', borderRadius: '12px', border: '1px dashed #22c55e' }}>
-                                            <label className="label" style={{ color: '#15803d', fontWeight: 800 }}>🔐 إعدادات الربط المباشر (No-n8n)</label>
-                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>
-                                                سيقوم الموظف باستخدام هذه البيانات للرد مباشرة على الرسائل الواردة وصرف الوحدات من رصيد العميل.
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <div className="flex gap-md">
-                                        <button className="btn btn-primary flex-1" onClick={handleSaveIntegration}>حفظ وتفعيل البروتوكول</button>
-                                        <button className="btn btn-secondary" onClick={() => setSelectedIntegration(null)}>إلغاء</button>
-                                    </div>
+                                <div>
+                                    <label className="label">النص الفرعي (Hero Subtitle)</label>
+                                    <textarea
+                                        className="input-field"
+                                        rows="3"
+                                        value={siteContent.heroSubtitle}
+                                        onChange={(e) => setSiteContent({ ...siteContent, heroSubtitle: e.target.value })}
+                                    ></textarea>
                                 </div>
-                            ) : (
-                                <div className="n8n-card p-xl flex-center text-center" style={{ border: '1px dashed var(--n8n-border)', background: 'var(--n8n-surface-card)' }}>
-                                    <div>
-                                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚙️</div>
-                                        <h4>بانتظار اختيار الأداة</h4>
-                                        <p className="text-secondary" style={{ fontSize: '0.85rem' }}>اختر أداة من القائمة اليمنى لتكوين جسر الربط مع المنصة.</p>
-                                    </div>
+                                <div>
+                                    <label className="label">بريد الدعم الفني</label>
+                                    <input
+                                        type="email"
+                                        className="input-field"
+                                        value={siteContent.contactEmail}
+                                        onChange={(e) => setSiteContent({ ...siteContent, contactEmail: e.target.value })}
+                                    />
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Logs and Data Section */}
-                        <div className="grid grid-2 gap-xl">
-                            {/* Live Ops Logs */}
-                            <div className="n8n-card p-xl" style={{ maxHeight: '400px', overflowY: 'auto', background: 'var(--n8n-surface-card)', color: '#38BDF8', fontFamily: 'monospace' }}>
-                                <h3 className="mb-md" style={{ color: 'white' }}>📟 سجل العمليات المباشر (Live Ops)</h3>
-                                <div className="grid gap-xs">
-                                    {opsLogs.map((log, i) => (
-                                        <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '4px 0', fontSize: '0.85rem' }}>
-                                            <span style={{ color: '#94A3B8' }}>[{new Date().toLocaleTimeString()}]</span> {log}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Global Leads Collected */}
-                            <div className="n8n-card p-xl" style={{ border: '1px solid var(--n8n-border)', background: 'var(--n8n-surface-card)' }}>
-                                <div className="flex justify-between align-center mb-md">
-                                    <h3 style={{ margin: 0 }}>📍 مجمع الفرص العالمي (Leads)</h3>
-                                    <button className="btn btn-xs btn-success" onClick={handleExportGlobalLeads}>ترحيل إلى Google Sheets 🚀</button>
-                                </div>
-                                <table className="w-full text-right" style={{ fontSize: '0.85rem' }}>
-                                    <thead>
-                                        <tr style={{ borderBottom: '1px solid var(--n8n-border)' }}>
-                                            <th className="py-xs">المنشأة</th>
-                                            <th className="py-xs">الحالة</th>
-                                            <th className="py-xs">المدينة</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {globalLeads.slice(0, 5).map(lead => (
-                                            <tr key={lead.id} style={{ borderBottom: '1px solid var(--n8n-border)' }}>
-                                                <td className="py-xs" style={{ fontWeight: 700 }}>{lead.business}</td>
-                                                <td className="py-xs">
-                                                    <span style={{ color: lead.tier === 'Hot' ? 'red' : 'blue' }}>
-                                                        {lead.tier === 'Hot' ? '🔥 حار' : '💎 ذو قيمة'}
-                                                    </span>
-                                                </td>
-                                                <td className="py-xs">{lead.city}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* Executive Response Center (Inbox) */}
-                        <div className="card p-xl" style={{ border: '2px solid #6366F1', background: 'var(--n8n-surface-card)', borderRadius: '16px' }}>
-                            <div className="flex justify-between align-center mb-lg">
-                                <div className="flex align-center gap-md">
-                                    <div style={{ width: '50px', height: '50px', background: '#6366F1', color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>📥</div>
-                                    <div>
-                                        <h3 style={{ margin: 0 }}>مركز الاستجابة والتعقيب (Executive Inbox)</h3>
-                                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#4F46E5' }}>مخرجات n8n وردود فعل الأنظمة الخارجية بانتظار قرارك</p>
-                                    </div>
-                                </div>
-                                <span className="badge badge-primary">{executiveInbox.length} رسائل جديدة</span>
-                            </div>
-
-                            <div className="grid gap-md">
-                                {executiveInbox.length > 0 ? executiveInbox.map(msg => (
-                                    <div key={msg.id} className="n8n-card p-lg flex justify-between align-center" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                                        <div className="flex align-center gap-md">
-                                            <div style={{ width: '40px', height: '40px', background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🤖</div>
-                                            <div>
-                                                <div className="flex align-center gap-sm">
-                                                    <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>{msg.sender}</span>
-                                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{msg.time}</span>
-                                                </div>
-                                                <p style={{ margin: '5px 0 0 0', fontSize: '0.95rem' }}>{msg.message}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-sm">
-                                            <button className="btn btn-xs btn-primary" onClick={() => {
-                                                const reply = prompt('أدخل ردك ليتم إرساله للعميل عبر n8n:');
-                                                if (reply) {
-                                                    automationService.triggerEvent('EXECUTIVE_REPLY', { messageId: msg.id, reply });
-                                                    handleActionResponse('تم الرد والاعتماد', msg.id);
-                                                }
-                                            }}>💬 رد واعتماد</button>
-                                            <button className="btn btn-xs btn-secondary" onClick={() => handleActionResponse('تجاهل', msg.id)}>تجاهل</button>
-                                        </div>
-                                    </div>
-                                )) : (
-                                    <div className="text-center py-xl" style={{ color: 'var(--text-muted)' }}>
-                                        لا توجد ردود فعل خارجية حالياً.. الأنظمة تعمل بهدوء.
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>
                 )}
 
-                {activeTab === 'boardroom' && (
-                    <div className="n8n-card p-xl" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)' }}>
-                        <div className="flex justify-between align-center mb-xl">
-                            <h3 style={{ margin: 0 }}>🏛️ قاعة اجتماعات مجلس الإدارة</h3>
-                            <button className="btn btn-primary btn-sm">عقد اجتماع طارئ 📞</button>
+                {/* 3. PRICING PLANS */}
+                {activeTab === 'pricing' && (
+                    <div className="animate-fade-in">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '2rem', fontWeight: 900, color: 'white', margin: 0 }}>إدارة الباقات والأسعار</h2>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => handleSaveConfig('pricing_plans', pricingPlans)}
+                                disabled={saving}
+                            >
+                                <Save size={18} style={{ marginLeft: '0.5rem' }} />
+                                {saving ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+                            </button>
                         </div>
-                        <div className="grid grid-3 gap-lg">
-                            {departments.map(dept => (
-                                <div key={dept.id} className="n8n-card p-xl text-center" style={{ border: '1px solid var(--n8n-border)', borderRadius: '24px', background: 'var(--n8n-surface-card)' }}>
-                                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{dept.icon}</div>
-                                    <h4 style={{ marginBottom: '0.5rem' }}>{dept.name}</h4>
-                                    <div className="badge badge-primary mb-md">{dept.tasks} مهمة جارية</div>
-                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                                        هذا المدير مسؤول عن كافة عمليات الـ {dept.name.split(' ')[1]} والأتمتة الخاصة بها.
-                                    </p>
-                                    <button className="btn btn-secondary btn-sm btn-block">مراجعة تقرير القسم</button>
+                        <div style={{ display: 'grid', gap: '1.5rem' }}>
+                            {pricingPlans.map((plan, idx) => (
+                                <div key={plan.id} className="card" style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '24px' }}>
+                                    <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '1.5rem', color: '#A78BFA' }}>{plan.name} ({plan.id})</h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                                        <div>
+                                            <label className="label">سعر الاشتراك الشهري (ريال)</label>
+                                            <input
+                                                type="number"
+                                                className="input-field"
+                                                value={plan.monthlyPrice}
+                                                onChange={(e) => handlePlanChange(idx, 'monthlyPrice', e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="label">سعر الاشتراك السنوي/شهرياً (ريال)</label>
+                                            <input
+                                                type="number"
+                                                className="input-field"
+                                                value={plan.yearlyPrice}
+                                                onChange={(e) => handlePlanChange(idx, 'yearlyPrice', e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="label">خطة التجربة لـ 3 شهور (ريال)</label>
+                                            <input
+                                                type="number"
+                                                className="input-field"
+                                                value={plan.trialPrice}
+                                                onChange={(e) => handlePlanChange(idx, 'trialPrice', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
 
-            </div>
+                {/* 4. INTEGRATIONS API LINKS */}
+                {activeTab === 'integrations' && (
+                    <div className="animate-fade-in">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '2rem', fontWeight: 900, color: 'white', margin: 0 }}>مفاتيح الـ API وروابط التحكم</h2>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => handleSaveConfig('external_integrations', integrations)}
+                                disabled={saving}
+                            >
+                                <Save size={18} style={{ marginLeft: '0.5rem' }} />
+                                {saving ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+                            </button>
+                        </div>
+                        <div style={{ display: 'grid', gap: '1.5rem' }}>
+                            {integrations.map((integ, idx) => (
+                                <div key={integ.id} className="card" style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '24px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                        <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#A78BFA' }}>{integ.name}</h3>
+                                        <select
+                                            className="input-field"
+                                            style={{ width: 'auto', margin: 0, padding: '0.5rem 1rem' }}
+                                            value={integ.status}
+                                            onChange={(e) => handleIntegrationChange(idx, 'status', e.target.value)}
+                                        >
+                                            <option value="Disconnected">غير متصل ❌</option>
+                                            <option value="Connected">متصل ✅</option>
+                                        </select>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                        <div>
+                                            <label className="label">رابط الويب هوك (URL)</label>
+                                            <input
+                                                type="text"
+                                                className="input-field"
+                                                placeholder="https://hooks.n8n..."
+                                                value={integ.url}
+                                                onChange={(e) => handleIntegrationChange(idx, 'url', e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="label">مفتاح الوصول (API Key / Token)</label>
+                                            <input
+                                                type="password"
+                                                className="input-field"
+                                                placeholder="sk-..."
+                                                value={integ.key}
+                                                onChange={(e) => handleIntegrationChange(idx, 'key', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* 5. CUSTOMERS */}
+                {activeTab === 'customers' && (
+                    <div className="animate-fade-in">
+                        <h2 style={{ fontSize: '2rem', fontWeight: 900, color: 'white', marginBottom: '2rem' }}>قاعدة العملاء والاشتراكات</h2>
+                        <div className="card" style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', overflow: 'hidden' }}>
+                            <table style={{ width: '100%', textAlign: 'right', borderCollapse: 'collapse' }}>
+                                <thead style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <tr>
+                                        <th style={{ padding: '1.5rem 2rem', fontWeight: 800, color: '#A1A1AA' }}>اسم العميل</th>
+                                        <th style={{ padding: '1.5rem 2rem', fontWeight: 800, color: '#A1A1AA' }}>البريد الإلكتروني</th>
+                                        <th style={{ padding: '1.5rem 2rem', fontWeight: 800, color: '#A1A1AA' }}>الباقة</th>
+                                        <th style={{ padding: '1.5rem 2rem', fontWeight: 800, color: '#A1A1AA' }}>تاريخ التسجيل</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {customers.length > 0 ? customers.map(c => (
+                                        <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                            <td style={{ padding: '1.5rem 2rem', fontWeight: 700 }}>{c.full_name || 'غير مدرج'}</td>
+                                            <td style={{ padding: '1.5rem 2rem', color: '#A1A1AA' }}>{c.email}</td>
+                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                                <span className={`badge ${c.subscription_tier === 'pro' ? 'badge-success' : 'badge-secondary'}`}>
+                                                    {c.subscription_tier || 'مجاني'}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '1.5rem 2rem', color: '#A1A1AA' }}>{new Date(c.created_at).toLocaleDateString('ar-SA')}</td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: '#71717A' }}>لا يوجد سجلات للعملاء حتى الآن.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* 6. TEMPLATES */}
+                {activeTab === 'templates' && (
+                    <div className="animate-fade-in">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '2rem', fontWeight: 900, color: 'white', margin: 0 }}>مكتبة الوكلاء الافتراضيين</h2>
+                            <button className="btn btn-primary">+ وكيل جديد</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                            {templates.map(t => (
+                                <div key={t.id} className="card" style={{ background: '#18181B', border: '1px solid rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '24px' }}>
+                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem', color: '#FFF' }}>{t.title}</h3>
+                                    <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>{t.description}</p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <span style={{ fontWeight: 800, color: '#10B981' }}>${t.base_price}</span>
+                                        <button className="btn btn-sm btn-secondary" style={{ padding: '0.5rem 1rem' }}>تعديل</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+            </main>
         </div>
     );
 };

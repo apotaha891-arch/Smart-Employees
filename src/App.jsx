@@ -46,7 +46,7 @@ function AppContent() {
 
     return (
         <div className="App">
-            {!isDashboard && <Navbar />}
+            <Navbar />
 
             <Routes>
                 {/* ============ PUBLIC ROUTES ============ */}

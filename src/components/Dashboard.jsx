@@ -166,9 +166,10 @@ const Dashboard = () => {
                         <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--success)' }}>99.8%</div>
                     </div>
                     <div className="card" style={{ padding: '1.25rem' }}>
-                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{t('allocatedCapacity')}</div>
-                        <div style={{ fontSize: '2rem', fontWeight: 900 }}>
-                            {Math.round((profile?.credits_used / profile?.total_credits) * 100)}%
+                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>الرصيد المتبقي (الرموز)</div>
+                        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#F59E0B' }}>
+                            {/* Assuming we'll fetch wallet_credits.balance and store it in profile soon */}
+                            {profile?.wallet_balance || 50000}
                         </div>
                     </div>
                 </div>

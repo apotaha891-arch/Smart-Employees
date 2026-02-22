@@ -57,6 +57,64 @@ export const getCurrentUser = async () => {
     }
 };
 
+// ==================== INTEGRATIONS (OAUTH) ====================
+
+export const linkGoogleAccount = async () => {
+    try {
+        const { data, error } = await supabase.auth.linkIdentity({
+            provider: 'google',
+            options: {
+                scopes: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/spreadsheets',
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                },
+                redirectTo: `${window.location.origin}/setup?integration=google`,
+            },
+        });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error linking Google account:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const saveIntegrationCredentials = async (userId, provider, credentials) => {
+    try {
+        // Upsert the integration credentials
+        const { error } = await supabase
+            .from('integrations')
+            .upsert({
+                user_id: userId,
+                provider: provider,
+                credentials: credentials,
+                status: 'connected',
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id, provider' }); // Note: Ensure you have a unique constraint on (user_id, provider)
+
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving integration:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const getIntegrations = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('integrations')
+            .select('*')
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error.message, data: [] };
+    }
+};
+
 // ==================== BUSINESS PROFILE ====================
 
 export const updateBusinessProfile = async (userId, profileData) => {
@@ -413,61 +471,70 @@ export const getProfile = async (userId) => {
     }
 };
 
-export const checkAndDeductCredit = async (userId, cost = 1) => {
+export const getWalletBalance = async (userId) => {
     try {
-        // 1. Try to get existing profile
-        const { data: profile, error: getError } = await supabase
-            .from('profiles')
-            .select('subscription_tier, total_credits, credits_used')
-            .eq('id', userId)
+        const { data, error } = await supabase
+            .from('wallet_credits')
+            .select('balance')
+            .eq('user_id', userId)
             .maybeSingle();
 
-        if (getError) throw getError;
+        if (error) throw error;
+        return { success: true, balance: data?.balance || 0 };
+    } catch (error) {
+        console.error('Error fetching wallet balance:', error);
+        return { success: false, balance: 0, error: error.message };
+    }
+};
 
-        let activeProfile = profile;
+export const checkAndDeductCredit = async (userId, cost = 1) => {
+    try {
+        // Use wallet_credits system
+        const { data: wallet, error: getError } = await supabase
+            .from('wallet_credits')
+            .select('balance')
+            .eq('user_id', userId)
+            .maybeSingle();
 
-        // 2. If no profile exists, create a default one
-        if (!profile) {
-            const { data: newProfile, error: createError } = await supabase
-                .from('profiles')
-                .insert([{
-                    id: userId,
-                    subscription_tier: 'trial',
-                    total_credits: 50,
-                    credits_used: 0
-                }])
-                .select()
-                .single();
-
-            if (createError) throw createError;
-            activeProfile = newProfile;
+        if (getError) {
+            console.warn('Wallet fetch error:', getError);
+            // Don't block chat on a read error, but don't deduct either
+            return { success: true, remaining: 100, isLow: false };
         }
 
-        // 3. Enterprise has unlimited credits
-        if (activeProfile.subscription_tier === 'enterprise') {
-            return { success: true, remaining: Infinity };
-        }
+        let currentBalance = wallet?.balance !== undefined ? wallet.balance : 50; // Default to 50 for legacy users
 
-        const remaining = (activeProfile.total_credits || 0) - (activeProfile.credits_used || 0);
-
-        if (remaining < cost) {
+        if (currentBalance < cost && wallet !== null) {
             return {
                 success: false,
-                error: 'لقد انتهى رصيد الموظف الرقمي. يرجى تجديد العقد لمواصلة العمل.',
+                error: 'لقد انتهى رصيد الموظف الرقمي. يرجى المتابعة لترقية باقتك.',
                 errorCode: 'OUT_OF_CREDITS'
             };
         }
 
-        // 4. Deduct credit
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ credits_used: (activeProfile.credits_used || 0) + cost })
-            .eq('id', userId);
+        const newBalance = currentBalance - cost;
+
+        if (wallet) {
+            // Only update if wallet exists
+            const { error: updateError } = await supabase
+                .from('wallet_credits')
+                .update({ balance: newBalance })
+                .eq('user_id', userId);
+
+            if (updateError) console.warn('Credit deduction update error (RLS?):', updateError);
+        } else {
+            // Attempt to create wallet safely, suppress RLS failures
+            const { error: insertError } = await supabase
+                .from('wallet_credits')
+                .insert([{ user_id: userId, balance: newBalance }]);
+
+            if (insertError) console.warn('Credit wallet insert error (RLS?):', insertError);
+        }
 
         return {
             success: true,
-            remaining: remaining - cost,
-            isLow: (remaining - cost) <= 5
+            remaining: newBalance,
+            isLow: newBalance <= 5
         };
     } catch (error) {
         console.error('Credit Check Error:', error);

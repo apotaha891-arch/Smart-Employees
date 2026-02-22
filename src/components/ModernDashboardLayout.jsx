@@ -44,12 +44,11 @@ const ModernDashboardLayout = ({ children }) => {
 
     // Customer Navigation Items
     const customerNavItems = [
-        { icon: LayoutDashboard, label: t('dashboardLabel'), path: '/dashboard' },
-        { icon: Bot, label: t('deployAgentLabel') || 'Deploy Agent', path: '/deploy-agent' },
-        { icon: User, label: t('myEmployeesLabel'), path: '/salon-setup' },
-        { icon: Calendar, label: t('bookingsLabel'), path: '/bookings' },
-        { icon: Users, label: t('customersLabel'), path: '/customers' },
-        { icon: Settings, label: t('settingsLabel'), path: '/setup' },
+        { icon: LayoutDashboard, label: t('nav.dashboard'), path: '/dashboard' },
+        { icon: Bot, label: t('nav.templates'), path: '/templates' },
+        { icon: Settings, label: t('nav.salonSetup'), path: '/salon-setup' },
+        { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Bookings', path: '/bookings' },
+        { icon: Users, label: language === 'ar' ? 'العملاء' : 'Customers', path: '/customers' },
     ];
 
     // Admin Navigation Items
@@ -67,21 +66,26 @@ const ModernDashboardLayout = ({ children }) => {
     const navItems = isAdmin ? adminNavItems : customerNavItems;
 
     return (
-        <div className="dashboard-container" style={{ display: 'flex', minHeight: '100vh', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr', flexDirection: language === 'ar' ? 'row-reverse' : 'row' }}>
+        <div className="dashboard-container" style={{ display: 'flex', height: 'calc(100vh - 74px)', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr', flexDirection: 'row', overflow: 'hidden' }}>
 
             {/* Sidebar */}
-            <aside className="n8n-sidebar" style={{ width: isSidebarOpen ? '280px' : '80px' }}>
+            <aside className="n8n-sidebar" style={{ width: isSidebarOpen ? '280px' : '80px', display: 'flex', flexDirection: 'column', background: '#111827', borderRight: language === 'ar' ? 'none' : '1px solid rgba(255,255,255,0.05)', borderLeft: language === 'ar' ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'width 0.3s', overflowY: 'auto', flexShrink: 0 }}>
                 {/* Logo Area */}
-                <div style={{ padding: '2rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{
-                        width: '40px', height: '40px',
-                        background: 'linear-gradient(135deg, #FFF 0%, #A1A1AA 100%)',
-                        borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'black', fontSize: '1.2rem', fontWeight: '900'
-                    }}>
-                        ✦
-                    </div>
-                    {isSidebarOpen && <span style={{ fontSize: '1.4rem', fontWeight: 900 }}>{t('brand.name')}</span>}
+                <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
+                        <div style={{
+                            width: '40px', height: '40px',
+                            background: 'linear-gradient(135deg, #FFF 0%, #A1A1AA 100%)',
+                            borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'black', fontSize: '1.2rem', fontWeight: '900'
+                        }}>
+                            ✦
+                        </div>
+                        {isSidebarOpen && <span style={{ fontSize: '1.4rem', fontWeight: 900 }}>{t('brand.name')}</span>}
+                    </Link>
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '0.5rem' }}>
+                        <Menu size={20} />
+                    </button>
                 </div>
 
                 {/* Navigation */}
@@ -167,47 +171,12 @@ const ModernDashboardLayout = ({ children }) => {
                 width: `calc(100% - ${isSidebarOpen ? '280px' : '80px'})`,
                 transition: 'width 0.3s ease',
                 background: '#0B0F19',
-                minHeight: '100vh',
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                overflowX: 'auto',
+                overflowX: 'hidden',
                 boxSizing: 'border-box'
             }}>
-                {/* Topbar */}
-                <header style={{
-                    height: '80px',
-                    padding: '0 2rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    background: 'rgba(11, 15, 25, 0.8)',
-                    backdropFilter: 'blur(10px)',
-                    position: 'sticky', top: 0, zIndex: 40
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}>
-                            <Menu size={24} />
-                        </button>
-                        <div style={{ position: 'relative' }}>
-                            <Search size={18} style={{ position: 'absolute', [language === 'ar' ? 'left' : 'right']: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
-                            <input
-                                type="text"
-                                placeholder={t('search')}
-                                style={{
-                                    background: '#1F2937', border: 'none', borderRadius: '8px',
-                                    padding: `10px ${language === 'ar' ? '16px 40px' : '40px 16px'}`, color: 'white', outline: 'none', width: '300px'
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                        <div style={{ position: 'relative', cursor: 'pointer' }}>
-                            <Bell size={22} color="#9CA3AF" />
-                            <span style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', background: '#EF4444', borderRadius: '50%' }}></span>
-                        </div>
-                    </div>
-                </header>
-
                 {/* Page Content */}
                 <div style={{ padding: '2rem', flex: 1, overflowY: 'auto' }}>
                     {children}

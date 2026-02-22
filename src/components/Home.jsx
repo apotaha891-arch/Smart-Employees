@@ -92,7 +92,7 @@ const Home = () => {
                     </p>
 
                     <div className="flex gap-md">
-                        <Link to="/templates" className="btn btn-primary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
+                        <Link to="/interview" className="btn btn-primary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
                             {t('home.startInterview')}
                         </Link>
                         {user ? (
@@ -200,9 +200,9 @@ const Home = () => {
             {/* Features Stats */}
             <section style={{
                 paddingTop: '6rem',
-                paddingBottom: '6rem', 
+                paddingBottom: '6rem',
                 background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.03) 50%, rgba(168, 85, 247, 0.05) 100%)',
-                borderTop: '1px solid rgba(255,255,255,0.05)', 
+                borderTop: '1px solid rgba(255,255,255,0.05)',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
                 position: 'relative',
                 overflow: 'hidden'
@@ -244,7 +244,7 @@ const Home = () => {
                     <div style={{ position: 'absolute', bottom: '-30%', right: '-10%', width: '350px', height: '350px', background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
                     <div style={{ position: 'relative', zIndex: 2 }}>
                         <h2 style={{ color: 'white', marginBottom: '2rem', fontSize: '2.5rem', fontWeight: 900, lineHeight: '1.3' }}>
-                            {language === 'ar' 
+                            {language === 'ar'
                                 ? `هل أنت مستعد لنقل ${profile?.business_name || 'منشأتك'} إلى العصر الذكي؟`
                                 : `Ready to take ${profile?.business_name || 'your business'} into the smart era?`}
                         </h2>
@@ -261,7 +261,7 @@ const Home = () => {
                                                 ? t('home.ctaFitness')
                                                 : t('home.ctaGeneral')}
                         </p>
-                        <Link to="/templates" className="btn btn-lg" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #06B6D4 100%)', color: 'var(--primary)', padding: '1.25rem 3rem', fontSize: '1.2rem', borderRadius: '18px', fontWeight: 800, border: 'none', boxShadow: '0 15px 40px rgba(139, 92, 246, 0.3)' }}>
+                        <Link to="/interview" className="btn btn-lg" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #06B6D4 100%)', color: 'var(--primary)', padding: '1.25rem 3rem', fontSize: '1.2rem', borderRadius: '18px', fontWeight: 800, border: 'none', boxShadow: '0 15px 40px rgba(139, 92, 246, 0.3)' }}>
                             {t('home.ctaButton')}
                         </Link>
                     </div>

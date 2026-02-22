@@ -14,8 +14,8 @@ export const useAuth = () => {
 // Helper function to determine user role
 const determineUserRole = async (authUser) => {
     // Check if user is admin (hardcoded for now - TODO: add role field to profiles table)
-    const adminEmails = ['admin@example.com', 'admin@agentic.com'];
-    if (adminEmails.includes(authUser?.email)) {
+    const adminEmails = ['admin@example.com', 'admin@agentic.com', 'ceo@eliteagents.com'];
+    if (adminEmails.includes(authUser?.email?.toLowerCase())) {
         return 'admin';
     }
 

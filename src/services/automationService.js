@@ -1,36 +1,27 @@
+import { supabase } from './supabaseService';
 import * as adminService from './adminService';
 
 /**
- * Service to handle communications with external tools (n8n, Google Sheets, etc.)
+ * Service to handle communications with Native Integrations (Supabase Edge Functions)
  */
 
-export const triggerIntegration = async (integrationId, payload) => {
+export const triggerIntegration = async (agentId, sessionId, message) => {
     try {
-        const integrations = await adminService.getPlatformSettings('external_integrations');
-        if (!integrations) throw new Error('No integrations configured');
-
-        const integ = integrations.find(i => i.id === integrationId);
-        if (!integ || !integ.url) throw new Error(`${integrationId} not connected or URL missing`);
-
-        // Real Fetch to External Tool
-        const response = await fetch(integ.url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': integ.key ? `Bearer ${integ.key}` : undefined
-            },
-            body: JSON.stringify({
-                source: 'EliteAgents_Platform',
-                timestamp: new Date().toISOString(),
-                ...payload
-            })
+        // Native Call to our secure Edge Function
+        // This replaces the old n8n webhook and handles everything natively
+        const { data, error } = await supabase.functions.invoke('agent-handler', {
+            body: {
+                message,
+                sessionId,
+                agentId
+            }
         });
 
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        if (error) throw new Error(error.message);
 
-        return { success: true, status: response.status };
+        return { success: true, text: data?.text };
     } catch (error) {
-        console.error(`Integration Error (${integrationId}):`, error);
+        console.error(`Edge Function Error:`, error);
         return { success: false, error: error.message };
     }
 };

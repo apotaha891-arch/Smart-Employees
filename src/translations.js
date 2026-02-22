@@ -24,7 +24,7 @@ export const translations = {
             reports: "التقارير الإحصائية",
             templates: "الموظفون",
             pricing: "الأسعار",
-            salonSetup: "إعداد الصالون",
+            salonSetup: "إعداد المنشأة",
             logout: "تسجيل الخروج"
         },
 
@@ -161,6 +161,7 @@ export const translations = {
         tabIdentity: "الهوية",
         tabKnowledge: "المعلومات",
         tabActivation: "التفعيل",
+        tabIntegrations: "الربط التقني",
         agentNameLabel: "اسم الموظفة",
         specialtyLabel: "التخصص",
         comprehensiveBeauty: "تجميل شامل",
@@ -449,6 +450,7 @@ export const translations = {
         tabIdentity: "Identity",
         tabKnowledge: "Information",
         tabActivation: "Activation",
+        tabIntegrations: "Integrations",
         agentNameLabel: "Agent Name",
         specialtyLabel: "Specialty",
         comprehensiveBeauty: "Comprehensive Beauty",

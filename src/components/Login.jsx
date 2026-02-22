@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { signIn, signUp } from '../services/supabaseService';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { signIn, signUp, supabase } from '../services/supabaseService';
+import { useAuth } from '../context/AuthContext';
+import { FcGoogle } from 'react-icons/fc';
 
 const Login = () => {
+    const { isAuthenticated, userRole, loading: authLoading } = useAuth();
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -10,6 +13,21 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (!authLoading && isAuthenticated) {
+            if (userRole === 'admin') {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate(location.state?.redirectTo || '/templates', { replace: true });
+            }
+        }
+    }, [isAuthenticated, authLoading, userRole, navigate, location.state]);
+
+    if (authLoading || isAuthenticated) {
+        return <div className="container py-xl text-center" style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>جاري التحويل...</div>;
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,11 +39,33 @@ const Login = () => {
             : await signIn(email, password);
 
         if (result.success) {
-            navigate('/templates');
+            // Admin Check
+            if (email.toLowerCase() === 'ceo@eliteagents.com') {
+                navigate('/admin');
+            } else {
+                navigate(location.state?.redirectTo || '/templates', { state: location.state });
+            }
         } else {
             setError(result.error);
         }
         setLoading(false);
+    };
+
+    const handleGoogleSignIn = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/setup`,
+                },
+            });
+            if (error) throw error;
+        } catch (error) {
+            setError('فشل تسجيل الدخول عبر Google: ' + error.message);
+            setLoading(false);
+        }
     };
 
     return (
@@ -51,8 +91,39 @@ const Login = () => {
                 {error && (
                     <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', textAlign: 'center', fontSize: '0.9rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
                         {error}
+                        {!isSignUp && error.includes('Invalid login credentials') && (
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#9CA3AF' }}>
+                                ملاحظة: إذا أنشأت حساباً للتو، يرجى تفعيل بريدك الإلكتروني أولاً.
+                            </div>
+                        )}
                     </div>
                 )}
+
+                <button
+                    onClick={handleGoogleSignIn}
+                    className="btn btn-outline btn-block mb-lg"
+                    style={{
+                        padding: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                        background: 'white',
+                        color: '#374151',
+                        border: '1px solid #E5E7EB',
+                        fontWeight: 600
+                    }}
+                    disabled={loading}
+                >
+                    <FcGoogle size={24} />
+                    {isSignUp ? 'أنشئ حسابك عبر Google' : 'تسجيل الدخول عبر Google'}
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#6B7280', fontSize: '0.9rem' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                    <span style={{ padding: '0 1rem' }}>أو عبر البريد</span>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                </div>
 
                 <form onSubmit={handleSubmit}>
                     {isSignUp && (

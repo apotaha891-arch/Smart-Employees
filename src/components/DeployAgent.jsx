@@ -1,299 +1,315 @@
-import React, { useState } from 'react';
-import { Bot, Send, User, Briefcase, MessageSquare, Phone, CheckCircle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
+import { Bot, CheckCircle2, MessageCircle, Send, Instagram, Zap, Headphones, Settings, ShieldCheck, CreditCard, Loader2 } from 'lucide-react';
+import { createAgent, saveContract } from '../services/supabaseService';
 
-const DeployAgent = () => {
-    const { language } = useLanguage();
+const IntegrationsAddons = () => {
+    const { t, language } = useLanguage();
     const isArabic = language === 'ar';
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Data passed from InterviewRoom
+    const agentData = location.state?.template || { title: 'موظف ذكي', specialty: 'تخصص عام' };
+    const agentName = location.state?.businessRules?.businessName || agentData.title;
+
+    const [activeAddons, setActiveAddons] = useState([]);
     const [status, setStatus] = useState('idle'); // idle, loading, success
-    const [formData, setFormData] = useState({
-        phone: '',
-        agentName: '',
-        industry: '',
-        tone: 'professional' // default tone
-    });
+    const [isCreatingAgent, setIsCreatingAgent] = useState(!location.state?.agentId && location.state?.businessRules);
 
-    // Arabic Translations
-    const translations = {
-        title: isArabic ? 'تفعيل الموظف الرقمي الجديد' : 'Deploy New Digital Agent',
-        subtitle: isArabic ? 'أدخل معلومات بسيطة لبدء تشغيل موظفك الرقمي فوراً 🚀' : 'Enter basic info to get your digital agent running instantly 🚀',
-        phoneLabel: isArabic ? 'رقم الهاتف (واتساب / تليجرام)' : 'Phone Number (WhatsApp / Telegram)',
-        phonePlaceholder: isArabic ? 'مثال: +966500000000' : 'e.g. +966500000000',
-        nameLabel: isArabic ? 'اسم الموظف الرقمي' : 'Digital Agent Name',
-        namePlaceholder: isArabic ? 'مثال: نورة، سارة...' : 'e.g. Noura, Sarah...',
-        industryLabel: isArabic ? 'نوع النشاط أو الصناعة' : 'Industry Type',
-        industryPlaceholder: isArabic ? 'مثال: صالون تجميل، مطعم، عقارات...' : 'e.g. Salon, Restaurant, Real Estate...',
-        toneLabel: isArabic ? 'نبرة التحدث والملاحظات' : 'Tone & Basic Notes',
-        toneProfessional: isArabic ? 'رسمي واحترافي' : 'Professional',
-        toneFriendly: isArabic ? 'ودود ومرح' : 'Friendly & Welcoming',
-        toneSales: isArabic ? 'مبيعات وإقناع' : 'Sales & Persuasive',
-        deployButton: isArabic ? 'تفعيل الموظف الآن 🚀' : 'Deploy Agent Now 🚀',
-        deploying: isArabic ? 'جاري التفعيل وبناء الذكاء الاصطناعي...' : 'Deploying AI Agent...',
-        successTitle: isArabic ? 'تم التفعيل بنجاح! 🎉' : 'Agent Deployed Successfully! 🎉',
-        successMessage: isArabic ? 'موظفك الرقمي جاهز الآن للعمل واستقبال الرسائل.' : 'Your digital agent is now ready to work and receive messages.',
-        backButton: isArabic ? 'تفعيل موظف آخر' : 'Deploy Another Agent'
+    useEffect(() => {
+        const autoCreateAgent = async () => {
+            if (!location.state?.agentId && location.state?.businessRules) {
+                try {
+                    const rules = location.state.businessRules;
+                    const agentResult = await createAgent({
+                        name: rules.businessName || agentData.title || 'AI Agent',
+                        specialty: rules.businessType || agentData.specialty || 'General',
+                    });
+
+                    if (agentResult.success) {
+                        await saveContract(agentResult.data.id, rules);
+                        localStorage.setItem('currentAgentId', agentResult.data.id);
+                    }
+                } catch (err) {
+                    console.error('Auto create agent failed', err);
+                } finally {
+                    setIsCreatingAgent(false);
+                }
+            }
+        };
+        autoCreateAgent();
+    }, []);
+
+    const toggleAddon = (addonId) => {
+        setActiveAddons(prev =>
+            prev.includes(addonId) ? prev.filter(id => id !== addonId) : [...prev, addonId]
+        );
     };
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!formData.phone || !formData.agentName || !formData.industry) return;
-
+    const handleDeploy = () => {
         setStatus('loading');
-
-        // Simulate API call to n8n webhook
         setTimeout(() => {
-            console.log('Sending data to n8n Webhook:', formData);
-            // Example fetch: 
-            // fetch('https://your-n8n-domain/webhook/deploy-agent', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(formData)
-            // });
             setStatus('success');
-        }, 3000);
+            setTimeout(() => {
+                navigate('/dashboard');
+            }, 2000);
+        }, 2000);
     };
+
+    const handleContactAdmin = () => {
+        alert(isArabic ? 'سيتم توجيهك لفريق المبيعات والدعم الفني.' : 'You will be redirected to the sales support team.');
+    };
+
+    const addons = [
+        {
+            id: 'whatsapp',
+            icon: <MessageCircle size={32} color="#25D366" />,
+            title: isArabic ? 'تفعيل واتساب' : 'WhatsApp API',
+            desc: isArabic ? 'ربط الموظف برقم واتساب الخاص بمنشأتك للرد التلقائي.' : 'Connect agent to your WhatsApp Business number.',
+            price: isArabic ? '250 نقطة/شهرياً' : '250 Credits/mo',
+            color: '#25D366'
+        },
+        {
+            id: 'telegram',
+            icon: <Send size={32} color="#0088cc" />,
+            title: isArabic ? 'تفعيل تيليجرام' : 'Telegram Bot',
+            desc: isArabic ? 'بناء بوت تيليجرام رسمي يرد على العملاء مباشرة.' : 'Official Telegram bot for direct customer support.',
+            price: isArabic ? '100 نقطة/شهرياً' : '100 Credits/mo',
+            color: '#0088cc'
+        },
+        {
+            id: 'instagram',
+            icon: <Instagram size={32} color="#E1306C" />,
+            title: isArabic ? 'ربط انستجرام' : 'Instagram DMs',
+            desc: isArabic ? 'الرد التلقائي على الرسائل الخاصة (DMs) والتعليقات.' : 'Auto-reply to Direct Messages and Comments.',
+            price: isArabic ? '200 نقطة/شهرياً' : '200 Credits/mo',
+            color: '#E1306C'
+        }
+    ];
 
     return (
-        <div style={{
-            maxWidth: '600px',
-            margin: '0 auto',
-            padding: '2rem',
-            background: 'rgba(17, 24, 39, 0.7)',
-            borderRadius: '24px',
-            border: '1px solid rgba(255,255,255,0.05)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            direction: isArabic ? 'rtl' : 'ltr'
-        }}>
-            {status === 'success' ? (
-                <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                    <CheckCircle size={64} color="#10B981" style={{ margin: '0 auto 1.5rem auto' }} />
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: 700, marginBottom: '1rem' }}>{translations.successTitle}</h2>
-                    <p style={{ color: '#9CA3AF', fontSize: '1.1rem', marginBottom: '2rem' }}>
-                        {translations.successMessage}
-                    </p>
-                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem', display: 'inline-block', textAlign: isArabic ? 'right' : 'left' }}>
-                        <p style={{ margin: '0 0 0.5rem 0', color: '#D1D5DB' }}><strong>{translations.nameLabel}:</strong> {formData.agentName}</p>
-                        <p style={{ margin: '0 0 0.5rem 0', color: '#D1D5DB' }}><strong>{translations.phoneLabel}:</strong> {formData.phone}</p>
-                        <p style={{ margin: 0, color: '#D1D5DB' }}><strong>{translations.industryLabel}:</strong> {formData.industry}</p>
-                    </div>
-                    <br />
-                    <button
-                        onClick={() => { setStatus('idle'); setFormData({ phone: '', agentName: '', industry: '', tone: 'professional' }); }}
-                        style={{
-                            background: 'transparent',
-                            color: '#8B5CF6',
-                            border: '1px solid #8B5CF6',
-                            padding: '12px 24px',
-                            borderRadius: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        {translations.backButton}
-                    </button>
+        <div className="ai-aura-container" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
+            {isCreatingAgent ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
+                    <Loader2 size={48} color="#8B5CF6" className="animate-spin" style={{ marginBottom: '1rem' }} />
+                    <h2 style={{ color: 'white', fontWeight: 800 }}>{isArabic ? 'جاري إعداد بيئة الموظف...' : 'Preparing Agent Environment...'}</h2>
                 </div>
             ) : (
-                <>
-                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <div className="container" style={{ position: 'relative', zIndex: 1, paddingBottom: '4rem', paddingTop: '2rem' }}>
+
+                    {/* Header Section */}
+                    <div className="page-header text-center" style={{ marginBottom: '3rem' }}>
                         <div style={{
-                            width: '64px', height: '64px', background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
-                            borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            margin: '0 auto 1rem auto', boxShadow: '0 10px 25px rgba(139, 92, 246, 0.3)'
-                        }}>
-                            <Bot size={32} color="white" />
-                        </div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>{translations.title}</h1>
-                        <p style={{ color: '#9CA3AF', margin: 0 }}>{translations.subtitle}</p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-
-                        {/* Phone Number Input */}
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E5E7EB' }}>
-                                {translations.phoneLabel}
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                                <Phone size={20} color="#9CA3AF" style={{ position: 'absolute', [isArabic ? 'right' : 'left']: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    placeholder={translations.phonePlaceholder}
-                                    required
-                                    style={{
-                                        width: '100%',
-                                        padding: `14px ${isArabic ? '46px 16px' : '16px 46px'}`,
-                                background: '#1F2937',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                color: 'white',
-                                fontSize: '1rem',
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                                transition: 'border-color 0.2s'
-                                    }}
-                                onFocus={(e) => e.target.style.borderColor = '#8B5CF6'}
-                                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-                                dir="ltr"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Agent Name Input */}
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E5E7EB' }}>
-                                {translations.nameLabel}
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                                <User size={20} color="#9CA3AF" style={{ position: 'absolute', [isArabic ? 'right' : 'left']: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                                <input
-                                    type="text"
-                                    name="agentName"
-                                    value={formData.agentName}
-                                    onChange={handleChange}
-                                    placeholder={translations.namePlaceholder}
-                                    required
-                                    style={{
-                                        width: '100%',
-                                        padding: `14px ${isArabic ? '46px 16px' : '16px 46px'}`,
-                                background: '#1F2937',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                color: 'white',
-                                fontSize: '1rem',
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                                transition: 'border-color 0.2s'
-                                    }}
-                                onFocus={(e) => e.target.style.borderColor = '#8B5CF6'}
-                                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Industry Input */}
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E5E7EB' }}>
-                                {translations.industryLabel}
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                                <Briefcase size={20} color="#9CA3AF" style={{ position: 'absolute', [isArabic ? 'right' : 'left']: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                                <input
-                                    type="text"
-                                    name="industry"
-                                    value={formData.industry}
-                                    onChange={handleChange}
-                                    placeholder={translations.industryPlaceholder}
-                                    required
-                                    style={{
-                                        width: '100%',
-                                        padding: `14px ${isArabic ? '46px 16px' : '16px 46px'}`,
-                                background: '#1F2937',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                color: 'white',
-                                fontSize: '1rem',
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                                transition: 'border-color 0.2s'
-                                    }}
-                                onFocus={(e) => e.target.style.borderColor = '#8B5CF6'}
-                                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Tone Selection */}
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E5E7EB' }}>
-                                {translations.toneLabel}
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                                <MessageSquare size={20} color="#9CA3AF" style={{ position: 'absolute', [isArabic ? 'right' : 'left']: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                                <select
-                                    name="tone"
-                                    value={formData.tone}
-                                    onChange={handleChange}
-                                    style={{
-                                        width: '100%',
-                                        padding: `14px ${isArabic ? '46px 16px' : '16px 46px'}`,
-                                background: '#1F2937',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                color: 'white',
-                                fontSize: '1rem',
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                                appearance: 'none',
-                                cursor: 'pointer',
-                                transition: 'border-color 0.2s'
-                                    }}
-                                onFocus={(e) => e.target.style.borderColor = '#8B5CF6'}
-                                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-                                >
-                                <option value="professional">{translations.toneProfessional}</option>
-                                <option value="friendly">{translations.toneFriendly}</option>
-                                <option value="sales">{translations.toneSales}</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={status === 'loading'}
-                        style={{
-                            background: status === 'loading' ? '#4C1D95' : 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '16px',
-                            borderRadius: '12px',
-                            fontSize: '1.1rem',
-                            fontWeight: 700,
-                            cursor: status === 'loading' ? 'not-allowed' : 'pointer',
-                            display: 'flex',
+                            display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '10px',
-                            marginTop: '1rem',
-                            transition: 'all 0.2s',
-                            boxShadow: status === 'loading' ? 'none' : '0 10px 20px rgba(139, 92, 246, 0.4)'
-                        }}
-                    >
-                        {status === 'loading' ? (
-                            <>
-                                <Loader2 size={24} className="animate-spin" style={{ animation: 'spin 2s linear infinite' }} />
-                                {translations.deploying}
-                            </>
-                        ) : (
-                            <>
-                                <Send size={24} />
-                                {translations.deployButton}
-                            </>
-                        )}
-                    </button>
-                </form>
+                            width: '72px',
+                            height: '72px',
+                            background: 'rgba(16, 185, 129, 0.1)',
+                            border: '1px solid rgba(16, 185, 129, 0.2)',
+                            color: '#10B981',
+                            borderRadius: '24px',
+                            marginBottom: '1rem',
+                            boxShadow: '0 10px 30px rgba(16, 185, 129, 0.2)'
+                        }}>
+                            <ShieldCheck size={40} />
+                        </div>
+                        <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>
+                            {isArabic ? 'تم اعتماد الموظف بنجاح! 🎉' : 'Agent Hired Successfully! 🎉'}
+                        </h2>
+                        <p style={{ fontSize: '1.2rem', color: '#A1A1AA', maxWidth: '600px', margin: '0 auto' }}>
+                            {isArabic
+                                ? `النسخة الأساسية من "${agentName}" تعمل الآن بداخل النظام بنجاح. الخطوة التالية هي تحديد المنصات التي ترغب بتوصيله بها.`
+                                : `Base model for "${agentName}" is active. Select the channels you want to connect them to.`}
+                        </p>
+                    </div>
 
-            <style>
-                {`
-                @keyframes spin {
-                    0 % { transform: rotate(0deg); }
-                                100% {transform: rotate(360deg); }
-                            }
-                        `}
-            </style>
-        </>
-    )
-}
-        </div >
+                    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+                            <Zap size={24} color="#F59E0B" />
+                            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>
+                                {isArabic ? 'الإضافات وباقات المنصات المتاحة' : 'Available Add-ons & Platforms'}
+                            </h3>
+                        </div>
+
+                        {/* Addons Grid */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                            gap: '1.5rem',
+                            marginBottom: '3rem'
+                        }}>
+                            {addons.map(addon => {
+                                const isActive = activeAddons.includes(addon.id);
+                                return (
+                                    <div
+                                        key={addon.id}
+                                        onClick={() => toggleAddon(addon.id)}
+                                        className="card"
+                                        style={{
+                                            background: isActive ? `rgba(${hexToRgb(addon.color)}, 0.05)` : '#18181B',
+                                            border: isActive ? `1px solid ${addon.color}` : '1px solid rgba(255,255,255,0.05)',
+                                            borderRadius: '20px',
+                                            padding: '1.5rem',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            boxShadow: isActive ? `0 10px 30px rgba(${hexToRgb(addon.color)}, 0.1)` : 'none',
+                                            position: 'relative',
+                                            overflow: 'hidden'
+                                        }}
+                                    >
+                                        {isActive && (
+                                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: addon.color }}></div>
+                                        )}
+
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                            <div style={{
+                                                width: '60px', height: '60px',
+                                                background: isActive ? addon.color : '#27272A',
+                                                borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                transition: 'all 0.2s ease'
+                                            }}>
+                                                {React.cloneElement(addon.icon, { color: isActive ? 'white' : addon.color })}
+                                            </div>
+
+                                            <div style={{
+                                                width: '28px', height: '28px',
+                                                borderRadius: '50%',
+                                                border: isActive ? `2px solid ${addon.color}` : '2px solid rgba(255,255,255,0.2)',
+                                                background: isActive ? addon.color : 'transparent',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                            }}>
+                                                {isActive && <CheckCircle2 size={16} color="white" />}
+                                            </div>
+                                        </div>
+
+                                        <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem' }}>{addon.title}</h4>
+                                        <p style={{ color: '#A1A1AA', fontSize: '0.9rem', lineHeight: '1.5', minHeight: '40px', marginBottom: '1rem' }}>
+                                            {addon.desc}
+                                        </p>
+
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', width: 'fit-content' }}>
+                                            <CreditCard size={16} color="#A1A1AA" />
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>{addon.price}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Custom Request Section */}
+                        <div className="card" style={{
+                            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(109, 40, 217, 0.05) 100%)',
+                            border: '1px solid rgba(139, 92, 246, 0.2)',
+                            borderRadius: '24px',
+                            padding: '2rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '2rem',
+                            marginBottom: '3rem'
+                        }}>
+                            <div style={{ flex: '1 1 300px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                    <div style={{ width: '48px', height: '48px', background: '#8B5CF6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Settings size={24} color="white" />
+                                    </div>
+                                    <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'white' }}>
+                                        {isArabic ? 'هل تحتاج إلى إضافة مخصصة؟' : 'Need a Custom Integration?'}
+                                    </h3>
+                                </div>
+                                <p style={{ fontSize: '1rem', color: '#A1A1AA', lineHeight: '1.6', margin: 0 }}>
+                                    {isArabic
+                                        ? 'نظامنا يدعم ربط الموظف الذكي بأنظمة الـ ERP الخاصة بك، أو تطبيقات الجوال، ومراكز الاتصال (Voice AI). تواصل مع الإدارة لرفع طلب هندسي.'
+                                        : 'Connect with ERPs, custom mobile apps, or Voice AI systems. Contact management for custom engineering requests.'}
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleContactAdmin}
+                                className="btn"
+                                style={{
+                                    background: 'white',
+                                    color: '#7C3AED',
+                                    padding: '1rem 2rem',
+                                    borderRadius: '14px',
+                                    fontWeight: 800,
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.75rem',
+                                    fontSize: '1rem',
+                                    flexShrink: 0
+                                }}
+                            >
+                                <Headphones size={20} />
+                                {isArabic ? 'تواصل مع الإدارة الآن' : 'Contact Administration'}
+                            </button>
+                        </div>
+
+                        {/* Actions */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2rem' }}>
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="btn"
+                                disabled={status === 'loading'}
+                                style={{
+                                    background: 'transparent',
+                                    color: '#A1A1AA',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    padding: '1rem 2rem',
+                                    borderRadius: '14px',
+                                    fontWeight: 700,
+                                    fontSize: '1rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {isArabic ? 'تخطي للوحة التحكم' : 'Skip to Dashboard'}
+                            </button>
+
+                            <button
+                                onClick={handleDeploy}
+                                disabled={status === 'loading' || activeAddons.length === 0}
+                                className="btn"
+                                style={{
+                                    background: activeAddons.length === 0 || status === 'loading' ? '#27272A' : '#8B5CF6',
+                                    color: activeAddons.length === 0 || status === 'loading' ? '#71717A' : 'white',
+                                    border: 'none',
+                                    padding: '1rem 3rem',
+                                    borderRadius: '14px',
+                                    fontWeight: 900,
+                                    fontSize: '1.1rem',
+                                    cursor: activeAddons.length === 0 || status === 'loading' ? 'not-allowed' : 'pointer',
+                                    boxShadow: activeAddons.length > 0 && status !== 'loading' ? '0 10px 25px rgba(139, 92, 246, 0.4)' : 'none',
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
+                                {status === 'loading'
+                                    ? (isArabic ? 'جاري الاعتماد...' : 'Deploying...')
+                                    : (status === 'success'
+                                        ? (isArabic ? 'تم بنجاح ✓' : 'Success ✓')
+                                        : (isArabic ? `اعتماد وإضافة (${activeAddons.length})` : `Deploy Add-ons (${activeAddons.length})`)
+                                    )
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
-export default DeployAgent;
+// Helper function to convert hex to rgb for rgba usage
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ?
+        `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` :
+        '139, 92, 246'; // fallback to primary purple
+}
+
+export default IntegrationsAddons;

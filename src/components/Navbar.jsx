@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { getCurrentUser, signOut } from '../services/supabaseService';
-import { Smartphone, Briefcase, Globe } from 'lucide-react';
+import { Smartphone, Briefcase, Globe, LayoutDashboard } from 'lucide-react';
 
 const Navbar = () => {
     const { t, language, toggleLanguage } = useLanguage();
@@ -51,22 +51,6 @@ const Navbar = () => {
                     <li>
                         <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>{t('nav.home')}</Link>
                     </li>
-                    {user && (
-                        <>
-                            <li>
-                                <Link to="/setup" className={`nav-link ${isActive('/setup') ? 'active' : ''}`}>
-                                    <Smartphone size={18} />
-                                    <span>{t('nav.templates')}</span>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/salon-setup" className={`nav-link ${isActive('/salon-setup') ? 'active' : ''}`}>
-                                    <Briefcase size={18} />
-                                    <span>{t('nav.salonSetup')}</span>
-                                </Link>
-                            </li>
-                        </>
-                    )}
                     <li>
                         <Link to="/templates" className={`nav-link ${isActive('/templates') ? 'active' : ''}`}>{t('nav.templates')}</Link>
                     </li>
@@ -76,12 +60,20 @@ const Navbar = () => {
                     <li>
                         <Link to="/interview" className={`nav-link ${isActive('/interview') ? 'active' : ''}`}>{t('nav.interview')}</Link>
                     </li>
+                    {user && (
+                        <li>
+                            <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <LayoutDashboard size={18} />
+                                <span>{t('nav.dashboard')}</span>
+                            </Link>
+                        </li>
+                    )}
 
                     <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)', margin: '0 0.5rem' }}></div>
 
                     {/* Language Toggle */}
                     <li>
-                        <button 
+                        <button
                             onClick={toggleLanguage}
                             className="nav-link"
                             title={language === 'ar' ? 'Switch to English' : 'Switch to Arabic'}

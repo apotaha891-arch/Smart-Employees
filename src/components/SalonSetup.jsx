@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, saveSalonConfig, activateSalonAgent, getServices, addService, updateService, deleteService } from '../services/supabaseService';
+import { getCurrentUser, getProfile, getWalletBalance, saveSalonConfig, activateSalonAgent, getServices, addService, updateService, deleteService, linkGoogleAccount, saveIntegrationCredentials, getIntegrations, supabase } from '../services/supabaseService';
 import { useNavigate } from 'react-router-dom';
 import {
     User, FileText, Calendar, CheckCircle2, Smartphone,
     MessageCircle, Settings, Upload, Clock, Briefcase, Sparkles,
-    CreditCard, Activity, Users, Send, Plus, Edit2, Trash2, Save, X
+    CreditCard, Activity, Users, Send, Plus, Edit2, Trash2, Save, X, Puzzle
 } from 'lucide-react';
 import ServicesTable from './ServicesTable';
 
@@ -15,6 +15,11 @@ const SalonSetup = () => {
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('identity');
     const [salonConfigId, setSalonConfigId] = useState(null);
+    const [industry, setIndustry] = useState('general');
+    const [walletBalance, setWalletBalance] = useState(null);
+    const [connectedIntegrations, setConnectedIntegrations] = useState({ google: false, whatsapp: false });
+
+    // Handle OAuth Redirect and Load Integrations
 
     // Form State
     const [formData, setFormData] = useState({
@@ -36,6 +41,71 @@ const SalonSetup = () => {
     const [messages, setMessages] = useState([]);
 
     useEffect(() => {
+        const checkUser = async () => {
+            const { user } = await getCurrentUser();
+            if (user) {
+                const profileResult = await getProfile(user.id);
+                if (profileResult.success && profileResult.data) {
+                    const balanceResult = await getWalletBalance(user.id);
+                    if (balanceResult.success) {
+                        setWalletBalance(balanceResult.balance);
+                    }
+                    const type = profileResult.data.business_type?.toLowerCase();
+                    if (type?.includes('طب') || type?.includes('صحي') || type?.includes('clinic')) setIndustry('medical');
+                    else if (type?.includes('عقار') || type?.includes('estate')) setIndustry('realestate');
+                    else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty')) setIndustry('beauty');
+                    else if (type?.includes('مطعم') || type?.includes('restau')) setIndustry('restaurant');
+                    else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit')) setIndustry('fitness');
+                }
+            }
+        };
+        checkUser();
+    }, []);
+
+    // Load Integrations and Handle OAuth Redirect
+    useEffect(() => {
+        const processIntegrations = async () => {
+            const { user } = await getCurrentUser();
+            if (!user) return;
+
+            // Check if returning from Google OAuth
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.provider_token || session?.provider_refresh_token) {
+                const creds = {
+                    access_token: session.provider_token,
+                    refresh_token: session.provider_refresh_token,
+                    expires_in: 3600 // approximate, mostly relying on refresh_token
+                };
+                await saveIntegrationCredentials(user.id, 'google', creds);
+                // Clear fragment to prevent re-processing on refresh
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+
+            // Fetch current integrations
+            const result = await getIntegrations(user.id);
+            if (result.success) {
+                const googleConnected = result.data.some(i => i.provider === 'google' && i.status === 'connected');
+                const waConnected = result.data.some(i => i.provider === 'whatsapp' && i.status === 'connected');
+                setConnectedIntegrations({ google: googleConnected, whatsapp: waConnected });
+            }
+        };
+
+        if (activeTab === 'integrations') {
+            processIntegrations();
+        }
+    }, [activeTab]);
+
+    const handleGoogleConnect = async () => {
+        setLoading(true);
+        const result = await linkGoogleAccount();
+        if (!result.success) {
+            alert("خطأ في ربط حساب جوجل: " + result.error);
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
         const updatePreview = () => {
             const tones = {
                 friendly: t('toneFriendlyGreeting'),
@@ -43,7 +113,7 @@ const SalonSetup = () => {
                 bubbly: t('toneBubblyGreeting')
             };
 
-            const specialty = formData.specialty === 'شامل' || formData.specialty === 'Comprehensive Beauty' 
+            const specialty = formData.specialty === 'شامل' || formData.specialty === 'Comprehensive Beauty'
                 ? t('comprehensiveBeautyText')
                 : `${t('specialtyPrefixText')}${formData.specialty}`;
 
@@ -170,7 +240,7 @@ ${t('helpQuestion')}
                 <StatCard icon={Activity} label={t('activeWorkflow')} value="1" color="#8B5CF6" />
                 <StatCard icon={Users} label={t('activeEmployees')} value="2" color="#10B981" />
                 <StatCard icon={MessageCircle} label={t('totalMessages')} value="1,240" color="#3B82F6" />
-                <StatCard icon={CreditCard} label={t('remainingCredit')} value="450" color="#F59E0B" />
+                <StatCard icon={CreditCard} label={t('remainingCredit')} value={walletBalance !== null ? walletBalance.toLocaleString() : "⏳"} color="#F59E0B" />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', alignItems: 'start' }}>
@@ -196,6 +266,7 @@ ${t('helpQuestion')}
                             {[
                                 { id: 'identity', label: t('tabIdentity'), icon: User },
                                 { id: 'knowledge', label: t('tabKnowledge'), icon: Briefcase },
+                                { id: 'integrations', label: t('tabIntegrations') || 'Integrations', icon: Puzzle },
                                 { id: 'activation', label: t('tabActivation'), icon: Smartphone }
                             ].map(tab => (
                                 <button
@@ -236,9 +307,49 @@ ${t('helpQuestion')}
                                                 onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
                                                 style={{ color: 'white', background: '#1F2937' }}
                                             >
-                                                <option value="شامل" style={{ color: 'white', background: '#1F2937' }}>{t('comprehensiveBeauty')}</option>
-                                                <option value="شعر" style={{ color: 'white', background: '#1F2937' }}>{t('hairCare')}</option>
-                                                <option value="مكياج" style={{ color: 'white', background: '#1F2937' }}>{t('makeupArtist')}</option>
+                                                {industry === 'beauty' && (
+                                                    <>
+                                                        <option value="شامل" style={{ color: 'white', background: '#1F2937' }}>شامل (Comprehensive)</option>
+                                                        <option value="شعر" style={{ color: 'white', background: '#1F2937' }}>شعر (Hair Care)</option>
+                                                        <option value="مكياج" style={{ color: 'white', background: '#1F2937' }}>مكياج (Makeup Artist)</option>
+                                                    </>
+                                                )}
+                                                {industry === 'medical' && (
+                                                    <>
+                                                        <option value="طب عام" style={{ color: 'white', background: '#1F2937' }}>طب عام (General Medicine)</option>
+                                                        <option value="أسنان" style={{ color: 'white', background: '#1F2937' }}>أسنان (Dental)</option>
+                                                        <option value="جلدية" style={{ color: 'white', background: '#1F2937' }}>جلدية (Dermatology)</option>
+                                                    </>
+                                                )}
+                                                {industry === 'realestate' && (
+                                                    <>
+                                                        <option value="مبيعات" style={{ color: 'white', background: '#1F2937' }}>مبيعات (Sales)</option>
+                                                        <option value="تأجير" style={{ color: 'white', background: '#1F2937' }}>تأجير (Rentals)</option>
+                                                        <option value="أملاك" style={{ color: 'white', background: '#1F2937' }}>إدارة أملاك (Property Management)</option>
+                                                    </>
+                                                )}
+                                                {industry === 'restaurant' && (
+                                                    <>
+                                                        <option value="حجوزات" style={{ color: 'white', background: '#1F2937' }}>حجوزات طاولات (Table Reservations)</option>
+                                                        <option value="توصيل" style={{ color: 'white', background: '#1F2937' }}>طلبات خارجية (Delivery)</option>
+                                                        <option value="شكاوى" style={{ color: 'white', background: '#1F2937' }}>خدمة العملاء (Customer Service)</option>
+                                                    </>
+                                                )}
+                                                {industry === 'fitness' && (
+                                                    <>
+                                                        <option value="اشتراكات" style={{ color: 'white', background: '#1F2937' }}>اشتراكات (Memberships)</option>
+                                                        <option value="تدريب شخصي" style={{ color: 'white', background: '#1F2937' }}>تدريب شخصي (Personal Training)</option>
+                                                        <option value="تغذية" style={{ color: 'white', background: '#1F2937' }}>استشارات تغذية (Nutrition)</option>
+                                                    </>
+                                                )}
+                                                {industry === 'general' && (
+                                                    <>
+                                                        <option value="شامل" style={{ color: 'white', background: '#1F2937' }}>شامل (General)</option>
+                                                        <option value="مبيعات" style={{ color: 'white', background: '#1F2937' }}>مبيعات (Sales)</option>
+                                                        <option value="دعم فني" style={{ color: 'white', background: '#1F2937' }}>دعم فني (Tech Support)</option>
+                                                        <option value="خدمة عملاء" style={{ color: 'white', background: '#1F2937' }}>خدمة عملاء (Customer Service)</option>
+                                                    </>
+                                                )}
                                             </select>
                                         </div>
                                     </div>
@@ -292,6 +403,63 @@ ${t('helpQuestion')}
                                         <div>
                                             <label className="text-sm text-dim mb-sm block">{t('endTimeLabel')}</label>
                                             <input type="time" className="input-field" value={formData.workingHours.end} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, end: e.target.value } })} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'integrations' && (
+                                <div className="animate-fade-in">
+                                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>ربط التطبيقات (Native Integrations)</h3>
+
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{ background: '#DB443720', padding: '10px', borderRadius: '8px', color: '#DB4437' }}><Calendar /></div>
+                                                <div>
+                                                    <h4 style={{ margin: 0 }}>Google Calendar</h4>
+                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>مزامنة المواعيد وقراءة الأوقات المتاحة</div>
+                                                </div>
+                                            </div>
+                                            {connectedIntegrations.google ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#22C55E' }}>
+                                                    <CheckCircle2 size={18} /> تم الربط
+                                                </div>
+                                            ) : (
+                                                <button className="btn btn-outline" style={{ fontSize: '0.9rem', padding: '8px 16px' }} onClick={handleGoogleConnect} disabled={loading}>ربط الحساب</button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{ background: '#25D36620', padding: '10px', borderRadius: '8px', color: '#25D366' }}><MessageCircle /></div>
+                                                <div>
+                                                    <h4 style={{ margin: 0 }}>WhatsApp Business</h4>
+                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>استقبال الواتساب والرد المباشر</div>
+                                                </div>
+                                            </div>
+                                            <button className="btn btn-outline" style={{ fontSize: '0.9rem', padding: '8px 16px' }}>إعداد الربط</button>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{ background: '#0F9D5820', padding: '10px', borderRadius: '8px', color: '#0F9D58' }}><FileText /></div>
+                                                <div>
+                                                    <h4 style={{ margin: 0 }}>Google Sheets Sync</h4>
+                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>تصدير الحجوزات والعملاء تلقائياً (نسخة احتياطية)</div>
+                                                </div>
+                                            </div>
+                                            {connectedIntegrations.google ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#22C55E' }}>
+                                                    <CheckCircle2 size={18} /> جاهز للعمل
+                                                </div>
+                                            ) : (
+                                                <button className="btn btn-outline" style={{ fontSize: '0.9rem', padding: '8px 16px' }} onClick={handleGoogleConnect} disabled={loading}>اربط بحساب Google أولاً</button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -356,7 +524,7 @@ ${t('helpQuestion')}
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
