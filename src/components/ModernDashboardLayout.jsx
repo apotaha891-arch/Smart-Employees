@@ -75,13 +75,13 @@ const ModernDashboardLayout = ({ children }) => {
                     <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
                         <div style={{
                             width: '40px', height: '40px',
-                            background: 'linear-gradient(135deg, #FFF 0%, #A1A1AA 100%)',
+                            background: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
                             borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'black', fontSize: '1.2rem', fontWeight: '900'
+                            color: 'white', fontSize: '1.2rem', fontWeight: '900'
                         }}>
-                            ✦
+                            24
                         </div>
-                        {isSidebarOpen && <span style={{ fontSize: '1.4rem', fontWeight: 900 }}>{t('brand.name')}</span>}
+                        {isSidebarOpen && <span style={{ fontSize: '1.5rem', fontWeight: 900, background: 'linear-gradient(90deg, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '1px' }}>24Shift</span>}
                     </Link>
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '0.5rem' }}>
                         <Menu size={20} />

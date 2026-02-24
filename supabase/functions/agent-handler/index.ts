@@ -18,284 +18,201 @@ serve(async (req) => {
         const { message, sessionId, agentId } = await req.json();
 
         // 1. Initialize Supabase Client securely
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-        );
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+        const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+        const supabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey);
 
         // 2. Fetch Agent Configuration
         const { data: agent, error: agentError } = await supabaseClient
             .from('agents')
-            .select('*, user_id')
+            .select('*')
             .eq('id', agentId)
             .single();
 
         if (agentError || !agent) throw new Error('Agent not found');
 
-        // 3. Fetch Available Integrations for the Salon User
+        // 3. Fetch Available Integrations (Simplified for MVP without user_id)
         const { data: integrations, error: intError } = await supabaseClient
             .from('integrations')
             .select('*')
-            .eq('user_id', agent.user_id)
             .eq('status', 'connected');
 
-        // 3.5. Check Wallet Credits Balance
-        const { data: wallet, error: walletError } = await supabaseClient
-            .from('wallet_credits')
-            .select('balance')
-            .eq('user_id', agent.user_id)
-            .single();
-
-        // Ensure user has a wallet and positive balance. For MVP, we might auto-create or allow 0, but ideally block:
-        if (walletError || !wallet || wallet.balance <= 0) {
-            console.log("Insufficient funds for user:", agent.user_id);
-            return new Response(
-                JSON.stringify({ success: false, text: "عذراً، رصيد الحساب غير كافٍ لإتمام المحادثة. يرجى مراجعة إدارة المنشأة." }),
-                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
 
         // 4. Initialize Gemini AI with Tool Definitions
         const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') ?? '');
 
-        // Define native tools based on connected integrations
-        const tools = [];
-        if (integrations?.find(int => int.provider === 'google_calendar')) {
-            tools.push({
-                functionDeclarations: [
-                    {
-                        name: "check_calendar_availability",
-                        description: "Check available time slots for appointments in the professional calendar.",
-                        parameters: {
-                            type: "OBJECT",
-                            properties: {
-                                date: { type: "STRING", description: "Date in YYYY-MM-DD format" }
-                            },
-                            required: ["date"]
-                        }
-                    },
-                    {
-                        name: "book_appointment",
-                        description: "Book an appointment in the Google Calendar.",
-                        parameters: {
-                            type: "OBJECT",
-                            properties: {
-                                date: { type: "STRING", description: "Date in YYYY-MM-DD format" },
-                                time: { type: "STRING", description: "Time in HH:MM format" },
-                                customer_name: { type: "STRING", description: "Customer full name" },
-                                customer_phone: { type: "STRING", description: "Customer phone number" },
-                                service: { type: "STRING", description: "Type of service requested" }
-                            },
-                            required: ["date", "time", "customer_name", "customer_phone", "service"]
-                        }
+        // Define tools
+        const tools = [{
+            functionDeclarations: [
+                {
+                    name: "book_appointment",
+                    description: "استخدمي هذه الأداة فقط عندما تجمعين معلومات الحجز كاملة واضحة من الزبونة (الاسم، الجوال، الخدمة المطلوبة بدقة، ووقت وتاريخ مبدئي). ستقوم بحفظ الحجز في قاعدة البيانات و إضافته إلى جوجل كالندر وشيتس إذا كانت متاحة.",
+                    parameters: {
+                        type: "OBJECT",
+                        properties: {
+                            customer_name: { type: "STRING", description: "اسم الزبونة الكامل" },
+                            customer_phone: { type: "STRING", description: "رقم جوال الزبونة" },
+                            service_requested: { type: "STRING", description: "نوع الخدمة المطلوبة بدقة" },
+                            booking_date_string: { type: "STRING", description: "تاريخ ووقت الحجز (بأي صيغة كتبتها الزبونة مثل بكرا العصر، أو يوم الثلاثاء)" }
+                        },
+                        required: ["customer_name", "customer_phone", "service_requested"]
                     }
-                ]
-            });
-        }
+                }
+            ]
+        }];
 
-        if (integrations?.find(int => int.provider === 'google_sheets')) {
-            tools.push({
-                functionDeclarations: [
-                    {
-                        name: "sync_to_google_sheets",
-                        description: "Save or sync booking and customer details to the company's Google Sheet.",
-                        parameters: {
-                            type: "OBJECT",
-                            properties: {
-                                customer_name: { type: "STRING", description: "Customer full name" },
-                                customer_phone: { type: "STRING", description: "Customer phone number" },
-                                service: { type: "STRING", description: "Type of service requested" },
-                                date: { type: "STRING", description: "Date of appointment in YYYY-MM-DD" },
-                                time: { type: "STRING", description: "Time of appointment in HH:MM" },
-                                status: { type: "STRING", description: "Status of booking, e.g., Confirmed, Pending" }
-                            },
-                            required: ["customer_name", "customer_phone", "service", "date", "time"]
-                        }
-                    }
-                ]
-            });
-        }
 
         const systemInstruction = `
-أنت موظف خدمة وحجوزات احترافي تعمل لدى ${agent.name}. 
-تخصصك الدقيق: ${agent.specialty}.
-نبرة الصوت المفضلة: ${agent.tone}.
-المعلومات المرجعية: ${agent.knowledge_base}
-مواعيد العمل: ${agent.working_hours?.start} إلى ${agent.working_hours?.end}
+أنتِ موظفة حجوزات لطيفة ومحترفة تعملين لدى (${agent.name}).
+تخصصك: ${agent.specialty || 'خدمات'}. 
 
-قواعد أساسية وسمات شخصية (صارمة جداً):
-1. **الذكاء الاجتماعي (المرونة):** إجاباتك يجب أن تكون طبيعية، مريحة، ولبقة جداً. تعاطف مع أسئلة العميل وتجنب الردود الآلية الجامدة كأنك "روبوت".
-2. **مجاراة اللهجة (Dialect Matching):** تفاعل مع لهجة العميل بدقة. إذا كان يتحدث بلهجة سعودية/خليجية، استخدم مفردات الترحيب والردود المناسبة بلهجة بيضاء ولطيفة (مثل: "أبشر"، "حياك الله"، "تحت أمرك"، "تم") بصورة طبيعية دون تكلّف مبالغ فيه.
-3. **التقمص التام:** تقمص دور الموظف البشري الخبير. لا تذكر أبداً أنك ذكاء اصطناعي.
-4. **البيانات الحقيقية فقط:** لا تخترع مواعيد غير موجودة، استخدم دائماً أداة check_calendar_availability.
-5. **إتمام الحجوزات:** عند تأكيد الحجز استعمل أداة book_appointment.
-6. **مزامنة البيانات:** بعد إتمام الحجز بنجاح، يجب عليك فوراً حفظ البيانات في ملف الإكسل باستخدام أداة sync_to_google_sheets.
+قواعد الأنسنة والحجز:
+1. الردود قصيرة جداً سطر أو سطرين دافئة بلهجة الزبونة (أبشري، عيني لك، غالية).
+2. لا تسألي وتطلبي معلومات الحجز دفعة واحدة. دردشي، قولي "أبشري وش الخدمة؟"، ثم "متى يناسبك؟"، ثم الاسم والجوال.
+3. بمجرد أن تتجمع لديك بياناتها (الاسم، الجوال، الخدمة، الموعد)، استخدمي أداة (book_appointment) فوراً لتسجيل حجزها.
+4. بعد تأكيدك للحجز بالأداة، اكتبي للزبونة: "تم تأكيد موعدك يا غالية! 🌷"
         `;
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-flash", // Updated to the available paid tier model
             systemInstruction,
-            tools: tools.length > 0 ? tools : undefined
+            tools: tools
         });
 
-        const chat = model.startChat({
-            // Ideally retrieve chat history from a database here
-            history: []
-        });
+        // --- Retrieve Chat History ---
+        let chatHistory: any[] = [];
+        const { data: sessionData } = await supabaseClient
+            .from('chat_sessions')
+            .select('history')
+            .eq('session_id', sessionId)
+            .maybeSingle();
 
-        // 5. Send message and handle function calls (Tool Execution loop)
+        if (sessionData && sessionData.history && Array.isArray(sessionData.history)) {
+            chatHistory = sessionData.history;
+        }
+
+        // تشغيل المحادثة
+        const chat = model.startChat({ history: chatHistory });
         const result = await chat.sendMessage(message);
         let finalResponse = result.response;
 
-        // Check if LLM wants to call a function
-        if (finalResponse.functionCalls && finalResponse.functionCalls.length > 0) {
-            const call = finalResponse.functionCalls[0];
-            const googleCalCreds = integrations.find((i: any) => i.provider === 'google_calendar')?.credentials;
+        // 5. Tool Execution Logic - robust detection for gemini-2.5-flash
+        // gemini-2.5-flash may return functionCalls in candidates[0].content.parts
+        const rawFunctionCalls = finalResponse.functionCalls?.() ?? [];
+        const allParts = finalResponse.candidates?.[0]?.content?.parts ?? [];
+        const functionCallPart = allParts.find((p: any) => p.functionCall);
 
-            let funcResult: Record<string, any> = { status: "Feature implemented in future step" };
+        console.log("Raw functionCalls length:", rawFunctionCalls.length);
+        console.log("Parts count:", allParts.length);
+        console.log("Function call part found:", !!functionCallPart);
 
-            // Initialize Google Calendar Client if credentials exist
-            let calendar: any = null;
-            if (googleCalCreds?.access_token) {
-                const auth = new google.auth.OAuth2();
-                auth.setCredentials(googleCalCreds);
-                calendar = google.calendar({ version: 'v3', auth });
-            }
+        const hasFunctionCall = rawFunctionCalls.length > 0 || !!functionCallPart;
+        const call = rawFunctionCalls[0] ?? (functionCallPart ? { name: functionCallPart.functionCall.name, args: functionCallPart.functionCall.args } : null);
 
-            if (call.name === "check_calendar_availability") {
-                console.log("Checking availability for:", call.args.date);
-                if (calendar) {
-                    try {
-                        const startOfDay = new Date(call.args.date + "T00:00:00Z");
-                        const endOfDay = new Date(call.args.date + "T23:59:59Z");
+        if (hasFunctionCall && call) {
 
-                        const response = await calendar.events.list({
-                            calendarId: 'primary',
-                            timeMin: startOfDay.toISOString(),
-                            timeMax: endOfDay.toISOString(),
-                            singleEvents: true,
-                            orderBy: 'startTime',
-                        });
+            if (call.name === "book_appointment") {
+                const args = call.args;
 
-                        // Basic logic: Return true/false or list of busy slots based on response
-                        // For a real app, this should calculate free slots based on working hours.
-                        // Here we just return busy slots to the LLM so it knows what to avoid.
-                        const busySlots = response.data.items?.map((event: any) => ({
-                            start: event.start.dateTime || event.start.date,
-                            end: event.end.dateTime || event.end.date
-                        })) || [];
+                // 5.a Save to Supabase (Unified bookings table)
+                const { error: insertError } = await supabaseClient
+                    .from('bookings')
+                    .insert([{
+                        user_id: agent.user_id,
+                        agent_id: agent.id,
+                        customer_name: args.customer_name || 'زبونة مجهولة',
+                        customer_phone: args.customer_phone || '-',
+                        service_requested: args.service_requested,
+                        notes: `تاريخ الموعد: ${args.booking_date_string}`,
+                        status: 'pending' // Let the dashboard owner confirm
+                    }]);
 
-                        funcResult = { status: "success", date: call.args.date, busy_slots: busySlots, note: "These slots are BUSY. Suggest times that do NOT overlap with these." };
-                    } catch (calError: any) {
-                        console.error("Calendar Error:", calError);
-                        funcResult = { status: "error", message: "Failed to connect to Google Calendar." };
-                    }
-                } else {
-                    // Fallback to mock if not configured properly yet
-                    funcResult = { status: "success", available_slots: ["10:00", "11:30", "15:00", "17:00"] };
-                }
-            } else if (call.name === "book_appointment") {
-                console.log("Booking appointment:", call.args);
-                if (calendar) {
-                    try {
-                        const eventStart = new Date(`${call.args.date}T${call.args.time}:00`);
-                        // Assume 1 hour duration. LLM could pass duration if added to schema
-                        const eventEnd = new Date(eventStart.getTime() + 60 * 60 * 1000);
+                if (insertError) console.error("Database Insert Error:", insertError);
 
-                        const event = {
-                            summary: `Appointment: ${call.args.service}`,
-                            description: `Name: ${call.args.customer_name}\nPhone: ${call.args.customer_phone}`,
-                            start: { dateTime: eventStart.toISOString() },
-                            end: { dateTime: eventEnd.toISOString() },
-                        };
+                let googleStatus = "";
 
-                        const response = await calendar.events.insert({
-                            calendarId: 'primary',
-                            requestBody: event,
-                        });
-
-                        funcResult = { status: "success", confirmation_id: response.data.id, link: response.data.htmlLink };
-                    } catch (calError: any) {
-                        console.error("Booking Error:", calError);
-                        funcResult = { status: "error", message: "Failed to create event in Google Calendar." };
-                    }
-                } else {
-                    funcResult = { status: "success", confirmation_id: "BOOK-" + Math.floor(Math.random() * 10000) };
-                }
-            } else if (call.name === "sync_to_google_sheets") {
-                console.log("Syncing to Google Sheets:", call.args);
-                const googleSheetsCreds = integrations.find((i: any) => i.provider === 'google_sheets')?.credentials;
-
-                if (googleSheetsCreds?.access_token && googleSheetsCreds?.spreadsheet_id) {
+                // 5.b Add to Google Calendar if configured
+                const googleCalCreds = integrations?.find((i: any) => i.provider === 'google_calendar')?.credentials;
+                if (googleCalCreds && googleCalCreds.access_token) {
                     try {
                         const auth = new google.auth.OAuth2();
-                        auth.setCredentials(googleSheetsCreds);
+                        auth.setCredentials(googleCalCreds);
+                        const calendar = google.calendar({ version: 'v3', auth });
+
+                        // Default to something 24 hrs from now if exact time isn't parseable easily
+                        const eventStart = new Date();
+                        eventStart.setDate(eventStart.getDate() + 1);
+                        const eventEnd = new Date(eventStart.getTime() + 60 * 60 * 1000);
+
+                        await calendar.events.insert({
+                            calendarId: 'primary',
+                            requestBody: {
+                                summary: `موعد: ${args.service_requested} (${args.customer_name})`,
+                                description: `رقم الجوال: ${args.customer_phone}\nملاحظات: ${args.booking_date_string}`,
+                                start: { dateTime: eventStart.toISOString() },
+                                end: { dateTime: eventEnd.toISOString() }
+                            },
+                        });
+                        googleStatus += "[Calendar Triggered] ";
+                    } catch (err: any) {
+                        console.error("Google Calendar Error:", err.message);
+                        googleStatus += "[Calendar Error] ";
+                    }
+                }
+
+                // 5.c Append to Google Sheets if configured
+                const googleSheetsInt = integrations?.find((i: any) => i.provider === 'google_sheets');
+                if (googleSheetsInt && googleSheetsInt.credentials?.access_token && googleSheetsInt.config?.spreadsheet_id) {
+                    try {
+                        const auth = new google.auth.OAuth2();
+                        auth.setCredentials(googleSheetsInt.credentials);
                         const sheets = google.sheets({ version: 'v4', auth });
 
-                        // Prepare values
-                        const values = [
-                            [
-                                new Date().toISOString(), // Timestamp
-                                call.args.customer_name,
-                                call.args.customer_phone,
-                                call.args.service,
-                                call.args.date,
-                                call.args.time,
-                                call.args.status || 'Confirmed'
-                            ]
-                        ];
-
-                        const response = await sheets.spreadsheets.values.append({
-                            spreadsheetId: googleSheetsCreds.spreadsheet_id,
-                            range: 'Sheet1!A:G', // Adjust range as needed
+                        await sheets.spreadsheets.values.append({
+                            spreadsheetId: googleSheetsInt.config.spreadsheet_id,
+                            range: 'Sheet1!A:G', // Default range assumption
                             valueInputOption: 'USER_ENTERED',
-                            requestBody: { values },
+                            requestBody: {
+                                values: [[
+                                    new Date().toLocaleDateString('ar-SA'),
+                                    args.customer_name,
+                                    args.customer_phone,
+                                    args.service_requested,
+                                    args.booking_date_string,
+                                    "معلق من تيليجرام"
+                                ]]
+                            },
                         });
-
-                        funcResult = { status: "success", updated_cells: response.data.updates?.updatedCells };
-                    } catch (sheetError: any) {
-                        console.error("Sheets Error:", sheetError);
-                        funcResult = { status: "error", message: "Failed to append row to Google Sheets." };
+                        googleStatus += "[Sheets Triggered]";
+                    } catch (err: any) {
+                        console.error("Google Sheets Error:", err.message);
+                        googleStatus += "[Sheets Error]";
                     }
-                } else {
-                    funcResult = { status: "success", note: "Mock sync complete (no credentials provided)." };
                 }
+
+                // Inform the LLM the function hit the database and Google integrations
+                const secondResult = await chat.sendMessage([{
+                    functionResponse: {
+                        name: "book_appointment",
+                        response: { status: insertError ? "فشل الحفظ قاعدة البيانات" : "تم الحفظ", integrations: googleStatus }
+                    }
+                }]);
+                finalResponse = secondResult.response;
             }
-
-            // Return function output to LLM
-            const secondResult = await chat.sendMessage([{
-                functionResponse: {
-                    name: call.name,
-                    response: funcResult
-                }
-            }]);
-            finalResponse = secondResult.response;
         }
 
-        // --- BILLING LOGIC ---
-        // Extract token usage
-        const tokensUsed = finalResponse.usageMetadata?.totalTokenCount || 0;
+        // --- Save Updated Chat History AFTER all interactions ---
+        const newHistory = await chat.getHistory();
+        const upsertResult = await supabaseClient.from('chat_sessions').upsert({
+            session_id: sessionId,
+            agent_id: agentId,
+            history: newHistory,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'session_id' });
 
-        if (tokensUsed > 0) {
-            // Deduct from wallet
-            await supabaseClient.rpc('deduct_wallet_credits', {
-                p_user_id: agent.user_id,
-                amount: tokensUsed
-            });
-
-            // Log usage
-            await supabaseClient
-                .from('token_usage_logs')
-                .insert({
-                    user_id: agent.user_id,
-                    agent_id: agentId,
-                    tokens_used: tokensUsed,
-                    cost_deducted: tokensUsed // Assuming 1 token = 1 credit cost for now
-                });
-            console.log(`Charged ${tokensUsed} credits to user ${agent.user_id}`);
+        if (upsertResult.error) {
+            console.error("Failed to save chat history:", upsertResult.error);
         }
-        // ---------------------
 
         return new Response(
             JSON.stringify({ success: true, text: finalResponse.text() }),
@@ -304,8 +221,8 @@ serve(async (req) => {
 
     } catch (error: any) {
         return new Response(
-            JSON.stringify({ success: false, error: error.message || String(error) }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+            JSON.stringify({ success: false, text: `[نظام 24Shift - خطأ داخلي]:\n${error.message || String(error)}` }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
     }
 });
