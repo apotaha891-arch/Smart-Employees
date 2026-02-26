@@ -37,7 +37,8 @@ const Bookings = () => {
                 .from('salon_configs')
                 .select('id')
                 .eq('user_id', user.id)
-                .is('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
                 .maybeSingle();
 
             if (error) {

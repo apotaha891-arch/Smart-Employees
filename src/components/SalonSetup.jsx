@@ -57,6 +57,28 @@ const SalonSetup = () => {
                     else if (type?.includes('مطعم') || type?.includes('restau')) setIndustry('restaurant');
                     else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit')) setIndustry('fitness');
                 }
+
+                // Fetch the salon_config for this user
+                const { data: configs } = await supabase
+                    .from('salon_configs')
+                    .select('id, agent_name, specialty, tone, working_hours')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                if (configs) {
+                    setSalonConfigId(configs.id);
+                    setFormData({
+                        agentName: configs.agent_name || 'سارة',
+                        specialty: configs.specialty || 'شامل',
+                        tone: configs.tone || 'friendly',
+                        workingHours: configs.working_hours || { start: '10:00', end: '22:00' },
+                        workingDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
+                        calendarUrl: '',
+                        whatsappNumber: ''
+                    });
+                }
             }
         };
         checkUser();

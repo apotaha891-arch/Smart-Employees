@@ -64,7 +64,7 @@ export const linkGoogleAccount = async () => {
         const { data, error } = await supabase.auth.linkIdentity({
             provider: 'google',
             options: {
-                scopes: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/spreadsheets',
+                scopes: 'email profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/spreadsheets',
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -82,18 +82,43 @@ export const linkGoogleAccount = async () => {
 
 export const saveIntegrationCredentials = async (userId, provider, credentials) => {
     try {
-        // Upsert the integration credentials
-        const { error } = await supabase
+        // Fetch salon_config_id to link it properly
+        const { data: salonConfigs } = await supabase
+            .from('salon_configs')
+            .select('id')
+            .eq('user_id', userId)
+            .limit(1);
+
+        const salonConfigId = salonConfigs?.[0]?.id || null;
+
+        // Check if an integration already exists
+        const { data: existing } = await supabase
             .from('integrations')
-            .upsert({
+            .select('id')
+            .eq('user_id', userId)
+            .eq('provider', provider)
+            .maybeSingle();
+
+        if (existing) {
+            const { error } = await supabase.from('integrations').update({
+                salon_config_id: salonConfigId,
+                credentials: credentials,
+                status: 'connected',
+                updated_at: new Date().toISOString()
+            }).eq('id', existing.id);
+            if (error) throw error;
+        } else {
+            const { error } = await supabase.from('integrations').insert({
                 user_id: userId,
+                salon_config_id: salonConfigId,
                 provider: provider,
                 credentials: credentials,
                 status: 'connected',
                 updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id, provider' }); // Note: Ensure you have a unique constraint on (user_id, provider)
+            });
+            if (error) throw error;
+        }
 
-        if (error) throw error;
         return { success: true };
     } catch (error) {
         console.error('Error saving integration:', error);
