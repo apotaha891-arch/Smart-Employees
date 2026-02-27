@@ -1,37 +1,34 @@
 import { useState, useEffect, useContext, createContext } from 'react';
-import { getCurrentUser, getProfile } from '../services/supabaseService';
+import { supabase } from '../services/supabaseService';
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within AuthProvider');
-    }
+    if (!context) throw new Error('useAuth must be used within AuthProvider');
     return context;
 };
 
-// Helper function to determine user role
-const determineUserRole = async (authUser) => {
-    // Check if user is admin (hardcoded for now - TODO: add role field to profiles table)
-    const adminEmails = ['admin@example.com', 'admin@agentic.com', 'ceo@eliteagents.com'];
-    if (adminEmails.includes(authUser?.email?.toLowerCase())) {
-        return 'admin';
-    }
+// Read role from app_metadata (set in auth.users via SQL — never blocked by RLS)
+// Falls back to profiles table, then defaults to 'customer'
+const getRoleFromUser = async (authUser) => {
+    if (!authUser) return null;
 
-    // Try to fetch role from profile if available
+    // 1. app_metadata — most reliable, stored in JWT
+    if (authUser.app_metadata?.role) return authUser.app_metadata.role;
+
+    // 2. user_metadata
+    if (authUser.user_metadata?.role) return authUser.user_metadata.role;
+
+    // 3. profiles table with a short timeout to avoid hanging
     try {
-        if (authUser?.id) {
-            const profileResult = await getProfile(authUser.id);
-            if (profileResult.success && profileResult.data?.role) {
-                return profileResult.data.role;
-            }
-        }
-    } catch (error) {
-        console.warn('Could not fetch role from profile:', error);
-    }
+        const { data } = await Promise.race([
+            supabase.from('profiles').select('role').eq('id', authUser.id).maybeSingle(),
+            new Promise(resolve => setTimeout(() => resolve({ data: null }), 3000))
+        ]);
+        if (data?.role) return data.role;
+    } catch { /* ignore */ }
 
-    // Default to customer role for all authenticated users
     return 'customer';
 };
 
@@ -42,44 +39,43 @@ export const createAuthProvider = () => {
         const [loading, setLoading] = useState(true);
 
         useEffect(() => {
-            const checkAuth = async () => {
-                try {
-                    const { user: authUser } = await getCurrentUser();
+            let cancelled = false;
+
+            // onAuthStateChange fires immediately with INITIAL_SESSION
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(
+                async (_event, session) => {
+                    const authUser = session?.user ?? null;
+                    if (cancelled) return;
                     setUser(authUser);
-
-                    if (authUser) {
-                        const role = await determineUserRole(authUser);
+                    const role = await getRoleFromUser(authUser);
+                    if (!cancelled) {
                         setUserRole(role);
-                    } else {
-                        setUserRole(null);
+                        setLoading(false); // ← always unblock here
                     }
-                } catch (error) {
-                    console.error('Auth check error:', error);
-                    setUser(null);
-                    setUserRole(null);
-                } finally {
-                    setLoading(false);
                 }
-            };
+            );
 
-            checkAuth();
+            // Safety net: if onAuthStateChange never fires, unblock after 5s
+            const fallback = setTimeout(() => {
+                if (!cancelled) setLoading(false);
+            }, 5000);
+
+            return () => {
+                cancelled = true;
+                subscription.unsubscribe();
+                clearTimeout(fallback);
+            };
         }, []);
 
-        const isAdmin = userRole === 'admin';
-        const isCustomer = userRole === 'customer';
-        const isAuthenticated = !!user;
-
-        const value = {
-            user,
-            userRole,
-            loading,
-            isAdmin,
-            isCustomer,
-            isAuthenticated,
-        };
-
         return (
-            <AuthContext.Provider value={value}>
+            <AuthContext.Provider value={{
+                user,
+                userRole,
+                loading,
+                isAdmin: userRole === 'admin',
+                isCustomer: userRole === 'customer',
+                isAuthenticated: !!user,
+            }}>
                 {children}
             </AuthContext.Provider>
         );

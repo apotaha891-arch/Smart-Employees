@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, signOut } from '../services/supabaseService';
+import { getCurrentUser, signOut, supabase } from '../services/supabaseService';
 import { Smartphone, Briefcase, Globe, LayoutDashboard } from 'lucide-react';
 
 const Navbar = () => {
@@ -11,12 +11,16 @@ const Navbar = () => {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const checkUser = async () => {
-            const { user } = await getCurrentUser();
-            setUser(user);
-        };
-        checkUser();
-    }, [location]);
+        // Get initial user
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
+        });
+        // React to login/logout in real-time
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+        return () => subscription.unsubscribe();
+    }, []);
 
     const handleLogout = async () => {
         await signOut();

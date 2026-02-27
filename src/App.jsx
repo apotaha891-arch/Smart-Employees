@@ -20,6 +20,8 @@ import ModernDashboardLayout from './components/ModernDashboardLayout';
 import Bookings from './components/Bookings';
 import Customers from './components/Customers';
 import DeployAgent from './components/DeployAgent';
+import Employees from './components/Employees';
+import OnboardingSector from './components/OnboardingSector';
 import { useLocation } from 'react-router-dom';
 
 // Create AuthProvider
@@ -41,7 +43,7 @@ function App() {
 function AppContent() {
     const location = useLocation();
     // Routes that use the new Dashboard Layout
-    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/bookings', '/customers', '/deploy-agent'];
+    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/bookings', '/customers', '/deploy-agent', '/employees'];
     const isDashboard = dashboardRoutes.includes(location.pathname);
 
     return (
@@ -55,6 +57,7 @@ function AppContent() {
                 <Route path="/custom-request" element={<CustomRequest />} />
                 <Route path="/interview" element={<InterviewRoom />} />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/onboarding" element={<ProtectedRoute requiredRole="customer"><OnboardingSector /></ProtectedRoute>} />
 
                 {/* ============ ADMIN PROTECTED ROUTES ============ */}
                 <Route
@@ -128,6 +131,14 @@ function AppContent() {
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><Customers /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/employees"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><Employees /></ModernDashboardLayout>
                         </ProtectedRoute>
                     }
                 />

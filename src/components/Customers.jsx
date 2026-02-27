@@ -19,30 +19,25 @@ const Customers = () => {
         try {
             setLoading(true);
             const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { setError(t('mustLogin')); setLoading(false); return; }
 
-            if (!user) {
-                setError(t('mustLogin'));
-                setLoading(false);
-                return;
-            }
-
-            // Get the first active salon config for this user
-            const { data: config, error: configError } = await supabase
+            // Get most recent salon config (don't filter by is_active)
+            const { data: config } = await supabase
                 .from('salon_configs')
                 .select('id')
                 .eq('user_id', user.id)
-                .is('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
                 .maybeSingle();
-
-            if (configError) throw configError;
 
             if (config) {
                 setSalonConfigId(config.id);
-                const { data: customersData, error: customersError } = await getCustomers(config.id);
-                if (customersError) throw customersError;
-                setCustomers(customersData || []);
+                const result = await getCustomers(config.id);
+                setCustomers(result.data || []);
             } else {
-                setError(t('completeSetup'));
+                // Fallback — show all customers
+                const { data: all } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+                setCustomers(all || []);
             }
         } catch (err) {
             console.error('Error fetching customers:', err);

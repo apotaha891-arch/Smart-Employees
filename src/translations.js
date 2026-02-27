@@ -12,8 +12,8 @@ export const translations = {
         step: "الخطوة",
         // Branding
         brand: {
-            name: "AGENTIC",
-            platformName: "منصة AGENTIC"
+            name: "24Shift",
+            platformName: "منصة 24Shift"
         },
 
         // Navigation
@@ -320,8 +320,8 @@ export const translations = {
 
         // Branding
         brand: {
-            name: "AGENTIC",
-            platformName: "Elite Agents Platform"
+            name: "24Shift",
+            platformName: "24Shift Platform"
         },
 
         // Home Page Sections

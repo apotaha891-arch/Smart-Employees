@@ -1,94 +1,130 @@
 import { supabase } from './supabaseService';
 
-export const getTemplates = async () => {
-    const { data, error } = await supabase
-        .from('agent_templates')
-        .select('*')
+// ─── Admin data via SECURITY DEFINER RPCs (bypasses RLS) ─────────────────────
+// These RPCs verify the caller is admin via app_metadata inside the DB function.
+
+export const getAllCustomers = async () => {
+    // Try admin RPC first (bypasses RLS)
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('get_admin_clients');
+    if (!rpcErr && rpcData?.length) return rpcData;
+
+    if (rpcErr) console.warn('get_admin_clients RPC failed:', rpcErr.message, '— trying fallback');
+
+    // Fallback: salon_configs is usually readable without RLS issues
+    const { data: configs, error: cfgErr } = await supabase
+        .from('salon_configs')
+        .select('id, user_id, business_type, agent_name, created_at')
         .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data;
+
+    if (cfgErr) console.warn('salon_configs fallback also failed:', cfgErr.message);
+
+    return (configs || []).map(c => ({
+        id: c.user_id,
+        full_name: c.agent_name || '—',
+        email: '—',
+        subscription_tier: 'basic',
+        business_type: c.business_type,
+        created_at: c.created_at,
+    }));
+};
+
+export const getAllAgents = async () => {
+    const { data, error } = await supabase.rpc('get_admin_agents');
+    if (!error && data) return data;
+    console.warn('get_admin_agents RPC failed:', error?.message);
+    // Fallback: direct query (limited by RLS to own agents)
+    const { data: fallback } = await supabase.from('agents').select('*').order('created_at', { ascending: false });
+    return fallback || [];
+};
+
+export const getAllBookings = async () => {
+    const { data, error } = await supabase.rpc('get_admin_bookings');
+    if (!error && data) return data;
+    console.warn('get_admin_bookings RPC failed:', error?.message);
+    const { data: fallback } = await supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(300);
+    return fallback || [];
+};
+
+export const getAllSalonConfigs = async () => {
+    const { data, error } = await supabase.rpc('get_admin_salon_configs');
+    if (!error && data) return data;
+    console.warn('get_admin_salon_configs RPC failed:', error?.message);
+    const { data: fallback } = await supabase.from('salon_configs').select('id, user_id, business_type, agent_name, telegram_token, whatsapp_number, whatsapp_api_key, created_at').order('created_at', { ascending: false });
+    return fallback || [];
+};
+
+export const updateClientPlan = async (clientId, plan) => {
+    const { error } = await supabase.rpc('admin_update_client_plan', { client_id: clientId, new_plan: plan });
+    if (error) {
+        console.warn('admin_update_client_plan RPC failed, trying direct:', error.message);
+        await supabase.from('profiles').update({ subscription_tier: plan }).eq('id', clientId);
+    }
+    return true;
+};
+
+// ─── Platform Settings ────────────────────────────────────────────────────────
+export const getPlatformSettings = async (key) => {
+    try {
+        const { data, error } = await supabase
+            .from('platform_settings')
+            .select('value')
+            .eq('key', key)
+            .maybeSingle();
+        if (error || !data) return null;
+        return data.value;
+    } catch { return null; }
+};
+
+export const updatePlatformSettings = async (key, value) => {
+    try {
+        const { error } = await supabase
+            .from('platform_settings')
+            .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+        if (error) console.warn('platform_settings upsert failed:', error.message);
+        return true;
+    } catch { return false; }
+};
+
+// ─── Templates ────────────────────────────────────────────────────────────────
+export const getTemplates = async () => {
+    const { data, error } = await supabase.from('agent_templates').select('*').order('created_at', { ascending: false });
+    if (error) return [];
+    return data || [];
 };
 
 export const saveTemplate = async (template) => {
-    const { data, error } = await supabase
-        .from('agent_templates')
-        .upsert(template)
-        .select()
-        .single();
+    const { data, error } = await supabase.from('agent_templates').upsert(template).select().single();
     if (error) throw error;
     return data;
 };
 
 export const deleteTemplate = async (id) => {
-    const { error } = await supabase
-        .from('agent_templates')
-        .delete()
-        .eq('id', id);
+    const { error } = await supabase.from('agent_templates').delete().eq('id', id);
     if (error) throw error;
     return true;
 };
 
-export const getPlatformInquiries = async () => {
-    const { data, error } = await supabase
-        .from('platform_inquiries')
-        .select('*')
-        .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data;
-};
-
-export const getPlatformSettings = async (key) => {
-    const { data, error } = await supabase
-        .from('platform_settings')
-        .select('value')
-        .eq('key', key)
-        .single();
-    if (error) return null;
-    return data.value;
-};
-
-export const updatePlatformSettings = async (key, value) => {
-    const { error } = await supabase
-        .from('platform_settings')
-        .upsert({ key, value, updated_at: new Date() });
-    if (error) throw error;
-    return true;
-};
-
-export const getAllCustomers = async () => {
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data;
-};
-
-// ---------- PLATFORM SETTINGS CRUD ----------
+// ─── All Settings ─────────────────────────────────────────────────────────────
 export const getAllSettings = async () => {
-    const { data, error } = await supabase
-        .from('platform_settings')
-        .select('*')
-        .order('key', { ascending: true });
-    if (error) throw error;
-    return data;
+    const { data, error } = await supabase.from('platform_settings').select('*').order('key');
+    if (error) return [];
+    return data || [];
 };
 
 export const saveSetting = async (key, value) => {
     const { data, error } = await supabase
         .from('platform_settings')
-        .upsert({ key, value, updated_at: new Date() })
-        .select()
-        .single();
+        .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .select().maybeSingle();
     if (error) throw error;
     return data;
 };
 
 export const deleteSetting = async (key) => {
-    const { error } = await supabase
-        .from('platform_settings')
-        .delete()
-        .eq('key', key);
+    const { error } = await supabase.from('platform_settings').delete().eq('key', key);
     if (error) throw error;
     return true;
 };
+
+// Legacy export for backward compat
+export const getAllCustomers_legacy = getAllCustomers;

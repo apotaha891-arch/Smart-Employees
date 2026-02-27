@@ -8,6 +8,7 @@ const Bookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [salonConfigId, setSalonConfigId] = useState(null);
+    const [agentIds, setAgentIds] = useState([]);
     const [filters, setFilters] = useState({
         status: '',
         date: '',
@@ -19,53 +20,59 @@ const Bookings = () => {
     }, []);
 
     useEffect(() => {
-        if (salonConfigId) {
+        if (agentIds.length > 0) {
             loadBookings();
         }
-    }, [salonConfigId, filters]);
+    }, [agentIds, filters]);
 
     const loadUserAndBookings = async () => {
         try {
             const { user } = await getCurrentUser();
-            if (!user) {
-                alert(t('mustLogin'));
-                return;
-            }
+            if (!user) return;
 
-            // Fetch the active salon config for this user
-            const { data: configs, error } = await supabase
+            // Get salon_config_id
+            const { data: configs } = await supabase
                 .from('salon_configs')
                 .select('id')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
+            if (configs) setSalonConfigId(configs.id);
 
-            if (error) {
-                console.error('Error fetching salon config:', error);
-                return;
-            }
-
-            if (configs) {
-                setSalonConfigId(configs.id);
-            } else {
-                alert(t('completeSetup'));
-            }
+            // Directly load all agents regardless of linkage (needed to set agentIds)
+            const { data: allAgents } = await supabase.from('agents').select('id');
+            const ids = allAgents?.map(a => a.id) ?? [];
+            setAgentIds(ids.length > 0 ? ids : ['__none__']); // trigger useEffect
         } catch (error) {
-            console.error('Error loading user:', error);
+            console.error('Error:', error);
+            setLoading(false);
         }
     };
 
     const loadBookings = async () => {
         setLoading(true);
-        const result = await getBookings(salonConfigId, filters);
-        if (result.success) {
-            setBookings(result.data || []);
-        } else {
-            alert(t('failedLoadBookings') + result.error);
+        try {
+            // Fetch all bookings — agent_id present OR null (seeded data)
+            let query = supabase
+                .from('bookings')
+                .select('*')
+                .order('booking_date', { ascending: false })
+                .order('booking_time', { ascending: true });
+
+            if (filters.status) query = query.eq('status', filters.status);
+            if (filters.date) query = query.eq('booking_date', filters.date);
+            if (filters.phone) query = query.ilike('customer_phone', `%${filters.phone}%`);
+
+            const { data, error } = await query;
+            if (error) throw error;
+            setBookings(data || []);
+        } catch (error) {
+            console.error('Error loading bookings:', error);
         }
         setLoading(false);
     };
+
 
     const handleStatusChange = async (bookingId, newStatus) => {
         const result = await updateBooking(bookingId, { status: newStatus });
@@ -232,7 +239,7 @@ const Bookings = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '1rem' }}>{booking.service?.service_name || t('notSpecified')}</td>
+                                        <td style={{ padding: '1rem' }}>{booking.service_requested || booking.service?.service_name || t('notSpecified')}</td>
                                         <td style={{ padding: '1rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <Calendar size={14} color="#9CA3AF" />

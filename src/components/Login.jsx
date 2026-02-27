@@ -4,6 +4,17 @@ import { signIn, signUp, supabase } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
 
+// Helper: get role and sector from DB
+const getUserDestination = async (userId) => {
+    const [{ data: profile }, { data: config }] = await Promise.all([
+        supabase.from('profiles').select('role').eq('id', userId).maybeSingle(),
+        supabase.from('salon_configs').select('business_type').eq('user_id', userId).not('business_type', 'is', null).limit(1).maybeSingle()
+    ]);
+    const isAdmin = profile?.role === 'admin';
+    const hasSector = !!config?.business_type;
+    return { isAdmin, hasSector };
+};
+
 const Login = () => {
     const { isAuthenticated, userRole, loading: authLoading } = useAuth();
     const [isSignUp, setIsSignUp] = useState(false);
@@ -19,8 +30,15 @@ const Login = () => {
         if (!authLoading && isAuthenticated) {
             if (userRole === 'admin') {
                 navigate('/admin', { replace: true });
-            } else {
-                navigate(location.state?.redirectTo || '/templates', { replace: true });
+            } else if (userRole === 'customer') {
+                supabase.auth.getUser().then(({ data: { user } }) => {
+                    if (user) {
+                        supabase.from('salon_configs').select('business_type').eq('user_id', user.id).not('business_type', 'is', null).limit(1).maybeSingle()
+                            .then(({ data }) => {
+                                navigate(location.state?.redirectTo || (data?.business_type ? '/dashboard' : '/onboarding'), { replace: true });
+                            });
+                    }
+                });
             }
         }
     }, [isAuthenticated, authLoading, userRole, navigate, location.state]);
@@ -39,11 +57,14 @@ const Login = () => {
             : await signIn(email, password);
 
         if (result.success) {
-            // Admin Check
-            if (email.toLowerCase() === 'ceo@eliteagents.com') {
-                navigate('/admin');
-            } else {
-                navigate(location.state?.redirectTo || '/templates', { state: location.state });
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { isAdmin, hasSector } = await getUserDestination(user.id);
+                if (isAdmin) {
+                    navigate('/admin');
+                } else {
+                    navigate(location.state?.redirectTo || (hasSector ? '/dashboard' : '/onboarding'), { state: location.state });
+                }
             }
         } else {
             setError(result.error);
@@ -85,7 +106,7 @@ const Login = () => {
                         boxShadow: '0 0 30px var(--accent-soft)'
                     }}>✦</div>
                     <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>{isSignUp ? 'إنضمام للنخبة' : 'بوابة القيادة'}</h2>
-                    <p style={{ color: 'var(--text-secondary)' }}>أهلاً بك في منصة AGENTIC لإدارة الكوادر الرقمية</p>
+                    <p style={{ color: 'var(--text-secondary)' }}>أهلاً بك في منصة 24Shift لاستئجار الموظفين الرقميين</p>
                 </div>
 
                 {error && (

@@ -311,6 +311,7 @@ ${t('helpQuestion')}
                         <div style={{ padding: '2rem' }}>
                             {activeTab === 'identity' && (
                                 <div className="animate-fade-in">
+
                                     <div className="grid grid-2 gap-lg mb-lg">
                                         <div>
                                             <label className="text-sm text-dim mb-sm block">{t('agentNameLabel')}</label>
@@ -434,58 +435,75 @@ ${t('helpQuestion')}
                                 <div className="animate-fade-in">
                                     <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>ربط التطبيقات (Native Integrations)</h3>
 
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '1rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    {/* Telegram — Basic (مضمّن) */}
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(34,197,94,0.3)', marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{ background: '#229ED920', padding: '10px', borderRadius: '8px', color: '#229ED9' }}><Send /></div>
+                                                <div>
+                                                    <h4 style={{ margin: 0 }}>Telegram Bot <span style={{ fontSize: '0.75rem', background: '#22C55E20', color: '#22C55E', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>مضمّن في Basic ✅</span></h4>
+                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>استقبال الرسائل والرد الذكي وحجز المواعيد</div>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#22C55E' }}>
+                                                <CheckCircle2 size={18} /> نشط
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Google Calendar — Pro */}
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', marginBottom: '1rem', opacity: 0.85 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ background: '#DB443720', padding: '10px', borderRadius: '8px', color: '#DB4437' }}><Calendar /></div>
                                                 <div>
-                                                    <h4 style={{ margin: 0 }}>Google Calendar</h4>
-                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>مزامنة المواعيد وقراءة الأوقات المتاحة</div>
+                                                    <h4 style={{ margin: 0 }}>Google Calendar <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 Pro</span></h4>
+                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>مزامنة المواعيد تلقائياً مع تقويمك</div>
                                                 </div>
                                             </div>
-                                            {connectedIntegrations.google ? (
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#22C55E' }}>
-                                                    <CheckCircle2 size={18} /> تم الربط
-                                                </div>
-                                            ) : (
-                                                <button className="btn btn-outline" style={{ fontSize: '0.9rem', padding: '8px 16px' }} onClick={handleGoogleConnect} disabled={loading}>ربط الحساب</button>
-                                            )}
+                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '8px 16px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
+                                                onClick={() => alert('قريباً — اشترك في الباقة المدفوعة للوصول لهذه الميزة')}>
+                                                ⬆️ ترقية
+                                            </button>
                                         </div>
                                     </div>
 
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '1rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    {/* WhatsApp — Add-on */}
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', marginBottom: '1rem', opacity: 0.85 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ background: '#25D36620', padding: '10px', borderRadius: '8px', color: '#25D366' }}><MessageCircle /></div>
                                                 <div>
-                                                    <h4 style={{ margin: 0 }}>WhatsApp Business</h4>
+                                                    <h4 style={{ margin: 0 }}>WhatsApp Business <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 إضافة مدفوعة</span></h4>
                                                     <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>استقبال الواتساب والرد المباشر</div>
                                                 </div>
                                             </div>
-                                            <button className="btn btn-outline" style={{ fontSize: '0.9rem', padding: '8px 16px' }}>إعداد الربط</button>
+                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '8px 16px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
+                                                onClick={() => alert('قريباً — اشترك في الباقة المدفوعة للوصول لهذه الميزة')}>
+                                                ⬆️ ترقية
+                                            </button>
                                         </div>
                                     </div>
 
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    {/* Google Sheets — Pro */}
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', opacity: 0.85 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ background: '#0F9D5820', padding: '10px', borderRadius: '8px', color: '#0F9D58' }}><FileText /></div>
                                                 <div>
-                                                    <h4 style={{ margin: 0 }}>Google Sheets Sync</h4>
+                                                    <h4 style={{ margin: 0 }}>Google Sheets Sync <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 Pro</span></h4>
                                                     <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>تصدير الحجوزات والعملاء تلقائياً (نسخة احتياطية)</div>
                                                 </div>
                                             </div>
-                                            {connectedIntegrations.google ? (
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#22C55E' }}>
-                                                    <CheckCircle2 size={18} /> جاهز للعمل
-                                                </div>
-                                            ) : (
-                                                <button className="btn btn-outline" style={{ fontSize: '0.9rem', padding: '8px 16px' }} onClick={handleGoogleConnect} disabled={loading}>اربط بحساب Google أولاً</button>
-                                            )}
+                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '8px 16px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
+                                                onClick={() => alert('قريباً — اشترك في الباقة المدفوعة للوصول لهذه الميزة')}>
+                                                ⬆️ ترقية
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             )}
+
 
                             {activeTab === 'activation' && (
                                 <div className="animate-fade-in text-center">

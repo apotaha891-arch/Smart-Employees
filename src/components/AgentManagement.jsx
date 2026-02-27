@@ -24,15 +24,13 @@ const AgentManagement = () => {
     }, [user]);
 
     const loadAgentsAndTemplates = async () => {
+        if (!user?.id) return; // ← Guard: skip if user not loaded yet
         setIsLoading(true);
         try {
-            // Get user's agents
-            const agentsResult = await agentService.getUserAgents();
+            const agentsResult = await agentService.getUserAgents(user.id); // ← pass user.id
             if (agentsResult.success) {
                 setAgents(agentsResult.data || []);
             }
-
-            // Get templates
             const templatesResult = await agentService.getAgentTemplates();
             if (templatesResult.success) {
                 setTemplates(templatesResult.data || []);
@@ -50,7 +48,7 @@ const AgentManagement = () => {
                 templateId,
                 customName: `موظف جديد ${agents.length + 1}`
             });
-            
+
             if (result.success) {
                 setAgents([...agents, result.data]);
                 setShowAddModal(false);
@@ -75,9 +73,9 @@ const AgentManagement = () => {
         try {
             const newStatus = agent.status === 'active' ? 'paused' : 'active';
             const result = await agentService.updateAgentStatus(agent.id, newStatus);
-            
+
             if (result.success) {
-                setAgents(agents.map(a => 
+                setAgents(agents.map(a =>
                     a.id === agent.id ? { ...a, status: newStatus } : a
                 ));
             }
@@ -97,7 +95,7 @@ const AgentManagement = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* Agent Lifecycle Workflow */}
-            <div style={{ 
+            <div style={{
                 background: 'rgba(139, 92, 246, 0.05)',
                 border: '1px solid rgba(139, 92, 246, 0.2)',
                 borderRadius: '16px',
@@ -136,7 +134,7 @@ const AgentManagement = () => {
 
             {/* Templates Grid - Shown when Add button clicked */}
             {showAddModal && (
-                <div style={{ 
+                <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                     gap: '1rem',
@@ -218,8 +216,8 @@ const AgentManagement = () => {
                             style={{
                                 padding: '1.5rem',
                                 background: 'var(--n8n-surface-card, rgba(255,255,255,0.03))',
-                                border: selectedAgent === agent.id 
-                                    ? '2px solid var(--accent)' 
+                                border: selectedAgent === agent.id
+                                    ? '2px solid var(--accent)'
                                     : '1px solid rgba(255,255,255,0.1)',
                                 borderRadius: '12px',
                                 cursor: 'pointer',
@@ -245,8 +243,8 @@ const AgentManagement = () => {
                                 top: '1rem',
                                 left: '1rem',
                                 padding: '0.25rem 0.75rem',
-                                background: agent.status === 'active' 
-                                    ? 'rgba(16, 185, 129, 0.2)' 
+                                background: agent.status === 'active'
+                                    ? 'rgba(16, 185, 129, 0.2)'
                                     : 'rgba(107, 114, 128, 0.2)',
                                 color: agent.status === 'active' ? '#86EFAC' : '#9CA3AF',
                                 borderRadius: '6px',
@@ -312,7 +310,7 @@ const AgentManagement = () => {
                                     style={{
                                         flex: 1,
                                         padding: '0.5rem',
-                                        background: agent.status === 'active' 
+                                        background: agent.status === 'active'
                                             ? 'rgba(107, 114, 128, 0.2)'
                                             : 'rgba(16, 185, 129, 0.2)',
                                         color: agent.status === 'active' ? '#9CA3AF' : '#86EFAC',
