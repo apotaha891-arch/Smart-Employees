@@ -2,20 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseService';
 
-const SECTORS = [
+const FALLBACK_SECTORS = [
     { value: 'beauty', label: 'تجميل وعناية', sublabel: 'صالونات، سبا، كلينيك جمال', emoji: '🌸', color: '#EC4899', gradient: 'linear-gradient(135deg, #EC489920, #EC489905)' },
     { value: 'medical', label: 'طبي وصحي', sublabel: 'عيادات، مراكز أسنان، مختبرات', emoji: '🩺', color: '#3B82F6', gradient: 'linear-gradient(135deg, #3B82F620, #3B82F605)' },
     { value: 'restaurant', label: 'مطاعم وضيافة', sublabel: 'مطاعم، كافيهات، كيترينج', emoji: '🍽', color: '#F59E0B', gradient: 'linear-gradient(135deg, #F59E0B20, #F59E0B05)' },
-    { value: 'fitness', label: 'رياضة وصحة', sublabel: 'جيم، دروس، تدريب شخصي', emoji: '🏋', color: '#10B981', gradient: 'linear-gradient(135deg, #10B98120, #10B98105)' },
-    { value: 'real_estate', label: 'عقارات', sublabel: 'مكاتب عقارية، تأجير، بيع', emoji: '🏠', color: '#8B5CF6', gradient: 'linear-gradient(135deg, #8B5CF620, #8B5CF605)' },
     { value: 'general', label: 'خدمات عامة', sublabel: 'تجارة، مقاولات، استشارات', emoji: '🏢', color: '#6B7280', gradient: 'linear-gradient(135deg, #6B728020, #6B728005)' },
 ];
 
 const OnboardingSector = () => {
     const navigate = useNavigate();
+    const [sectors, setSectors] = useState(FALLBACK_SECTORS);
     const [selected, setSelected] = useState(null);
     const [saving, setSaving] = useState(false);
     const [hovering, setHovering] = useState(null);
+
+    useEffect(() => {
+        const fetchSectors = async () => {
+            const { data, error } = await supabase.from('platform_settings').select('value').eq('key', 'system_sectors').maybeSingle();
+            if (data?.value) {
+                const list = Object.entries(data.value)
+                    .filter(([_, v]) => v.on !== false)
+                    .map(([k, v]) => ({
+                        value: k,
+                        label: v.l,
+                        emoji: v.e,
+                        color: v.c,
+                        gradient: `linear-gradient(135deg, ${v.c}20, ${v.c}05)`
+                    }));
+                if (list.length) setSectors(list);
+            }
+        };
+        fetchSectors();
+    }, []);
 
     const handleContinue = async () => {
         if (!selected) return;
@@ -54,7 +72,7 @@ const OnboardingSector = () => {
         setSaving(false);
     };
 
-    const sector = SECTORS.find(s => s.value === selected);
+    const sector = sectors.find(s => s.value === selected);
 
     return (
         <div style={{
@@ -85,7 +103,7 @@ const OnboardingSector = () => {
 
                 {/* Sector Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
-                    {SECTORS.map(s => {
+                    {sectors.map(s => {
                         const isSelected = selected === s.value;
                         const isHovered = hovering === s.value;
                         return (

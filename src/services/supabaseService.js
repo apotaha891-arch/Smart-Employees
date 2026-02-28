@@ -158,6 +158,42 @@ export const updateBusinessProfile = async (userId, profileData) => {
     }
 };
 
+// ==================== AGENT TEMPLATES & SETTINGS (CLIENT FACING) ====================
+
+export const getPublicTemplates = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('agent_templates')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error fetching public templates:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const getAgentApps = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('platform_settings')
+            .select('settings')
+            .eq('key', 'agent_apps')
+            .single();
+
+        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is not found
+        // Return default apps if none found in DB
+        return { success: true, data: data?.settings || [] };
+    } catch (error) {
+        console.error('Error fetching agent apps:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+
 // ==================== AGENTS ====================
 
 export const createAgent = async (agentData) => {

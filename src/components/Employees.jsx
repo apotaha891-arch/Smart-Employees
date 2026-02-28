@@ -73,7 +73,7 @@ const Employees = () => {
                     </div>
                 </div>
                 <button
-                    onClick={() => setShowAddModal(true)}
+                    onClick={() => navigate('/templates')}
                     style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'white', border: 'none', borderRadius: '10px', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}
                 >
                     <Plus size={18} /> استئجار موظفة

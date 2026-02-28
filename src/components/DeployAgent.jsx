@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
-import { Bot, CheckCircle2, MessageCircle, Send, Instagram, Zap, Headphones, Settings, ShieldCheck, CreditCard, Loader2 } from 'lucide-react';
-import { createAgent, saveContract } from '../services/supabaseService';
+import { Bot, CheckCircle2, MessageCircle, Send, Instagram, Zap, Headphones, Settings, ShieldCheck, CreditCard, Loader2, Globe } from 'lucide-react';
+import { createAgent, saveContract, getAgentApps } from '../services/supabaseService';
 
 const IntegrationsAddons = () => {
     const { t, language } = useLanguage();
@@ -15,8 +15,24 @@ const IntegrationsAddons = () => {
     const agentName = location.state?.businessRules?.businessName || agentData.title;
 
     const [activeAddons, setActiveAddons] = useState([]);
+    const [dbAddons, setDbAddons] = useState([]);
     const [status, setStatus] = useState('idle'); // idle, loading, success
     const [isCreatingAgent, setIsCreatingAgent] = useState(!location.state?.agentId && location.state?.businessRules);
+
+    useEffect(() => {
+        const fetchAddons = async () => {
+            const res = await getAgentApps();
+            if (res.success && res.data) {
+                // Ensure default structure if empty
+                setDbAddons(res.data.length > 0 ? res.data : [
+                    { id: 'whatsapp', type: 'whatsapp', name_ar: 'واتساب', name_en: 'WhatsApp', description_ar: 'ربط الموظف برقم واتساب.', description_en: 'Connect to WhatsApp', price: 250 },
+                    { id: 'telegram', type: 'telegram', name_ar: 'تيليجرام', name_en: 'Telegram', description_ar: 'بناء بوت تيليجرام.', description_en: 'Telegram Bot', price: 100 },
+                    { id: 'instagram', type: 'instagram', name_ar: 'انستجرام', name_en: 'Instagram', description_ar: 'الرد على الرسائل الخاصة.', description_en: 'Instagram DMs', price: 200 }
+                ]);
+            }
+        };
+        fetchAddons();
+    }, []);
 
     useEffect(() => {
         const autoCreateAgent = async () => {
@@ -62,32 +78,14 @@ const IntegrationsAddons = () => {
         alert(isArabic ? 'سيتم توجيهك لفريق المبيعات والدعم الفني.' : 'You will be redirected to the sales support team.');
     };
 
-    const addons = [
-        {
-            id: 'whatsapp',
-            icon: <MessageCircle size={32} color="#25D366" />,
-            title: isArabic ? 'تفعيل واتساب' : 'WhatsApp API',
-            desc: isArabic ? 'ربط الموظف برقم واتساب الخاص بمنشأتك للرد التلقائي.' : 'Connect agent to your WhatsApp Business number.',
-            price: isArabic ? '250 نقطة/شهرياً' : '250 Credits/mo',
-            color: '#25D366'
-        },
-        {
-            id: 'telegram',
-            icon: <Send size={32} color="#0088cc" />,
-            title: isArabic ? 'تفعيل تيليجرام' : 'Telegram Bot',
-            desc: isArabic ? 'بناء بوت تيليجرام رسمي يرد على العملاء مباشرة.' : 'Official Telegram bot for direct customer support.',
-            price: isArabic ? '100 نقطة/شهرياً' : '100 Credits/mo',
-            color: '#0088cc'
-        },
-        {
-            id: 'instagram',
-            icon: <Instagram size={32} color="#E1306C" />,
-            title: isArabic ? 'ربط انستجرام' : 'Instagram DMs',
-            desc: isArabic ? 'الرد التلقائي على الرسائل الخاصة (DMs) والتعليقات.' : 'Auto-reply to Direct Messages and Comments.',
-            price: isArabic ? '200 نقطة/شهرياً' : '200 Credits/mo',
-            color: '#E1306C'
+    const getAppIcon = (type, color) => {
+        switch (type) {
+            case 'whatsapp': return <MessageCircle size={32} color={color || '#25D366'} />;
+            case 'telegram': return <Send size={32} color={color || '#0088cc'} />;
+            case 'instagram': return <Instagram size={32} color={color || '#E1306C'} />;
+            default: return <Globe size={32} color={color || '#8B5CF6'} />;
         }
-    ];
+    };
 
     return (
         <div className="ai-aura-container" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
@@ -142,58 +140,64 @@ const IntegrationsAddons = () => {
                             gap: '1.5rem',
                             marginBottom: '3rem'
                         }}>
-                            {addons.map(addon => {
-                                const isActive = activeAddons.includes(addon.id);
+                            {dbAddons.map(addon => {
+                                const isActive = activeAddons.includes(addon.id || addon.type);
+                                const addonColor = addon.color || (addon.type === 'whatsapp' ? '#25D366' : addon.type === 'telegram' ? '#0088cc' : addon.type === 'instagram' ? '#E1306C' : '#8B5CF6');
+                                const addonIcon = getAppIcon(addon.type, isActive ? 'white' : addonColor);
+                                const title = isArabic ? (addon.name_ar || addon.name || addon.type) : (addon.name_en || addon.name || addon.type);
+                                const desc = isArabic ? (addon.description_ar || addon.description) : (addon.description_en || addon.description);
+                                const priceFormat = isArabic ? `${addon.price || 0} نقطة/شهرياً` : `${addon.price || 0} Credits/mo`;
+
                                 return (
                                     <div
-                                        key={addon.id}
-                                        onClick={() => toggleAddon(addon.id)}
+                                        key={addon.id || addon.type}
+                                        onClick={() => toggleAddon(addon.id || addon.type)}
                                         className="card"
                                         style={{
-                                            background: isActive ? `rgba(${hexToRgb(addon.color)}, 0.05)` : '#18181B',
-                                            border: isActive ? `1px solid ${addon.color}` : '1px solid rgba(255,255,255,0.05)',
+                                            background: isActive ? `rgba(${hexToRgb(addonColor)}, 0.05)` : '#18181B',
+                                            border: isActive ? `1px solid ${addonColor}` : '1px solid rgba(255,255,255,0.05)',
                                             borderRadius: '20px',
                                             padding: '1.5rem',
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease',
-                                            boxShadow: isActive ? `0 10px 30px rgba(${hexToRgb(addon.color)}, 0.1)` : 'none',
+                                            boxShadow: isActive ? `0 10px 30px rgba(${hexToRgb(addonColor)}, 0.1)` : 'none',
                                             position: 'relative',
                                             overflow: 'hidden'
                                         }}
                                     >
                                         {isActive && (
-                                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: addon.color }}></div>
+                                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: addonColor }}></div>
                                         )}
 
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                                             <div style={{
                                                 width: '60px', height: '60px',
-                                                background: isActive ? addon.color : '#27272A',
+                                                background: isActive ? addonColor : '#27272A',
                                                 borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 transition: 'all 0.2s ease'
                                             }}>
-                                                {React.cloneElement(addon.icon, { color: isActive ? 'white' : addon.color })}
+                                                {addonIcon}
                                             </div>
 
                                             <div style={{
                                                 width: '28px', height: '28px',
                                                 borderRadius: '50%',
-                                                border: isActive ? `2px solid ${addon.color}` : '2px solid rgba(255,255,255,0.2)',
-                                                background: isActive ? addon.color : 'transparent',
+                                                border: isActive ? `2px solid ${addonColor}` : '2px solid rgba(255,255,255,0.2)',
+                                                background: isActive ? addonColor : 'transparent',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center'
                                             }}>
                                                 {isActive && <CheckCircle2 size={16} color="white" />}
                                             </div>
                                         </div>
 
-                                        <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem' }}>{addon.title}</h4>
+                                        <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem' }}>{title}</h4>
                                         <p style={{ color: '#A1A1AA', fontSize: '0.9rem', lineHeight: '1.5', minHeight: '40px', marginBottom: '1rem' }}>
-                                            {addon.desc}
+                                            {desc}
                                         </p>
 
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', width: 'fit-content' }}>
                                             <CreditCard size={16} color="#A1A1AA" />
-                                            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>{addon.price}</span>
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>{priceFormat}</span>
                                         </div>
                                     </div>
                                 );

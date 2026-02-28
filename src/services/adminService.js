@@ -72,7 +72,10 @@ export const getPlatformSettings = async (key) => {
             .maybeSingle();
         if (error || !data) return null;
         return data.value;
-    } catch { return null; }
+    } catch (e) {
+        logSystemEvent('error', 'system', `Failed to fetch setting: ${key}`, { error: e.message });
+        return null;
+    }
 };
 
 export const updatePlatformSettings = async (key, value) => {
@@ -80,9 +83,28 @@ export const updatePlatformSettings = async (key, value) => {
         const { error } = await supabase
             .from('platform_settings')
             .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-        if (error) console.warn('platform_settings upsert failed:', error.message);
+        if (error) throw error;
+        logSystemEvent('audit', 'system', `Updated platform setting: ${key}`);
         return true;
-    } catch { return false; }
+    } catch (e) {
+        logSystemEvent('error', 'system', `Failed to update setting: ${key}`, { error: e.message });
+        return false;
+    }
+};
+
+// ─── System Logging ───────────────────────────────────────────────────────────
+export const logSystemEvent = async (level, category, message, details = null) => {
+    try {
+        const { error } = await supabase.rpc('log_system_event', {
+            p_level: level,
+            p_category: category,
+            p_message: message,
+            p_details: details
+        });
+        if (error) console.error('Logging failed:', error.message);
+    } catch (e) {
+        console.error('Logging error:', e);
+    }
 };
 
 // ─── Templates ────────────────────────────────────────────────────────────────

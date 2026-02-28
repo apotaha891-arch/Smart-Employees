@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, getProfile } from '../services/supabaseService';
+import { getCurrentUser, getProfile, getPublicTemplates } from '../services/supabaseService';
 import {
     Stethoscope,
     Activity,
@@ -27,6 +27,9 @@ const AgentTemplates = () => {
     const [selectedTone, setSelectedTone] = useState('friendly');
     const [industry, setIndustry] = useState('general');
 
+    const [dbTemplates, setDbTemplates] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         const checkUser = async () => {
             const { user } = await getCurrentUser();
@@ -34,131 +37,44 @@ const AgentTemplates = () => {
                 const profileResult = await getProfile(user.id);
                 if (profileResult.success && profileResult.data) {
                     const type = profileResult.data.business_type?.toLowerCase();
-                    if (type?.includes('طب') || type?.includes('صحي') || type?.includes('clinic')) setIndustry('medical');
-                    else if (type?.includes('عقار') || type?.includes('estate')) setIndustry('realestate');
-                    else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty')) setIndustry('beauty');
-                    else if (type?.includes('مطعم') || type?.includes('restau')) setIndustry('restaurant');
-                    else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit')) setIndustry('fitness');
+                    if (type?.includes('طب') || type?.includes('صحي') || type?.includes('clinic') || type === 'medical') setIndustry('medical');
+                    else if (type?.includes('عقار') || type?.includes('estate') || type === 'real_estate') setIndustry('real_estate');
+                    else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty') || type === 'beauty') setIndustry('beauty');
+                    else if (type?.includes('مطعم') || type?.includes('restau') || type === 'restaurant') setIndustry('restaurant');
+                    else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit') || type === 'fitness') setIndustry('fitness');
                 }
             }
         };
+
+        const fetchTemplates = async () => {
+            setLoading(true);
+            const res = await getPublicTemplates();
+            if (res.success) {
+                setDbTemplates(res.data || []);
+            }
+            setLoading(false);
+        };
+
         checkUser();
+        fetchTemplates();
     }, []);
 
-    const templates = [
-        {
-            id: 'dental-receptionist',
-            icon: <Stethoscope size={24} />,
-            image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=256&h=256&auto=format&fit=crop",
-            title: 'استقبال - عيادة أسنان',
-            titleEn: 'Dental Receptionist',
-            description: 'حجز المواعيد وإدارة جدول المرضى بدقة عالية.',
-            specialty: 'عيادة أسنان',
-            industry: 'medical',
-            services: ['فحص روتيني', 'تنظيف', 'حشوات', 'تبييض', 'علاج الجذور'],
-            workingHours: { start: '09:00', end: '21:00' },
-            appointmentDuration: 30,
-            costPerMessage: 3, // High complexity
-        },
-        {
-            id: 'medical-clinic',
-            icon: <Activity size={24} />,
-            image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=256&h=256&auto=format&fit=crop",
-            title: 'استقبال - عيادة طبية',
-            titleEn: 'Clinic Receptionist',
-            description: 'إدارة السجلات الطبية وتنظيم مواعيد المراجعين.',
-            specialty: 'عيادة تخصصية',
-            industry: 'medical',
-            services: ['كشف طبي', 'متابعة', 'فحوصات', 'استشارة'],
-            workingHours: { start: '08:00', end: '20:00' },
-            appointmentDuration: 20,
-            costPerMessage: 3,
-        },
-        {
-            id: 'sales-lead-gen',
-            icon: <Search size={24} />,
-            image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&h=256&auto=format&fit=crop",
-            title: 'أخصائي نمو ومبيعات',
-            titleEn: 'Sales Specialist',
-            description: 'البحث عن عملاء محتملين عبر خرائط جوجل وتصنيفهم.',
-            specialty: 'نمو المبيعات',
-            industry: 'general',
-            services: ['بحث خرائط جوجل', 'استخراج أرقام التواصل', 'تحليل المنافسين', 'تجهيز قوائم CRM'],
-            workingHours: { start: '08:00', end: '18:00' },
-            appointmentDuration: 30,
-            costPerMessage: 2, // Medium complexity
-        },
-        {
-            id: 'beauty-salon',
-            icon: <Scissors size={24} />,
-            image: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=256&h=256&auto=format&fit=crop",
-            title: 'استقبال - صالون تجميل',
-            titleEn: 'Beauty Receptionist',
-            description: 'تنظيم مواعيد التجميل وإدارة جدول العاملات بالمشغل.',
-            specialty: 'صالون تجميل',
-            industry: 'beauty',
-            services: ['قص شعر', 'صبغة', 'فرد برازيلي', 'مكياج', 'عناية بالبشرة'],
-            workingHours: { start: '10:00', end: '22:00' },
-            appointmentDuration: 60,
-            costPerMessage: 2,
-        },
-        {
-            id: 'real-estate-marketing',
-            icon: <Building size={24} />,
-            image: "https://images.unsplash.com/photo-1556157382-97dee2dcbfe5?q=80&w=256&h=256&auto=format&fit=crop",
-            title: 'تسويق عقاري',
-            titleEn: 'Real Estate Marketing',
-            description: 'استجابة سريعة لاستفسارات العقارات ومعاينة الوحدات.',
-            specialty: 'شركة عقارات',
-            industry: 'realestate',
-            services: ['شقق للبيع', 'فلل للإيجار', 'محلات تجارية', 'أراضي'],
-            workingHours: { start: '08:00', end: '20:00' },
-            appointmentDuration: 45,
-            costPerMessage: 2,
-        },
-        {
-            id: 'restaurant-reservations',
-            icon: <Utensils size={24} />,
-            image: "https://images.unsplash.com/photo-1577214159280-ca341749e48a?q=80&w=256&h=256&auto=format&fit=crop",
-            title: 'مدير حجوزات مطاعم',
-            titleEn: 'Restaurant Manager',
-            description: 'تأكيد الحجوزات وإدارة الطاولات لضمان أفضل تجربة.',
-            specialty: 'مطعم فاخر',
-            industry: 'general',
-            services: ['طاولة 2 أشخاص', 'طاولة 4 أشخاص', 'طاولة 6 أشخاص', 'صالة VIP'],
-            workingHours: { start: '12:00', end: '23:00' },
-            appointmentDuration: 90,
-            costPerMessage: 1, // Simple task
-        },
-        {
-            id: 'gym-coordinator',
-            icon: <Zap size={24} />,
-            image: "https://images.unsplash.com/photo-1599058917233-35835fd4578b?q=80&w=256&h=256&auto=format&fit=crop",
-            title: 'منسق صالة رياضية',
-            titleEn: 'Gym Coordinator',
-            description: 'متابعة نفقات الأعضاء وتنسيق حصص التدريب الشخصي.',
-            specialty: 'صالة رياضية',
-            industry: 'general',
-            services: ['جلسة تدريب شخصي', 'فصل يوغا', 'فصل زومبا', 'استشارة تغذية'],
-            workingHours: { start: '06:00', end: '22:00' },
-            appointmentDuration: 60,
-            costPerMessage: 1,
-        },
-        {
-            id: 'support-agent',
-            icon: <Headset size={24} />,
-            image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&h=256&auto=format&fit=crop",
-            title: 'خبير دعم فني معتمد',
-            titleEn: 'Support Expert',
-            description: 'الرد على الاستفسارات بناءً على قاعدة المعرفة الخاصة بك.',
-            specialty: 'الدعم الفني والرد الآلي',
-            industry: 'general',
-            services: ['إجابة الاستفسارات', 'استرجاع المعلومات', 'الدعم الفني', 'توجيه العملاء'],
-            workingHours: { start: '00:00', end: '23:59' },
-            appointmentDuration: 0,
-            costPerMessage: 1,
-        },
-    ];
+    // Helper to map specialty/business_type to icons and generic UI strings
+    const getTemplateUI = (t) => {
+        const bt = t.business_type || '';
+        let icon = <Bot size={24} />;
+        let image = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&h=256&auto=format&fit=crop";
+        let cost = 1;
+        let creator = 'Admin';
+
+        if (bt === 'medical') { icon = <Stethoscope size={24} />; image = "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=256&h=256&auto=format&fit=crop"; cost = 3; creator = 'د. مريم صبري'; }
+        if (bt === 'beauty') { icon = <Scissors size={24} />; image = "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=256&h=256&auto=format&fit=crop"; cost = 2; creator = 'نورة علي'; }
+        if (bt === 'restaurant') { icon = <Utensils size={24} />; image = "https://images.unsplash.com/photo-1577214159280-ca341749e48a?q=80&w=256&h=256&auto=format&fit=crop"; cost = 1; creator = 'أحمد خالد'; }
+        if (bt === 'real_estate') { icon = <Building size={24} />; image = "https://images.unsplash.com/photo-1556157382-97dee2dcbfe5?q=80&w=256&h=256&auto=format&fit=crop"; cost = 2; creator = 'سالم الدوسري'; }
+        if (bt === 'fitness') { icon = <Zap size={24} />; image = "https://images.unsplash.com/photo-1599058917233-35835fd4578b?q=80&w=256&h=256&auto=format&fit=crop"; cost = 2; creator = 'كابتن فهد'; }
+
+        return { icon, image, cost, creator };
+    };
 
     const tones = [
         { id: 'friendly', icon: <Smile size={20} />, label: 'ودود', labelEn: 'Friendly', description: 'محادثات دافئة' },
@@ -168,9 +84,9 @@ const AgentTemplates = () => {
     ];
 
     // Sort templates: matching industry first, then others
-    const sortedTemplates = [...templates].sort((a, b) => {
-        if (a.industry === industry && b.industry !== industry) return -1;
-        if (a.industry !== industry && b.industry === industry) return 1;
+    const sortedTemplates = [...dbTemplates].sort((a, b) => {
+        if (a.business_type === industry && b.business_type !== industry) return -1;
+        if (a.business_type !== industry && b.business_type === industry) return 1;
         return 0;
     });
 
@@ -210,62 +126,74 @@ const AgentTemplates = () => {
                         {industry === 'general' ? 'قاعدة بيانات الكوادر المتاحة' : `الكوادر الموصى بها لقطاعك`}
                     </h3>
 
-                    <div className="n8n-card-grid">
-                        {sortedTemplates.map((template) => (
-                            <div
-                                key={template.id}
-                                className={`n8n-card animate-fade-in ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
-                                onClick={() => handleSelectTemplate(template)}
-                                style={{ cursor: 'pointer' }}
-                            >
-                                {/* Chip Group (n8n style) */}
-                                <div className="chip-group">
-                                    <div className="n8n-chip">{template.icon}</div>
-                                    {template.services?.slice(0, 3).map((s, idx) => (
-                                        <div key={idx} className="n8n-chip" style={{ fontSize: '0.8rem' }}>
-                                            {s}
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '4rem', color: '#8B5CF6' }}>
+                            <div className="animate-spin" style={{ display: 'inline-block', width: '40px', height: '40px', border: '3px solid', borderTopColor: 'transparent', borderRadius: '50%', marginBottom: '1rem' }}></div>
+                            <p>جاري تحميل الكوادر المتاحة...</p>
+                        </div>
+                    ) : (
+                        <div className="n8n-card-grid">
+                            {sortedTemplates.map((template) => {
+                                const ui = getTemplateUI(template);
+                                const isEnglish = t.language === 'en';
+                                const displayName = isEnglish ? (template.name_en || template.name) : template.name;
+                                const displayDesc = isEnglish ? (template.description_en || template.description) : template.description;
+
+                                return (
+                                    <div
+                                        key={template.id}
+                                        className={`n8n-card animate-fade-in ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
+                                        onClick={() => handleSelectTemplate(template)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        {/* Chip Group (n8n style) */}
+                                        <div className="chip-group">
+                                            <div className="n8n-chip">{ui.icon}</div>
+                                            <div className="n8n-chip" style={{ fontSize: '0.8rem' }}>
+                                                {template.specialty}
+                                            </div>
                                         </div>
-                                    ))}
-                                </div>
 
-                                <h4 className="n8n-card-title">{template.title}</h4>
-                                <p className="n8n-card-desc">{template.description}</p>
+                                        <h4 className="n8n-card-title">{displayName}</h4>
+                                        <p className="n8n-card-desc">{displayDesc}</p>
 
-                                {/* Creator Footer (n8n style) */}
-                                <div className="card-footer-n8n">
-                                    <div className="avatar-n8n" style={{ overflow: 'hidden', padding: 0 }}>
-                                        <img src={template.image} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    </div>
-                                    <span className="creator-name">
-                                        {template.industry === 'medical' ? 'د. مريم صبري' : template.industry === 'beauty' ? 'نورة علي' : 'أحمد خالد'}
-                                    </span>
-                                    <span className="verified-badge">●</span>
-                                    <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
-                                        <span style={{ fontSize: '0.7rem', color: '#A1A1AA' }}>التكلفة:</span>
-                                        <span style={{ fontSize: '0.8rem', color: '#F59E0B', fontWeight: 700 }}>{template.costPerMessage} نقطة</span>
-                                    </div>
-                                </div>
+                                        {/* Creator Footer (n8n style) */}
+                                        <div className="card-footer-n8n">
+                                            <div className="avatar-n8n" style={{ overflow: 'hidden', padding: 0 }}>
+                                                <img src={ui.image} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            </div>
+                                            <span className="creator-name">
+                                                {ui.creator}
+                                            </span>
+                                            <span className="verified-badge">●</span>
+                                            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
+                                                <span style={{ fontSize: '0.7rem', color: '#A1A1AA' }}>التكلفة:</span>
+                                                <span style={{ fontSize: '0.8rem', color: '#F59E0B', fontWeight: 700 }}>{ui.cost} نقطة</span>
+                                            </div>
+                                        </div>
 
-                                {/* Recommendation Badge */}
-                                {template.industry === industry && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '1.25rem',
-                                        left: '1.25rem',
-                                        padding: '0.2rem 0.5rem',
-                                        background: '#8B5CF6',
-                                        color: 'white',
-                                        borderRadius: '4px',
-                                        fontSize: '0.6rem',
-                                        fontWeight: 900,
-                                        zIndex: 10
-                                    }}>
-                                        FEATURED
+                                        {/* Recommendation Badge */}
+                                        {template.business_type === industry && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '1.25rem',
+                                                left: '1.25rem',
+                                                padding: '0.2rem 0.5rem',
+                                                background: '#8B5CF6',
+                                                color: 'white',
+                                                borderRadius: '4px',
+                                                fontSize: '0.6rem',
+                                                fontWeight: 900,
+                                                zIndex: 10
+                                            }}>
+                                                FEATURED
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 {/* Personality/Tone Selection */}
@@ -284,7 +212,7 @@ const AgentTemplates = () => {
                                 border: '1px solid rgba(139, 92, 246, 0.2)'
                             }}>الخطوة الثانية: تخصيص النبرة</div>
                             <h3 style={{ fontSize: '1.85rem', marginBottom: '1rem', fontWeight: 900, color: 'white' }}>تحديد الشخصية المهنية</h3>
-                            <p style={{ color: '#A1A1AA', fontSize: '1rem' }}>كيف تفضل أن يتحدث {selectedTemplate.title} مع عملائك؟</p>
+                            <p style={{ color: '#A1A1AA', fontSize: '1rem' }}>كيف تفضل أن يتحدث {t.language === 'en' ? (selectedTemplate.name_en || selectedTemplate.name) : selectedTemplate.name} مع عملائك؟</p>
                         </div>
 
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginBottom: '4rem' }}>
