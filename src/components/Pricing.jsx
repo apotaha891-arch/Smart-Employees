@@ -1,9 +1,41 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Zap, Shield, Star, Crown } from 'lucide-react';
 
 const Pricing = () => {
     const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Check if we are in the middle of the 7-step hiring flow
+    const isHiringFlow = location.state?.fromInterview;
+    const businessRules = location.state?.businessRules || null;
+    const template = location.state?.template || null;
+
+    const handleSelectPlan = (plan) => {
+        // Mock checkout logic: in a real app, this goes to Stripe/Payfort.
+        // For the 7-step journey, we assume payment success and move to the Contract step.
+        vibrate();
+        if (isHiringFlow) {
+            navigate('/contract', {
+                state: {
+                    businessRules,
+                    template,
+                    selectedPlan: plan.id,
+                    fromPricing: true
+                }
+            });
+        } else {
+            // Normal subscription update flow
+            alert(`تم اختيار باقة ${plan.name} بنجاح!`);
+        }
+    };
+
+    const vibrate = () => {
+        if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(50);
+        }
+    };
 
     const plans = [
         {
@@ -243,8 +275,8 @@ const Pricing = () => {
                                     ))}
                                 </ul>
 
-                                <Link
-                                    to="/login"
+                                <button
+                                    onClick={() => handleSelectPlan(plan)}
                                     style={{
                                         display: 'block',
                                         width: '100%',
@@ -256,7 +288,7 @@ const Pricing = () => {
                                         fontWeight: 900,
                                         fontSize: '1.1rem',
                                         border: plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)',
-                                        textDecoration: 'none',
+                                        cursor: 'pointer',
                                         transition: 'all 0.3s',
                                         boxShadow: plan.popular ? `0 10px 25px rgba(${hexToRgb(plan.color)}, 0.3)` : 'none'
                                     }}
@@ -275,8 +307,8 @@ const Pricing = () => {
                                         }
                                     }}
                                 >
-                                    {plan.cta}
-                                </Link>
+                                    {isHiringFlow ? 'اعتماد الباقة والمتابعة لتوقيع العقد' : plan.cta}
+                                </button>
                             </div>
                         );
                     })}

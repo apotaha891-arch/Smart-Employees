@@ -139,6 +139,7 @@ export const translations = {
         friendlyTone: "ودود ومرحب",
         directTone: "مباشر وعملي",
         luxuryTone: "راقي وفخم",
+        knowledgeBaseLabel: "قاعدة المعرفة والبروتوكولات",
         knowledgeBasePlaceholder: "أدخل هنا كافة المعلومات التي تود من الموظف الإلمام بها...",
         knowledgeBaseHint: "تحديث هذه البيانات يعيد برمجة ذكاء الموظف فوراً.",
         updateProtocolBtn: "تحديث البروتوكول المؤسسي",
@@ -211,9 +212,60 @@ export const translations = {
         customerTools: "📊 أدوات العمل",
         adminRole: "👤 مدير",
         userRole: "👨‍💼 مستخدم",
-        logout: "تسجيل الخروج",
         search: "بحث...",
         deployAgentLabel: "تفعيل الموظف",
+        loadingFallback: "جاري التحميل...",
+
+        // Sectors (used in Employees)
+        sectors: {
+            beauty: "تجميل وعناية",
+            medical: "طبي / عيادات",
+            restaurant: "مطاعم وضيافة",
+            fitness: "رياضة وصحة",
+            real_estate: "عقارات",
+            general: "عام"
+        },
+
+        // Roles (used in Employees)
+        roles: {
+            booking: "منسقة حجوزات",
+            support: "خدمة عملاء",
+            sales: "متابعة مبيعات",
+            followup: "متابعة"
+        },
+
+        // Employees Component
+        employeesTitle: "الموظفات الذكيات",
+        employeesSector: "قطاع:",
+        hireEmployeeBtn: "استئجار موظفة",
+        totalEmployees: "إجمالي الموظفات",
+        activeNow: "نشطة الآن",
+        differentRoles: "أدوار مختلفة",
+        allRolesFilter: "كل الأدوار",
+        noEmployeesYet: "لا توجد موظفات بعد",
+        hireFirstEmployeeBtn: "استئجر أول موظفة",
+        activeStatusBg: "نشطة",
+        stoppedStatusBg: "متوقفة",
+        stopBtn: "إيقاف",
+        activateBtn: "تفعيل",
+        settingsBtn: "إعدادات",
+        empDescPrefix: "موظفة",
+        empDescInSector: "في قطاع",
+
+        // Hire Modal
+        hireNewEmpTitle: "استئجار موظفة جديدة",
+        chooseRoleStr: "اختر دور الموظفة",
+        comingSoon: "قريباً",
+        empDetailsStr: "تفاصيل الموظفة",
+        empNameLabel: "اسم الموظفة",
+        empNamePlaceholder: "مثال: رنا — منسقة الحجوزات",
+        platformLabel: "المنصة",
+        whatsappSoon: "WhatsApp (قريباً)",
+        shortDescLabel: "وصف مختصر (اختياري)",
+        backBtn: "رجوع",
+        savingBtn: "جاري الحفظ...",
+        confirmHireBtn: "✅ استئجار الموظفة",
+
 
         // Dashboard Component
         dashboardTitle: "مركز القيادة العملياتية",
@@ -239,6 +291,12 @@ export const translations = {
         recentOperationsLog: "سجل العمليات الأخير",
         awaitingFirstTask: "بانتظار المهمة الأولى",
         employeeAiWillAppear: "سيبدأ ذكاء الموظف بالظهور هنا فور تفعيل رقم الواتساب.",
+        dashboardSlogan: "\"الموظفة التي لا تنام، والوردية التي لا تنتهي\" 🚀",
+        remainingCreditLabel: "الرصيد المتبقي (الرموز)",
+        nightShiftLogTitle: "🌙 سجل وردية الليل (ما أنجزته 24Shift ليلة أمس)",
+        exportHeaderType: "نوع المهمة",
+        exportHeaderData: "البيانات",
+        exportHeaderDate: "تاريخ الإنجاز",
         configureProtocol: "ضبط البروتوكول ←",
         operationType: "نوع العملية",
         smartData: "البيانات الذكية",
@@ -503,6 +561,57 @@ export const translations = {
         toneProfessionalLabel: "Professional",
         toneBubblyLabel: "Bubbly",
         deployAgentLabel: "Deploy Agent",
+        loadingFallback: "Loading...",
+
+        // Sectors (used in Employees)
+        sectors: {
+            beauty: "Beauty & Care",
+            medical: "Medical / Clinics",
+            restaurant: "Restaurants & Hospitality",
+            fitness: "Sports & Health",
+            real_estate: "Real Estate",
+            general: "General"
+        },
+
+        // Roles (used in Employees)
+        roles: {
+            booking: "Booking Coordinator",
+            support: "Customer Support",
+            sales: "Sales Follow-up",
+            followup: "Follow-up"
+        },
+
+        // Employees Component
+        employeesTitle: "Smart Employees",
+        employeesSector: "Sector:",
+        hireEmployeeBtn: "Hire Employee",
+        totalEmployees: "Total Employees",
+        activeNow: "Active Now",
+        differentRoles: "Different Roles",
+        allRolesFilter: "All Roles",
+        noEmployeesYet: "No employees yet",
+        hireFirstEmployeeBtn: "Hire First Employee",
+        activeStatusBg: "Active",
+        stoppedStatusBg: "Stopped",
+        stopBtn: "Stop",
+        activateBtn: "Activate",
+        settingsBtn: "Settings",
+        empDescPrefix: "Employee",
+        empDescInSector: "in sector",
+
+        // Hire Modal
+        hireNewEmpTitle: "Hire New Employee",
+        chooseRoleStr: "Choose Employee Role",
+        comingSoon: "Coming Soon",
+        empDetailsStr: "Employee Details",
+        empNameLabel: "Employee Name",
+        empNamePlaceholder: "Ex: Rana — Booking Coordinator",
+        platformLabel: "Platform",
+        whatsappSoon: "WhatsApp (Soon)",
+        shortDescLabel: "Brief Description (Optional)",
+        backBtn: "Back",
+        savingBtn: "Saving...",
+        confirmHireBtn: "✅ Hire Employee",
 
         // Dashboard Component
         dashboardTitle: "Operational Leadership Center",
@@ -528,6 +637,12 @@ export const translations = {
         recentOperationsLog: "Recent Operations Log",
         awaitingFirstTask: "Awaiting First Task",
         employeeAiWillAppear: "Employee AI will start appearing here once WhatsApp number is activated.",
+        dashboardSlogan: "\"The employee who never sleeps, and the shift that never ends\" 🚀",
+        remainingCreditLabel: "Remaining Credit (Tokens)",
+        nightShiftLogTitle: "🌙 Night Shift Log (What 24Shift accomplished last night)",
+        exportHeaderType: "Task Type",
+        exportHeaderData: "Data",
+        exportHeaderDate: "Completion Date",
         configureProtocol: "Configure Protocol ←",
         operationType: "Operation Type",
         smartData: "Smart Data",

@@ -22,6 +22,7 @@ import Customers from './components/Customers';
 import DeployAgent from './components/DeployAgent';
 import Employees from './components/Employees';
 import OnboardingSector from './components/OnboardingSector';
+import ContractSign from './components/ContractSign';
 import { useLocation } from 'react-router-dom';
 
 // Create AuthProvider
@@ -43,7 +44,7 @@ function App() {
 function AppContent() {
     const location = useLocation();
     // Routes that use the new Dashboard Layout
-    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/bookings', '/customers', '/deploy-agent', '/employees'];
+    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/employees'];
     const isDashboard = dashboardRoutes.includes(location.pathname);
 
     return (
@@ -99,6 +100,14 @@ function AppContent() {
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><Pricing /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/contract"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><ContractSign /></ModernDashboardLayout>
                         </ProtectedRoute>
                     }
                 />

@@ -158,6 +158,44 @@ export const updateBusinessProfile = async (userId, profileData) => {
     }
 };
 
+export const invokeMultiFileWorkflow = async (files, urls) => {
+    try {
+        const formData = new FormData();
+
+        if (files && files.length > 0) {
+            files.forEach(file => {
+                formData.append('files', file);
+            });
+        }
+
+        if (urls && urls.length > 0) {
+            formData.append('urls', JSON.stringify(urls));
+        }
+
+        const { data, error } = await supabase.functions.invoke('multi-file-workflow', {
+            body: formData,
+        });
+
+        if (error) {
+            console.error("Edge function returned error object:", error);
+            let contextMsg = error.message;
+            if (error.context) {
+                // Sometimes Supabase returns the raw HTTP response as blob/text in context
+                try {
+                    const ctxText = await error.context.text();
+                    contextMsg = `${error.message} - Details: ${ctxText}`;
+                } catch (e) { /* ignore */ }
+            }
+            throw new Error(contextMsg);
+        }
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error invoking multi-file-workflow:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 // ==================== AGENT TEMPLATES & SETTINGS (CLIENT FACING) ====================
 
 export const getPublicTemplates = async () => {
@@ -198,6 +236,9 @@ export const getAgentApps = async () => {
 
 export const createAgent = async (agentData) => {
     try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("User not authenticated");
+
         const { data, error } = await supabase
             .from('agents')
             .insert([
@@ -205,7 +246,7 @@ export const createAgent = async (agentData) => {
                     name: agentData.name || 'AI Agent',
                     specialty: agentData.specialty || 'General',
                     status: 'active',
-                    cost_per_request: agentData.costPerMessage || 1, // Store the cost
+                    user_id: user.id
                 }
             ])
             .select()
@@ -219,6 +260,30 @@ export const createAgent = async (agentData) => {
         };
     } catch (error) {
         console.error('Create Agent Error:', error);
+        return {
+            success: false,
+            error: error.message,
+        };
+    }
+};
+
+export const updateAgent = async (agentId, agentData) => {
+    try {
+        const { data, error } = await supabase
+            .from('agents')
+            .update(agentData)
+            .eq('id', agentId)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        return {
+            success: true,
+            data: data,
+        };
+    } catch (error) {
+        console.error('Update Agent Error:', error);
         return {
             success: false,
             error: error.message,

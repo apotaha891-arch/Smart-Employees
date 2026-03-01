@@ -389,11 +389,16 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                 };
             }
 
+            // We do NOT create the agent here anymore based on the 7-Step journey.
+            // We store the extracted rules and proceed to the Pricing step.
+            localStorage.setItem('pendingBusinessRules', JSON.stringify(businessRules));
+            localStorage.setItem('pendingAgentTemplate', JSON.stringify(template || {}));
+
+            // If not logged in, pass data to login screen to continue later
             if (!user) {
-                // If not logged in, pass data to login screen to continue later
                 navigate('/login', {
                     state: {
-                        redirectTo: '/deploy-agent',
+                        redirectTo: '/pricing',
                         businessRules,
                         template: template || {}
                     }
@@ -401,32 +406,14 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                 return;
             }
 
-            const agentResult = await createAgent({
-                name: businessRules.businessName || 'AI Agent',
-                specialty: businessRules.businessType || 'General',
+            // Redirect to Pricing (Step 4)
+            navigate('/pricing', {
+                state: {
+                    businessRules,
+                    template: template || {},
+                    fromInterview: true
+                }
             });
-
-            if (!agentResult.success) {
-                alert('حدث خطأ في إنشاء الوكيل. يرجى المحاولة مرة أخرى.');
-                setIsHiring(false);
-                return;
-            }
-
-            const newAgentFromDB = agentResult.data;
-
-            const contractResult = await saveContract(newAgentFromDB.id, businessRules);
-
-            if (!contractResult.success) {
-                alert('حدث خطأ في حفظ العقد. يرجى المحاولة مرة أخرى.');
-                setIsHiring(false);
-                return;
-            }
-
-            localStorage.setItem('currentAgentId', newAgentFromDB.id);
-
-            alert(t('agentHired') || 'تم التوظيف بنجاح');
-
-            navigate('/deploy-agent', { state: { agentId: newAgentFromDB.id, businessRules, template: template || {} } });
         } catch (error) {
             console.error('Hire agent error:', error);
             alert('حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.');

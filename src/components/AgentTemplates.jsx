@@ -15,7 +15,10 @@ import {
     Briefcase,
     Coffee,
     Sparkles,
-    CheckCircle2
+    CheckCircle2,
+    Bot,
+    Lock,
+    Users
 } from 'lucide-react';
 
 const AgentTemplates = () => {
@@ -26,6 +29,7 @@ const AgentTemplates = () => {
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [selectedTone, setSelectedTone] = useState('friendly');
     const [industry, setIndustry] = useState('general');
+    const [clientSector, setClientSector] = useState('business'); // 'business' or 'individual'
 
     const [dbTemplates, setDbTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -122,6 +126,71 @@ const AgentTemplates = () => {
 
                 {/* Agent Cadres */}
                 <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+
+                    {/* Sector Selection (Business vs Individual) */}
+                    <div className="flex justify-center mb-xl">
+                        <div style={{
+                            display: 'flex',
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '16px',
+                            padding: '0.5rem',
+                            gap: '0.5rem'
+                        }}>
+                            <button
+                                onClick={() => setClientSector('business')}
+                                style={{
+                                    padding: '0.75rem 2rem',
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    background: clientSector === 'business' ? '#8B5CF6' : 'transparent',
+                                    color: clientSector === 'business' ? 'white' : '#A1A1AA',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    fontSize: '1rem'
+                                }}
+                            >
+                                <Building size={18} /> العميل المؤسسي
+                            </button>
+
+                            <button
+                                style={{
+                                    padding: '0.75rem 2rem',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    background: 'transparent',
+                                    color: '#71717A',
+                                    fontWeight: 700,
+                                    cursor: 'not-allowed', // Locked
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    fontSize: '1rem',
+                                    position: 'relative'
+                                }}
+                            >
+                                <Users size={18} /> العميل الفردي
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '-10px',
+                                    right: '-10px',
+                                    background: '#EF4444',
+                                    color: 'white',
+                                    fontSize: '0.6rem',
+                                    padding: '2px 6px',
+                                    borderRadius: '8px',
+                                    fontWeight: 900
+                                }}>
+                                    <Lock size={10} style={{ display: 'inline', marginRight: '2px' }} /> قريباً
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
                     <h3 className="mb-xl" style={{ borderBottom: '2px solid #8B5CF6', display: 'inline-block', paddingBottom: '0.5rem', fontSize: '1.25rem' }}>
                         {industry === 'general' ? 'قاعدة بيانات الكوادر المتاحة' : `الكوادر الموصى بها لقطاعك`}
                     </h3>

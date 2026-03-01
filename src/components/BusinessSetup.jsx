@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, updateBusinessProfile, getProfile } from '../services/supabaseService';
+import { getCurrentUser, updateAgent, getProfile, invokeMultiFileWorkflow } from '../services/supabaseService';
+import { Upload, Link as LinkIcon, Sparkles, X, FileText, Loader } from 'lucide-react';
 
 const BusinessSetup = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [formData, setFormData] = useState({
         business_name: '',
         business_type: '',
@@ -15,8 +16,45 @@ const BusinessSetup = () => {
         knowledge_base: ''
     });
     const [loading, setLoading] = useState(false);
+
+    // AI Setup States
+    const [aiFiles, setAiFiles] = useState([]);
+    const [aiUrl, setAiUrl] = useState('');
+    const [aiUrlsList, setAiUrlsList] = useState([]);
+    const [aiLoading, setAiLoading] = useState(false);
+    const [loadingMessageIdx, setLoadingMessageIdx] = useState(0);
+
+    const loadingMessages = language === 'ar' ? [
+        'جاري رفع الملفات وقراءتها...',
+        'جاري تحليل النصوص باستخدام الذكاء الاصطناعي...',
+        'يتم الآن استخراج الخدمات وتفاصيل النشاط...',
+        'شارفنا على الانتهاء، جاري التنسيق...'
+    ] : [
+        'Uploading and reading files...',
+        'Analyzing text with AI...',
+        'Extracting services and business details...',
+        'Almost done, formatting data...'
+    ];
+
+    useEffect(() => {
+        let interval;
+        if (aiLoading) {
+            interval = setInterval(() => {
+                setLoadingMessageIdx((prev) => (prev + 1) % loadingMessages.length);
+            }, 3000);
+        } else {
+            setLoadingMessageIdx(0);
+        }
+        return () => clearInterval(interval);
+    }, [aiLoading, loadingMessages.length]);
+
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // From Step 5 (ContractSign)
+    const agentId = location.state?.agentId || localStorage.getItem('currentAgentId');
+    const initialRules = location.state?.businessRules || {};
 
     useEffect(() => {
         const checkUser = async () => {
@@ -25,34 +63,109 @@ const BusinessSetup = () => {
                 navigate('/login');
             } else {
                 setUser(user);
+
+                // Pre-fill from AI Extraction Rules if they exist
+                setFormData(prev => ({
+                    ...prev,
+                    business_name: initialRules.businessName || prev.business_name,
+                    business_type: initialRules.businessType || prev.business_type,
+                    description: initialRules.description || prev.description,
+                    services: initialRules.knowledgeBase || prev.services,
+                }));
+
+                // Fallback to fetch profile if empty
                 const profile = await getProfile(user.id);
                 if (profile.success && profile.data) {
-                    setFormData({
-                        business_name: profile.data.business_name || '',
-                        business_type: profile.data.business_type || '',
-                        working_hours: profile.data.working_hours || '',
-                        description: profile.data.description || '',
-                        services: profile.data.services || '',
-                        branding_tone: profile.data.branding_tone || 'professional',
-                        knowledge_base: profile.data.knowledge_base || ''
-                    });
+                    setFormData(prev => ({
+                        ...prev,
+                        business_name: prev.business_name || profile.data.business_name || '',
+                        business_type: prev.business_type || profile.data.business_type || '',
+                        working_hours: prev.working_hours || profile.data.working_hours || '',
+                        description: prev.description || profile.data.description || '',
+                        services: prev.services || profile.data.services || '',
+                        branding_tone: prev.branding_tone || profile.data.branding_tone || 'professional',
+                        knowledge_base: prev.knowledge_base || profile.data.knowledge_base || ''
+                    }));
                 }
             }
         };
         checkUser();
-    }, [navigate]);
+    }, [navigate, initialRules.businessName, initialRules.businessType, initialRules.description, initialRules.knowledgeBase]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!agentId) {
+            alert('لم يتم العثور على وكيل نشط، يرجى إعادة خطوات التوظيف.');
+            return;
+        }
+
         setLoading(true);
-        const result = await updateBusinessProfile(user.id, formData);
+        // Save knowledge directly to the designated Agent!
+        const result = await updateAgent(agentId, {
+            knowledge_base: formData.knowledge_base + '\n\nمواعيد العمل:\n' + formData.working_hours,
+            branding_tone: formData.branding_tone
+        });
+
         if (result.success) {
-            alert(t('settingsSavedSuccess'));
-            navigate('/dashboard');
+            alert('تم تهيئة الموظف وحفظ قاعدة المعرفة بنجاح!');
+            // Step 7: Transition to Dashboard Integration Selection
+            navigate('/deploy-agent', { state: { agentId } });
         } else {
             alert(t('errorPrefix') + result.error);
         }
         setLoading(false);
+    };
+
+    const handleFileChange = (e) => {
+        if (e.target.files) {
+            setAiFiles([...aiFiles, ...Array.from(e.target.files)]);
+        }
+    };
+
+    const removeFile = (index) => {
+        setAiFiles(aiFiles.filter((_, i) => i !== index));
+    };
+
+    const handleAddUrl = () => {
+        if (aiUrl && !aiUrlsList.includes(aiUrl)) {
+            setAiUrlsList([...aiUrlsList, aiUrl]);
+            setAiUrl('');
+        }
+    };
+
+    const removeUrl = (index) => {
+        setAiUrlsList(aiUrlsList.filter((_, i) => i !== index));
+    };
+
+    const handleAiProcess = async () => {
+        if (aiFiles.length === 0 && aiUrlsList.length === 0) {
+            alert(language === 'ar' ? 'يرجى إضافة ملف أو رابط واحد على الأقل.' : 'Please add at least one file or URL.');
+            return;
+        }
+
+        setAiLoading(true);
+        const result = await invokeMultiFileWorkflow(aiFiles, aiUrlsList);
+
+        if (result.success && result.data) {
+            // Apply extracted data to formData
+            setFormData({
+                ...formData,
+                business_name: result.data.business_name || formData.business_name,
+                business_type: result.data.business_type || formData.business_type,
+                working_hours: result.data.working_hours || formData.working_hours,
+                description: result.data.description || formData.description,
+                services: result.data.services || formData.services,
+                knowledge_base: result.data.knowledge_base || formData.knowledge_base
+            });
+            alert(language === 'ar' ? 'تم استخراج البيانات بنجاح.' : 'Data extracted successfully.');
+            // Clear inputs
+            setAiFiles([]);
+            setAiUrlsList([]);
+        } else {
+            alert(language === 'ar' ? 'حدث خطأ أثناء معالجة الملفات: ' + result.error : 'Error processing files: ' + result.error);
+        }
+        setAiLoading(false);
     };
 
     return (
@@ -66,9 +179,114 @@ const BusinessSetup = () => {
                 </p>
             </div>
 
-            <div className="grid grid-2" style={{ alignItems: 'start', gridTemplateColumns: '1.3fr 0.7fr' }}>
+            <div className="grid grid-2" style={{ alignItems: 'start', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)' }}>
+                {/* AI Smart Setup Panel */}
+                <div className="card" style={{ background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, rgba(17, 24, 39, 1) 100%)', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                        <div style={{ backgroundColor: '#8B5CF620', padding: '10px', borderRadius: '12px', color: '#8B5CF6' }}>
+                            <Sparkles size={24} />
+                        </div>
+                        <div>
+                            <h3 style={{ margin: 0, color: 'white' }}>الإعداد الذكي بالذكاء الاصطناعي</h3>
+                            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ارفع ملفات أو أضف روابط لتدريب موظفك الرقمي فوراً</p>
+                        </div>
+                    </div>
+
+                    <div className="mb-md">
+                        <label className="label"><span>📁</span> رفع ملفات (PDF, Excel, Word)</label>
+                        <div
+                            style={{
+                                border: '2px dashed rgba(255,255,255,0.1)',
+                                borderRadius: '12px',
+                                padding: '2rem',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                background: 'rgba(0,0,0,0.2)',
+                                transition: 'all 0.3s'
+                            }}
+                            onClick={() => document.getElementById('ai-file-upload').click()}
+                        >
+                            <Upload size={32} color="#9CA3AF" style={{ marginBottom: '1rem' }} />
+                            <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.9rem' }}>اضغط لاختيار الملفات أو اسحبها هنا</p>
+                            <input
+                                id="ai-file-upload"
+                                type="file"
+                                multiple
+                                style={{ display: 'none' }}
+                                onChange={handleFileChange}
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt"
+                            />
+                        </div>
+
+                        {aiFiles.length > 0 && (
+                            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {aiFiles.map((f, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '0.85rem' }}>
+                                            <FileText size={16} color="#8B5CF6" /> {f.name}
+                                        </div>
+                                        <X size={16} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => removeFile(i)} />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mb-lg">
+                        <label className="label"><span>🔗</span> روابط الصفحات وقواعد البيانات</label>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                                <LinkIcon size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                                <input
+                                    type="url"
+                                    className="input-field"
+                                    style={{ paddingLeft: '40px' }}
+                                    placeholder="https://example.com/services"
+                                    value={aiUrl}
+                                    onChange={(e) => setAiUrl(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddUrl())}
+                                />
+                            </div>
+                            <button onClick={handleAddUrl} className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>إضافة</button>
+                        </div>
+
+                        {aiUrlsList.length > 0 && (
+                            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {aiUrlsList.map((url, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
+                                        <a href={url} target="_blank" rel="noreferrer" style={{ color: '#60A5FA', fontSize: '0.85rem', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+                                            {url}
+                                        </a>
+                                        <X size={16} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => removeUrl(i)} />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <button
+                        type="button"
+                        className={`btn btn-block ${aiLoading ? 'loading' : ''}`}
+                        onClick={handleAiProcess}
+                        disabled={aiLoading || (aiFiles.length === 0 && aiUrlsList.length === 0)}
+                        style={{
+                            background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+                            color: 'white',
+                            opacity: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 0.5 : 1,
+                            pointerEvents: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'none' : 'auto'
+                        }}
+                    >
+                        {aiLoading ? 'جاري التحليل واستخراج البيانات...' : 'أتمتة وتحليل البيانات ✨'}
+                    </button>
+                    <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
+                        سيتم تحليل الملفات وملء بيانات الإعداد اليدوي أدناه تلقائياً.
+                    </p>
+                </div>
+
+                {/* Manual Setup Panel */}
                 <div className="card">
                     <form onSubmit={handleSubmit}>
+                        <h3 style={{ margin: '0 0 1.5rem', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>وثيقة الإعداد اليدوي</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
                             <div>
                                 <label className="label"><span>🏢</span> {t('businessNameLabel')}</label>
@@ -124,7 +342,7 @@ const BusinessSetup = () => {
                                 className="input-field"
                                 value={formData.branding_tone}
                                 onChange={(e) => setFormData({ ...formData, branding_tone: e.target.value })}
-                                style={{ 
+                                style={{
                                     color: 'white',
                                     background: '#1F2937',
                                     border: '1px solid rgba(255,255,255,0.1)'

@@ -15,7 +15,7 @@ const ModernDashboardLayout = ({ children }) => {
     const navigate = useNavigate();
     const { isAdmin, isCustomer } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [userData, setUserData] = useState({ name: 'جاري التحميل...', email: '' });
+    const [userData, setUserData] = useState({ name: t('loadingFallback'), email: '' });
 
     useEffect(() => {
         fetchUser();

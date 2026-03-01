@@ -92,12 +92,12 @@ const Home = () => {
                     </p>
 
                     <div className="flex gap-md">
-                        <Link to="/interview" className="btn btn-primary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
+                        <Link to="/templates" className="btn btn-primary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
                             {t('home.startInterview')}
                         </Link>
                         {user ? (
-                            <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
-                                {t('home.viewDashboard')}
+                            <Link to="/templates" className="btn btn-secondary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
+                                تصفح الوكلاء
                             </Link>
                         ) : (
                             <Link to="/login" className="btn btn-secondary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
@@ -261,7 +261,7 @@ const Home = () => {
                                                 ? t('home.ctaFitness')
                                                 : t('home.ctaGeneral')}
                         </p>
-                        <Link to="/interview" className="btn btn-lg" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #06B6D4 100%)', color: 'var(--primary)', padding: '1.25rem 3rem', fontSize: '1.2rem', borderRadius: '18px', fontWeight: 800, border: 'none', boxShadow: '0 15px 40px rgba(139, 92, 246, 0.3)' }}>
+                        <Link to="/templates" className="btn btn-lg" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #06B6D4 100%)', color: 'var(--primary)', padding: '1.25rem 3rem', fontSize: '1.2rem', borderRadius: '18px', fontWeight: 800, border: 'none', boxShadow: '0 15px 40px rgba(139, 92, 246, 0.3)' }}>
                             {t('home.ctaButton')}
                         </Link>
                     </div>

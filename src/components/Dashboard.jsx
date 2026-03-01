@@ -84,9 +84,9 @@ const Dashboard = () => {
 
     const exportToExcel = () => {
         const exportData = tasks.map(task => ({
-            'نوع المهمة': task.task_type,
-            'البيانات': JSON.stringify(task.task_data, null, 2),
-            'تاريخ الإنجاز': new Date(task.completed_at).toLocaleString('ar-SA'),
+            [t('exportHeaderType')]: task.task_type,
+            [t('exportHeaderData')]: JSON.stringify(task.task_data, null, 2),
+            [t('exportHeaderDate')]: new Date(task.completed_at).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US'),
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -98,9 +98,9 @@ const Dashboard = () => {
 
     const exportToCSV = () => {
         const exportData = tasks.map(task => ({
-            'نوع المهمة': task.task_type,
-            'البيانات': JSON.stringify(task.task_data, null, 2),
-            'تاريخ الإنجاز': new Date(task.completed_at).toLocaleString('ar-SA'),
+            [t('exportHeaderType')]: task.task_type,
+            [t('exportHeaderData')]: JSON.stringify(task.task_data, null, 2),
+            [t('exportHeaderDate')]: new Date(task.completed_at).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US'),
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -155,7 +155,7 @@ const Dashboard = () => {
                             </div>
                         </div>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', margin: 0, fontWeight: 600 }}>
-                            "الموظفة التي لا تنام، والوردية التي لا تنتهي" 🚀
+                            {t('dashboardSlogan')}
                         </p>
                     </div>
                     <button className="btn btn-primary" onClick={exportToExcel} style={{ minWidth: '150px' }}>
@@ -174,7 +174,7 @@ const Dashboard = () => {
                         <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--success)' }}>99.8%</div>
                     </div>
                     <div className="card" style={{ padding: '1.25rem' }}>
-                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>الرصيد المتبقي (الرموز)</div>
+                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{t('remainingCreditLabel')}</div>
                         <div style={{ fontSize: '2rem', fontWeight: 900, color: '#F59E0B' }}>
                             {/* Assuming we'll fetch wallet_credits.balance and store it in profile soon */}
                             {profile?.wallet_balance || 50000}
@@ -198,7 +198,7 @@ const Dashboard = () => {
             <div className="card" style={{ marginTop: '2rem' }}>
                 <div className="flex align-center gap-sm mb-lg">
                     <div style={{ width: '4px', height: '24px', background: '#8B5CF6', borderRadius: '2px' }}></div>
-                    <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.2rem', color: '#8B5CF6' }}>🌙 سجل وردية الليل (ما أنجزته 24Shift ليلة أمس)</h3>
+                    <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.2rem', color: '#8B5CF6' }}>{t('nightShiftLogTitle')}</h3>
                 </div>
                 <div className="table-container" style={{ border: 'none', padding: 0 }}>
                     {tasks.length === 0 ? (
