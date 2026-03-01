@@ -148,10 +148,12 @@ const Dashboard = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0 }}>24Shift</h1>
+                            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0 }}>
+                                {profile?.business_name || t('nav.dashboard')}
+                            </h1>
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(34, 197, 94, 0.1)', color: '#22c59e', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px solid rgba(34,197,94,0.2)' }}>
                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c59e', boxShadow: '0 0 8px #22c59e' }}></div>
-                                24Shift: Active
+                                {t('agentStatus') || 'Agent: Active'}
                             </div>
                         </div>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', margin: 0, fontWeight: 600 }}>

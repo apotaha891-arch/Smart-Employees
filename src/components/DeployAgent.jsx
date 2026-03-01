@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
-import { Bot, CheckCircle2, MessageCircle, Send, Instagram, Zap, Headphones, Settings, ShieldCheck, CreditCard, Loader2, Globe } from 'lucide-react';
-import { getAgentApps } from '../services/supabaseService';
+import { Bot, CheckCircle2, MessageCircle, Send, Instagram, Zap, Headphones, Settings, ShieldCheck, CreditCard, Loader2, Globe, X } from 'lucide-react';
+import { getAgentApps, submitCustomRequest } from '../services/supabaseService';
 
 const IntegrationsAddons = () => {
     const { t, language } = useLanguage();
@@ -17,6 +17,15 @@ const IntegrationsAddons = () => {
     const [activeAddons, setActiveAddons] = useState([]);
     const [dbAddons, setDbAddons] = useState([]);
     const [status, setStatus] = useState('idle'); // idle, loading, success
+
+    // Custom Request Modal State
+    const [showCustomModal, setShowCustomModal] = useState(false);
+    const [customFormData, setCustomFormData] = useState({
+        request_type: 'custom_integration',
+        description: '',
+        contact_preference: 'email'
+    });
+    const [customFormStatus, setCustomFormStatus] = useState('idle'); // idle, loading, success, error
 
     useEffect(() => {
         const fetchAddons = async () => {
@@ -51,7 +60,38 @@ const IntegrationsAddons = () => {
     };
 
     const handleContactAdmin = () => {
-        alert(isArabic ? 'سيتم توجيهك لفريق المبيعات والدعم الفني.' : 'You will be redirected to the sales support team.');
+        setShowCustomModal(true);
+    };
+
+    const handleCustomSubmit = async (e) => {
+        e.preventDefault();
+        if (!customFormData.description.trim()) {
+            alert(isArabic ? 'يرجى إدخال وصف لطلبك.' : 'Please enter a description for your request.');
+            return;
+        }
+
+        setCustomFormStatus('loading');
+
+        // Also add agent info context
+        const dataToSubmit = {
+            ...customFormData,
+            agent_id: location.state?.agentId || null,
+            agent_name: agentName,
+            status: 'pending'
+        };
+
+        const res = await submitCustomRequest(dataToSubmit);
+        if (res.success) {
+            setCustomFormStatus('success');
+            setTimeout(() => {
+                setShowCustomModal(false);
+                setCustomFormStatus('idle');
+                setCustomFormData({ request_type: 'custom_integration', description: '', contact_preference: 'email' });
+            }, 3000);
+        } else {
+            setCustomFormStatus('error');
+            alert(res.error);
+        }
     };
 
     const getAppIcon = (type, color) => {
@@ -273,6 +313,122 @@ const IntegrationsAddons = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Custom Request Modal */}
+            {showCustomModal && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    backdropFilter: 'blur(5px)',
+                    zIndex: 1000,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '1rem'
+                }}>
+                    <div className="card animate-fade-in" style={{
+                        maxWidth: '500px', width: '100%',
+                        background: '#18181B', border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '2rem', position: 'relative'
+                    }}>
+                        <button
+                            onClick={() => setShowCustomModal(false)}
+                            style={{ position: 'absolute', top: '1rem', right: isArabic ? 'auto' : '1rem', left: isArabic ? '1rem' : 'auto', background: 'none', border: 'none', color: '#A1A1AA', cursor: 'pointer' }}
+                        >
+                            <X size={24} />
+                        </button>
+
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
+                            {isArabic ? 'طلب إضافة مخصصة' : 'Custom Request'}
+                        </h3>
+                        <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                            {isArabic
+                                ? 'يرجى كتابة تفاصيل متطلباتك الخاصة بربط الموظف الذكي بأنظمتك، وسيتواصل معك فريق الهندسة قريباً.'
+                                : 'Please provide details about your custom integration needs. Our engineering team will contact you shortly.'}
+                        </p>
+
+                        {customFormStatus === 'success' ? (
+                            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+                                <CheckCircle2 size={64} color="#10B981" style={{ margin: '0 auto 1rem' }} />
+                                <h4 style={{ color: '#10B981', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                                    {isArabic ? 'تم استلام طلبك بنجاح!' : 'Request submitted successfully!'}
+                                </h4>
+                                <p style={{ color: '#A1A1AA', marginTop: '0.5rem' }}>
+                                    {isArabic ? 'سنتواصل معك في أقرب وقت.' : 'We will get back to you shortly.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleCustomSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div>
+                                    <label className="label">{isArabic ? 'نوع الطلب' : 'Request Type'}</label>
+                                    <select
+                                        className="input-field"
+                                        value={customFormData.request_type}
+                                        onChange={(e) => setCustomFormData({ ...customFormData, request_type: e.target.value })}
+                                        style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                                    >
+                                        <option value="custom_integration">{isArabic ? 'ربط بنظام خارجي (ERP/CRM)' : 'External Integration (ERP/CRM)'}</option>
+                                        <option value="mobile_app">{isArabic ? 'تطبيق جوال' : 'Mobile App'}</option>
+                                        <option value="voice_ai">{isArabic ? 'نظام صوتي (Voice AI)' : 'Voice AI System'}</option>
+                                        <option value="other">{isArabic ? 'أخرى' : 'Other'}</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="label">{isArabic ? 'وصف المتطلبات' : 'Requirements Description'}</label>
+                                    <textarea
+                                        className="input-field"
+                                        rows="4"
+                                        placeholder={isArabic ? 'اشرح بالتفصيل ما ترغب في إضافته أو ربطه...' : 'Describe your custom features or integration needs...'}
+                                        value={customFormData.description}
+                                        onChange={(e) => setCustomFormData({ ...customFormData, description: e.target.value })}
+                                        style={{ background: '#27272A', border: '1px solid rgba(255,255,255,0.1)' }}
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <div>
+                                    <label className="label">{isArabic ? 'طريقة التواصل المفضلة' : 'Preferred Contact Method'}</label>
+                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E4E4E7', cursor: 'pointer' }}>
+                                            <input
+                                                type="radio"
+                                                name="contact"
+                                                value="email"
+                                                checked={customFormData.contact_preference === 'email'}
+                                                onChange={(e) => setCustomFormData({ ...customFormData, contact_preference: e.target.value })}
+                                            />
+                                            {isArabic ? 'البريد الإلكتروني' : 'Email'}
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E4E4E7', cursor: 'pointer' }}>
+                                            <input
+                                                type="radio"
+                                                name="contact"
+                                                value="phone"
+                                                checked={customFormData.contact_preference === 'phone'}
+                                                onChange={(e) => setCustomFormData({ ...customFormData, contact_preference: e.target.value })}
+                                            />
+                                            {isArabic ? 'رقم الهاتف' : 'Phone'}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="btn btn-block"
+                                    disabled={customFormStatus === 'loading'}
+                                    style={{
+                                        background: '#8B5CF6', color: 'white', marginTop: '1rem',
+                                        opacity: customFormStatus === 'loading' ? 0.7 : 1
+                                    }}
+                                >
+                                    {customFormStatus === 'loading'
+                                        ? (isArabic ? 'جاري الإرسال...' : 'Submitting...')
+                                        : (isArabic ? 'إرسال الطلب' : 'Submit Request')}
+                                </button>
+                            </form>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

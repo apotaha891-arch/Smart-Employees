@@ -15,7 +15,7 @@ const ModernDashboardLayout = ({ children }) => {
     const navigate = useNavigate();
     const { isAdmin, isCustomer } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [userData, setUserData] = useState({ name: t('loadingFallback'), email: '' });
+    const [userData, setUserData] = useState({ name: t('loadingFallback'), email: '', business_name: '' });
 
     useEffect(() => {
         fetchUser();
@@ -25,9 +25,17 @@ const ModernDashboardLayout = ({ children }) => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
+                // Fetch profile to get business name
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('business_name')
+                    .eq('id', user.id)
+                    .maybeSingle();
+
                 setUserData({
                     name: user.user_metadata?.full_name || user.email.split('@')[0],
-                    email: user.email
+                    email: user.email,
+                    business_name: profile?.business_name || ''
                 });
             }
         } catch (error) {
@@ -76,13 +84,15 @@ const ModernDashboardLayout = ({ children }) => {
                     <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
                         <div style={{
                             width: '40px', height: '40px',
-                            background: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
+                            background: isAdmin ? 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)' : 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
                             borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: 'white', fontSize: '1.2rem', fontWeight: '900'
                         }}>
-                            24
+                            {isAdmin ? '24' : (userData.business_name ? userData.business_name.substring(0, 2).toUpperCase() : 'C')}
                         </div>
-                        {isSidebarOpen && <span style={{ fontSize: '1.5rem', fontWeight: 900, background: 'linear-gradient(90deg, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '1px' }}>24Shift</span>}
+                        {isSidebarOpen && <span style={{ fontSize: '1.2rem', fontWeight: 900, background: 'linear-gradient(90deg, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>
+                            {isAdmin ? '24Shift' : (userData.business_name || t('nav.dashboard'))}
+                        </span>}
                     </Link>
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '0.5rem' }}>
                         <Menu size={20} />
