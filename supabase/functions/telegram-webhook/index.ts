@@ -111,6 +111,7 @@ serve(async (req) => {
                 if (!agentRes.ok) {
                     const errText = await agentRes.text();
                     console.error(`agent-handler returned ${agentRes.status}:`, errText);
+                    aiReply = "عذراً، حدث خطأ أثناء معالجة طلبك. رمز الخطأ: " + agentRes.status + " تفاصيل: " + errText.substring(0, 100);
                 } else {
                     const agentData = await agentRes.json();
                     if (agentData.text) {
@@ -124,6 +125,7 @@ serve(async (req) => {
                     aiReply = "عذراً، استغرق معالجة طلبك وقتاً أطول من المعتاد. يرجى المحاولة مرة أخرى.";
                 } else {
                     console.error("Fetch error calling agent-handler:", fetchErr.message);
+                    aiReply = "عذراً، حدث خطأ أثناء معالجة طلبك. الخطأ: " + String(fetchErr.message) + " url: " + agentHandlerUrl;
                 }
             }
 
