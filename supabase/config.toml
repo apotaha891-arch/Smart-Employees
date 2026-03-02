@@ -433,7 +433,7 @@ entrypoint = "./functions/agent-handler/index.ts"
 
 [functions.create-checkout-session]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/create-checkout-session/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -444,7 +444,7 @@ entrypoint = "./functions/create-checkout-session/index.ts"
 
 [functions.stripe-webhook]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/stripe-webhook/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx

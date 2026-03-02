@@ -50,12 +50,28 @@ const Pricing = () => {
                     planId: plan.id,
                     successUrl,
                     cancelUrl
+                },
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`
                 }
             });
 
             if (error) {
-                console.error("Function invoke error:", error);
-                alert("حدث خطأ أثناء تحضير صفحة الدفع: رجاءً المحاولة لاحقاً.");
+                console.error("Function invoke error (raw):", error);
+                let detailedError = "Unknown error";
+                if (error instanceof Error) {
+                    detailedError = error.message;
+                }
+
+                try {
+                    // Sometimes context contains the real text
+                    if (error.context) {
+                        const ctxText = await error.context.text();
+                        detailedError += " | Context: " + ctxText;
+                    }
+                } catch (e) { }
+
+                alert(`حدث خطأ أثناء تحضير صفحة الدفع: ${detailedError}`);
                 setLoadingPlan(null);
                 return;
             }

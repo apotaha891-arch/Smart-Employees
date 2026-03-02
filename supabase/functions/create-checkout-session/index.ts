@@ -31,15 +31,16 @@ serve(async (req) => {
     // Service role key needed to bypass RLS to read/write stripe_customer_id on profiles table
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
-    // Client for verifying user JWT token
-    const supabaseAuthClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
+    // Extract the JWT from the Bearer string
+    const jwt = authHeader.replace('Bearer ', '').trim();
 
-    const { data: { user }, error: userError } = await supabaseAuthClient.auth.getUser();
+    // Client for verifying user JWT token
+    const supabaseAuthClient = createClient(supabaseUrl, supabaseAnonKey);
+
+    const { data: { user }, error: userError } = await supabaseAuthClient.auth.getUser(jwt);
     if (userError || !user) {
       console.error("Auth Error:", userError);
-      throw new Error("Unauthorized");
+      throw new Error(`Unauthorized. JWT issue: ${userError?.message || 'No user found'}.`);
     }
 
     // Client for DB operations (bypass RLS)
@@ -62,22 +63,25 @@ serve(async (req) => {
       });
       customerId = customer.id;
       // Save to DB
-      await supabase.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
+      await supabaseAdmin.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
     }
 
-    // 4. Determine Price ID based on planId (Starter / Pro)
+    // 4. Determine Price and optional Coupon ID based on planId
     // ** YOU WILL NEED TO REPLACE THESE WITH YOUR ACTUAL STRIPE PRICE IDs (e.g., price_1N...) **
     let priceId = '';
+    let couponId = '';
     if (planId === 'starter') {
       priceId = Deno.env.get('STRIPE_PRICE_STARTER') || 'price_STARTER_MOCK';
+      couponId = Deno.env.get('STRIPE_COUPON_STARTER') || '';
     } else if (planId === 'pro') {
       priceId = Deno.env.get('STRIPE_PRICE_PRO') || 'price_PRO_MOCK';
+      couponId = Deno.env.get('STRIPE_COUPON_PRO') || '';
     } else {
       throw new Error("Invalid Plan Selection");
     }
 
     // 5. Create Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig = {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
@@ -87,7 +91,13 @@ serve(async (req) => {
         supabase_user_id: user.id,
         plan_id: planId
       }
-    });
+    };
+
+    if (couponId) {
+      sessionConfig.discounts = [{ coupon: couponId }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return new Response(
       JSON.stringify({ url: session.url }),
@@ -95,9 +105,9 @@ serve(async (req) => {
     );
 
   } catch (err) {
-    console.error(err);
+    console.error("CATCH BLOCK ERROR:", err.message, err.stack);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: err.message, stack: err.stack }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

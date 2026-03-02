@@ -25,17 +25,17 @@ const ModernDashboardLayout = ({ children }) => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                // Fetch profile to get business name
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('business_name')
-                    .eq('id', user.id)
+                // Fetch salon_config to get business related info instead
+                const { data: config } = await supabase
+                    .from('salon_configs')
+                    .select('business_type')
+                    .eq('user_id', user.id)
                     .maybeSingle();
 
                 setUserData({
                     name: user.user_metadata?.full_name || user.email.split('@')[0],
                     email: user.email,
-                    business_name: profile?.business_name || ''
+                    business_name: config?.business_type || ''
                 });
             }
         } catch (error) {
