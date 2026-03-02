@@ -84,7 +84,9 @@ const PlatformConcierge = () => {
                 onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                 onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-                👩‍💼
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden' }}>
+                    <img src="/noura_avatar.png" alt="Noura Concierge" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
             </button>
         );
     }
@@ -122,13 +124,14 @@ const PlatformConcierge = () => {
                         width: '44px',
                         height: '44px',
                         borderRadius: '50%',
-                        fontSize: '1.5rem',
+                        overflow: 'hidden',
                         background: 'var(--n8n-background-dark)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'var(--n8n-primary)'
-                    }}>👩‍💼</div>
+                    }}>
+                        <img src="/noura_avatar.png" alt="Noura" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
                     <div>
                         <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>نورة</h4>
                         <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--success)', fontWeight: 600 }}>● متصلة للاستشارة</p>

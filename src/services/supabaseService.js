@@ -586,7 +586,7 @@ export const getProfile = async (userId) => {
     try {
         const { data, error } = await supabase
             .from('profiles')
-            .select('*')
+            .select('role, total_credits, credits_used, subscription_tier, message_limit, subscription_plan')
             .eq('id', userId)
             .maybeSingle(); // Use maybeSingle to avoid 406 error on missing row
 

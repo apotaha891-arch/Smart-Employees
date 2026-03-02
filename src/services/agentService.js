@@ -154,6 +154,24 @@ export const updateAgentStatus = async (agentId, status) => {
     }
 };
 
+// Update agent telegram token
+export const updateAgentTelegramToken = async (agentId, token) => {
+    try {
+        const { data, error } = await supabase
+            .from('agents')
+            .update({ telegram_token: token })
+            .eq('id', agentId)
+            .select();
+
+        if (error) throw error;
+
+        return { success: true, data: data[0] };
+    } catch (error) {
+        console.error('Error updating telegram token:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 // Add service to agent
 export const addServiceToAgent = async (agentId, service) => {
     try {
@@ -186,6 +204,7 @@ export const agentService = {
     updateAgentConfiguration,
     deleteAgent,
     updateAgentStatus,
+    updateAgentTelegramToken,
     addServiceToAgent,
     removeServiceFromAgent
 };

@@ -31,32 +31,6 @@ serve(async (req) => {
 
     const chatId = message.chat.id;
     const text = message.text;
-    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN') ?? "8579575826:AAHrYDyorHTlFSWDQajjt41n2nQYZM2TmVg";
-
-    console.log(`Received message from ${chatId}: ${text}`);
-
-    // 3. Helper: send Telegram message
-    async function sendTelegram(msg: string) {
-        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-        try {
-            await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: chatId, text: msg })
-            });
-        } catch (e: any) {
-            console.error("Telegram send error:", e.message);
-        }
-    }
-
-    // 4. Send "Typing..." indicator immediately (non-blocking)
-    const typingApiUrl = `https://api.telegram.org/bot${botToken}/sendChatAction`;
-    fetch(typingApiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, action: 'typing' })
-    }).catch(err => console.error("Typing action error:", err));
-
     // 5. Process AI in background using EdgeRuntime.waitUntil
     //    This lets us return 200 to Telegram immediately (within 5s limit)
     //    while the AI processing continues asynchronously.
@@ -66,20 +40,85 @@ serve(async (req) => {
             const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
             const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-            // Find the matching Agent — fetch first active agent
-            const { data: agents, error: agentError } = await supabase
-                .from('agents')
-                .select('id')
-                .eq('status', 'active')
-                .limit(1);
+            const url = new URL(req.url);
+            const targetAgentId = url.searchParams.get('agent_id');
 
-            if (agentError || !agents || agents.length === 0) {
-                console.error("No active agent found:", agentError?.message);
-                await sendTelegram("عذراً، لا يوجد موظف نشط في النظام حالياً. يرجى التواصل مع الإدارة.");
+            if (!targetAgentId) {
+                console.error("Missing agent_id in webhook URL");
                 return;
             }
 
-            const targetAgentId = agents[0].id;
+            // Find the matching Agent — fetch first active agent
+            const { data: agent, error: agentError } = await supabase
+                .from('agents')
+                .select('id, telegram_token')
+                .eq('id', targetAgentId)
+                .single();
+
+            if (agentError || !agent) {
+                console.error("Agent not found:", agentError?.message);
+                return;
+            }
+
+            // --- QUOTA LOGIC: Check owner's message_limit ---
+            const { data: owner } = await supabase
+                .from('profiles')
+                .select('id, message_limit')
+                .eq('id', agent.user_id)
+                .single();
+
+            const dynamicBotToken = agent.telegram_token || Deno.env.get('TELEGRAM_BOT_TOKEN');
+
+            if (!dynamicBotToken) {
+                console.error("No telegram token configured for agent", targetAgentId);
+                return;
+            }
+
+            // Helper: send Telegram message
+            async function sendTelegram(msg: string) {
+                const apiStr = `https://api.telegram.org/bot${dynamicBotToken}/sendMessage`;
+                try {
+                    await fetch(apiStr, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: chatId, text: msg })
+                    });
+                } catch (e: any) {
+                    console.error("Telegram send error:", e.message);
+                }
+            }
+
+            if (!owner || owner.message_limit <= 0) {
+                await sendTelegram("عذراً، لقد استنفد هذا الموظف رصيد المحادثات الخاص به. يرجى من صاحب المنشأة ترقية الباقة لضمان استمرار الخدمة.");
+                return;
+            }
+
+            // Decrement the quota limit by 1
+            await supabase.from('profiles').update({ message_limit: owner.message_limit - 1 }).eq('id', owner.id);
+            // --- END QUOTA LOGIC ---
+
+            // Helper: send Telegram message
+            async function sendTelegram(msg: string) {
+                const apiStr = `https://api.telegram.org/bot${dynamicBotToken}/sendMessage`;
+                try {
+                    await fetch(apiStr, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: chatId, text: msg })
+                    });
+                } catch (e: any) {
+                    console.error("Telegram send error:", e.message);
+                }
+            }
+
+            // Send "Typing..." indicator
+            const typingApiUrl = `https://api.telegram.org/bot${dynamicBotToken}/sendChatAction`;
+            fetch(typingApiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatId, action: 'typing' })
+            }).catch(err => console.error("Typing action error:", err));
+
             const sessionId = `telegram_${chatId}`;
 
             // Call our agent-handler edge function with a generous timeout
@@ -135,7 +174,8 @@ serve(async (req) => {
 
         } catch (error: any) {
             console.error("Background task error:", error.message);
-            await sendTelegram("حدث خطأ تقني مؤقت. يرجى المحاولة مرة أخرى بعد قليل.");
+            // We can't use sendTelegram here because it might not be initialized, 
+            // but we'll try if botToken is defined... it depends on where it failed.
         }
     })();
 
@@ -155,3 +195,4 @@ serve(async (req) => {
         status: 200,
     });
 });
+

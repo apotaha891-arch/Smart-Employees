@@ -7,113 +7,119 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // 1. WhatsApp Webhook Verification (GET request)
+  // 1. Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  const url = new URL(req.url);
+
+  // 2. Handle Webhook Verification (Meta / Facebook requires this when setting up the webhook)
   if (req.method === 'GET') {
-    const url = new URL(req.url);
     const mode = url.searchParams.get('hub.mode');
     const token = url.searchParams.get('hub.verify_token');
     const challenge = url.searchParams.get('hub.challenge');
+    const targetAgentId = url.searchParams.get('agent_id');
 
-    // You would typically store this verify_token in Supabase Secrets
-    const VERIFY_TOKEN = Deno.env.get('WHATSAPP_VERIFY_TOKEN') || 'elite_agents_secure_token_123';
+    if (mode === 'subscribe' && token && targetAgentId) {
+      // Check token against database
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+        const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    if (mode && token) {
-      if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-        console.log('WEBHOOK_VERIFIED');
-        return new Response(challenge, { status: 200 });
-      } else {
-        return new Response('Forbidden', { status: 403 });
+        const { data: agent, error } = await supabase
+          .from('agents')
+          .select('whatsapp_settings')
+          .eq('id', targetAgentId)
+          .single();
+
+        if (!error && agent?.whatsapp_settings?.verifyToken === token) {
+          console.log('Webhook verified successfully');
+          return new Response(challenge, { status: 200 });
+        }
+      } catch (e) {
+        console.error("Verification DB Error:", e);
       }
     }
-    return new Response('Bad Request', { status: 400 });
+    return new Response('Forbidden', { status: 403 });
   }
 
-  // 2. Handling Incoming WhatsApp Messages (POST request)
-  if (req.method === 'POST') {
+  // Parse body once
+  let body: any;
+  try {
+    body = await req.json();
+  } catch (_) {
+    return new Response("Bad Request", { status: 400 });
+  }
+
+  console.log("WhatsApp Webhook Payload:", JSON.stringify(body));
+
+  // 3. Extract Message from WhatsApp Payload (Cloud API format)
+  if (body.object !== "whatsapp_business_account") {
+    return new Response("Not a WhatsApp event", { status: 404 });
+  }
+
+  // WhatsApp nests the actual message deep inside entries/changes/value/messages
+  const entry = body.entry?.[0];
+  const changes = entry?.changes?.[0];
+  const value = changes?.value;
+  const messages = value?.messages;
+
+  if (!messages || !messages[0] || messages[0].type !== "text") {
+    // Ignore non-text messages (like status updates, images, etc.) for now
+    return new Response("OK", { status: 200 });
+  }
+
+  const message = messages[0];
+  const contactPhone = message.from; // Phone number of the user sending the message
+  const text = message.text.body;
+
+  // We should get agent_id from URL query params.
+  const targetAgentId = url.searchParams.get('agent_id');
+
+  // 5. Process AI in background using EdgeRuntime.waitUntil
+  const backgroundTask = (async () => {
     try {
-      const body = await req.json();
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-      // Check if it's a WhatsApp status update or an actual message
-      if (body.object === 'whatsapp_business_account') {
-        const entry = body.entry?.[0];
-        const changes = entry?.changes?.[0];
-        const value = changes?.value;
+      if (!targetAgentId) {
+        console.error("Missing agent_id in webhook URL");
+        return;
+      }
 
-        if (value?.messages && value.messages.length > 0) {
-          const message = value.messages[0];
-          const phoneNumber = message.from;
-          const textContent = message.text?.body;
+      // Find the matching Agent
+      const { data: agent, error: agentError } = await supabase
+        .from('agents')
+        .select('id, whatsapp_settings')
+        .eq('id', targetAgentId)
+        .single();
 
-          // We need to figure out which Agent this phone number belongs to.
-          // This requires looking up the WhatsApp phone number in our integrations table.
-          const phoneNumberId = value.metadata?.phone_number_id;
+      if (agentError || !agent || !agent.whatsapp_settings) {
+        console.error("Agent or WhatsApp settings not found");
+        return;
+      }
+      // --- QUOTA LOGIC: Check owner's message_limit ---
+      const { data: owner } = await supabase
+        .from('profiles')
+        .select('id, message_limit')
+        .eq('id', agent.user_id)
+        .single();
 
-          console.log(`Received message from ${phoneNumber}: ${textContent}`);
+      const { token: waToken, phoneNumberId: waPhoneId } = agent.whatsapp_settings;
 
-          console.log(`Received message from ${phoneNumber}: ${textContent}`);
+      if (!waToken || !waPhoneId) {
+        console.error("Incomplete WhatsApp configuration for agent", targetAgentId);
+        return;
+      }
 
-          // 1. Initialize Supabase Admin Client
-          const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-          );
-
-          // 2. Find the user/salon associated with this WhatsApp number
-          // In a real app, you'd store the phone_number_id in integrations.
-          // For now, we fetch the first connected WhatsApp integration to find the owner.
-          const { data: integrations, error: intError } = await supabaseAdmin
-            .from('integrations')
-            .select('user_id, credentials')
-            .eq('provider', 'whatsapp')
-            .eq('status', 'connected');
-
-          if (intError || !integrations || integrations.length === 0) {
-            console.error("No WhatsApp integration found.");
-            return new Response('EVENT_RECEIVED', { status: 200 });
-          }
-
-          // Assume the first one for the MVP, or match by phone_number_id
-          const integration = integrations[0];
-          const userId = integration.user_id;
-          const waToken = integration.credentials?.access_token || Deno.env.get('WHATSAPP_API_TOKEN');
-
-          // 3. Find the active Agent for this user
-          const { data: agent, error: agentError } = await supabaseAdmin
-            .from('agents')
-            .select('id')
-            .eq('user_id', userId)
-            .eq('status', 'active')
-            .single();
-
-          if (agentError || !agent) {
-            console.error("No active agent found for user:", userId);
-            return new Response('EVENT_RECEIVED', { status: 200 });
-          }
-
-          // 4. Call the agent-handler Edge Function
-          // We invoke it via HTTP so it runs as a separate process and handles billing natively
-          const functionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/agent-handler`;
-
-          const agentResponse = await fetch(functionUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}` // Basic auth, handler uses it
-            },
-            body: JSON.stringify({
-              message: textContent,
-              sessionId: phoneNumber, // Use phone number as session ID for memory context
-              agentId: agent.id
-            })
-          });
-
-          const agentData = await agentResponse.json();
-          let replyText = agentData.text || "عذراً، أواجه مشكلة تقنية حالياً. يرجى المحاولة لاحقاً.";
-
-          // 5. Send the response back via WhatsApp API
-          const waApiUrl = `https://graph.facebook.com/v17.0/${phoneNumberId}/messages`;
-
-          await fetch(waApiUrl, {
+      // Helper: send WhatsApp message
+      async function sendWhatsApp(msg: string) {
+        const apiStr = `https://graph.facebook.com/v19.0/${waPhoneId}/messages`;
+        try {
+          const res = await fetch(apiStr, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${waToken}`,
@@ -121,24 +127,96 @@ serve(async (req) => {
             },
             body: JSON.stringify({
               messaging_product: "whatsapp",
-              to: phoneNumber,
+              to: contactPhone,
               type: "text",
-              text: { body: replyText }
+              text: { body: msg }
             })
           });
-
-          console.log("Successfully replied to WhatsApp.");
+          const data = await res.json();
+          if (!res.ok) console.error("WhatsApp sending error:", data);
+        } catch (e: any) {
+          console.error("WhatsApp send exception:", e.message);
         }
       }
 
-      // WhatsApp requires a 200 OK response immediately to acknowledge receipt
-      return new Response('EVENT_RECEIVED', { status: 200, headers: corsHeaders });
+      if (!owner || owner.message_limit <= 0) {
+        await sendWhatsApp("عذراً، لقد استنفد هذا الموظف رصيد المحادثات الخاص به. يرجى من صاحب المنشأة ترقية الباقة لضمان استمرار الخدمة.");
+        return;
+      }
 
-    } catch (error) {
-      console.error('Error processing webhook:', error);
-      return new Response('Internal Server Error', { status: 500, headers: corsHeaders });
+      // Decrement the quota limit by 1
+      await supabase.from('profiles').update({ message_limit: owner.message_limit - 1 }).eq('id', owner.id);
+      // --- END QUOTA LOGIC ---
+
+      const sessionId = `whatsapp_${contactPhone}`;
+
+      // Call our agent-handler edge function with a generous timeout
+      const agentHandlerUrl = `${supabaseUrl}/functions/v1/agent-handler`;
+      console.log(`Calling agent-handler: agent=${targetAgentId}, session=${sessionId}`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 55000); // 55s timeout
+
+      let aiReply = "عذراً، حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.";
+
+      try {
+        const agentRes = await fetch(agentHandlerUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseServiceRoleKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: text,
+            sessionId: sessionId,
+            agentId: targetAgentId
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!agentRes.ok) {
+          const errText = await agentRes.text();
+          console.error(`agent-handler returned ${agentRes.status}:`, errText);
+          // Simplify error message for real users
+          aiReply = "عذراً، نواجه ضغطاً تقنياً حالياً، يرجى المحاولة لاحقاً.";
+        } else {
+          const agentData = await agentRes.json();
+          if (agentData.text) {
+            aiReply = agentData.text;
+          }
+        }
+      } catch (fetchErr: any) {
+        clearTimeout(timeoutId);
+        if (fetchErr.name === 'AbortError') {
+          console.error("agent-handler timed out after 55s");
+          aiReply = "عذراً، استغرق معالجة طلبك وقتاً أطول من المعتاد. يرجى المحاولة مرة أخرى.";
+        } else {
+          console.error("Fetch error calling agent-handler:", fetchErr.message);
+          aiReply = "عذراً، حدث خطأ في الاتصال، يرجى المحاولة لاحقاً.";
+        }
+      }
+
+      // Send the AI response back via WhatsApp
+      await sendWhatsApp(aiReply);
+      console.log(`Replied to ${contactPhone}: ${aiReply.substring(0, 80)}...`);
+
+    } catch (error: any) {
+      console.error("Background task error:", error.message);
     }
+  })();
+
+  // Run background task without blocking the response
+  if (typeof (globalThis as any).EdgeRuntime !== 'undefined') {
+    (globalThis as any).EdgeRuntime.waitUntil(backgroundTask);
+  } else {
+    await backgroundTask;
   }
 
-  return new Response('Method Not Allowed', { status: 405, headers: corsHeaders });
+  // 6. Return 200 to WhatsApp IMMEDIATELY
+  return new Response(JSON.stringify({ ok: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status: 200,
+  });
 });

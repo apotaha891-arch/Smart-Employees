@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Zap, Shield, Star, Crown } from 'lucide-react';
+import { CheckCircle2, Zap, Shield, Star, Crown, Loader } from 'lucide-react';
+import { supabase } from '../services/supabaseService';
 
 const Pricing = () => {
     const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
@@ -12,22 +13,65 @@ const Pricing = () => {
     const businessRules = location.state?.businessRules || null;
     const template = location.state?.template || null;
 
-    const handleSelectPlan = (plan) => {
-        // Mock checkout logic: in a real app, this goes to Stripe/Payfort.
-        // For the 7-step journey, we assume payment success and move to the Contract step.
+    const [loadingPlan, setLoadingPlan] = useState(null);
+
+    const handleSelectPlan = async (plan) => {
         vibrate();
-        if (isHiringFlow) {
-            navigate('/contract', {
-                state: {
-                    businessRules,
-                    template,
-                    selectedPlan: plan.id,
-                    fromPricing: true
+
+        // Skip checkout for Enterprise (Contact Sales)
+        if (plan.id === 'enterprise') {
+            alert("سيتم توجيهك لفريق المبيعات لترتيب باقة مخصصة لمنشأتك.");
+            window.location.href = "mailto:sales@24shift.com";
+            return;
+        }
+
+        setLoadingPlan(plan.id);
+
+        try {
+            // Get user session to authenticate Edge Function
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                alert("يرجى تسجيل الدخول أولاً لإتمام عملية الاشتراك.");
+                navigate('/login');
+                return;
+            }
+
+            const origin = window.location.origin;
+            let successUrl = `${origin}/deploy-agent?session_id={CHECKOUT_SESSION_ID}&success=true`;
+            let cancelUrl = `${origin}/pricing?canceled=true`;
+
+            if (isHiringFlow) {
+                // If in flow, we might want to redirect back to contract or directly to deploy
+                successUrl = `${origin}/contract?session_id={CHECKOUT_SESSION_ID}&success=true&plan=${plan.id}`;
+            }
+
+            const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+                body: {
+                    planId: plan.id,
+                    successUrl,
+                    cancelUrl
                 }
             });
-        } else {
-            // Normal subscription update flow
-            alert(`تم اختيار باقة ${plan.name} بنجاح!`);
+
+            if (error) {
+                console.error("Function invoke error:", error);
+                alert("حدث خطأ أثناء تحضير صفحة الدفع: رجاءً المحاولة لاحقاً.");
+                setLoadingPlan(null);
+                return;
+            }
+
+            if (data?.url) {
+                // Redirect user to Stripe Checkout
+                window.location.href = data.url;
+            } else {
+                alert("حدث خطأ أثناء تحضير صفحة الدفع: " + (data.error || "رجاءً المحاولة لاحقاً."));
+                setLoadingPlan(null);
+            }
+
+        } catch (error) {
+            console.error("Checkout error:", error);
+            alert("حدث خطأ في الاتصال بخادم الدفع.");
+            setLoadingPlan(null);
         }
     };
 
@@ -40,18 +84,18 @@ const Pricing = () => {
     const plans = [
         {
             id: 'starter',
-            name: 'باقة الانطلاق',
+            name: 'الباقة الأساسية',
             icon: <Zap size={28} color="#06B6D4" />,
-            monthlyPrice: 199,
-            yearlyPrice: 159,
-            trialPrice: 99,
+            monthlyPrice: 80,
+            yearlyPrice: 80 * 0.8,
+            trialPrice: 49,
             description: 'مثالية للمشاريع الناشئة التي تبحث عن أتمتة بسيطة وتغطية أساسية.',
             features: [
-                'موظف ذكي واحد (تخصص محدد)',
-                '500 محادثة / حجز شهرياً',
-                'لوحة تحكم أساسية للموظف',
-                'تقارير أداء شهرية',
-                'دعم فني عبر البريد الإلكتروني'
+                'موظف ذكي واحد مخصص للقطاع',
+                'أداتين للربط (مثل تليجرام، واتساب)',
+                '2000 محادثة شهرياً',
+                'أداة إضافية بـ 20$',
+                'موظف إضافي بـ 70$'
             ],
             cta: 'اشترك الآن',
             popular: false,
@@ -59,19 +103,18 @@ const Pricing = () => {
         },
         {
             id: 'pro',
-            name: 'باقة الاحتراف',
+            name: 'الباقة المتقدمة',
             icon: <Star size={28} color="#8B5CF6" />,
-            monthlyPrice: 399,
-            yearlyPrice: 319,
-            trialPrice: 199,
+            monthlyPrice: 120,
+            yearlyPrice: 120 * 0.8,
+            trialPrice: 80,
             description: 'الخيار الأفضل للمنشآت المتوسطة لرفع الكفاءة التشغيلية بقوة.',
             features: [
-                'موظف ذكي متقدم (تخصيص الهوية والنبرة)',
-                'استقبال حجوزات لا محدود',
-                'أولوية معالجة الاستجابة (Gemini Flash)',
-                'استخراج بيانات العملاء كملف Excel',
-                'إمكانية ربط واتساب وتيليجرام (تضاف التكلفة)',
-                'دعم فني مباشر 24/7'
+                'موظفين اثنين مخصصين',
+                '3 أدوات ربط لكل موظف',
+                '5000 محادثة شهرياً',
+                'أداة إضافية بـ 15$',
+                'موظف إضافي بـ 49$'
             ],
             cta: 'ابدأ التجربة المخفضة',
             popular: true,
@@ -81,19 +124,19 @@ const Pricing = () => {
             id: 'enterprise',
             name: 'باقة النخبة',
             icon: <Crown size={28} color="#F59E0B" />,
-            monthlyPrice: 899,
-            yearlyPrice: 719,
-            trialPrice: 449,
+            monthlyPrice: 'مخصص',
+            yearlyPrice: 'مخصص',
+            trialPrice: null,
             description: 'للشركات التي تبحث عن تحكم شامل وحلول هندسية مخصصة بالكامل.',
             features: [
                 'عدد غير محدود من الموظفين الذكاء الاصطناعي',
-                'صلاحيات وصول متعددة لفريقك',
-                'ربط API مخصص مع أنظمة ERP والعيادات',
-                'تدريب الموظف على ملفات PDF الخاصة بك',
+                'عدد غير محدود من قنوات الربط',
                 'توجيه المحادثات المعقدة لخدمة العملاء',
+                'ربط API مخصص مع أنظمة ERP والعيادات',
+                'تدريب ومسارات عمل مخصصة',
                 'مدير حساب شخصي مخصص'
             ],
-            cta: 'تواصل لجدولة اجتماع',
+            cta: 'تواصل مع المبيعات',
             popular: false,
             color: '#F59E0B'
         }
@@ -242,24 +285,26 @@ const Pricing = () => {
 
                                 <div style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
-                                        <span style={{ fontSize: '3.5rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{price}</span>
-                                        <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>ريال / {billingCycle === 'monthly' ? 'شهر' : 'شهر (يُدفع سنوياً)'}</span>
+                                        <span style={{ fontSize: plan.id === 'enterprise' ? '2.5rem' : '3.5rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{price}</span>
+                                        {plan.id !== 'enterprise' && <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>$ / {billingCycle === 'monthly' ? 'شهر' : 'شهر (يُدفع سنوياً)'}</span>}
                                     </div>
-                                    <div style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem',
-                                        background: 'rgba(16, 185, 129, 0.1)',
-                                        color: '#10B981',
-                                        padding: '0.6rem 1.25rem',
-                                        borderRadius: '12px',
-                                        fontWeight: 800,
-                                        fontSize: '0.95rem',
-                                        border: '1px solid rgba(16, 185, 129, 0.2)'
-                                    }}>
-                                        <Zap size={18} fill="currentColor" />
-                                        تجربة 3 شهور: {plan.trialPrice} ريال/شهرياً!
-                                    </div>
+                                    {plan.trialPrice && (
+                                        <div style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            background: 'rgba(16, 185, 129, 0.1)',
+                                            color: '#10B981',
+                                            padding: '0.6rem 1.25rem',
+                                            borderRadius: '12px',
+                                            fontWeight: 800,
+                                            fontSize: '0.95rem',
+                                            border: '1px solid rgba(16, 185, 129, 0.2)'
+                                        }}>
+                                            <Zap size={18} fill="currentColor" />
+                                            تجربة 3 شهور: {plan.trialPrice}$/شهرياً!
+                                        </div>
+                                    )}
                                 </div>
 
                                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2.5rem 0', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>

@@ -224,13 +224,15 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
 
             initializeChat(customPrompt, 'interview');
 
+            const roleTitle = targetTemplate.title || agentMap[targetTemplate.id]?.title || 'المستشار الذكي';
+
             const initialMessages = {
-                medical: `مرحباً بك! أنا ${agentName}، المساعدة الذكية من عائلة "24Shift"، ومرشحة للعمل كـ "${targetTemplate.title}". أدرك أهمية حساسية المواعيد الطبية، وأنا جاهزة للعمل على مدار الساعة لخدمتكم. تفضل باختباري! 🩺`,
-                realestate: `أهلاً بك! أنا ${agentName}، المسوقة الذكية من "24Shift"، مرشحة للعمل معك كـ "${targetTemplate.title}". جاهزة للرد على عملائك في أي وقت، فوردية 24Shift لا تنتهي. كيف تحب أن نبدأ المقابلة؟ 🏢`,
-                beauty: `أهلاً بكِ! أنا ${agentName}، المساعدة الذكية من فريق "24Shift"، مرشحة كـ "${targetTemplate.title}" لمركزكم. ورديتي تعمل أثناء نومكم لتأكيد حجوزات مبيت العميلات بسرعة البرق. جاهزة لاختبارك! ✨`,
-                restaurant: `مرحباً! أنا ${agentName}، من فريق "24Shift"، المرشح لمهام "${targetTemplate.title}". طاولاتكم تحت السيطرة ولن نفوت أي حجز حتى في أوقات الذروة المتأخرة. جاهز لإثبات كفاءتي، متى نبدأ؟ 🍽️`,
-                fitness: `أهلاً يا كابتن! أنا ${agentName}، المساعد الرياضي من "24Shift"، جاهز للانضمام لفريقكم كـ "${targetTemplate.title}". في 24Shift طاقتنا لا تنام، وسنحفز المشتركين دائماً. تفضل باختباري! 💪`,
-                general: `تحية طيبة! أنا ${agentName}، المستشار الذكي من منظومة "24Shift". نحن الموظفون الذين لا ينامون. يسعدني ترشيحي كـ "${targetTemplate.title}". تفضل بطرح أسئلتك لتبدأ جلسة التقييم المهني. 💼`
+                medical: `مرحباً بك! أنا ${agentName}، المساعدة الذكية من عائلة "24Shift"، ومرشحة للعمل كـ "${roleTitle}". أدرك أهمية حساسية المواعيد الطبية، وأنا جاهزة للعمل على مدار الساعة لخدمتكم. تفضل باختباري! 🩺`,
+                realestate: `أهلاً بك! أنا ${agentName}، المسوقة الذكية من "24Shift"، مرشحة للعمل معك كـ "${roleTitle}". جاهزة للرد على عملائك في أي وقت، فوردية 24Shift لا تنتهي. كيف تحب أن نبدأ المقابلة؟ 🏢`,
+                beauty: `أهلاً بكِ! أنا ${agentName}، المساعدة الذكية من فريق "24Shift"، مرشحة كـ "${roleTitle}" لمركزكم. ورديتي تعمل أثناء نومكم لتأكيد حجوزات مبيت العميلات بسرعة البرق. جاهزة لاختبارك! ✨`,
+                restaurant: `مرحباً! أنا ${agentName}، من فريق "24Shift"، المرشح لمهام "${roleTitle}". طاولاتكم تحت السيطرة ولن نفوت أي حجز حتى في أوقات الذروة المتأخرة. جاهز لإثبات كفاءتي، متى نبدأ؟ 🍽️`,
+                fitness: `أهلاً يا كابتن! أنا ${agentName}، المساعد الرياضي من "24Shift"، جاهز للانضمام لفريقكم كـ "${roleTitle}". في 24Shift طاقتنا لا تنام، وسنحفز المشتركين دائماً. تفضل باختباري! 💪`,
+                general: `تحية طيبة! أنا ${agentName}، المستشار الذكي من منظومة "24Shift". نحن الموظفون الذين لا ينامون. يسعدني ترشيحي كـ "${roleTitle}". تفضل بطرح أسئلتك لتبدأ جلسة التقييم المهني. 💼`
             };
 
             setMessages([
@@ -627,18 +629,20 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                         {message.role === 'user' ? <User size={20} color="white" /> : <AgentIcon size={20} color="#A1A1AA" />}
                                     </div>
                                     <div style={{ maxWidth: '80%' }}>
-                                        <div style={{
-                                            padding: '1rem 1.25rem',
-                                            borderRadius: message.role === 'user'
-                                                ? (isArabic ? '4px 20px 20px 20px' : '20px 4px 20px 20px')
-                                                : (isArabic ? '20px 4px 20px 20px' : '4px 20px 20px 20px'),
-                                            background: message.role === 'user' ? '#8B5CF6' : '#27272A',
-                                            color: message.role === 'user' ? 'white' : '#E4E4E7',
-                                            fontSize: '0.95rem',
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                            lineHeight: '1.6',
-                                            textAlign: message.role === 'user' ? (isArabic ? 'right' : 'left') : (isArabic ? 'right' : 'left'),
-                                        }}>
+                                        <div
+                                            dir="auto"
+                                            style={{
+                                                padding: '1rem 1.25rem',
+                                                borderRadius: message.role === 'user'
+                                                    ? (isArabic ? '4px 20px 20px 20px' : '20px 4px 20px 20px')
+                                                    : (isArabic ? '20px 4px 20px 20px' : '4px 20px 20px 20px'),
+                                                background: message.role === 'user' ? '#8B5CF6' : '#27272A',
+                                                color: message.role === 'user' ? 'white' : '#E4E4E7',
+                                                fontSize: '0.95rem',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                lineHeight: '1.6',
+                                                textAlign: message.role === 'user' ? (isArabic ? 'right' : 'left') : (isArabic ? 'right' : 'left'),
+                                            }}>
                                             {message.content}
                                         </div>
                                         <div style={{
@@ -778,26 +782,117 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                             </div>
                         </div>
 
+                        {/* Modal for Hiring Decision */}
                         {showHireButton && (
-                            <div className="card p-xl animate-fade-in" style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'white', borderRadius: '24px', textAlign: 'center', border: 'none', boxShadow: '0 20px 40px rgba(139, 92, 246, 0.3)' }}>
-                                <div style={{
-                                    marginBottom: '1rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
+                            <div style={{
+                                position: 'fixed',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                background: 'rgba(0,0,0,0.7)',
+                                backdropFilter: 'blur(8px)',
+                                zIndex: 1000,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '1rem',
+                                animation: 'fadeIn 0.3s ease-out'
+                            }}>
+                                <div className="card p-xl" style={{
+                                    background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+                                    color: 'white',
+                                    borderRadius: '24px',
+                                    textAlign: 'center',
+                                    border: 'none',
+                                    boxShadow: '0 20px 40px rgba(139, 92, 246, 0.4)',
+                                    maxWidth: '380px',
+                                    width: '100%',
+                                    position: 'relative',
+                                    padding: '1.5rem'
                                 }}>
-                                    <Sparkles size={32} color="white" fill="white" style={{ opacity: 0.9 }} />
+                                    <div style={{
+                                        marginBottom: '1rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <div style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            borderRadius: '50%',
+                                            background: 'rgba(255,255,255,0.2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxShadow: '0 0 20px rgba(255,255,255,0.1) inset'
+                                        }}>
+                                            <Sparkles size={30} color="white" fill="white" style={{ opacity: 0.9 }} />
+                                        </div>
+                                    </div>
+
+                                    <h3 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>جاهز لاتخاذ القرار؟</h3>
+                                    <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                                        بناءً على مجريات المقابلة، يبدو أن {template?.title} يمتلك الكفاءة اللازمة للانضمام لفريقك.
+                                    </p>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        <button
+                                            className="btn"
+                                            onClick={handleHireAgent}
+                                            disabled={isHiring}
+                                            style={{
+                                                background: 'white',
+                                                color: '#7C3AED',
+                                                width: '100%',
+                                                fontWeight: 900,
+                                                fontSize: '1rem',
+                                                padding: '0.85rem',
+                                                borderRadius: '12px',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
+                                            }}
+                                        >
+                                            {isHiring ? (t('loading') || 'جاري التحضير...') : (t('hireAgent') || 'نعم، اعتماد التوظيف 🚀')}
+                                        </button>
+
+                                        <button
+                                            className="btn"
+                                            onClick={() => setShowHireButton(false)}
+                                            style={{
+                                                background: 'transparent',
+                                                color: 'rgba(255,255,255,0.9)',
+                                                width: '100%',
+                                                fontWeight: 600,
+                                                fontSize: '0.9rem',
+                                                padding: '0.75rem',
+                                                borderRadius: '12px',
+                                                border: '1px solid rgba(255,255,255,0.2)',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            استكمال المقابلة
+                                        </button>
+
+                                        <button
+                                            onClick={() => navigate('/')}
+                                            style={{
+                                                background: 'transparent',
+                                                color: 'rgba(255,255,255,0.6)',
+                                                width: '100%',
+                                                fontWeight: 500,
+                                                fontSize: '0.85rem',
+                                                padding: '0.5rem',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                textDecoration: 'underline'
+                                            }}
+                                        >
+                                            مغادرة الغرفة والعودة للرئيسية
+                                        </button>
+                                    </div>
                                 </div>
-                                <h4 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.25rem' }}>جاهز لاتخاذ القرار؟</h4>
-                                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>بناءً على المحادثة، يبدو هذا المرشح مثالياً لثقافة منشأتك.</p>
-                                <button
-                                    className="btn"
-                                    onClick={handleHireAgent}
-                                    disabled={isHiring}
-                                    style={{ background: 'white', color: '#7C3AED', width: '100%', fontWeight: 900, fontSize: '1rem', padding: '1rem', borderRadius: '14px', border: 'none', cursor: 'pointer' }}
-                                >
-                                    {isHiring ? (t('loading') || 'جاري التحضير...') : (t('hireAgent') || 'اعتماد التوظيف')}
-                                </button>
                             </div>
                         )}
                     </div>

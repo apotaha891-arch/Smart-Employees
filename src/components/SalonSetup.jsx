@@ -256,25 +256,25 @@ ${t('helpQuestion')}
     );
 
     return (
-        <div className="fade-in">
+        <div className="fade-in" dir="rtl" style={{ textAlign: 'right' }}>
             {/* Top Stats Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                 <StatCard icon={Activity} label={t('activeWorkflow')} value="1" color="#8B5CF6" />
                 <StatCard icon={Users} label={t('activeEmployees')} value="2" color="#10B981" />
                 <StatCard icon={MessageCircle} label={t('totalMessages')} value="1,240" color="#3B82F6" />
                 <StatCard icon={CreditCard} label={t('remainingCredit')} value={walletBalance !== null ? walletBalance.toLocaleString() : "⏳"} color="#F59E0B" />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
 
                 {/* LEFT COLUMN: Settings & Charts */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
                     {/* Placeholder Chart Area */}
-                    <div style={{ background: '#111827', padding: '2rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                        <div style={{ width: '100%', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                            <h3 style={{ fontSize: '1.1rem' }}>{t('messageStatistics')}</h3>
-                            <select style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}>
+                    <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                        <div style={{ width: '100%', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{t('messageStatistics')}</h3>
+                            <select style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer' }}>
                                 <option style={{ color: 'white', background: '#1F2937' }}>{t('lastDays')}</option>
                             </select>
                         </div>
@@ -286,19 +286,20 @@ ${t('helpQuestion')}
                         {/* Tabs */}
                         <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                             {[
-                                { id: 'identity', label: t('tabIdentity'), icon: User },
-                                { id: 'knowledge', label: t('tabKnowledge'), icon: Briefcase },
-                                { id: 'integrations', label: t('tabIntegrations') || 'Integrations', icon: Puzzle },
-                                { id: 'activation', label: t('tabActivation'), icon: Smartphone }
+                                { id: 'identity', label: t('tabIdentity') || 'الهوية', icon: User },
+                                { id: 'knowledge', label: t('tabKnowledge') || 'المعرفة', icon: Briefcase },
+                                { id: 'integrations', label: t('tabIntegrations') || 'الربط', icon: Puzzle },
+                                { id: 'activation', label: t('tabActivation') || 'التفعيل', icon: Smartphone }
                             ].map(tab => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     style={{
-                                        flex: 1, padding: '1.5rem', background: activeTab === tab.id ? '#1F2937' : 'transparent',
+                                        flex: 1, padding: '1rem', background: activeTab === tab.id ? '#1F2937' : 'transparent',
                                         border: 'none', color: activeTab === tab.id ? '#8B5CF6' : '#9CA3AF',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                                        cursor: 'pointer', transition: 'all 0.2s', borderBottom: activeTab === tab.id ? '2px solid #8B5CF6' : 'none'
+                                        cursor: 'pointer', transition: 'all 0.2s', borderBottom: activeTab === tab.id ? '2px solid #8B5CF6' : 'none',
+                                        fontWeight: activeTab === tab.id ? 600 : 400
                                     }}
                                 >
                                     <tab.icon size={18} />
@@ -308,7 +309,7 @@ ${t('helpQuestion')}
                         </div>
 
                         {/* Content */}
-                        <div style={{ padding: '2rem' }}>
+                        <div style={{ padding: '1.5rem' }}>
                             {activeTab === 'identity' && (
                                 <div className="animate-fade-in">
 
@@ -332,57 +333,57 @@ ${t('helpQuestion')}
                                             >
                                                 {industry === 'beauty' && (
                                                     <>
-                                                        <option value="شامل" style={{ color: 'white', background: '#1F2937' }}>شامل (Comprehensive)</option>
-                                                        <option value="شعر" style={{ color: 'white', background: '#1F2937' }}>شعر (Hair Care)</option>
-                                                        <option value="مكياج" style={{ color: 'white', background: '#1F2937' }}>مكياج (Makeup Artist)</option>
+                                                        <option value="شامل" style={{ color: 'white', background: '#1F2937' }}>شامل</option>
+                                                        <option value="شعر" style={{ color: 'white', background: '#1F2937' }}>شعر</option>
+                                                        <option value="مكياج" style={{ color: 'white', background: '#1F2937' }}>مكياج</option>
                                                     </>
                                                 )}
                                                 {industry === 'medical' && (
                                                     <>
-                                                        <option value="طب عام" style={{ color: 'white', background: '#1F2937' }}>طب عام (General Medicine)</option>
-                                                        <option value="أسنان" style={{ color: 'white', background: '#1F2937' }}>أسنان (Dental)</option>
-                                                        <option value="جلدية" style={{ color: 'white', background: '#1F2937' }}>جلدية (Dermatology)</option>
+                                                        <option value="طب عام" style={{ color: 'white', background: '#1F2937' }}>طب عام</option>
+                                                        <option value="أسنان" style={{ color: 'white', background: '#1F2937' }}>أسنان</option>
+                                                        <option value="جلدية" style={{ color: 'white', background: '#1F2937' }}>جلدية</option>
                                                     </>
                                                 )}
                                                 {industry === 'realestate' && (
                                                     <>
-                                                        <option value="مبيعات" style={{ color: 'white', background: '#1F2937' }}>مبيعات (Sales)</option>
-                                                        <option value="تأجير" style={{ color: 'white', background: '#1F2937' }}>تأجير (Rentals)</option>
-                                                        <option value="أملاك" style={{ color: 'white', background: '#1F2937' }}>إدارة أملاك (Property Management)</option>
+                                                        <option value="مبيعات" style={{ color: 'white', background: '#1F2937' }}>مبيعات</option>
+                                                        <option value="تأجير" style={{ color: 'white', background: '#1F2937' }}>تأجير</option>
+                                                        <option value="أملاك" style={{ color: 'white', background: '#1F2937' }}>إدارة أملاك</option>
                                                     </>
                                                 )}
                                                 {industry === 'restaurant' && (
                                                     <>
-                                                        <option value="حجوزات" style={{ color: 'white', background: '#1F2937' }}>حجوزات طاولات (Table Reservations)</option>
-                                                        <option value="توصيل" style={{ color: 'white', background: '#1F2937' }}>طلبات خارجية (Delivery)</option>
-                                                        <option value="شكاوى" style={{ color: 'white', background: '#1F2937' }}>خدمة العملاء (Customer Service)</option>
+                                                        <option value="حجوزات" style={{ color: 'white', background: '#1F2937' }}>حجوزات طاولات</option>
+                                                        <option value="توصيل" style={{ color: 'white', background: '#1F2937' }}>طلبات خارجية</option>
+                                                        <option value="شكاوى" style={{ color: 'white', background: '#1F2937' }}>خدمة العملاء</option>
                                                     </>
                                                 )}
                                                 {industry === 'fitness' && (
                                                     <>
-                                                        <option value="اشتراكات" style={{ color: 'white', background: '#1F2937' }}>اشتراكات (Memberships)</option>
-                                                        <option value="تدريب شخصي" style={{ color: 'white', background: '#1F2937' }}>تدريب شخصي (Personal Training)</option>
-                                                        <option value="تغذية" style={{ color: 'white', background: '#1F2937' }}>استشارات تغذية (Nutrition)</option>
+                                                        <option value="اشتراكات" style={{ color: 'white', background: '#1F2937' }}>اشتراكات</option>
+                                                        <option value="تدريب شخصي" style={{ color: 'white', background: '#1F2937' }}>تدريب شخصي</option>
+                                                        <option value="تغذية" style={{ color: 'white', background: '#1F2937' }}>استشارات تغذية</option>
                                                     </>
                                                 )}
                                                 {industry === 'general' && (
                                                     <>
-                                                        <option value="شامل" style={{ color: 'white', background: '#1F2937' }}>شامل (General)</option>
-                                                        <option value="مبيعات" style={{ color: 'white', background: '#1F2937' }}>مبيعات (Sales)</option>
-                                                        <option value="دعم فني" style={{ color: 'white', background: '#1F2937' }}>دعم فني (Tech Support)</option>
-                                                        <option value="خدمة عملاء" style={{ color: 'white', background: '#1F2937' }}>خدمة عملاء (Customer Service)</option>
+                                                        <option value="شامل" style={{ color: 'white', background: '#1F2937' }}>شامل</option>
+                                                        <option value="مبيعات" style={{ color: 'white', background: '#1F2937' }}>مبيعات</option>
+                                                        <option value="دعم فني" style={{ color: 'white', background: '#1F2937' }}>دعم فني</option>
+                                                        <option value="خدمة عملاء" style={{ color: 'white', background: '#1F2937' }}>خدمة عملاء</option>
                                                     </>
                                                 )}
                                             </select>
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-sm text-dim mb-sm block">{t('styleAndTone')}</label>
+                                        <label className="text-sm text-dim mb-sm block">{t('styleAndTone') || 'أسلوب التحدث'}</label>
                                         <div className="flex gap-md">
                                             {[
-                                                { value: 'friendly', label: t('toneFriendlyLabel') },
-                                                { value: 'professional', label: t('toneProfessionalLabel') },
-                                                { value: 'bubbly', label: t('toneBubblyLabel') }
+                                                { value: 'friendly', label: t('toneFriendlyLabel') || 'ودود' },
+                                                { value: 'professional', label: t('toneProfessionalLabel') || 'رسمي' },
+                                                { value: 'bubbly', label: t('toneBubblyLabel') || 'حيوي' }
                                             ].map(tone => (
                                                 <button
                                                     key={tone.value}
@@ -405,7 +406,7 @@ ${t('helpQuestion')}
 
                             {activeTab === 'knowledge' && (
                                 <div className="animate-fade-in">
-                                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>{t('servicesCatalog')}</h3>
+                                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>{t('servicesCatalog') || 'قائمة الخدمات'}</h3>
 
                                     <ServicesTable
                                         services={services}
@@ -418,13 +419,13 @@ ${t('helpQuestion')}
                                         onDelete={handleDeleteService}
                                     />
 
-                                    <div className="grid grid-2 gap-lg">
+                                    <div className="grid grid-2 gap-lg" style={{ marginTop: '1.5rem' }}>
                                         <div>
-                                            <label className="text-sm text-dim mb-sm block">{t('startTimeLabel')}</label>
+                                            <label className="text-sm text-dim mb-sm block">{t('startTimeLabel') || 'وقت البدء'}</label>
                                             <input type="time" className="input-field" value={formData.workingHours.start} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, start: e.target.value } })} />
                                         </div>
                                         <div>
-                                            <label className="text-sm text-dim mb-sm block">{t('endTimeLabel')}</label>
+                                            <label className="text-sm text-dim mb-sm block">{t('endTimeLabel') || 'وقت الانتهاء'}</label>
                                             <input type="time" className="input-field" value={formData.workingHours.end} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, end: e.target.value } })} />
                                         </div>
                                     </div>
@@ -433,15 +434,15 @@ ${t('helpQuestion')}
 
                             {activeTab === 'integrations' && (
                                 <div className="animate-fade-in">
-                                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>ربط التطبيقات (Native Integrations)</h3>
+                                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>ربط التطبيقات الأساسية</h3>
 
                                     {/* Telegram — Basic (مضمّن) */}
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(34,197,94,0.3)', marginBottom: '1rem' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(34,197,94,0.3)', marginBottom: '1rem' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ background: '#229ED920', padding: '10px', borderRadius: '8px', color: '#229ED9' }}><Send /></div>
                                                 <div>
-                                                    <h4 style={{ margin: 0 }}>Telegram Bot <span style={{ fontSize: '0.75rem', background: '#22C55E20', color: '#22C55E', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>مضمّن في Basic ✅</span></h4>
+                                                    <h4 style={{ margin: 0 }}>بوت تيليجرام <span style={{ fontSize: '0.75rem', background: '#22C55E20', color: '#22C55E', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>مضمّن ✅</span></h4>
                                                     <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>استقبال الرسائل والرد الذكي وحجز المواعيد</div>
                                                 </div>
                                             </div>
@@ -452,58 +453,57 @@ ${t('helpQuestion')}
                                     </div>
 
                                     {/* Google Calendar — Pro */}
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', marginBottom: '1rem', opacity: 0.85 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', marginBottom: '1rem', opacity: 0.85 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ background: '#DB443720', padding: '10px', borderRadius: '8px', color: '#DB4437' }}><Calendar /></div>
                                                 <div>
-                                                    <h4 style={{ margin: 0 }}>Google Calendar <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 Pro</span></h4>
+                                                    <h4 style={{ margin: 0 }}>تقويم جوجل <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 باقة Pro</span></h4>
                                                     <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>مزامنة المواعيد تلقائياً مع تقويمك</div>
                                                 </div>
                                             </div>
-                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '8px 16px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
-                                                onClick={() => alert('قريباً — اشترك في الباقة المدفوعة للوصول لهذه الميزة')}>
-                                                ⬆️ ترقية
+                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '6px 14px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
+                                                onClick={() => alert('قريباً — متاح في الباقات المتقدمة')}>
+                                                ترقية
                                             </button>
                                         </div>
                                     </div>
 
                                     {/* WhatsApp — Add-on */}
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', marginBottom: '1rem', opacity: 0.85 }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', marginBottom: '1rem', opacity: 0.85 }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ background: '#25D36620', padding: '10px', borderRadius: '8px', color: '#25D366' }}><MessageCircle /></div>
                                                 <div>
-                                                    <h4 style={{ margin: 0 }}>WhatsApp Business <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 إضافة مدفوعة</span></h4>
-                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>استقبال الواتساب والرد المباشر</div>
+                                                    <h4 style={{ margin: 0 }}>واتساب للأعمال <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 إضافة خاصة</span></h4>
+                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>استقبال رسائل الواتساب والرد المباشر</div>
                                                 </div>
                                             </div>
-                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '8px 16px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
-                                                onClick={() => alert('قريباً — اشترك في الباقة المدفوعة للوصول لهذه الميزة')}>
-                                                ⬆️ ترقية
+                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '6px 14px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
+                                                onClick={() => alert('قريباً — متاح في الباقات المتقدمة')}>
+                                                ترقية
                                             </button>
                                         </div>
                                     </div>
 
                                     {/* Google Sheets — Pro */}
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', opacity: 0.85 }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.3)', opacity: 0.85 }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ background: '#0F9D5820', padding: '10px', borderRadius: '8px', color: '#0F9D58' }}><FileText /></div>
                                                 <div>
-                                                    <h4 style={{ margin: 0 }}>Google Sheets Sync <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 Pro</span></h4>
-                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>تصدير الحجوزات والعملاء تلقائياً (نسخة احتياطية)</div>
+                                                    <h4 style={{ margin: 0 }}>جداول جوجل <span style={{ fontSize: '0.75rem', background: '#F59E0B20', color: '#F59E0B', padding: '2px 8px', borderRadius: '99px', marginRight: '8px' }}>🔒 باقة Pro</span></h4>
+                                                    <div style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>تصدير الحجوزات والعملاء تلقائياً</div>
                                                 </div>
                                             </div>
-                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '8px 16px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
-                                                onClick={() => alert('قريباً — اشترك في الباقة المدفوعة للوصول لهذه الميزة')}>
-                                                ⬆️ ترقية
+                                            <button className="btn" style={{ fontSize: '0.85rem', padding: '6px 14px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', border: 'none' }}
+                                                onClick={() => alert('قريباً — متاح في الباقات المتقدمة')}>
+                                                ترقية
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             )}
-
 
                             {activeTab === 'activation' && (
                                 <div className="animate-fade-in text-center">
@@ -511,10 +511,10 @@ ${t('helpQuestion')}
                                         <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#22C55E', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
                                             <CheckCircle2 size={32} />
                                         </div>
-                                        <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{t('agentReadyTitle')}</h3>
-                                        <p className="text-dim mb-xl">{t('agentReadyDesc')}</p>
+                                        <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{t('agentReadyTitle') || 'الموظف جاهز للعمل'}</h3>
+                                        <p className="text-dim mb-xl">{t('agentReadyDesc') || 'لقد قمت بإعداد الهوية والمعرفة. انقر أدناه لتفعيل الموظف.'}</p>
                                         <button className="btn w-100" style={{ background: '#22C55E', border: 'none' }} onClick={handleSave} disabled={loading}>
-                                            {loading ? t('activating') : t('activateAgentBtn')}
+                                            {loading ? t('activating') || 'جاري التفعيل...' : t('activateAgentBtn') || 'تفعيل الموظف'}
                                         </button>
                                     </div>
                                 </div>

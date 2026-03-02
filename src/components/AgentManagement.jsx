@@ -3,7 +3,7 @@ import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { agentService } from '../services/agentService';
 import AgentLifecycle from './AgentLifecycle';
-import { Plus, Edit2, Pause, Trash2, Play } from 'lucide-react';
+import { Plus, Edit2, Pause, Trash2, Play, Send, MessageCircle } from 'lucide-react';
 
 /**
  * AgentManagement Component
@@ -12,12 +12,28 @@ import { Plus, Edit2, Pause, Trash2, Play } from 'lucide-react';
  */
 const AgentManagement = () => {
     const { t } = useLanguage();
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
     const [agents, setAgents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedAgent, setSelectedAgent] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [templates, setTemplates] = useState([]);
+
+    // Telegram Token Modal State
+    const [showTelegramModal, setShowTelegramModal] = useState(false);
+    const [editingTelegramAgent, setEditingTelegramAgent] = useState(null);
+    const [telegramToken, setTelegramToken] = useState('');
+    const [isSavingToken, setIsSavingToken] = useState(false);
+
+    // WhatsApp Settings Modal State
+    const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+    const [editingWhatsAppAgent, setEditingWhatsAppAgent] = useState(null);
+    const [whatsappSettings, setWhatsappSettings] = useState({
+        token: '',
+        phoneNumberId: '',
+        verifyToken: ''
+    });
+    const [isSavingWhatsApp, setIsSavingWhatsApp] = useState(false);
 
     useEffect(() => {
         loadAgentsAndTemplates();
@@ -81,6 +97,67 @@ const AgentManagement = () => {
             }
         } catch (error) {
             console.error('Error updating agent status:', error);
+        }
+    };
+
+    const handleSaveTelegramToken = async () => {
+        if (!editingTelegramAgent) return;
+        setIsSavingToken(true);
+        try {
+            const result = await agentService.updateAgentTelegramToken(editingTelegramAgent.id, telegramToken);
+            if (result.success) {
+                // Register webhook with Telegram
+                if (telegramToken && telegramToken.trim() !== '') {
+                    try {
+                        const webhookUrl = `https://dydflepcfdrlslpxapqo.supabase.co/functions/v1/telegram-webhook?agent_id=${editingTelegramAgent.id}`;
+                        const setWebhookRes = await fetch(`https://api.telegram.org/bot${telegramToken}/setWebhook?url=${webhookUrl}`);
+                        const webhookData = await setWebhookRes.json();
+                        if (!webhookData.ok) {
+                            console.error('Failed to set webhook:', webhookData.description);
+                            alert(`فشل في تفعيل البوت على تيليجرام: ${webhookData.description}`);
+                        } else {
+                            alert('تم ربط بوت التيليجرام بنجاح!');
+                        }
+                    } catch (err) {
+                        console.error('Error calling Telegram API:', err);
+                        alert('حدث خطأ أثناء الاتصال بشبكة تيليجرام.');
+                    }
+                }
+
+                // Update local state
+                setAgents(agents.map(a =>
+                    a.id === editingTelegramAgent.id ? { ...a, telegram_token: telegramToken } : a
+                ));
+                setShowTelegramModal(false);
+            } else {
+                alert('حدث خطأ أثناء حفظ التوكن في قاعدة البيانات.');
+            }
+        } catch (error) {
+            console.error('Error saving telegram token:', error);
+        } finally {
+            setIsSavingToken(false);
+        }
+    };
+
+    const handleSaveWhatsAppSettings = async () => {
+        if (!editingWhatsAppAgent) return;
+        setIsSavingWhatsApp(true);
+        try {
+            const result = await agentService.updateAgentWhatsAppSettings(editingWhatsAppAgent.id, whatsappSettings);
+            if (result.success) {
+                // Update local state
+                setAgents(agents.map(a =>
+                    a.id === editingWhatsAppAgent.id ? { ...a, whatsapp_settings: whatsappSettings } : a
+                ));
+                setShowWhatsAppModal(false);
+                alert('تم حفظ إعدادات واتساب بنجاح. يرجى إعداد الويب هوك في منصة مطوري ميتا باستخدام التحقق (Verify Token) الذي أدخلته.');
+            } else {
+                alert('حدث خطأ أثناء حفظ الإعدادات في قاعدة البيانات.');
+            }
+        } catch (error) {
+            console.error('Error saving whatsapp settings:', error);
+        } finally {
+            setIsSavingWhatsApp(false);
         }
     };
 
@@ -331,13 +408,15 @@ const AgentManagement = () => {
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        console.log('Edit agent:', agent.id);
+                                        setEditingTelegramAgent(agent);
+                                        setTelegramToken(agent.telegram_token || '');
+                                        setShowTelegramModal(true);
                                     }}
                                     style={{
-                                        flex: 1,
+                                        flex: 2,
                                         padding: '0.5rem',
-                                        background: 'rgba(139, 92, 246, 0.2)',
-                                        color: '#C4B5FD',
+                                        background: 'rgba(56, 189, 248, 0.2)',
+                                        color: '#38BDF8',
                                         border: 'none',
                                         borderRadius: '6px',
                                         cursor: 'pointer',
@@ -349,8 +428,35 @@ const AgentManagement = () => {
                                         gap: '0.25rem',
                                     }}
                                 >
-                                    <Edit2 size={14} /> تعديل
+                                    <Send size={14} /> ربط التيليجرام
                                 </button>
+                                {isAdmin && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditingWhatsAppAgent(agent);
+                                            setWhatsappSettings(agent.whatsapp_settings || { token: '', phoneNumberId: '', verifyToken: '' });
+                                            setShowWhatsAppModal(true);
+                                        }}
+                                        style={{
+                                            flex: 2,
+                                            padding: '0.5rem',
+                                            background: 'rgba(34, 197, 94, 0.2)',
+                                            color: '#22C55E',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '0.8rem',
+                                            fontWeight: 600,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.25rem',
+                                        }}
+                                    >
+                                        <MessageCircle size={14} /> ربط الواتساب
+                                    </button>
+                                )}
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -379,6 +485,166 @@ const AgentManagement = () => {
                     ))
                 )}
             </div>
+
+            {/* Telegram Token Modal */}
+            {showTelegramModal && editingTelegramAgent && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    backdropFilter: 'blur(5px)',
+                    zIndex: 1000,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '1rem'
+                }}>
+                    <div className="card animate-fade-in" style={{
+                        maxWidth: '500px', width: '100%',
+                        background: '#18181B', border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '2rem', borderRadius: '16px'
+                    }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
+                            ربط بوت تيليجرام
+                        </h3>
+                        <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                            أدخل <b>Bot Token</b> الخاص بهذا الموظف (يمكنك الحصول عليه من <b>@BotFather</b> في تيليجرام). وسيتم ربطه وتفعيله فوراً للحديث نيابة عن ({editingTelegramAgent.name}).
+                        </p>
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label className="label">Telegram Bot Token</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="مثال: 1234567890:ABCdefGhIJKlmNoPQRsTuvwxyZ..."
+                                value={telegramToken}
+                                onChange={(e) => setTelegramToken(e.target.value)}
+                                style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => setShowTelegramModal(false)}
+                                className="btn"
+                                style={{
+                                    background: 'transparent',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    color: 'white',
+                                    padding: '0.75rem 1.5rem',
+                                }}
+                            >
+                                إلغاء
+                            </button>
+                            <button
+                                onClick={handleSaveTelegramToken}
+                                disabled={isSavingToken || !telegramToken.trim()}
+                                className="btn"
+                                style={{
+                                    background: '#0088cc',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.75rem 1.5rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                {isSavingToken ? 'جاري الربط...' : <><Send size={18} /> حفظ وتفعيل الربط</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* WhatsApp Token Modal */}
+            {showWhatsAppModal && editingWhatsAppAgent && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    backdropFilter: 'blur(5px)',
+                    zIndex: 1000,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '1rem'
+                }}>
+                    <div className="card animate-fade-in" style={{
+                        maxWidth: '500px', width: '100%',
+                        background: '#18181B', border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '2rem', borderRadius: '16px'
+                    }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
+                            إعداد ربط واتساب (للمسؤولين)
+                        </h3>
+                        <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                            يرجى إدخال تفاصيل تطبيق Meta للواتساب الخاص بهذا العميل السري لربط دالة (`whatsapp-webhook`).
+                        </p>
+
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label className="label">Access Token (Permanent)</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="EAAI... (يتم جلبه من حساب مطوري ميتا)"
+                                value={whatsappSettings.token}
+                                onChange={(e) => setWhatsappSettings({ ...whatsappSettings, token: e.target.value })}
+                                style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label className="label">Phone Number ID</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="مثال: 10453..."
+                                value={whatsappSettings.phoneNumberId}
+                                onChange={(e) => setWhatsappSettings({ ...whatsappSettings, phoneNumberId: e.target.value })}
+                                style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label className="label">Webhook Verify Token</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="حدد رمز تحقق للويب هوك الخاص بك"
+                                value={whatsappSettings.verifyToken}
+                                onChange={(e) => setWhatsappSettings({ ...whatsappSettings, verifyToken: e.target.value })}
+                                style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => setShowWhatsAppModal(false)}
+                                className="btn"
+                                style={{
+                                    background: 'transparent',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    color: 'white',
+                                    padding: '0.75rem 1.5rem',
+                                }}
+                            >
+                                إلغاء
+                            </button>
+                            <button
+                                onClick={handleSaveWhatsAppSettings}
+                                disabled={isSavingWhatsApp || !whatsappSettings.token || !whatsappSettings.phoneNumberId}
+                                className="btn"
+                                style={{
+                                    background: '#22c55e',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.75rem 1.5rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                {isSavingWhatsApp ? 'جاري الحفظ...' : <><MessageCircle size={18} /> حفظ إعدادات واتساب</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

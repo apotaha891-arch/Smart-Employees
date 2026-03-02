@@ -169,142 +169,194 @@ const BusinessSetup = () => {
     };
 
     return (
-        <div className="container py-xl animate-fade-in" style={{ paddingBottom: '6rem' }}>
+        <div className="container py-xl animate-fade-in" style={{ paddingBottom: '6rem' }} dir="rtl">
             <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1rem', background: 'linear-gradient(to bottom, #FFF, #52525B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                    {t('businessSetupTitle')}
+                    الإعدادات العامة للمنشأة
                 </h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-                    {t('businessSetupSubtitle')}
+                    قم بتهيئة المعايير والبروتوكولات التي سيلتزم بها موظفك الذكي عند التعامل مع عملائك.
                 </p>
             </div>
 
-            <div className="grid grid-2" style={{ alignItems: 'start', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)' }}>
-                {/* AI Smart Setup Panel */}
-                <div className="card" style={{ background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, rgba(17, 24, 39, 1) 100%)', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                        <div style={{ backgroundColor: '#8B5CF620', padding: '10px', borderRadius: '12px', color: '#8B5CF6' }}>
-                            <Sparkles size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ margin: 0, color: 'white' }}>الإعداد الذكي بالذكاء الاصطناعي</h3>
-                            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ارفع ملفات أو أضف روابط لتدريب موظفك الرقمي فوراً</p>
-                        </div>
-                    </div>
-
-                    <div className="mb-md">
-                        <label className="label"><span>📁</span> رفع ملفات (PDF, Excel, Word)</label>
-                        <div
-                            style={{
-                                border: '2px dashed rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                padding: '2rem',
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                background: 'rgba(0,0,0,0.2)',
-                                transition: 'all 0.3s'
-                            }}
-                            onClick={() => document.getElementById('ai-file-upload').click()}
-                        >
-                            <Upload size={32} color="#9CA3AF" style={{ marginBottom: '1rem' }} />
-                            <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.9rem' }}>اضغط لاختيار الملفات أو اسحبها هنا</p>
-                            <input
-                                id="ai-file-upload"
-                                type="file"
-                                multiple
-                                style={{ display: 'none' }}
-                                onChange={handleFileChange}
-                                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt"
-                            />
-                        </div>
-
-                        {aiFiles.length > 0 && (
-                            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                {aiFiles.map((f, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '0.85rem' }}>
-                                            <FileText size={16} color="#8B5CF6" /> {f.name}
-                                        </div>
-                                        <X size={16} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => removeFile(i)} />
-                                    </div>
-                                ))}
+            <div className="grid grid-2" style={{ alignItems: 'start', gap: '2rem', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)' }}>
+                {/* Right Column: AI Panel + Tips */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    {/* AI Smart Setup Panel */}
+                    <div className="card" style={{ background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, rgba(17, 24, 39, 1) 100%)', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                            <div style={{ backgroundColor: '#8B5CF620', padding: '10px', borderRadius: '12px', color: '#8B5CF6' }}>
+                                <Sparkles size={24} />
                             </div>
-                        )}
-                    </div>
+                            <div>
+                                <h3 style={{ margin: 0, color: 'white' }}>الإعداد الذكي بالذكاء الاصطناعي</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ارفع ملفات أو أضف روابط لتدريب موظفك الرقمي فوراً</p>
+                            </div>
+                        </div>
 
-                    <div className="mb-lg">
-                        <label className="label"><span>🔗</span> روابط الصفحات وقواعد البيانات</label>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <div style={{ position: 'relative', flex: 1 }}>
-                                <LinkIcon size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                        <div className="mb-md">
+                            <label className="label"><span>📁</span> رفع ملفات (PDF, Excel, Word)</label>
+                            <div
+                                style={{
+                                    border: '2px dashed rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    padding: '2rem',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    background: 'rgba(0,0,0,0.2)',
+                                    transition: 'all 0.3s'
+                                }}
+                                onClick={() => document.getElementById('ai-file-upload').click()}
+                            >
+                                <Upload size={32} color="#9CA3AF" style={{ marginBottom: '1rem' }} />
+                                <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.9rem' }}>اضغط لاختيار الملفات أو اسحبها هنا</p>
                                 <input
-                                    type="url"
-                                    className="input-field"
-                                    style={{ paddingLeft: '40px' }}
-                                    placeholder="https://example.com/services"
-                                    value={aiUrl}
-                                    onChange={(e) => setAiUrl(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddUrl())}
+                                    id="ai-file-upload"
+                                    type="file"
+                                    multiple
+                                    style={{ display: 'none' }}
+                                    onChange={handleFileChange}
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt"
                                 />
                             </div>
-                            <button onClick={handleAddUrl} className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>إضافة</button>
+
+                            {aiFiles.length > 0 && (
+                                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    {aiFiles.map((f, i) => (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '0.85rem' }}>
+                                                <FileText size={16} color="#8B5CF6" /> {f.name}
+                                            </div>
+                                            <X size={16} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => removeFile(i)} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
-                        {aiUrlsList.length > 0 && (
-                            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                {aiUrlsList.map((url, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
-                                        <a href={url} target="_blank" rel="noreferrer" style={{ color: '#60A5FA', fontSize: '0.85rem', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
-                                            {url}
-                                        </a>
-                                        <X size={16} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => removeUrl(i)} />
-                                    </div>
-                                ))}
+                        <div className="mb-lg">
+                            <label className="label"><span>🔗</span> روابط الصفحات وقواعد البيانات</label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <div style={{ position: 'relative', flex: 1 }}>
+                                    <LinkIcon size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                                    <input
+                                        type="url"
+                                        className="input-field"
+                                        style={{ paddingLeft: '40px' }}
+                                        placeholder="https://example.com/services"
+                                        value={aiUrl}
+                                        onChange={(e) => setAiUrl(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddUrl())}
+                                    />
+                                </div>
+                                <button onClick={handleAddUrl} className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>إضافة</button>
                             </div>
-                        )}
+
+                            {aiUrlsList.length > 0 && (
+                                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    {aiUrlsList.map((url, i) => (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
+                                            <a href={url} target="_blank" rel="noreferrer" style={{ color: '#60A5FA', fontSize: '0.85rem', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+                                                {url}
+                                            </a>
+                                            <X size={16} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => removeUrl(i)} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <button
+                            type="button"
+                            className={`btn btn-block ${aiLoading ? 'loading' : ''}`}
+                            onClick={handleAiProcess}
+                            disabled={aiLoading || (aiFiles.length === 0 && aiUrlsList.length === 0)}
+                            style={{
+                                background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+                                color: 'white',
+                                opacity: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 0.5 : 1,
+                                pointerEvents: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'none' : 'auto'
+                            }}
+                        >
+                            {aiLoading ? 'جاري التحليل واستخراج البيانات...' : 'أتمتة وتحليل البيانات ✨'}
+                        </button>
+                        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
+                            سيتم تحليل الملفات وملء بيانات الإعداد اليدوي أدناه تلقائياً.
+                        </p>
                     </div>
 
-                    <button
-                        type="button"
-                        className={`btn btn-block ${aiLoading ? 'loading' : ''}`}
-                        onClick={handleAiProcess}
-                        disabled={aiLoading || (aiFiles.length === 0 && aiUrlsList.length === 0)}
-                        style={{
-                            background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-                            color: 'white',
-                            opacity: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 0.5 : 1,
-                            pointerEvents: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'none' : 'auto'
-                        }}
-                    >
-                        {aiLoading ? 'جاري التحليل واستخراج البيانات...' : 'أتمتة وتحليل البيانات ✨'}
-                    </button>
-                    <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
-                        سيتم تحليل الملفات وملء بيانات الإعداد اليدوي أدناه تلقائياً.
-                    </p>
+                    {/* Tips Panel immediately below AI Panel */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <h3 style={{ color: 'white', marginBottom: '0.5rem', fontSize: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>💡 كيف سيساعدك موظفك الذكي؟</h3>
+
+                        <div className="card" style={{ borderRight: '4px solid #8B5CF6', background: 'rgba(139, 92, 246, 0.05)', padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
+                                <div style={{ fontSize: '1.75rem', background: '#8B5CF620', padding: '10px', borderRadius: '12px', display: 'flex' }}>⏱️</div>
+                                <div>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>تغطية فورية 24/7</h4>
+                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
+                                        موظفك لا ينام ولا يأخذ إجازات. سيقوم بالرد على استفسارات عملائك وحجز مواعيدهم في أي وقت من اليوم، حتى خارج أوقات العمل الرسمية.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="card" style={{ borderRight: '4px solid #10B981', background: 'rgba(16, 185, 129, 0.05)', padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
+                                <div style={{ fontSize: '1.75rem', background: '#10B98120', padding: '10px', borderRadius: '12px', display: 'flex' }}>🎯</div>
+                                <div>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>دقة واحترافية متناهية</h4>
+                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
+                                        ابنِ قاعدة معرفية قوية لموظفك. سيلتزم تماماً بالتعليمات والأسعار والخدمات التي تقدمها، ولن يرتكب الأخطاء البشرية الشائعة.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="card" style={{ borderRight: '4px solid #F59E0B', background: 'rgba(245, 158, 11, 0.05)', padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
+                                <div style={{ fontSize: '1.75rem', background: '#F59E0B20', padding: '10px', borderRadius: '12px', display: 'flex' }}>💰</div>
+                                <div>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>توفير التكاليف ومضاعفة المبيعات</h4>
+                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
+                                        بدلاً من توظيف فريق دعم كبير، سيتولى الذكاء الاصطناعي المهام الروتينية ليتفرغ فريقك للمبيعات والإدارة، مما يعود بالنفع على إيراداتك.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="card" style={{ background: 'linear-gradient(45deg, #18181B, #09090B)', border: '1px dashed var(--accent)', padding: '1.5rem', textAlign: 'center' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🚀</div>
+                            <h4 style={{ color: 'var(--secondary-accent)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>جاهز للانطلاق؟</h4>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
+                                أكمل بيانات المنشأة بدقة وزود موظفك بالمعلومات اللازمة، ثم احفظ الإعدادات لتبدأ ثورة الذكاء الاصطناعي في مشروعك!
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Manual Setup Panel */}
+                {/* Left Column: Manual Setup Panel */}
                 <div className="card">
                     <form onSubmit={handleSubmit}>
                         <h3 style={{ margin: '0 0 1.5rem', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>وثيقة الإعداد اليدوي</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
                             <div>
-                                <label className="label"><span>🏢</span> {t('businessNameLabel')}</label>
+                                <label className="label"><span>🏢</span> اسم المنشأة</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder={t('businessNamePlaceholder')}
+                                    placeholder="مثال: 24Shift"
                                     value={formData.business_name}
                                     onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="label"><span>🏷️</span> {t('businessTypeLabel')}</label>
+                                <label className="label"><span>🏷️</span> نوع النشاط</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder={t('businessTypePlaceholder')}
+                                    placeholder="مثال: عيادة تجميل"
                                     value={formData.business_type}
                                     onChange={(e) => setFormData({ ...formData, business_type: e.target.value })}
                                     required
@@ -313,11 +365,11 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span>⏰</span> {t('workingHoursLabel')}</label>
+                            <label className="label"><span>⏰</span> مواعيد العمل الرسمية</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder={t('workingHoursPlaceholder')}
+                                placeholder="مثال: من 9 صباحاً حتى 10 مساءً"
                                 value={formData.working_hours}
                                 onChange={(e) => setFormData({ ...formData, working_hours: e.target.value })}
                                 required
@@ -325,11 +377,11 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span></span> {t('coreServicesLabel')}</label>
+                            <label className="label"><span>🧩</span> الخدمات الأساسية والأسعار</label>
                             <textarea
                                 className="input-field"
                                 rows="3"
-                                placeholder={t('coreServicesPlaceholder')}
+                                placeholder="قائمة بكل ما تريد من موظفك تقديمه..."
                                 value={formData.services}
                                 onChange={(e) => setFormData({ ...formData, services: e.target.value })}
                                 required
@@ -337,7 +389,7 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span></span> {t('toneLabel')}</label>
+                            <label className="label"><span>🎭</span> أسلوب التحدث والهوية</label>
                             <select
                                 className="input-field"
                                 value={formData.branding_tone}
@@ -348,26 +400,26 @@ const BusinessSetup = () => {
                                     border: '1px solid rgba(255,255,255,0.1)'
                                 }}
                             >
-                                <option value="professional" style={{ color: 'white', background: '#1F2937' }}>{t('professionalTone')}</option>
-                                <option value="friendly" style={{ color: 'white', background: '#1F2937' }}>{t('friendlyTone')}</option>
-                                <option value="fast" style={{ color: 'white', background: '#1F2937' }}>{t('directTone')}</option>
-                                <option value="luxury" style={{ color: 'white', background: '#1F2937' }}>{t('luxuryTone')}</option>
+                                <option value="professional" style={{ color: 'white', background: '#1F2937' }}>رسمي واحترافي</option>
+                                <option value="friendly" style={{ color: 'white', background: '#1F2937' }}>ودود وشبابي</option>
+                                <option value="fast" style={{ color: 'white', background: '#1F2937' }}>سريع ومباشر</option>
+                                <option value="luxury" style={{ color: 'white', background: '#1F2937' }}>راقي وفاخر</option>
                             </select>
                         </div>
 
                         <div className="mb-2xl">
-                            <label className="label"><span></span> {t('knowledgeBaseLabel')}</label>
+                            <label className="label"><span>🧠</span> قاعدة المعرفة الأساسية</label>
                             <textarea
                                 className="input-field"
                                 rows="12"
                                 style={{ background: 'rgba(212, 175, 55, 0.03)', borderColor: 'rgba(212, 175, 55, 0.15)' }}
-                                placeholder={t('knowledgeBasePlaceholder')}
+                                placeholder="أدخل هنا كل المعلومات والتعليمات التي تريد لموظفك حفظها..."
                                 value={formData.knowledge_base}
                                 onChange={(e) => setFormData({ ...formData, knowledge_base: e.target.value })}
                             ></textarea>
                             <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }}></div>
-                                <small style={{ color: 'var(--text-secondary)' }}>{t('knowledgeBaseHint')}</small>
+                                <small style={{ color: 'var(--text-secondary)' }}>تحديث هذه اللوحة يعيد بناء معرفة موظفك فوراً.</small>
                             </div>
                         </div>
 
@@ -376,42 +428,9 @@ const BusinessSetup = () => {
                             className={`btn btn-primary btn-block ${loading ? 'loading' : ''}`}
                             disabled={loading}
                         >
-                            {loading ? t('syncing') : t('updateProtocolBtn')}
+                            {loading ? 'جاري التحديث...' : 'تحديث وتأكيد البيانات'}
                         </button>
                     </form>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div className="card" style={{ borderLeft: '4px solid var(--accent)' }}>
-                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
-                            <div style={{ fontSize: '1.5rem' }}>🦁</div>
-                            <div>
-                                <h4 style={{ marginBottom: '0.5rem', color: 'white' }}>{t('smartIdentityTitle')}</h4>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                    {t('smartIdentityDesc')}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="card" style={{ borderLeft: '4px solid #10B981' }}>
-                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
-                            <div style={{ fontSize: '1.5rem' }}>🔐</div>
-                            <div>
-                                <h4 style={{ marginBottom: '0.5rem', color: 'white' }}>{t('dataSecurityTitle')}</h4>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                    {t('dataSecurityDesc')}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="card" style={{ background: 'linear-gradient(45deg, #18181B, #09090B)', border: '1px solid var(--accent-border)' }}>
-                        <h4 style={{ color: 'var(--secondary-accent)', marginBottom: '0.75rem' }}>{t('employeeIntelligence')}</h4>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                            {t('employeeIntelligenceDesc')}
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

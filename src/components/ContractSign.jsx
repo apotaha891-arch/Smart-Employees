@@ -15,6 +15,21 @@ const ContractSign = () => {
     const [signature, setSignature] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Check for Stripe success URL params
+    const [paymentSuccess, setPaymentSuccess] = React.useState(false);
+
+    React.useEffect(() => {
+        const query = new URLSearchParams(location.search);
+        if (query.get('success')) {
+            setPaymentSuccess(true);
+            // Optionally clear the query params to keep URL clean
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        if (query.get('canceled')) {
+            alert("تم إلغاء عملية الدفع. يمكنك المحاولة لاحقاً.");
+        }
+    }, [location.search]);
+
     const handleSignContract = async () => {
         if (!accepted || signature.trim() === '') {
             alert('يرجى الموافقة على الشروط وتوقيع العقد باسمك.');
