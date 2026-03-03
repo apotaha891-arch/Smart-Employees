@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { LanguageProvider } from './LanguageContext';
 import { createAuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/shared/ProtectedRoute';
@@ -154,6 +155,7 @@ function AppContent() {
             </Routes>
 
             <PlatformConcierge />
+            <Analytics />
         </div>
     );
 }
