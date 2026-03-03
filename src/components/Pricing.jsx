@@ -20,7 +20,7 @@ const Pricing = () => {
 
         // Skip checkout for Enterprise (Contact Sales)
         if (plan.id === 'enterprise') {
-            alert("سيتم توجيهك لفريق المبيعات لترتيب باقة مخصصة لمنشأتك.");
+            alert(t('contactSalesAlert'));
             window.location.href = "mailto:sales@24shift.com";
             return;
         }
@@ -31,7 +31,7 @@ const Pricing = () => {
             // Get user session to authenticate Edge Function
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
-                alert("يرجى تسجيل الدخول أولاً لإتمام عملية الاشتراك.");
+                alert(t('loginRequired'));
                 navigate('/login');
                 return;
             }
@@ -97,79 +97,67 @@ const Pricing = () => {
         }
     };
 
+    const { t, language } = useLanguage();
+    const pricingPlans = t('pricingPlans');
+
     const plans = [
         {
             id: 'starter',
-            name: 'الباقة الأساسية',
+            name: pricingPlans?.starter?.name || '',
             icon: <Zap size={28} color="#06B6D4" />,
             monthlyPrice: 80,
             yearlyPrice: 80 * 0.8,
             trialPrice: 49,
-            description: 'مثالية للمشاريع الناشئة التي تبحث عن أتمتة بسيطة وتغطية أساسية.',
-            features: [
-                'موظف ذكي واحد مخصص للقطاع',
-                'أداتين للربط (مثل تليجرام، واتساب)',
-                '2000 محادثة شهرياً',
-                'أداة إضافية بـ 20$',
-                'موظف إضافي بـ 70$'
-            ],
-            cta: 'اشترك الآن',
+            description: pricingPlans?.starter?.description || '',
+            features: pricingPlans?.starter?.features || [],
+            cta: pricingPlans?.starter?.cta || '',
+            trialText: pricingPlans?.starter?.trialText || '',
+            periodStr: pricingPlans?.starter?.periodStr || '',
             popular: false,
             color: '#06B6D4'
         },
         {
             id: 'pro',
-            name: 'الباقة المتقدمة',
+            name: pricingPlans?.pro?.name || '',
             icon: <Star size={28} color="#8B5CF6" />,
             monthlyPrice: 120,
             yearlyPrice: 120 * 0.8,
             trialPrice: 80,
-            description: 'الخيار الأفضل للمنشآت المتوسطة لرفع الكفاءة التشغيلية بقوة.',
-            features: [
-                'موظفين اثنين مخصصين',
-                '3 أدوات ربط لكل موظف',
-                '5000 محادثة شهرياً',
-                'أداة إضافية بـ 15$',
-                'موظف إضافي بـ 49$'
-            ],
-            cta: 'ابدأ التجربة المخفضة',
+            description: pricingPlans?.pro?.description || '',
+            features: pricingPlans?.pro?.features || [],
+            cta: pricingPlans?.pro?.cta || '',
+            trialText: pricingPlans?.pro?.trialText || '',
+            periodStr: pricingPlans?.pro?.periodStr || '',
             popular: true,
             color: '#8B5CF6'
         },
         {
             id: 'enterprise',
-            name: 'باقة النخبة',
+            name: pricingPlans?.enterprise?.name || '',
             icon: <Crown size={28} color="#F59E0B" />,
-            monthlyPrice: 'مخصص',
-            yearlyPrice: 'مخصص',
+            monthlyPrice: t('customPrice'),
+            yearlyPrice: t('customPrice'),
             trialPrice: null,
-            description: 'للشركات التي تبحث عن تحكم شامل وحلول هندسية مخصصة بالكامل.',
-            features: [
-                'عدد غير محدود من الموظفين الذكاء الاصطناعي',
-                'عدد غير محدود من قنوات الربط',
-                'توجيه المحادثات المعقدة لخدمة العملاء',
-                'ربط API مخصص مع أنظمة ERP والعيادات',
-                'تدريب ومسارات عمل مخصصة',
-                'مدير حساب شخصي مخصص'
-            ],
-            cta: 'تواصل مع المبيعات',
+            description: pricingPlans?.enterprise?.description || '',
+            features: pricingPlans?.enterprise?.features || [],
+            cta: pricingPlans?.enterprise?.cta || '',
             popular: false,
             color: '#F59E0B'
         }
     ];
 
     return (
-        <div className="bg-light" style={{ paddingTop: '8rem', paddingBottom: '6rem', minHeight: '100vh', direction: 'rtl' }}>
+        <div className="bg-light" style={{ paddingTop: '8rem', paddingBottom: '6rem', minHeight: '100vh', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
             <div className="container">
                 <div className="text-center mb-3xl">
                     <div className="badge badge-success mb-md" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6', padding: '0.6rem 1.75rem', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                        باقات التوظيف الجريئة ✨
+                        {t('pricingBadge')}
                     </div>
                     <h2 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1.5rem', color: 'var(--primary)', lineHeight: 1.2 }}>
-                        استثمر في كادر لا ينام! 🚀
+                        {t('pricingTitle')}
                     </h2>
                     <p className="text-secondary" style={{ fontSize: '1.2rem', maxWidth: '750px', margin: '0 auto 2.5rem', lineHeight: 1.7, fontWeight: 500 }}>
-                        تبدأ رحلة الأتمتة معنا بعرض <strong style={{ color: '#10B981' }}>بداية ميسّرة لمدة 3 أشهر</strong>، مما يتيح لك تقييم أداء الموظف الذكي والتأكد من النتائج بتكلفة منخفضة جداً، قبل الانتقال للأسعار الطبيعية والاستثمار طويل الأمد.
+                        {t('pricingDesc')}
                     </p>
 
                     {/* Billing Toggle */}
@@ -199,7 +187,7 @@ const Pricing = () => {
                                 transition: 'all 0.3s'
                             }}
                         >
-                            دفع شهري
+                            {t('payMonthly')}
                         </button>
                         <button
                             onClick={() => setBillingCycle('yearly')}
@@ -218,7 +206,7 @@ const Pricing = () => {
                                 gap: '0.75rem'
                             }}
                         >
-                            دفع سنوي
+                            {t('payYearly')}
                             <span style={{
                                 background: billingCycle === 'yearly' ? 'white' : 'rgba(139, 92, 246, 0.15)',
                                 color: billingCycle === 'yearly' ? '#8B5CF6' : '#8B5CF6',
@@ -226,7 +214,7 @@ const Pricing = () => {
                                 borderRadius: '10px',
                                 fontSize: '0.8rem',
                                 fontWeight: 900
-                            }}>وفر 20%</span>
+                            }}>{t('save20')}</span>
                         </button>
                     </div>
                 </div>
@@ -276,7 +264,7 @@ const Pricing = () => {
                                         whiteSpace: 'nowrap',
                                         border: '1px solid rgba(255,255,255,0.2)'
                                     }}>
-                                        الأكثر اختياراً ✨
+                                        {t('mostPopular')}
                                     </div>
                                 )}
 
@@ -302,7 +290,7 @@ const Pricing = () => {
                                 <div style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
                                         <span style={{ fontSize: plan.id === 'enterprise' ? '2.5rem' : '3.5rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{price}</span>
-                                        {plan.id !== 'enterprise' && <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>$ / {billingCycle === 'monthly' ? 'شهر' : 'شهر (يُدفع سنوياً)'}</span>}
+                                        {plan.id !== 'enterprise' && <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>$ / {billingCycle === 'monthly' ? t('month') : t('monthYearly')}</span>}
                                     </div>
                                     {plan.trialPrice && (
                                         <div style={{
@@ -318,7 +306,7 @@ const Pricing = () => {
                                             border: '1px solid rgba(16, 185, 129, 0.2)'
                                         }}>
                                             <Zap size={18} fill="currentColor" />
-                                            تجربة 3 شهور: {plan.trialPrice}$/شهرياً!
+                                            {t('trialNote').replace('{price}', plan.trialPrice)}
                                         </div>
                                     )}
                                 </div>
@@ -368,7 +356,7 @@ const Pricing = () => {
                                         }
                                     }}
                                 >
-                                    {isHiringFlow ? 'اعتماد الباقة والمتابعة لتوقيع العقد' : plan.cta}
+                                    {isHiringFlow ? t('approvePlanContract') : plan.cta}
                                 </button>
                             </div>
                         );

@@ -363,7 +363,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
             console.error('Send message error:', error);
             const errorMessage = {
                 role: 'agent',
-                content: t('error') || 'خطأ في الإرسال.',
+                content: t('errorSend'),
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -448,13 +448,13 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                             <div style={{ width: '64px', height: '64px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
                                 <Settings size={32} color="#8B5CF6" />
                             </div>
-                            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>إعداد جلسة المقابلة</h2>
-                            <p style={{ color: '#A1A1AA' }}>حدد تفاصيل المرشح الرقمي الذي ترغب في مقبلته قبل توظيفه</p>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>{t('interviewSetupTitle')}</h2>
+                            <p style={{ color: '#A1A1AA' }}>{t('interviewSetupDesc')}</p>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: isArabic ? 'right' : 'left' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>القطاع / الصناعة</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('industryLabel')}</label>
                                 <select
                                     value={setupConfig.industry}
                                     onChange={(e) => setSetupConfig({ ...setupConfig, industry: e.target.value })}
@@ -464,17 +464,17 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                         fontSize: '1rem'
                                     }}
                                 >
-                                    <option value="general">عام (إدارة وأعمال)</option>
-                                    <option value="medical">الرعاية الصحية والعيادات</option>
-                                    <option value="realestate">العقارات والأملاك</option>
-                                    <option value="beauty">صالونات التجميل والعناية</option>
-                                    <option value="restaurant">المطاعم والضيافة</option>
-                                    <option value="fitness">الأندية الرياضية واللياقة</option>
+                                    <option value="general">{t('indGeneral')}</option>
+                                    <option value="medical">{t('indMedical')}</option>
+                                    <option value="realestate">{t('indRealestate')}</option>
+                                    <option value="beauty">{t('indBeauty')}</option>
+                                    <option value="restaurant">{t('indRestaurant')}</option>
+                                    <option value="fitness">{t('indFitness')}</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>المسمى الوظيفي والتخصص</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('jobTitleLabel')}</label>
                                 <select
                                     value={setupConfig.agentType}
                                     onChange={(e) => setSetupConfig({ ...setupConfig, agentType: e.target.value })}
@@ -484,19 +484,19 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                         fontSize: '1rem'
                                     }}
                                 >
-                                    <option value="support-agent">ممثل خدمة عملاء الدعم</option>
-                                    <option value="sales-lead-gen">أخصائي مبيعات واستقطاب</option>
-                                    <option value="dental-receptionist">موظف استقبال (طبي / أسنان)</option>
-                                    <option value="medical-clinic">استقبال عيادة تخصصية</option>
-                                    <option value="beauty-salon">منسقة مواعيد (صالون تجميل)</option>
-                                    <option value="real-estate-marketing">مسوق عقاري</option>
-                                    <option value="restaurant-reservations">مسؤول حجوزات (مطاعم)</option>
-                                    <option value="gym-coordinator">منسق اشتراكات (رياضي)</option>
+                                    <option value="support-agent">{t('jobSupport')}</option>
+                                    <option value="sales-lead-gen">{t('jobSales')}</option>
+                                    <option value="dental-receptionist">{t('jobDental')}</option>
+                                    <option value="medical-clinic">{t('jobClinic')}</option>
+                                    <option value="beauty-salon">{t('jobSalon')}</option>
+                                    <option value="real-estate-marketing">{t('jobRealEstate')}</option>
+                                    <option value="restaurant-reservations">{t('jobRestaurant')}</option>
+                                    <option value="gym-coordinator">{t('jobGym')}</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>الشخصية ونبرة الحديث</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('toneLabel')}</label>
                                 <select
                                     value={setupConfig.tone}
                                     onChange={(e) => setSetupConfig({ ...setupConfig, tone: e.target.value })}
@@ -506,11 +506,11 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                         fontSize: '1rem'
                                     }}
                                 >
-                                    <option value="professional">رسمي واحترافي</option>
-                                    <option value="friendly">ودود ومرحب</option>
-                                    <option value="enthusiastic">مليء بالحيوية والنشاط</option>
-                                    <option value="luxury">راقي وفخم</option>
-                                    <option value="casual">عفوي وبسيط</option>
+                                    <option value="professional">{t('toneProfessional')}</option>
+                                    <option value="friendly">{t('toneFriendly')}</option>
+                                    <option value="enthusiastic">{t('toneEnthusiastic')}</option>
+                                    <option value="luxury">{t('toneLuxury')}</option>
+                                    <option value="casual">{t('toneCasual')}</option>
                                 </select>
                             </div>
 
@@ -523,7 +523,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                     boxShadow: '0 10px 20px rgba(139, 92, 246, 0.3)'
                                 }}
                             >
-                                تجهيز وإدخال المرشح
+                                {t('prepareCandidateBtn')}
                             </button>
 
                             {localStorage.getItem('agentTemplate') && (
@@ -535,7 +535,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                         borderRadius: '12px', fontWeight: 600, fontSize: '1rem', marginTop: '0.25rem', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer'
                                     }}
                                 >
-                                    إلغاء والعودة للمقابلة السابقة
+                                    {t('cancelReturnBtn')}
                                 </button>
                             )}
                         </div>
@@ -564,7 +564,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                         marginBottom: '1rem',
                     }}>
                         <span className="pulse-dot"></span>
-                        تقييم مباشر لقطاع: {
+                        {t('liveAssess')} {
                             template?.detectedIndustry === 'medical' ? 'الرعاية الصحية 🏥' :
                                 template?.detectedIndustry === 'realestate' ? 'التطوير العقاري 🏢' :
                                     template?.detectedIndustry === 'beauty' ? 'عالم التجميل ✨' :
@@ -572,8 +572,8 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                             template?.detectedIndustry === 'fitness' ? 'الرياضة والرشاقة 💪' : 'الأعمال الذكية 💼'
                         }
                     </div>
-                    <h2 style={{ fontSize: '2.5rem', fontWeight: 900 }}>{t('interviewTitle') || 'غرفة المقابلة الشخصية'}</h2>
-                    <p style={{ fontSize: '1.1rem', color: '#A1A1AA' }}>أنت الآن أمام كادر بشري رقمي متخصص تم اختياره بعناية لخدمتك</p>
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: 900 }}>{t('interviewRoomTitleLabel')}</h2>
+                    <p style={{ fontSize: '1.1rem', color: '#A1A1AA' }}>{t('interviewRoomDescLabel')}</p>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem', alignItems: 'start' }}>
@@ -591,18 +591,18 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: '#18181B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div className="flex align-center gap-sm">
                                 <Activity size={20} color="#8B5CF6" />
-                                <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white' }}>التقييم المهني المباشر</span>
+                                <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white' }}>{t('liveEvaluationLabel')}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                 <button
                                     onClick={() => setShowSetup(true)}
                                     style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#A1A1AA', padding: '4px 10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}
                                 >
-                                    تغيير المرشح
+                                    {t('changeCandidateBtn')}
                                 </button>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22C55E' }}></div>
-                                    <span style={{ fontSize: '0.75rem', color: '#A1A1AA' }}>متصل الآن</span>
+                                    <span style={{ fontSize: '0.75rem', color: '#A1A1AA' }}>{t('onlineNowLabel')}</span>
                                 </div>
                             </div>
                         </div>
@@ -676,7 +676,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder={t('chatPlaceholder') || 'اكتب رسالتك للمرشح...'}
+                                placeholder={t('chatPlaceholderLabel')}
                                 value={inputMessage}
                                 onChange={(e) => setInputMessage(e.target.value)}
                                 disabled={isLoading}
@@ -721,7 +721,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                             borderRadius: '24px',
                             boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
                         }}>
-                            <h4 style={{ marginBottom: '1.5rem', fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.75rem', color: '#A1A1AA', textAlign: isArabic ? 'right' : 'left' }}>ملف المرشح</h4>
+                            <h4 style={{ marginBottom: '1.5rem', fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.75rem', color: '#A1A1AA', textAlign: isArabic ? 'right' : 'left' }}>{t('candidateProfileLabel')}</h4>
 
                             <div className="text-center mb-xl">
                                 <div style={{
@@ -745,38 +745,38 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                 <div>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#A1A1AA', fontWeight: 600, marginBottom: '0.75rem' }}>
                                         <Briefcase size={14} />
-                                        المهارات والخدمات:
+                                        {t('skillsServicesLabel')}
                                     </label>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                         {template?.services ? template.services.map((s, i) => (
                                             <span key={i} style={{ padding: '0.4rem 0.75rem', background: '#27272A', color: '#E4E4E7', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.05)' }}>{s}</span>
                                         )) : (
-                                            <span style={{ color: '#71717A', fontSize: '0.8rem' }}>بانتظار تحديد المهام...</span>
+                                            <span style={{ color: '#71717A', fontSize: '0.8rem' }}>{t('waitingTasksLabel')}</span>
                                         )}
                                     </div>
                                 </div>
                                 <div>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#A1A1AA', fontWeight: 600, marginBottom: '0.5rem' }}>
                                         <Clock size={14} />
-                                        الجدول الزمني:
+                                        {t('scheduleLabel')}
                                     </label>
-                                    <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, color: '#E4E4E7' }}>تغطية كاملة 24/7</p>
+                                    <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, color: '#E4E4E7' }}>{t('fullCoverageLabel')}</p>
                                 </div>
                                 <div>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#A1A1AA', fontWeight: 600, marginBottom: '0.75rem' }}>
                                         <Zap size={14} color="#F59E0B" />
-                                        إمكانيات الربط المستقبلي (Add-ons):
+                                        {t('addOnsLabel')}
                                     </label>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                        <span style={{ padding: '0.4rem 0.75rem', background: 'rgba(37, 211, 102, 0.1)', color: '#25D366', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, border: '1px solid rgba(37, 211, 102, 0.2)' }}>واتساب API</span>
-                                        <span style={{ padding: '0.4rem 0.75rem', background: 'rgba(0, 136, 204, 0.1)', color: '#0088cc', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, border: '1px solid rgba(0, 136, 204, 0.2)' }}>تيليجرام</span>
-                                        <span style={{ padding: '0.4rem 0.75rem', background: 'rgba(225, 48, 108, 0.1)', color: '#E1306C', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, border: '1px solid rgba(225, 48, 108, 0.2)' }}>إنستجرام DMs</span>
+                                        <span style={{ padding: '0.4rem 0.75rem', background: 'rgba(37, 211, 102, 0.1)', color: '#25D366', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, border: '1px solid rgba(37, 211, 102, 0.2)' }}>{t('whatsappAddon')}</span>
+                                        <span style={{ padding: '0.4rem 0.75rem', background: 'rgba(0, 136, 204, 0.1)', color: '#0088cc', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, border: '1px solid rgba(0, 136, 204, 0.2)' }}>{t('telegramAddon')}</span>
+                                        <span style={{ padding: '0.4rem 0.75rem', background: 'rgba(225, 48, 108, 0.1)', color: '#E1306C', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, border: '1px solid rgba(225, 48, 108, 0.2)' }}>{t('instaAddon')}</span>
                                     </div>
                                 </div>
                                 <div style={{ marginTop: '0.5rem', padding: '1rem', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '16px', border: '1px solid rgba(34, 197, 94, 0.2)', textAlign: 'center' }}>
                                     <p style={{ fontSize: '0.85rem', color: '#4ADE80', margin: 0, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                                         <Shield size={16} />
-                                        حالة الترشيح: مؤهل جداً
+                                        {t('nominationStatusLabel')}
                                     </p>
                                 </div>
                             </div>
@@ -831,9 +831,9 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                         </div>
                                     </div>
 
-                                    <h3 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>جاهز لاتخاذ القرار؟</h3>
+                                    <h3 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>{t('hiringDecisionTitle')}</h3>
                                     <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                                        بناءً على مجريات المقابلة، يبدو أن {template?.title} يمتلك الكفاءة اللازمة للانضمام لفريقك.
+                                        {t('hiringDecisionDesc').replace('{title}', template?.title || '')}
                                     </p>
 
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -854,7 +854,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                                 boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
                                             }}
                                         >
-                                            {isHiring ? (t('loading') || 'جاري التحضير...') : (t('hireAgent') || 'نعم، اعتماد التوظيف 🚀')}
+                                            {isHiring ? 'جاري التجهيز...' : t('hireCandidateBtn')}
                                         </button>
 
                                         <button
@@ -872,7 +872,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                                 cursor: 'pointer'
                                             }}
                                         >
-                                            استكمال المقابلة
+                                            {t('returnToInterview')}
                                         </button>
 
                                         <button

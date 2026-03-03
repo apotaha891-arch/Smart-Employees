@@ -41,6 +41,7 @@ const iconMap = {
 };
 
 const VideoPresentation = ({ industry, language }) => {
+    const { t } = useLanguage();
     const [isPlaying, setIsPlaying] = useState(false);
 
     // Default placeholder video ID. You should replace this with your actual YouTube video ID.
@@ -52,10 +53,10 @@ const VideoPresentation = ({ industry, language }) => {
         <section className="container" style={{ paddingTop: '2rem', paddingBottom: '6rem' }}>
             <div className="page-header text-center" style={{ marginBottom: '3.5rem' }}>
                 <h2 style={{ marginBottom: '0.75rem', fontSize: '2.5rem', fontWeight: 800 }}>
-                    {language === 'ar' ? 'شاهد وكلاء النخبة في العمل' : 'See Elite Agents in Action'}
+                    {t('videoTitle')}
                 </h2>
                 <p style={{ color: 'var(--text-muted)' }}>
-                    {language === 'ar' ? 'تعرف على كيفية تحويل الذكاء الاصطناعي لنجاح أعمالك' : 'Discover how AI transforms your business success'}
+                    {t('videoSubtitle')}
                 </p>
             </div>
 
@@ -135,7 +136,7 @@ const Home = () => {
                 <div style={{ background: 'linear-gradient(90deg, rgba(139,92,246,0.03) 0%, rgba(59,130,246,0.03) 50%, rgba(168,85,247,0.03) 100%)', backdropFilter: 'blur(8px)', padding: '2.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', top: 0, left: '50%', width: '500px', height: '100%', background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(40px)', pointerEvents: 'none' }}></div>
 
-                    <div className="container flex justify-center gap-md align-center" style={{ overflowX: 'auto', padding: '0 1rem', position: 'relative', zIndex: 1 }}>
+                    <div className="container flex justify-center gap-md align-center" style={{ overflowX: 'auto', padding: '0 1rem', position: 'relative', zIndex: 1, direction: language === 'en' ? 'ltr' : 'rtl' }}>
                         <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{t('home.sectorTitle')}</span>
                         {['general', 'medical', 'realestate', 'beauty', 'restaurant', 'fitness'].map(type => (
                             <button
@@ -172,11 +173,12 @@ const Home = () => {
                 gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
                 gap: '4rem',
                 alignItems: 'center',
-                textAlign: 'right'
+                textAlign: language === 'en' ? 'left' : 'right',
+                direction: language === 'en' ? 'ltr' : 'rtl'
             }}>
                 <div className="animate-fade-in">
                     <div style={{ color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '2rem', textTransform: 'uppercase', fontSize: '0.85rem' }}>
-                        {industry === 'general' ? t('home.platformName') : `Elite Solutions for ${industry.charAt(0).toUpperCase() + industry.slice(1)}`}
+                        {industry === 'general' ? t('home.platformName') : t('home.eliteSolutionsFor').replace('{industry}', t(`home.${industry}`))}
                     </div>
                     <h1 style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '2rem', color: 'var(--primary)', lineHeight: '1.15' }}>
                         {content.heroTitle}
@@ -191,7 +193,7 @@ const Home = () => {
                         </Link>
                         {user ? (
                             <Link to="/templates" className="btn btn-secondary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
-                                تصفح الوكلاء
+                                {t('nav.templates')}
                             </Link>
                         ) : (
                             <Link to="/login" className="btn btn-secondary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>

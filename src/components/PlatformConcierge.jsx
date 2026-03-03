@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { sendMessage, initializeChat } from '../services/geminiService';
 import { getPlatformSettings } from '../services/adminService';
+import { useLanguage } from '../LanguageContext';
 
 const PlatformConcierge = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -9,6 +10,7 @@ const PlatformConcierge = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [config, setConfig] = useState(null);
     const messagesEndRef = useRef(null);
+    const { t, language } = useLanguage();
 
     useEffect(() => {
         const loadConfig = async () => {
@@ -16,27 +18,43 @@ const PlatformConcierge = () => {
             setConfig(managerConfig);
 
             if (managerConfig) {
-                const systemPrompt = `
-أنتِ "نورة"، المستشارة الرقمية المتميزة لمنصة Elite Agents.
+                const systemPromptAr = `
+أنتِ "نورة"، المستشارة الرقمية المتميزة لمنصة 24Shift.
 مهمتكِ:
 1. مساعدة العملاء بأسلوب لبق واحترافي يشبه أرقى مكاتب الاستشارات.
 2. توجيههم لاختيار "نخبة الموظفين الرقميين" الأنسب لنمو أعمالهم.
 3. التأكيد على أن هؤلاء الموظفين هم "شركاء نجاح" يعملون بدقة متناهية 24/7.
 4. إذا طلبوا تخصيصاً، وجهيهم بلهجة ودودة لتقديم طلب خاص.
 5. تجنبي المصطلحات التقنية المعقدة، ركزي على "راحة البال" و "النمو المستدام".
+6. الرجاء التحدث باللغة العربية.
 
 معلومات المنصة: ${managerConfig.knowledge}`;
 
-                initializeChat(systemPrompt, 'concierge');
+                const systemPromptEn = `
+You are "Noura", the distinguished digital consultant for 24Shift platform.
+Your mission:
+1. Assist clients in a polite and professional manner akin to top-tier consulting firms.
+2. Guide them to select the most suitable "elite digital employees" for their business growth.
+3. Emphasize that these employees are "success partners" operating with extreme precision 24/7.
+4. If they request customization, guide them warmly to submit a custom request.
+5. Avoid complex technical terms; focus on "peace of mind" and "sustainable growth".
+6. Please speak in English.
+
+Platform Knowledge: ${managerConfig.knowledge}`;
+
+                const initialGreetingAr = `أهلاً بك. أنا نورة، مستشارتكِ في المنصة. كيف يمكنني مساعدتكِ اليوم في تطوير أعمالكِ وتخفيف أعباءكِ الإدارية؟ ✨`;
+                const initialGreetingEn = `Welcome. I am Noura, your platform consultant. How can I assist you today in developing your business and easing your administrative burdens? ✨`;
+
+                initializeChat(language === 'ar' ? systemPromptAr : systemPromptEn, 'concierge');
                 setMessages([{
                     role: 'agent',
-                    content: `أهلاً بك. أنا نورة، مستشارتكِ في منصة النخبة. كيف يمكنني مساعدتكِ اليوم في تطوير أعمالكِ وتخفيف أعباءكِ الإدارية؟ ✨`
+                    content: language === 'ar' ? initialGreetingAr : initialGreetingEn
                 }]);
             }
         };
 
         loadConfig();
-    }, []);
+    }, [language]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -134,8 +152,8 @@ const PlatformConcierge = () => {
                         <img src="/noura_avatar.png" alt="Noura" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div>
-                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'white' }}>نورة</h4>
-                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#10B981', fontWeight: 600 }}>● متصلة للاستشارة</p>
+                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'white' }}>{language === 'ar' ? 'نورة' : 'Noura'}</h4>
+                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#10B981', fontWeight: 600 }}>{t('nouraStatus')}</p>
                     </div>
                 </div>
                 <button
@@ -182,11 +200,12 @@ const PlatformConcierge = () => {
                     <input
                         type="text"
                         className="input-field"
-                        style={{ marginTop: 0, paddingRight: '1rem', background: '#27272A', border: '1px solid rgba(255,255,255,0.1)' }}
-                        placeholder="كيف يمكنني مساعدتك؟"
+                        style={{ marginTop: 0, paddingRight: '1rem', paddingLeft: '1rem', background: '#27272A', border: '1px solid rgba(255,255,255,0.1)', textAlign: language === 'ar' ? 'right' : 'left' }}
+                        placeholder={t('nouraPlaceholder')}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         disabled={isLoading}
+                        dir={language === 'ar' ? 'rtl' : 'ltr'}
                     />
                     <button type="submit" className="btn btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '12px' }} disabled={isLoading}>
                         🚀

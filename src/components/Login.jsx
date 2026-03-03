@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { signIn, signUp, supabase } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
+import { useLanguage } from '../LanguageContext';
 
 // Helper: get role and sector from DB
 const getUserDestination = async (userId) => {
@@ -23,6 +24,7 @@ const Login = () => {
     const [fullName, setFullName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const { t, language } = useLanguage();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -44,7 +46,7 @@ const Login = () => {
     }, [isAuthenticated, authLoading, userRole, navigate, location.state]);
 
     if (authLoading || isAuthenticated) {
-        return <div className="container py-xl text-center" style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>جاري التحويل...</div>;
+        return <div className="container py-xl text-center" style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', direction: language === 'ar' ? 'rtl' : 'ltr' }}>{t('redirecting')}</div>;
     }
 
     const handleSubmit = async (e) => {
@@ -84,13 +86,13 @@ const Login = () => {
             });
             if (error) throw error;
         } catch (error) {
-            setError('فشل تسجيل الدخول عبر Google: ' + error.message);
+            setError(`${t('loginFailGoogle')} ${error.message}`);
             setLoading(false);
         }
     };
 
     return (
-        <div className="container py-xl flex-center" style={{ minHeight: '80vh', maxWidth: '480px' }}>
+        <div className="container py-xl flex-center" style={{ minHeight: '80vh', maxWidth: '480px', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
             <div className="card shadow-premium animate-fade-in" style={{ width: '100%', border: '1px solid var(--accent-border)' }}>
                 <div className="text-center mb-2xl">
                     <div style={{
@@ -105,8 +107,8 @@ const Login = () => {
                         fontSize: '2rem',
                         boxShadow: '0 0 30px var(--accent-soft)'
                     }}>✦</div>
-                    <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>{isSignUp ? 'إنضمام للنخبة' : 'بوابة القيادة'}</h2>
-                    <p style={{ color: 'var(--text-secondary)' }}>أهلاً بك في منصة 24Shift لاستئجار الموظفين الرقميين</p>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>{isSignUp ? t('joinElite') : t('leadershipGate')}</h2>
+                    <p style={{ color: 'var(--text-secondary)' }}>{t('loginWelcome')}</p>
                 </div>
 
                 {error && (
@@ -114,7 +116,7 @@ const Login = () => {
                         {error}
                         {!isSignUp && error.includes('Invalid login credentials') && (
                             <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#9CA3AF' }}>
-                                ملاحظة: إذا أنشأت حساباً للتو، يرجى تفعيل بريدك الإلكتروني أولاً.
+                                {t('activateEmailNote')}
                             </div>
                         )}
                     </div>
@@ -137,19 +139,19 @@ const Login = () => {
                     disabled={loading}
                 >
                     <FcGoogle size={24} />
-                    {isSignUp ? 'أنشئ حسابك عبر Google' : 'تسجيل الدخول عبر Google'}
+                    {isSignUp ? t('createGoogleAct') : t('loginGoogleAct')}
                 </button>
 
                 <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#6B7280', fontSize: '0.9rem' }}>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                    <span style={{ padding: '0 1rem' }}>أو عبر البريد</span>
+                    <span style={{ padding: '0 1rem' }}>{t('orViaEmail')}</span>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     {isSignUp && (
                         <div className="mb-md">
-                            <label className="label">الاسم الكامل</label>
+                            <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('fullName')}</label>
                             <input
                                 type="text"
                                 className="input-field"
@@ -160,7 +162,7 @@ const Login = () => {
                         </div>
                     )}
                     <div className="mb-md">
-                        <label className="label">بريد العمل</label>
+                        <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('workEmail')}</label>
                         <input
                             type="email"
                             className="input-field"
@@ -170,7 +172,7 @@ const Login = () => {
                         />
                     </div>
                     <div className="mb-2xl">
-                        <label className="label">كلمة السر</label>
+                        <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('password')}</label>
                         <input
                             type="password"
                             className="input-field"
@@ -186,7 +188,7 @@ const Login = () => {
                         disabled={loading}
                         style={{ padding: '1rem' }}
                     >
-                        {loading ? 'جاري التحقق...' : (isSignUp ? 'أنشئ حسابك المؤسسي' : 'دخول للمركز ←')}
+                        {loading ? t('verifying') : (isSignUp ? t('createCorpAct') : t('enterCenter'))}
                     </button>
                 </form>
 
@@ -196,7 +198,7 @@ const Login = () => {
                         onClick={() => setIsSignUp(!isSignUp)}
                         style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem' }}
                     >
-                        {isSignUp ? 'لديك حساب؟ سجل دخولك' : 'حساب جديد؟ انضم الآن'}
+                        {isSignUp ? t('haveAccountLogin') : t('newAccountJoin')}
                     </button>
                 </div>
             </div>

@@ -114,13 +114,13 @@ const AgentManagement = () => {
                         const webhookData = await setWebhookRes.json();
                         if (!webhookData.ok) {
                             console.error('Failed to set webhook:', webhookData.description);
-                            alert(`فشل في تفعيل البوت على تيليجرام: ${webhookData.description}`);
+                            alert(`${t('telegramLinkingError')} ${webhookData.description}`);
                         } else {
-                            alert('تم ربط بوت التيليجرام بنجاح!');
+                            alert(t('telegramLinkedSuccess'));
                         }
                     } catch (err) {
                         console.error('Error calling Telegram API:', err);
-                        alert('حدث خطأ أثناء الاتصال بشبكة تيليجرام.');
+                        alert(t('telegramApiError'));
                     }
                 }
 
@@ -130,7 +130,7 @@ const AgentManagement = () => {
                 ));
                 setShowTelegramModal(false);
             } else {
-                alert('حدث خطأ أثناء حفظ التوكن في قاعدة البيانات.');
+                alert(t('telegramDbError'));
             }
         } catch (error) {
             console.error('Error saving telegram token:', error);
@@ -150,9 +150,9 @@ const AgentManagement = () => {
                     a.id === editingWhatsAppAgent.id ? { ...a, whatsapp_settings: whatsappSettings } : a
                 ));
                 setShowWhatsAppModal(false);
-                alert('تم حفظ إعدادات واتساب بنجاح. يرجى إعداد الويب هوك في منصة مطوري ميتا باستخدام التحقق (Verify Token) الذي أدخلته.');
+                alert(t('whatsappSaveSuccess'));
             } else {
-                alert('حدث خطأ أثناء حفظ الإعدادات في قاعدة البيانات.');
+                alert(t('whatsappSaveError'));
             }
         } catch (error) {
             console.error('Error saving whatsapp settings:', error);
@@ -179,7 +179,7 @@ const AgentManagement = () => {
                 padding: '2rem'
             }}>
                 <h3 style={{ margin: '0 0 2rem 0', fontWeight: 900, fontSize: '1.25rem' }}>
-                    Digital Employee Hiring Journey
+                    {t('digitalEmployeeJourney')}
                 </h3>
                 <AgentLifecycle />
             </div>
@@ -205,7 +205,7 @@ const AgentManagement = () => {
                     onMouseEnter={(e) => e.target.style.opacity = '0.9'}
                     onMouseLeave={(e) => e.target.style.opacity = '1'}
                 >
-                    <Plus size={18} /> استقطاب موظف جديد
+                    <Plus size={18} /> {t('hireNewEmployeeAlert')}
                 </button>
             </div>
 
@@ -222,7 +222,7 @@ const AgentManagement = () => {
                 }}>
                     {templates.length === 0 ? (
                         <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem' }}>
-                            <p style={{ color: 'var(--text-secondary)' }}>لا توجد قوالب متاحة</p>
+                            <p style={{ color: 'var(--text-secondary)' }}>{t('noTemplatesAvailable')}</p>
                         </div>
                     ) : (
                         templates.map(template => (
@@ -282,7 +282,7 @@ const AgentManagement = () => {
                             No digital employees hired yet
                         </h3>
                         <p style={{ margin: 0, color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                            Start by clicking "Hire New Employee" to select a template and begin the hiring journey
+                            {t('startHiringDesc')}
                         </p>
                     </div>
                 ) : (
@@ -343,7 +343,7 @@ const AgentManagement = () => {
 
                             {/* Agent Type */}
                             <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                {agent.templateName || 'موظف قياسي'}
+                                {agent.templateName || t('standardEmployee')}
                             </p>
 
                             {/* Stats */}
@@ -358,7 +358,7 @@ const AgentManagement = () => {
                             }}>
                                 <div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                                        المهام
+                                        {t('tasksLabel')}
                                     </div>
                                     <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent)' }}>
                                         {agent.taskCount || 0}
@@ -366,7 +366,7 @@ const AgentManagement = () => {
                                 </div>
                                 <div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                                        الكفاءة
+                                        {t('efficiencyLabel')}
                                     </div>
                                     <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#10B981' }}>
                                         {agent.efficiency || 99}%
@@ -403,7 +403,7 @@ const AgentManagement = () => {
                                     }}
                                 >
                                     {agent.status === 'active' ? <Pause size={14} /> : <Play size={14} />}
-                                    {agent.status === 'active' ? 'إيقاف' : 'تشغيل'}
+                                    {agent.status === 'active' ? t('stopAction') : t('startAction')}
                                 </button>
                                 <button
                                     onClick={(e) => {
@@ -428,7 +428,7 @@ const AgentManagement = () => {
                                         gap: '0.25rem',
                                     }}
                                 >
-                                    <Send size={14} /> ربط التيليجرام
+                                    <Send size={14} /> {t('linkTelegramAction')}
                                 </button>
                                 {isAdmin && (
                                     <button
@@ -454,7 +454,7 @@ const AgentManagement = () => {
                                             gap: '0.25rem',
                                         }}
                                     >
-                                        <MessageCircle size={14} /> ربط الواتساب
+                                        <MessageCircle size={14} /> {t('linkWhatsAppAction')}
                                     </button>
                                 )}
                                 <button
@@ -478,7 +478,7 @@ const AgentManagement = () => {
                                         gap: '0.25rem',
                                     }}
                                 >
-                                    <Trash2 size={14} /> حذف
+                                    <Trash2 size={14} /> {t('deleteAction')}
                                 </button>
                             </div>
                         </div>
@@ -502,18 +502,20 @@ const AgentManagement = () => {
                         padding: '2rem', borderRadius: '16px'
                     }}>
                         <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
-                            ربط بوت تيليجرام
+                            {t('telegramModalTitle')}
                         </h3>
                         <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                            أدخل <b>Bot Token</b> الخاص بهذا الموظف (يمكنك الحصول عليه من <b>@BotFather</b> في تيليجرام). وسيتم ربطه وتفعيله فوراً للحديث نيابة عن ({editingTelegramAgent.name}).
+                            {t('telegramModalDesc').split('{name}')[0]}
+                            {editingTelegramAgent.name}
+                            {t('telegramModalDesc').split('{name}')[1]}
                         </p>
 
                         <div style={{ marginBottom: '1.5rem' }}>
-                            <label className="label">Telegram Bot Token</label>
+                            <label className="label">{t('telegramBotTokenLabel')}</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="مثال: 1234567890:ABCdefGhIJKlmNoPQRsTuvwxyZ..."
+                                placeholder={t('telegramPlaceholder')}
                                 value={telegramToken}
                                 onChange={(e) => setTelegramToken(e.target.value)}
                                 style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
@@ -531,7 +533,7 @@ const AgentManagement = () => {
                                     padding: '0.75rem 1.5rem',
                                 }}
                             >
-                                إلغاء
+                                {t('cancelBtn')}
                             </button>
                             <button
                                 onClick={handleSaveTelegramToken}
@@ -547,7 +549,7 @@ const AgentManagement = () => {
                                     gap: '0.5rem'
                                 }}
                             >
-                                {isSavingToken ? 'جاري الربط...' : <><Send size={18} /> حفظ وتفعيل الربط</>}
+                                {isSavingToken ? t('savingBtn') : <><Send size={18} /> {t('saveAndActivateTelegram')}</>}
                             </button>
                         </div>
                     </div>
@@ -570,18 +572,18 @@ const AgentManagement = () => {
                         padding: '2rem', borderRadius: '16px'
                     }}>
                         <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
-                            إعداد ربط واتساب (للمسؤولين)
+                            {t('whatsappModalTitle')}
                         </h3>
                         <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                            يرجى إدخال تفاصيل تطبيق Meta للواتساب الخاص بهذا العميل السري لربط دالة (`whatsapp-webhook`).
+                            {t('whatsappModalDesc')}
                         </p>
 
                         <div style={{ marginBottom: '1rem' }}>
-                            <label className="label">Access Token (Permanent)</label>
+                            <label className="label">{t('whatsappAccessTokenLabel')}</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="EAAI... (يتم جلبه من حساب مطوري ميتا)"
+                                placeholder={t('whatsappTokenPlaceholder')}
                                 value={whatsappSettings.token}
                                 onChange={(e) => setWhatsappSettings({ ...whatsappSettings, token: e.target.value })}
                                 style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
@@ -589,11 +591,11 @@ const AgentManagement = () => {
                         </div>
 
                         <div style={{ marginBottom: '1rem' }}>
-                            <label className="label">Phone Number ID</label>
+                            <label className="label">{t('whatsappPhoneIdLabel')}</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="مثال: 10453..."
+                                placeholder={t('whatsappPhoneIdPlaceholder')}
                                 value={whatsappSettings.phoneNumberId}
                                 onChange={(e) => setWhatsappSettings({ ...whatsappSettings, phoneNumberId: e.target.value })}
                                 style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
@@ -601,11 +603,11 @@ const AgentManagement = () => {
                         </div>
 
                         <div style={{ marginBottom: '1.5rem' }}>
-                            <label className="label">Webhook Verify Token</label>
+                            <label className="label">{t('whatsappVerifyTokenLabel')}</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="حدد رمز تحقق للويب هوك الخاص بك"
+                                placeholder={t('whatsappVerifyTokenPlaceholder')}
                                 value={whatsappSettings.verifyToken}
                                 onChange={(e) => setWhatsappSettings({ ...whatsappSettings, verifyToken: e.target.value })}
                                 style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
@@ -623,7 +625,7 @@ const AgentManagement = () => {
                                     padding: '0.75rem 1.5rem',
                                 }}
                             >
-                                إلغاء
+                                {t('cancelBtn')}
                             </button>
                             <button
                                 onClick={handleSaveWhatsAppSettings}
@@ -639,7 +641,7 @@ const AgentManagement = () => {
                                     gap: '0.5rem'
                                 }}
                             >
-                                {isSavingWhatsApp ? 'جاري الحفظ...' : <><MessageCircle size={18} /> حفظ إعدادات واتساب</>}
+                                {isSavingWhatsApp ? t('whatsappSavingBtn') : <><MessageCircle size={18} /> {t('saveWhatsappSettings')}</>}
                             </button>
                         </div>
                     </div>
