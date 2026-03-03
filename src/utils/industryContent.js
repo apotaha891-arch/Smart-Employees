@@ -1,4 +1,4 @@
-const industryData = {
+export const industryData = {
     ar: {
         general: {
             id: 'general',
@@ -9,11 +9,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "تحسين تجربة العميل",
-                    desc: "وكلاء الاستقبال الرقمي يقللون وقت الانتظار بنسبة 80% ويزيدون من رضا العملاء."
+                    desc: "وكلاء الاستقبال الرقمي يقللون وقت الانتظار بنسبة 80% ويزيدون من رضا العملاء.",
+                    iconName: "Smile",
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "التوسع السريع",
-                    desc: "أضف كفاءات جديدة في دقائق بدلاً من شهور البحث والتدريب التقليدي."
+                    desc: "أضف كفاءات جديدة في دقائق بدلاً من شهور البحث والتدريب التقليدي.",
+                    iconName: "TrendingUp",
+                    animationPath: "/animations/growth.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "دقة استجابة واحترافية",
+                    subLabel: "محاكاة تامة للرد البشري في فهم طلبات عملائك وتلبيتها",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "تغطية مهنية لا تتوقف",
+                    subLabel: "رد فوري على الاستفسارات خارج أوقات العمل الرسمية",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "سرعة استجابة فائقة",
+                    subLabel: "تحليل والرد على استفسار العميل في أقل من ثانية",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -26,11 +50,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "تنسيق المواعيد الطبية",
-                    desc: "تجنب تضارب المواعيد وضمن امتلاء جدول الطبيب عبر نظام حجز ذكي وودود."
+                    desc: "تجنب تضارب المواعيد وضمن امتلاء جدول الطبيب عبر نظام حجز ذكي وودود.",
+                    iconName: "CalendarCheck",
+                    animationPath: "/animations/medical-calendar.json"
                 },
                 {
                     title: "متابعة ما بعد العلاج",
-                    desc: "آلية تلقائية للاطمئنان على المرضى وتذكيرهم بمواعيد المتابعة القادمة."
+                    desc: "آلية تلقائية للاطمئنان على المرضى وتذكيرهم بمواعيد المتابعة القادمة.",
+                    iconName: "HeartPulse",
+                    animationPath: "/animations/medical-heart.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "دقة في التشخيص المبدئي للطلبات",
+                    subLabel: "توجيه المريض للعيادة المناسبة بناءً على الأعراض المدخلة",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "رعاية لا تنام",
+                    subLabel: "حجز مواعيد واستقبال حالات الطوارئ في أي وقت",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "استجابة فورية",
+                    subLabel: "طمأنة المريض والرد على استفساراته الطبية العامة بلحظتها",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -43,11 +91,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "عرض الفلل والشقق",
-                    desc: "تقديم تفاصيل المساحات والأسعار والمواقع لعملائك بمجرد طلبهم، وبأسلوب لبق."
+                    desc: "تقديم تفاصيل المساحات والأسعار والمواقع لعملائك بمجرد طلبهم، وبأسلوب لبق.",
+                    iconName: "Building2",
+                    animationPath: "/animations/realestate-building.json"
                 },
                 {
                     title: "تصنيف المشترين الجادين",
-                    desc: "يقوم الوكيل بتحديد ميزانية العميل واحتياجاته قبل تحويله لموظف المبيعات البشري."
+                    desc: "يقوم الوكيل بتحديد ميزانية العميل واحتياجاته قبل تحويله لموظف المبيعات البشري.",
+                    iconName: "UserCheck",
+                    animationPath: "/animations/realestate-client.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "مطابقة دقيقة للعقارات",
+                    subLabel: "عرض العقار الأنسب بناءً على ميزانية العميل واهتماماته",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "جاهزية دائمة للجولات",
+                    subLabel: "تنسيق مواعيد المعاينة واستقبال طلبات الشراء على مدار الساعة",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "سرعة في اقتناص الفرص",
+                    subLabel: "الرد الفوري على الاستفسارات وإرسال عروض الأسعار والمخططات",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -60,11 +132,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "إدارة حجوزات الخدمات",
-                    desc: "تنسيق دقيق بين خدمات الشعر، المكياج، والسبا لمنع أي انتظار مزعج للعميلات."
+                    desc: "تنسيق دقيق بين خدمات الشعر، المكياج، والسبا لمنع أي انتظار مزعج للعميلات.",
+                    iconName: "Scissors",
+                    animationPath: "/animations/beauty-scissors.json"
                 },
                 {
                     title: "عروض الدلال والجمال",
-                    desc: "إرسال عروض ترويجية مخصصة للعميلات الأوفياء لزيادة عدد الزيارات الشهرية."
+                    desc: "إرسال عروض ترويجية مخصصة للعميلات الأوفياء لزيادة عدد الزيارات الشهرية.",
+                    iconName: "Sparkles",
+                    animationPath: "/animations/beauty-sparkles.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "تنظيم مثالي للمواعيد",
+                    subLabel: "منع تكدس العميلات في أوقات الذروة والمواسم",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "استقبال لا يهدأ",
+                    subLabel: "استقبال طلبات الحجز واختيار الخبيرات وتأكيد العربون في أي وقت",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "رد يفيض بالرقة",
+                    subLabel: "الإجابة على أسعار الكولاجين والصبغات بأسلوب لبق وفوري",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -77,11 +173,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "تنظيم الطاولات والانتظار",
-                    desc: "توزيع ذكي للضيوف على الطاولات المتاحة وتقليل الضغط على طاقم الخدمة الأرضي."
+                    desc: "توزيع ذكي للضيوف على الطاولات المتاحة وتقليل الضغط على طاقم الخدمة الأرضي.",
+                    iconName: "Utensils",
+                    animationPath: "/animations/restaurant-table.json"
                 },
                 {
                     title: "تأكيد الطلبات المسبقة",
-                    desc: "إمكانية تنسيق طلبات المناسبات الخاصة وتأكيد الحجوزات الكبيرة تلقائياً."
+                    desc: "إمكانية تنسيق طلبات المناسبات الخاصة وتأكيد الحجوزات الكبيرة تلقائياً.",
+                    iconName: "Clock",
+                    animationPath: "/animations/restaurant-clock.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "دقة في تسجيل الطلبات",
+                    subLabel: "حفظ تفضيلات الضيوف من الحساسيات ومواقع الطاولات المفضلة",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "جاهزية للحفلات",
+                    subLabel: "حجز القاعات وتنسيق المنيو للمناسبات الخاصة طوال اليوم",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "استجابة تفتح الشهية",
+                    subLabel: "إرسال المنيو وحجز الطاولة المطلوبة في غضون ثوانٍ",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -94,11 +214,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "جدولة حصص التدريب",
-                    desc: "نظام سلس لحجز حصص اليوغا، الكروسفيت، أو التدريب الشخصي دون تدخل يدوي."
+                    desc: "نظام سلس لحجز حصص اليوغا، الكروسفيت، أو التدريب الشخصي دون تدخل يدوي.",
+                    iconName: "Dumbbell",
+                    animationPath: "/animations/fitness-dumbbell.json"
                 },
                 {
                     title: "تحفيز المشتركين",
-                    desc: "إرسال رسائل تشجيعية وتذكير بالمواعيد لضمان استمرارية تجديد الاشتراكات."
+                    desc: "إرسال رسائل تشجيعية وتذكير بالمواعيد لضمان استمرارية تجديد الاشتراكات.",
+                    iconName: "Trophy",
+                    animationPath: "/animations/fitness-trophy.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "متابعة دقيقة للأهداف",
+                    subLabel: "تذكير ببرامج التغذية وحصص التدريب للمشتركين للوصول للهدف",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "طاقة مستمرة",
+                    subLabel: "بيع الاشتراكات المتنوعة وتجديدها في أي وقت دون موظف مبيعات",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "تفاعل رياضي سريع",
+                    subLabel: "توضيح مميزات الكلاسات وأوقاتها بلحظة للراغبين بالانضمام",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         }
@@ -113,11 +257,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "Improve Customer Experience",
-                    desc: "Digital reception agents reduce wait times by 80% and increase customer satisfaction significantly."
+                    desc: "Digital reception agents reduce wait times by 80% and increase customer satisfaction significantly.",
+                    iconName: "Smile",
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "Rapid Expansion",
-                    desc: "Add new capabilities in minutes instead of months of traditional recruitment and training."
+                    desc: "Add new capabilities in minutes instead of months of traditional recruitment and training.",
+                    iconName: "TrendingUp",
+                    animationPath: "/animations/growth.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "Professional Accuracy",
+                    subLabel: "Perfectly mirrors human intelligence in understanding and fulfilling client needs.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Non-stop Coverage",
+                    subLabel: "Immediate responses to inquiries outside of official working hours.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Lightning-Fast Responses",
+                    subLabel: "Analyze and reply to complex customer inquiries in less than a second.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -130,11 +298,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "Medical Appointment Scheduling",
-                    desc: "Avoid scheduling conflicts and ensure your doctor's schedule is fully booked with an intelligent and friendly booking system."
+                    desc: "Avoid scheduling conflicts and ensure your doctor's schedule is fully booked with an intelligent and friendly booking system.",
+                    iconName: "CalendarCheck",
+                    animationPath: "/animations/medical-calendar.json"
                 },
                 {
                     title: "Post-Treatment Follow-up",
-                    desc: "Automated system to check on patients and remind them of upcoming follow-up appointments."
+                    desc: "Automated system to check on patients and remind them of upcoming follow-up appointments.",
+                    iconName: "HeartPulse",
+                    animationPath: "/animations/medical-heart.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "Initial Diagnosis Accuracy",
+                    subLabel: "Directing the patient to the right clinic based on inputted symptoms.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Sleepless Care",
+                    subLabel: "Booking appointments and receiving emergency cases at any time.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Immediate Reassurance",
+                    subLabel: "Comforting the patient and answering their general medical inquiries instantly.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -147,11 +339,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "Property Showcase",
-                    desc: "Present property details, prices, and locations to clients on demand in a professional manner."
+                    desc: "Present property details, prices, and locations to clients on demand in a professional manner.",
+                    iconName: "Building2",
+                    animationPath: "/animations/realestate-building.json"
                 },
                 {
                     title: "Identify Serious Buyers",
-                    desc: "The agent identifies buyer budgets and needs before transferring to your human sales team."
+                    desc: "The agent identifies buyer budgets and needs before transferring to your human sales team.",
+                    iconName: "UserCheck",
+                    animationPath: "/animations/realestate-client.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "Accurate Property Matching",
+                    subLabel: "Showing the most suitable property based on the client's budget and interests.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Always Ready for Tours",
+                    subLabel: "Coordinating viewing appointments and receiving purchase requests around the clock.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Fast Opportunity Grabbing",
+                    subLabel: "Immediate response to inquiries, sending quotes and floor plans.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -164,11 +380,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "Service Booking Management",
-                    desc: "Seamless coordination between hair, makeup, and spa services to prevent client wait times."
+                    desc: "Seamless coordination between hair, makeup, and spa services to prevent client wait times.",
+                    iconName: "Scissors",
+                    animationPath: "/animations/beauty-scissors.json"
                 },
                 {
                     title: "Beauty Promotions",
-                    desc: "Send personalized promotional offers to loyal clients to increase monthly visits."
+                    desc: "Send personalized promotional offers to loyal clients to increase monthly visits.",
+                    iconName: "Sparkles",
+                    animationPath: "/animations/beauty-sparkles.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "Perfect Appointment Organization",
+                    subLabel: "Preventing client overlap during peak times and seasons.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Restless Reception",
+                    subLabel: "Receiving booking requests, selecting experts, and confirming deposits anytime.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Responses Full of Elegance",
+                    subLabel: "Answering inquiries about collagen and dye prices in a polite, instant manner.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -181,11 +421,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "Table & Waitlist Management",
-                    desc: "Smart distribution of guests across available tables while reducing pressure on your service team."
+                    desc: "Smart distribution of guests across available tables while reducing pressure on your service team.",
+                    iconName: "Utensils",
+                    animationPath: "/animations/restaurant-table.json"
                 },
                 {
                     title: "Pre-Order Confirmations",
-                    desc: "Coordinate special event orders and automatically confirm large reservations."
+                    desc: "Coordinate special event orders and automatically confirm large reservations.",
+                    iconName: "Clock",
+                    animationPath: "/animations/restaurant-clock.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "Accuracy in Order Taking",
+                    subLabel: "Saving guest preferences, allergies, and favorite seating locations.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Ready for Parties",
+                    subLabel: "Booking halls and coordinating menus for special events all day.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Appetizing Responses",
+                    subLabel: "Sending the menu and booking the requested table within seconds.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         },
@@ -198,11 +462,35 @@ const industryData = {
             recommendations: [
                 {
                     title: "Training Session Scheduling",
-                    desc: "Seamless system to book yoga, CrossFit, or personal training sessions without manual intervention."
+                    desc: "Seamless system to book yoga, CrossFit, or personal training sessions without manual intervention.",
+                    iconName: "Dumbbell",
+                    animationPath: "/animations/fitness-dumbbell.json"
                 },
                 {
                     title: "Member Motivation",
-                    desc: "Send motivational messages and appointment reminders to ensure continuous membership renewals."
+                    desc: "Send motivational messages and appointment reminders to ensure continuous membership renewals.",
+                    iconName: "Trophy",
+                    animationPath: "/animations/fitness-trophy.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "99%",
+                    label: "Precise Goal Tracking",
+                    subLabel: "Reminding members of their nutrition plans and workout sessions to reach their goals.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Continuous Energy",
+                    subLabel: "Selling and renewing various memberships at any time without a sales rep.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Quick Athletic Interaction",
+                    subLabel: "Explaining class features and timings instantly to potential members.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
         }

@@ -1,8 +1,101 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { getCurrentUser, getProfile } from '../services/supabaseService';
 import { getIndustryContent } from '../utils/industryContent';
+import { Stethoscope, CalendarCheck, ShieldCheck, HeartPulse, Sparkles, Building2, UserCheck, Scissors, Utensils, Clock, Dumbbell, Trophy, CheckCircle2, Zap, Target, Star, Smile, TrendingUp, Users } from 'lucide-react';
+import Lottie from 'lottie-react';
+
+const AnimatedIcon = ({ animationPath, FallbackIcon, size, color }) => {
+    const [animationData, setAnimationData] = useState(null);
+    const [hasError, setHasError] = useState(false);
+
+    useEffect(() => {
+        if (!animationPath) {
+            setHasError(true);
+            return;
+        }
+
+        fetch(animationPath)
+            .then(res => {
+                if (!res.ok) throw new Error('Not found');
+                return res.json();
+            })
+            .then(data => setAnimationData(data))
+            .catch(() => setHasError(true));
+    }, [animationPath]);
+
+    if (hasError || !animationData) {
+        return <FallbackIcon size={size} color={color} strokeWidth={2} />;
+    }
+
+    return (
+        <div style={{ width: size * 1.5, height: size * 1.5, filter: 'drop-shadow(0 0 10px rgba(139, 92, 246, 0.4))' }}>
+            <Lottie animationData={animationData} loop={true} />
+        </div>
+    );
+};
+
+const iconMap = {
+    Stethoscope, CalendarCheck, ShieldCheck, HeartPulse, Sparkles, Building2, UserCheck, Scissors, Utensils, Clock, Dumbbell, Trophy, CheckCircle2, Zap, Target, Star, Smile, TrendingUp, Users
+};
+
+const VideoPresentation = ({ industry, language }) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    // Default placeholder video ID. You should replace this with your actual YouTube video ID.
+    // E.g., if your link is https://www.youtube.com/watch?v=dQw4w9WgXcQ
+    // The videoId is "dQw4w9WgXcQ"
+    const videoId = "p_VAbyMt0BY";
+
+    return (
+        <section className="container" style={{ paddingTop: '2rem', paddingBottom: '6rem' }}>
+            <div className="page-header text-center" style={{ marginBottom: '3.5rem' }}>
+                <h2 style={{ marginBottom: '0.75rem', fontSize: '2.5rem', fontWeight: 800 }}>
+                    {language === 'ar' ? 'شاهد وكلاء النخبة في العمل' : 'See Elite Agents in Action'}
+                </h2>
+                <p style={{ color: 'var(--text-muted)' }}>
+                    {language === 'ar' ? 'تعرف على كيفية تحويل الذكاء الاصطناعي لنجاح أعمالك' : 'Discover how AI transforms your business success'}
+                </p>
+            </div>
+
+            <div className="video-wrapper animate-fade-in" style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                {!isPlaying ? (
+                    <>
+                        {/* High-quality YouTube thumbnail */}
+                        <img
+                            src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                            alt="Video Thumbnail"
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => {
+                                // Fallback to standard quality if maxresdefault doesn't exist for the uploaded video
+                                e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            }}
+                        />
+                        <div
+                            className="video-overlay"
+                            onClick={() => setIsPlaying(true)}
+                        >
+                            <div className="play-button">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <iframe
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&showinfo=0`}
+                        title="YouTube video player"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                )}
+            </div>
+        </section>
+    );
+};
 
 const Home = () => {
     const { t, language } = useLanguage();
@@ -177,30 +270,32 @@ const Home = () => {
                 </div>
 
                 <div className="grid grid-2 gap-2xl" style={{ marginTop: '2rem' }}>
-                    {content.recommendations.map((rec, i) => (
-                        <div key={i} className="n8n-card animate-fade-in" style={{
-                            animationDelay: `${i * 0.2}s`,
-                            display: 'flex',
-                            gap: '2.5rem',
-                            alignItems: 'center',
-                            minHeight: '140px',
-                            padding: '2.5rem',
-                            boxShadow: 'var(--shadow-glow)',
-                        }}>
-                            <span style={{ fontSize: '2.5rem', background: 'rgba(139,92,246,0.08)', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '15px', flexShrink: 0 }}>{rec.icon}</span>
-                            <div>
-                                <h4 style={{ marginBottom: '0.6rem', fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>{rec.title}</h4>
-                                <p className="text-secondary" style={{ fontSize: '0.95rem', margin: 0, lineHeight: '1.6' }}>{rec.desc}</p>
+                    {content.recommendations.map((rec, i) => {
+                        const IconComponent = iconMap[rec.iconName] || Star;
+                        return (
+                            <div key={i} className="flip-card animate-fade-in" style={{ animationDelay: `${i * 0.2}s` }}>
+                                <div className="flip-card-inner">
+                                    <div className="flip-card-front">
+                                        <span style={{ background: 'rgba(139,92,246,0.08)', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '20px' }}>
+                                            <AnimatedIcon animationPath={rec.animationPath} FallbackIcon={IconComponent} size={42} color="#8B5CF6" />
+                                        </span>
+                                        <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{rec.title}</h4>
+                                    </div>
+                                    <div className="flip-card-back">
+                                        <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '0.5rem' }}>{rec.title}</h4>
+                                        <p className="text-secondary" style={{ fontSize: '0.95rem', margin: 0, lineHeight: '1.7', color: 'rgba(255,255,255,0.85)' }}>{rec.desc}</p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
             </section>
 
             {/* Features Stats */}
             <section style={{
                 paddingTop: '6rem',
-                paddingBottom: '6rem',
+                paddingBottom: '2rem',
                 background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.03) 50%, rgba(168, 85, 247, 0.05) 100%)',
                 borderTop: '1px solid rgba(255,255,255,0.05)',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
@@ -209,22 +304,20 @@ const Home = () => {
             }}>
                 <div style={{ position: 'absolute', top: 0, left: '50%', width: '600px', height: '100%', background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
                 <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-                    <div className="grid grid-3 gap-2xl text-center">
-                        <div style={{ padding: '3rem 2rem', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-                            <h3 style={{ fontSize: '2.75rem', marginBottom: '0.5rem', fontWeight: 900, background: 'linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>99%</h3>
-                            <p style={{ color: 'var(--text-muted)', fontWeight: 700 }}>{industry === 'medical' ? t('home.accuracyDiagnosis') : t('home.accuracyLabel')}</p>
-                        </div>
-                        <div style={{ padding: '3rem 2rem', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-                            <h3 style={{ fontSize: '2.75rem', marginBottom: '0.5rem', fontWeight: 900, background: 'linear-gradient(135deg, #06B6D4 0%, #10B981 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>24/7</h3>
-                            <p style={{ color: 'var(--text-muted)', fontWeight: 700 }}>{t('home.supportLabel')}</p>
-                        </div>
-                        <div style={{ padding: '3rem 2rem', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-                            <h3 style={{ fontSize: '2.75rem', marginBottom: '0.5rem', fontWeight: 900, background: 'linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>0.5s</h3>
-                            <p style={{ color: 'var(--text-muted)', fontWeight: 700 }}>{t('home.speedLabel')}</p>
-                        </div>
+                    <div className="grid gap-lg text-center" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+                        {content.stats && content.stats.map((stat, idx) => (
+                            <div key={idx} className="stat-card">
+                                <h3 style={{ fontSize: '2.5rem', marginBottom: '0.25rem', fontWeight: 900, background: stat.gradient || 'linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{stat.value}</h3>
+                                <p style={{ color: 'var(--text-main)', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.4rem' }}>{stat.label}</p>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', fontWeight: 500, margin: 0 }}>{stat.subLabel}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
+
+            {/* Video Presentation Section */}
+            <VideoPresentation industry={industry} language={language} />
 
             {/* Marketing CTA */}
             <section className="container" style={{ paddingTop: '6rem', paddingBottom: '6rem' }}>

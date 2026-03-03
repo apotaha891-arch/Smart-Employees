@@ -99,22 +99,23 @@ const PlatformConcierge = () => {
                 left: '2.5rem',
                 width: '400px',
                 height: '550px',
-                backgroundColor: 'var(--n8n-surface-card)',
+                backgroundColor: 'rgba(24, 24, 27, 0.95)', // Solid dark background 
+                backdropFilter: 'blur(16px)',
                 borderRadius: '24px',
-                boxShadow: '0 30px 60px rgba(0,0,0,0.12)',
+                boxShadow: '0 30px 60px rgba(0,0,0,0.5)', // Stronger shadow
                 zIndex: 2000,
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                border: '1px solid var(--n8n-border)'
+                border: '1px solid rgba(139, 92, 246, 0.3)' // Subtle purple border
             }}
             className="animate-fade-in"
         >
             {/* Header */}
             <div style={{
                 padding: '1.5rem',
-                backgroundColor: 'var(--n8n-surface-card)',
-                borderBottom: '1px solid var(--n8n-border)',
+                backgroundColor: 'rgba(39, 39, 42, 0.9)', // Slightly lighter header
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center'
@@ -125,7 +126,7 @@ const PlatformConcierge = () => {
                         height: '44px',
                         borderRadius: '50%',
                         overflow: 'hidden',
-                        background: 'var(--n8n-background-dark)',
+                        background: '#18181B',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -133,20 +134,20 @@ const PlatformConcierge = () => {
                         <img src="/noura_avatar.png" alt="Noura" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div>
-                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>نورة</h4>
-                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--success)', fontWeight: 600 }}>● متصلة للاستشارة</p>
+                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'white' }}>نورة</h4>
+                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#10B981', fontWeight: 600 }}>● متصلة للاستشارة</p>
                     </div>
                 </div>
                 <button
                     onClick={() => setIsOpen(false)}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.5rem', cursor: 'pointer' }}
+                    style={{ background: 'none', border: 'none', color: '#A1A1AA', fontSize: '1.5rem', cursor: 'pointer' }}
                 >
                     &times;
                 </button>
             </div>
 
             {/* Chat Body */}
-            <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', background: 'var(--n8n-background-dark)' }}>
+            <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', background: '#09090B' }}>
                 {messages.map((msg, i) => (
                     <div key={i} style={{
                         display: 'flex',
@@ -158,10 +159,10 @@ const PlatformConcierge = () => {
                             padding: '0.75rem 1rem',
                             borderRadius: '16px',
                             fontSize: '0.9rem',
-                            backgroundColor: msg.role === 'user' ? 'var(--n8n-primary)' : 'var(--n8n-surface-card)',
-                            color: msg.role === 'user' ? 'white' : 'var(--n8n-text-main)',
-                            border: msg.role === 'user' ? 'none' : '1px solid var(--n8n-border)',
-                            boxShadow: msg.role === 'user' ? 'none' : 'var(--shadow-sm)'
+                            backgroundColor: msg.role === 'user' ? '#8B5CF6' : '#27272A',
+                            color: msg.role === 'user' ? 'white' : '#E4E4E7',
+                            border: msg.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                            boxShadow: msg.role === 'user' ? '0 4px 12px rgba(139, 92, 246, 0.3)' : '0 2px 8px rgba(0,0,0,0.2)'
                         }}>
                             {msg.content}
                         </div>
@@ -176,18 +177,18 @@ const PlatformConcierge = () => {
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSend} style={{ padding: '1rem', borderTop: '1px solid var(--border-light)' }}>
+            <form onSubmit={handleSend} style={{ padding: '1rem', background: '#18181B', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <input
                         type="text"
                         className="input-field"
-                        style={{ marginTop: 0, paddingRight: '1rem' }}
+                        style={{ marginTop: 0, paddingRight: '1rem', background: '#27272A', border: '1px solid rgba(255,255,255,0.1)' }}
                         placeholder="كيف يمكنني مساعدتك؟"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         disabled={isLoading}
                     />
-                    <button type="submit" className="btn btn-primary" style={{ padding: '0.5rem 1rem' }} disabled={isLoading}>
+                    <button type="submit" className="btn btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '12px' }} disabled={isLoading}>
                         🚀
                     </button>
                 </div>
