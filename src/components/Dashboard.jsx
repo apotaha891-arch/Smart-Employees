@@ -93,7 +93,7 @@ const Dashboard = () => {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Tasks');
 
-        XLSX.writeFile(workbook, `elite-agents-tasks-${Date.now()}.xlsx`);
+        XLSX.writeFile(workbook, `24shift-tasks-${Date.now()}.xlsx`);
     };
 
     const exportToCSV = () => {
@@ -109,7 +109,7 @@ const Dashboard = () => {
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `elite-agents-tasks-${Date.now()}.csv`;
+        link.download = `24shift-tasks-${Date.now()}.csv`;
         link.click();
     };
 

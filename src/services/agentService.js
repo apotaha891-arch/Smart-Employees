@@ -1,4 +1,4 @@
-import { supabase } from './supabaseService';
+import { supabase, getProfile } from './supabaseService';
 
 /**
  * Agent Service - Handles all agent-related operations
@@ -6,13 +6,54 @@ import { supabase } from './supabaseService';
  */
 
 // Get all agent templates
-export const getAgentTemplates = async () => {
+export const getAgentTemplates = async (userId) => {
     try {
-        // TODO: Fetch from database when templates table is created
-        // For now, return hardcoded templates from component
+        let industry = 'general';
+
+        if (userId) {
+            const profileResult = await getProfile(userId);
+            if (profileResult.success && profileResult.data) {
+                const type = profileResult.data.business_type?.toLowerCase() || '';
+                if (type.includes('طب') || type.includes('صحي') || type.includes('clinic') || type === 'medical') industry = 'medical';
+                else if (type.includes('عقار') || type.includes('estate') || type === 'real_estate') industry = 'real_estate';
+                else if (type.includes('تجميل') || type.includes('salon') || type.includes('beauty') || type === 'beauty') industry = 'beauty';
+                else if (type.includes('مطعم') || type.includes('restau') || type === 'restaurant') industry = 'restaurant';
+                else if (type.includes('رياض') || type.includes('gym') || type.includes('club') || type.includes('fit') || type === 'fitness') industry = 'fitness';
+            }
+        }
+
+        const templatesByIndustry = {
+            medical: [
+                { id: 'clinic_receptionist', title: 'موظف استقبال مركزي', specialty: 'حجز ومواعيد', icon: '🩺', description: 'ينظم مواعيد المرضى ويجيب على الاستفسارات الطبية الأساسية.' },
+                { id: 'medical_followup', title: 'مساعد المتابعة', specialty: 'رعاية صحية', icon: '📝', description: 'يتواصل مع المرضى بعد الزيارات للتأكد من التزامهم بالخطة.' }
+            ],
+            real_estate: [
+                { id: 'property_advisor', title: 'مستشار عقاري', specialty: 'مبيعات وتسويق', icon: '🏢', description: 'يعرض العقارات المناسبة ويجيب على أسئلة المشترين المحتملين.' },
+                { id: 'leasing_agent', title: 'وسيط تأجير', specialty: 'تأجير', icon: '🔑', description: 'ينسق جولات المشاهدة ويتابع عقود الإيجار وعمليات التجديد.' }
+            ],
+            beauty: [
+                { id: 'salon_receptionist', title: 'مسؤول حجز الخدمات', specialty: 'استقبال', icon: '💇‍♀️', description: 'يرتب مواعيد الخدمات ويرد على استفسارات الأسعار والباقات.' },
+                { id: 'style_consultant', title: 'مستشار الأناقة', specialty: 'استشارات', icon: '💅', description: 'يقدم نصائح للخدمات المناسبة ويقترح منتجات العناية بالبشرة والشعر.' }
+            ],
+            restaurant: [
+                { id: 'order_taker', title: 'موظف تلقي الطلبات', specialty: 'طلبات وتوصيل', icon: '🍔', description: 'يستقبل طلبات التوصيل والاستلام بسرعة ودقة عالية.' },
+                { id: 'reservation_host', title: 'منسق الحجوزات', specialty: 'حجز طاولات', icon: '🍽️', description: 'يرتب حجوزات الطاولات ويهتم بالطلبات الخاصة للمناسبات.' }
+            ],
+            fitness: [
+                { id: 'gym_advisor', title: 'مستشار اللياقة', specialty: 'عضويات', icon: '💪', description: 'يشرح تفاصيل العضويات وبرامج التدريب المتاحة للمشتركين بأسلوب محفز.' },
+                { id: 'personal_trainer_bot', title: 'مساعد التدريب والتغذية', specialty: 'متابعة رياضية', icon: '🏃‍♂️', description: 'يتابع تقدم المتدربين ويذكرهم بجداول التمارين والأنظمة الغذائية.' }
+            ],
+            general: [
+                { id: 'sales', title: 'موظف مبيعات', specialty: 'مبيعات وتسويق', icon: '🏢', description: 'خبير في إغلاق الصفقات وتحويل العملاء المحتملين.' },
+                { id: 'support', title: 'مستشار الدعم الفني', specialty: 'خدمة عملاء', icon: '🎧', description: 'متواجد 24/7 لحل مشاكل العملاء التقنية بذكاء وخبرة.' },
+                { id: 'hr', title: 'منسق الموارد البشرية', specialty: 'توظيف', icon: '👥', description: 'يحلل السير الذاتية ويرتب المقابلات بكفاءة.' },
+                { id: 'assistant', title: 'مساعد شخصي', specialty: 'تنظيم إداري', icon: '📅', description: 'ينظم جدولك ومواعيدك ورسائلك بكل دقة.' }
+            ]
+        };
+
         return {
             success: true,
-            data: []
+            data: templatesByIndustry[industry] || templatesByIndustry.general
         };
     } catch (error) {
         console.error('Error fetching agent templates:', error);
@@ -39,13 +80,15 @@ export const hireAgent = async (userId, templateId, configuration) => {
             .insert([
                 {
                     user_id: userId,
-                    template_id: templateId,
                     name: configuration.name,
-                    tone: configuration.tone,
-                    working_hours: configuration.workingHours,
+                    specialty: configuration.specialty || templateId,
+                    branding_tone: configuration.tone || 'professional',
                     status: 'active',
                     created_at: new Date().toISOString(),
-                    ...configuration
+                    metadata: {
+                        template_id: templateId,
+                        working_hours: configuration.workingHours
+                    }
                 }
             ])
             .select();

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Store, Users, User, Settings, LogOut,
     Bell, Search, Menu, X, ChevronLeft, CreditCard, Calendar,
-    BarChart3, Lock, Zap, Bot, UserCheck
+    BarChart3, Lock, Zap, Bot, UserCheck, HelpCircle
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -53,11 +53,12 @@ const ModernDashboardLayout = ({ children }) => {
     // Customer Navigation Items
     const customerNavItems = [
         { icon: LayoutDashboard, label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard', path: '/dashboard' },
-        { icon: Bot, label: language === 'ar' ? 'الموظفات' : 'Employees', path: '/employees' },
+        { icon: Bot, label: language === 'ar' ? 'الموظفون' : 'Employees', path: '/agents' },
         { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Bookings', path: '/bookings' },
         { icon: Users, label: language === 'ar' ? 'العملاء' : 'Customers', path: '/customers' },
         { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Setup', path: '/salon-setup' },
         { icon: CreditCard, label: language === 'ar' ? 'الأسعار' : 'Pricing', path: '/pricing' },
+        { icon: HelpCircle, label: language === 'ar' ? 'مركز المساعدة' : 'Help Center', path: '/help' },
     ];
 
     // Admin Navigation Items

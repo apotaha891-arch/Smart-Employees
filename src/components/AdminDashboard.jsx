@@ -64,6 +64,7 @@ export default function AdminDashboard() {
     const [templates, setTemplates] = useState([]);
     const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'beauty', description: '', description_en: '' });
     const [showAddTemplate, setShowAddTemplate] = useState(false);
+    const [aiConfig, setAiConfig] = useState({ knowledge: '', prompt_ar: '', prompt_en: '', max_length: 150 });
 
     // UI
     const [selClient, setSelClient] = useState(null);
@@ -113,12 +114,13 @@ export default function AdminDashboard() {
             setBookings(bk || []);
 
             // Platform settings & Dynamic Configs
-            const [plans, integ, dbSectors, dbRoles, dbApps] = await Promise.all([
+            const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.all([
                 adminService.getPlatformSettings('pricing_plans'),
                 adminService.getPlatformSettings('external_integrations'),
                 adminService.getPlatformSettings('system_sectors'),
                 adminService.getPlatformSettings('system_roles'),
                 adminService.getPlatformSettings('system_agent_apps'),
+                adminService.getPlatformSettings('manager_ai_config'),
             ]);
             setPricing(plans || [{ id: 'starter', name: 'باقة الانطلاق', monthlyPrice: 199, yearlyPrice: 159 }, { id: 'pro', name: 'باقة الاحتراف', monthlyPrice: 399, yearlyPrice: 319 }, { id: 'enterprise', name: 'باقة النخبة', monthlyPrice: 899, yearlyPrice: 719 }]);
             setIntegrations(integ || [{ id: 'n8n', name: 'n8n Webhook', url: '', key: '', status: 'Disconnected' }, { id: 'openai', name: 'OpenAI API', url: '', key: '', status: 'Disconnected' }, { id: 'telegram', name: 'Telegram Platform Bot', url: '', key: '', status: 'Disconnected' }]);
@@ -126,6 +128,7 @@ export default function AdminDashboard() {
             if (dbSectors) setSectors(dbSectors);
             if (dbRoles) setRoles(dbRoles);
             if (dbApps) setAgentAppsConfig(dbApps);
+            if (dbAiConfig) setAiConfig(dbAiConfig);
 
             // Per-client keys (already fetched in keyData at line 83)
             const kmap = {}; (keyData || []).forEach(k => { kmap[k.user_id] = { telegram_token: k.telegram_token || '', whatsapp_number: k.whatsapp_number || '', whatsapp_api_key: k.whatsapp_api_key || '' }; });
@@ -280,6 +283,7 @@ export default function AdminDashboard() {
         const { error } = await supabase.from('salon_configs').update({ telegram_token: k.telegram_token || null, whatsapp_number: k.whatsapp_number || null, whatsapp_api_key: k.whatsapp_api_key || null }).eq('user_id', uid);
         flash(error ? '❌ خطأ في الحفظ' : '✅ تم حفظ مفاتيح العميل');
     };
+    const saveAiConfig = async () => { setSaving(true); await adminService.updatePlatformSettings('manager_ai_config', aiConfig); setSaving(false); flash('✅ تم حفظ إعدادات المستشارة الذكية'); };
     const handleLogout = async () => { await signOut(); navigate('/login'); };
 
     const cl = (uid) => agents.filter(a => a.user_id === uid || a.salon_config_id === clients.find(c => c.id === uid)?.salonConfigId);
@@ -294,6 +298,7 @@ export default function AdminDashboard() {
         { id: 'pricing', i: CreditCard, l: 'الباقات والأسعار' },
         { id: 'infrastructure', i: Globe, l: 'البنية التحتية' },
         { id: 'integrations', i: LinkIcon, l: 'الربط التقني' },
+        { id: 'ai-settings', i: Bot, l: 'المستشارة الذكية' },
     ];
 
     if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />جاري تحميل بيانات المنصة...</div>;
@@ -728,6 +733,36 @@ export default function AdminDashboard() {
                         </div>}
 
                     </div>}
+
+                </div>}
+
+                {/* ── AI SETTINGS ── */}
+                {tab === 'ai-settings' && <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                        <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>المستشارة الذكية</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>إعدادات الذكاء الاصطناعي الخاص بنورة</p></div>
+                        <Btn onClick={saveAiConfig} disabled={saving}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}</Btn>
+                    </div>
+                    <Card c={<div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                        <div>
+                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>1. قاعدة المعرفة (Knowledge Base)</label>
+                            <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>جميع المعلومات التي تستند إليها المستشارة عن منصة 24Shift (الأسعار، الخدمات، الشروط)</p>
+                            <textarea value={aiConfig.knowledge || ''} onChange={e => setAiConfig({ ...aiConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '180px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل بيانات المنصة هنا..." />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>2. التوجيهات الخاصة (System Prompt) - عربي</label>
+                            <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>تعليمات الشخصية وأسلوب التحدث بالعربية</p>
+                            <textarea value={aiConfig.prompt_ar || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_ar: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أنتِ نورة المستشارة..." />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>2. التوجيهات الخاصة (System Prompt) - إنجليزي</label>
+                            <textarea dir="ltr" value={aiConfig.prompt_en || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_en: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="You are Noura..." />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>3. الحد الأقصى لطول الرد (حروف)</label>
+                            <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>لإجبار المستشارة على الردود القصيرة والمباشرة، استخدم قيمة بين 100 و 300</p>
+                            <Input type="number" value={aiConfig.max_length || 150} onChange={e => setAiConfig({ ...aiConfig, max_length: Number(e.target.value) })} />
+                        </div>
+                    </div>} />
                 </div>}
 
             </main>

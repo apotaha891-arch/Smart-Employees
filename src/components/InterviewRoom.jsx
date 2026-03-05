@@ -45,6 +45,7 @@ const InterviewRoom = () => {
         agentType: 'beauty-salon',
         tone: 'friendly'
     });
+    const [profileLoaded, setProfileLoaded] = useState(false);
 
     const [template, setTemplate] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -55,6 +56,33 @@ const InterviewRoom = () => {
 
     const [agent, setAgent] = useState(null);
     const [profile, setProfile] = useState(null);
+
+    // Map of agentType -> which sector(s) it belongs to
+    const agentSectorMap = {
+        'support-agent': ['general', 'medical', 'beauty', 'restaurant', 'fitness', 'realestate'],
+        'sales-lead-gen': ['general', 'realestate', 'fitness'],
+        'dental-receptionist': ['medical'],
+        'medical-clinic': ['medical'],
+        'beauty-salon': ['beauty'],
+        'real-estate-marketing': ['realestate'],
+        'restaurant-reservations': ['restaurant'],
+        'gym-coordinator': ['fitness'],
+    };
+
+    const allAgentOptions = [
+        { value: 'support-agent', labelKey: 'jobSupport' },
+        { value: 'sales-lead-gen', labelKey: 'jobSales' },
+        { value: 'dental-receptionist', labelKey: 'jobDental' },
+        { value: 'medical-clinic', labelKey: 'jobClinic' },
+        { value: 'beauty-salon', labelKey: 'jobSalon' },
+        { value: 'real-estate-marketing', labelKey: 'jobRealEstate' },
+        { value: 'restaurant-reservations', labelKey: 'jobRestaurant' },
+        { value: 'gym-coordinator', labelKey: 'jobGym' },
+    ];
+
+    const filteredAgentOptions = allAgentOptions.filter(
+        opt => (agentSectorMap[opt.value] || []).includes(setupConfig.industry)
+    );
 
     const fetchAndInitializeChat = async (forcedTemplate = null) => {
         // 1. Check for authenticated user profile
@@ -254,6 +282,36 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
         }
     };
 
+    // Load profile once to pre-fill sector
+    useEffect(() => {
+        const preloadProfile = async () => {
+            const { user } = await getCurrentUser();
+            if (user) {
+                const p = await getProfile(user.id);
+                if (p.success && p.data) {
+                    const type = (p.data.business_type || '').toLowerCase();
+                    let industry = 'general';
+                    if (type.includes('طب') || type.includes('صحي') || type.includes('clinic') || type.includes('dental')) industry = 'medical';
+                    else if (type.includes('عقار') || type.includes('estate')) industry = 'realestate';
+                    else if (type.includes('تجميل') || type.includes('salon') || type.includes('beauty')) industry = 'beauty';
+                    else if (type.includes('مطعم') || type.includes('restau')) industry = 'restaurant';
+                    else if (type.includes('رياض') || type.includes('gym') || type.includes('fit')) industry = 'fitness';
+
+                    // find first matching agent for this industry
+                    const sectorAgents = Object.entries(agentSectorMap)
+                        .filter(([, sectors]) => sectors.includes(industry))
+                        .map(([id]) => id);
+                    const defaultAgent = sectorAgents[0] || 'support-agent';
+
+                    setSetupConfig(prev => ({ ...prev, industry, agentType: defaultAgent }));
+                    setProfile(p.data);
+                }
+            }
+            setProfileLoaded(true);
+        };
+        preloadProfile();
+    }, []);
+
     useEffect(() => {
         if (!showSetup) {
             fetchAndInitializeChat();
@@ -264,7 +322,9 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
     }, [t, showSetup]);
 
     useEffect(() => {
-        scrollToBottom();
+        if (messages.length > 1) {
+            scrollToBottom();
+        }
     }, [messages]);
 
     useEffect(() => {
@@ -275,7 +335,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
     }, [messages]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
 
     const handleStartConfiguredInterview = () => {
@@ -402,7 +462,8 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                     state: {
                         redirectTo: '/pricing',
                         businessRules,
-                        template: template || {}
+                        template: template || {},
+                        fromInterview: true
                     }
                 });
                 return;
@@ -453,46 +514,46 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: isArabic ? 'right' : 'left' }}>
+                            {/* Read-only sector badge - no need to re-select */}
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('industryLabel')}</label>
-                                <select
-                                    value={setupConfig.industry}
-                                    onChange={(e) => setSetupConfig({ ...setupConfig, industry: e.target.value })}
-                                    style={{
-                                        width: '100%', padding: '14px 16px', background: '#27272A',
-                                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', outline: 'none',
-                                        fontSize: '1rem'
-                                    }}
-                                >
-                                    <option value="general">{t('indGeneral')}</option>
-                                    <option value="medical">{t('indMedical')}</option>
-                                    <option value="realestate">{t('indRealestate')}</option>
-                                    <option value="beauty">{t('indBeauty')}</option>
-                                    <option value="restaurant">{t('indRestaurant')}</option>
-                                    <option value="fitness">{t('indFitness')}</option>
-                                </select>
+                                <div style={{
+                                    width: '100%', padding: '14px 16px',
+                                    background: 'rgba(139, 92, 246, 0.08)',
+                                    border: '1px solid rgba(139, 92, 246, 0.3)',
+                                    borderRadius: '12px', color: '#C4B5FD',
+                                    fontSize: '1rem', fontWeight: 600,
+                                    display: 'flex', alignItems: 'center', gap: '0.5rem'
+                                }}>
+                                    <span style={{ opacity: 0.6, fontSize: '0.8rem' }}>✏️ تم تحديده مسبقاً</span>
+                                    <span>{
+                                        { general: isArabic ? 'عام' : 'General', medical: isArabic ? 'طبي' : 'Medical', beauty: isArabic ? 'تجميل' : 'Beauty', restaurant: isArabic ? 'مطاعم' : 'Restaurant', fitness: isArabic ? 'رياضة' : 'Fitness', realestate: isArabic ? 'عقارات' : 'Real Estate' }[setupConfig.industry]
+                                    }</span>
+                                </div>
                             </div>
 
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('jobTitleLabel')}</label>
-                                <select
-                                    value={setupConfig.agentType}
-                                    onChange={(e) => setSetupConfig({ ...setupConfig, agentType: e.target.value })}
-                                    style={{
-                                        width: '100%', padding: '14px 16px', background: '#27272A',
-                                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', outline: 'none',
-                                        fontSize: '1rem'
-                                    }}
-                                >
-                                    <option value="support-agent">{t('jobSupport')}</option>
-                                    <option value="sales-lead-gen">{t('jobSales')}</option>
-                                    <option value="dental-receptionist">{t('jobDental')}</option>
-                                    <option value="medical-clinic">{t('jobClinic')}</option>
-                                    <option value="beauty-salon">{t('jobSalon')}</option>
-                                    <option value="real-estate-marketing">{t('jobRealEstate')}</option>
-                                    <option value="restaurant-reservations">{t('jobRestaurant')}</option>
-                                    <option value="gym-coordinator">{t('jobGym')}</option>
-                                </select>
+                                {!profileLoaded ? (
+                                    <div style={{ padding: '14px', color: '#6B7280', fontSize: '0.9rem' }}>⏳ جاري تحميل المرشحين...</div>
+                                ) : (
+                                    <select
+                                        value={setupConfig.agentType}
+                                        onChange={(e) => setSetupConfig({ ...setupConfig, agentType: e.target.value })}
+                                        style={{
+                                            width: '100%', padding: '14px 16px', background: '#27272A',
+                                            border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', outline: 'none',
+                                            fontSize: '1rem'
+                                        }}
+                                    >
+                                        {filteredAgentOptions.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+                                        ))}
+                                        {filteredAgentOptions.length === 0 && (
+                                            <option value="support-agent">{t('jobSupport')}</option>
+                                        )}
+                                    </select>
+                                )}
                             </div>
 
                             <div>

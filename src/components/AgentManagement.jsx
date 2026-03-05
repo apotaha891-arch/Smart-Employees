@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { agentService } from '../services/agentService';
-import AgentLifecycle from './AgentLifecycle';
 import { Plus, Edit2, Pause, Trash2, Play, Send, MessageCircle } from 'lucide-react';
 
 /**
@@ -47,7 +46,7 @@ const AgentManagement = () => {
             if (agentsResult.success) {
                 setAgents(agentsResult.data || []);
             }
-            const templatesResult = await agentService.getAgentTemplates();
+            const templatesResult = await agentService.getAgentTemplates(user.id);
             if (templatesResult.success) {
                 setTemplates(templatesResult.data || []);
             }
@@ -60,17 +59,23 @@ const AgentManagement = () => {
 
     const handleAddAgent = async (templateId) => {
         try {
-            const result = await agentService.hireAgent({
-                templateId,
-                customName: `موظف جديد ${agents.length + 1}`
+            const templateDetails = templates.find(t => t.id === templateId);
+            const result = await agentService.hireAgent(user.id, templateId, {
+                name: `موظف جديد ${agents.length + 1}`,
+                specialty: templateDetails?.specialty || 'General',
+                tone: 'professional'
             });
 
             if (result.success) {
                 setAgents([...agents, result.data]);
                 setShowAddModal(false);
+            } else {
+                console.error("Failed to hire:", result.error);
+                alert("فشل إنشاء الوكيل: " + result.error);
             }
         } catch (error) {
             console.error('Error adding agent:', error);
+            alert("حدث خطأ أثناء الإنشاء");
         }
     };
 
@@ -171,18 +176,6 @@ const AgentManagement = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {/* Agent Lifecycle Workflow */}
-            <div style={{
-                background: 'rgba(139, 92, 246, 0.05)',
-                border: '1px solid rgba(139, 92, 246, 0.2)',
-                borderRadius: '16px',
-                padding: '2rem'
-            }}>
-                <h3 style={{ margin: '0 0 2rem 0', fontWeight: 900, fontSize: '1.25rem' }}>
-                    {t('digitalEmployeeJourney')}
-                </h3>
-                <AgentLifecycle />
-            </div>
 
             {/* Add New Agent Button */}
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
@@ -430,33 +423,31 @@ const AgentManagement = () => {
                                 >
                                     <Send size={14} /> {t('linkTelegramAction')}
                                 </button>
-                                {isAdmin && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setEditingWhatsAppAgent(agent);
-                                            setWhatsappSettings(agent.whatsapp_settings || { token: '', phoneNumberId: '', verifyToken: '' });
-                                            setShowWhatsAppModal(true);
-                                        }}
-                                        style={{
-                                            flex: 2,
-                                            padding: '0.5rem',
-                                            background: 'rgba(34, 197, 94, 0.2)',
-                                            color: '#22C55E',
-                                            border: 'none',
-                                            borderRadius: '6px',
-                                            cursor: 'pointer',
-                                            fontSize: '0.8rem',
-                                            fontWeight: 600,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '0.25rem',
-                                        }}
-                                    >
-                                        <MessageCircle size={14} /> {t('linkWhatsAppAction')}
-                                    </button>
-                                )}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingWhatsAppAgent(agent);
+                                        setWhatsappSettings(agent.whatsapp_settings || { token: '', phoneNumberId: '', verifyToken: '' });
+                                        setShowWhatsAppModal(true);
+                                    }}
+                                    style={{
+                                        flex: 2,
+                                        padding: '0.5rem',
+                                        background: 'rgba(34, 197, 94, 0.2)',
+                                        color: '#22C55E',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.25rem',
+                                    }}
+                                >
+                                    <MessageCircle size={14} /> {t('linkWhatsAppAction')}
+                                </button>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();

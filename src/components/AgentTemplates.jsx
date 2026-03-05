@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 const AgentTemplates = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const navigate = useNavigate();
     const toneSectionRef = useRef(null);
 
@@ -104,7 +104,7 @@ const AgentTemplates = () => {
 
     const handleHireAgent = () => {
         if (!selectedTemplate) {
-            alert('يرجى اختيار نوع الوكيل أولاً');
+            alert(t('templates.alertSelectAgent'));
             return;
         }
 
@@ -118,10 +118,10 @@ const AgentTemplates = () => {
 
     return (
         <div className="ai-aura-container">
-            <div className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '4rem' }}>
+            <div className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '4rem', direction: language === 'en' ? 'ltr' : 'rtl' }}>
                 <div className="page-header text-center" style={{ marginBottom: '4rem' }}>
-                    <h2 style={{ marginBottom: '1rem', fontSize: '2.5rem', fontWeight: 900 }}>استقطاب نخبة الكوادر الوظيفية</h2>
-                    <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>اختر الكفاءة المهنية الأنسب التي تليق بمستوى تطلعات منشأتك</p>
+                    <h2 style={{ marginBottom: '1rem', fontSize: '2.5rem', fontWeight: 900 }}>{t('templates.title')}</h2>
+                    <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>{t('templates.subtitle')}</p>
                 </div>
 
                 {/* Agent Cadres */}
@@ -154,7 +154,7 @@ const AgentTemplates = () => {
                                     fontSize: '1rem'
                                 }}
                             >
-                                <Building size={18} /> العميل المؤسسي
+                                <Building size={18} /> {t('templates.businessClient')}
                             </button>
 
                             <button
@@ -173,7 +173,7 @@ const AgentTemplates = () => {
                                     position: 'relative'
                                 }}
                             >
-                                <Users size={18} /> العميل الفردي
+                                <Users size={18} /> {t('templates.individualClient')}
                                 <div style={{
                                     position: 'absolute',
                                     top: '-10px',
@@ -185,20 +185,20 @@ const AgentTemplates = () => {
                                     borderRadius: '8px',
                                     fontWeight: 900
                                 }}>
-                                    <Lock size={10} style={{ display: 'inline', marginRight: '2px' }} /> قريباً
+                                    <Lock size={10} style={{ display: 'inline', marginRight: '2px' }} /> {t('templates.comingSoon')}
                                 </div>
                             </button>
                         </div>
                     </div>
 
                     <h3 className="mb-xl" style={{ borderBottom: '2px solid #8B5CF6', display: 'inline-block', paddingBottom: '0.5rem', fontSize: '1.25rem' }}>
-                        {industry === 'general' ? 'قاعدة بيانات الكوادر المتاحة' : `الكوادر الموصى بها لقطاعك`}
+                        {industry === 'general' ? t('templates.availableCadres') : t('templates.recommendedCadres')}
                     </h3>
 
                     {loading ? (
                         <div style={{ textAlign: 'center', padding: '4rem', color: '#8B5CF6' }}>
                             <div className="animate-spin" style={{ display: 'inline-block', width: '40px', height: '40px', border: '3px solid', borderTopColor: 'transparent', borderRadius: '50%', marginBottom: '1rem' }}></div>
-                            <p>جاري تحميل الكوادر المتاحة...</p>
+                            <p>{t('templates.loadingCadres')}</p>
                         </div>
                     ) : (
                         <div className="n8n-card-grid">
@@ -236,8 +236,8 @@ const AgentTemplates = () => {
                                             </span>
                                             <span className="verified-badge">●</span>
                                             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
-                                                <span style={{ fontSize: '0.7rem', color: '#A1A1AA' }}>التكلفة:</span>
-                                                <span style={{ fontSize: '0.8rem', color: '#F59E0B', fontWeight: 700 }}>{ui.cost} نقطة</span>
+                                                <span style={{ fontSize: '0.7rem', color: '#A1A1AA' }}>{t('templates.cost')}</span>
+                                                <span style={{ fontSize: '0.8rem', color: '#F59E0B', fontWeight: 700 }}>{ui.cost} {t('templates.points')}</span>
                                             </div>
                                         </div>
 
@@ -255,7 +255,7 @@ const AgentTemplates = () => {
                                                 fontWeight: 900,
                                                 zIndex: 10
                                             }}>
-                                                FEATURED
+                                                {t('templates.featured')}
                                             </div>
                                         )}
                                     </div>
@@ -279,9 +279,9 @@ const AgentTemplates = () => {
                                 fontSize: '0.75rem',
                                 marginBottom: '1.25rem',
                                 border: '1px solid rgba(139, 92, 246, 0.2)'
-                            }}>الخطوة الثانية: تخصيص النبرة</div>
-                            <h3 style={{ fontSize: '1.85rem', marginBottom: '1rem', fontWeight: 900, color: 'white' }}>تحديد الشخصية المهنية</h3>
-                            <p style={{ color: '#A1A1AA', fontSize: '1rem' }}>كيف تفضل أن يتحدث {t.language === 'en' ? (selectedTemplate.name_en || selectedTemplate.name) : selectedTemplate.name} مع عملائك؟</p>
+                            }}>{t('templates.step2')}</div>
+                            <h3 style={{ fontSize: '1.85rem', marginBottom: '1rem', fontWeight: 900, color: 'white' }}>{t('templates.determinePersonality')}</h3>
+                            <p style={{ color: '#A1A1AA', fontSize: '1rem' }}>{t('templates.howToTalk').replace('{name}', t.language === 'en' ? (selectedTemplate.name_en || selectedTemplate.name) : selectedTemplate.name)}</p>
                         </div>
 
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginBottom: '4rem' }}>
@@ -307,7 +307,7 @@ const AgentTemplates = () => {
                                         {tone.icon}
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                        <span style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>{tone.label}</span>
+                                        <span style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>{t(`templates.${tone.id}`)}</span>
                                     </div>
                                     {selectedTone === tone.id && <CheckCircle2 size={18} color="white" />}
                                 </div>
@@ -330,7 +330,7 @@ const AgentTemplates = () => {
                                     transition: 'all 0.3s ease'
                                 }}
                             >
-                                🤝 ابدأ جلسة المقابلة الشخصية
+                                {t('templates.startInterview')}
                             </button>
                         </div>
                     </div>

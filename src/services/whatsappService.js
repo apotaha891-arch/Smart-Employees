@@ -48,5 +48,5 @@ export const sendWhatsAppMessage = async (to, text, integrationSettings) => {
  * Validates the WhatsApp credentials by sending a test message
  */
 export const testWhatsAppConnection = async (to, integrationSettings) => {
-    return await sendWhatsAppMessage(to, "Elite Agents: تم توصيل نظام واتساب بنجاح! ✅", integrationSettings);
+    return await sendWhatsAppMessage(to, "24Shift: تم توصيل نظام واتساب بنجاح! ✅", integrationSettings);
 };

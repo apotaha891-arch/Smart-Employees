@@ -3,7 +3,7 @@ export const industryData = {
         general: {
             id: 'general',
             heroTitle: "وظّف وكلاءك الأذكياء لرفع كفاءة منشأتك",
-            heroDescription: "منصة Elite Agents تمكنك من استقطاب أفضل الكفاءات الرقمية المدربة على أعلى المعايير لخدمة عملائك وزيادة مبيعاتك على مدار الساعة.",
+            heroDescription: "منصة 24Shift تمكنك من استقطاب أفضل الكفاءات الرقمية المدربة على أعلى المعايير لخدمة عملائك وزيادة مبيعاتك على مدار الساعة.",
             img: "https://images.pexels.com/photos/3182811/pexels-photo-3182811.jpeg?auto=compress&cs=tinysrgb&w=800",
             quote: "نحن لا نوفر تقنية، نحن نوفر الوقت والراحة لمدراء المستقبل.",
             recommendations: [
@@ -251,7 +251,7 @@ export const industryData = {
         general: {
             id: 'general',
             heroTitle: "Hire Smart AI Agents to Boost Your Business Efficiency",
-            heroDescription: "Elite Agents platform enables you to recruit top-tier digital talent trained to the highest standards to serve your customers and increase sales around the clock.",
+            heroDescription: "24Shift platform enables you to recruit top-tier digital talent trained to the highest standards to serve your customers and increase sales around the clock.",
             img: "https://images.pexels.com/photos/3182811/pexels-photo-3182811.jpeg?auto=compress&cs=tinysrgb&w=800",
             quote: "We don't provide technology, we provide time and peace of mind for tomorrow's leaders.",
             recommendations: [

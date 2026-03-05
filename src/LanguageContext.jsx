@@ -70,6 +70,7 @@ export const LanguageProvider = ({ children }) => {
         switchLanguage,
         isArabic: language === 'ar',
         isEnglish: language === 'en',
+        logout: language === 'ar' ? 'تسجيل الخروج' : 'Logout',
     };
 
     return (

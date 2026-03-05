@@ -18,7 +18,10 @@ const PlatformConcierge = () => {
             setConfig(managerConfig);
 
             if (managerConfig) {
-                const systemPromptAr = `
+                const maxLengthConstraintAr = managerConfig.max_length ? `\n\nتنبيه هام جداً: يجب أن لا يتجاوز طول ردك ${managerConfig.max_length} حرفاً بأي حال من الأحوال. كوني مختصرة ومباشرة جداً.` : '';
+                const maxLengthConstraintEn = managerConfig.max_length ? `\n\nCRITICAL: Your response MUST NOT exceed ${managerConfig.max_length} characters. Be extremely concise and direct.` : '';
+
+                const systemPromptAr = managerConfig.prompt_ar ? `${managerConfig.prompt_ar}\n\nمعلومات المنصة: ${managerConfig.knowledge}${maxLengthConstraintAr}` : `
 أنتِ "نورة"، المستشارة الرقمية المتميزة لمنصة 24Shift.
 مهمتكِ:
 1. مساعدة العملاء بأسلوب لبق واحترافي يشبه أرقى مكاتب الاستشارات.
@@ -28,9 +31,9 @@ const PlatformConcierge = () => {
 5. تجنبي المصطلحات التقنية المعقدة، ركزي على "راحة البال" و "النمو المستدام".
 6. الرجاء التحدث باللغة العربية.
 
-معلومات المنصة: ${managerConfig.knowledge}`;
+معلومات المنصة: ${managerConfig.knowledge}${maxLengthConstraintAr}`;
 
-                const systemPromptEn = `
+                const systemPromptEn = managerConfig.prompt_en ? `${managerConfig.prompt_en}\n\nPlatform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}` : `
 You are "Noura", the distinguished digital consultant for 24Shift platform.
 Your mission:
 1. Assist clients in a polite and professional manner akin to top-tier consulting firms.
@@ -40,7 +43,7 @@ Your mission:
 5. Avoid complex technical terms; focus on "peace of mind" and "sustainable growth".
 6. Please speak in English.
 
-Platform Knowledge: ${managerConfig.knowledge}`;
+Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
 
                 const initialGreetingAr = `أهلاً بك. أنا نورة، مستشارتكِ في المنصة. كيف يمكنني مساعدتكِ اليوم في تطوير أعمالكِ وتخفيف أعباءكِ الإدارية؟ ✨`;
                 const initialGreetingEn = `Welcome. I am Noura, your platform consultant. How can I assist you today in developing your business and easing your administrative burdens? ✨`;
@@ -59,6 +62,13 @@ Platform Knowledge: ${managerConfig.knowledge}`;
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // Listen for custom event to open the concierge window
+    useEffect(() => {
+        const handleOpenConcierge = () => setIsOpen(true);
+        window.addEventListener('open-concierge', handleOpenConcierge);
+        return () => window.removeEventListener('open-concierge', handleOpenConcierge);
+    }, []);
 
     const handleSend = async (e) => {
         e.preventDefault();

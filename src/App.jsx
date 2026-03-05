@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './LanguageContext';
 import { createAuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/shared/ProtectedRoute';
@@ -23,7 +23,8 @@ import DeployAgent from './components/DeployAgent';
 import Employees from './components/Employees';
 import OnboardingSector from './components/OnboardingSector';
 import ContractSign from './components/ContractSign';
-import { useLocation } from 'react-router-dom';
+import AgentManagement from './components/AgentManagement';
+import HelpCenter from './components/HelpCenter';
 
 // Create AuthProvider
 const AuthProvider = createAuthProvider();
@@ -44,7 +45,7 @@ function App() {
 function AppContent() {
     const location = useLocation();
     // Routes that use the new Dashboard Layout
-    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/employees'];
+    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/help'];
     const isDashboard = dashboardRoutes.includes(location.pathname);
 
     return (
@@ -144,10 +145,20 @@ function AppContent() {
                     }
                 />
                 <Route
-                    path="/employees"
+                    path="/agents"
                     element={
                         <ProtectedRoute requiredRole="customer">
-                            <ModernDashboardLayout><Employees /></ModernDashboardLayout>
+                            <ModernDashboardLayout><AgentManagement /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                {/* Redirect old path to new one */}
+                <Route path="/employees" element={<Navigate to="/agents" replace />} />
+                <Route
+                    path="/help"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><HelpCenter /></ModernDashboardLayout>
                         </ProtectedRoute>
                     }
                 />

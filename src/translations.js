@@ -27,6 +27,7 @@ export const translations = {
             salonSetup: "إعداد المنشأة",
             logout: "تسجيل الخروج"
         },
+        logout: "تسجيل الخروج",
 
         // Authentication
         authentication: {
@@ -36,7 +37,7 @@ export const translations = {
 
         // Home Page Sections
         home: {
-            platformName: "منصة Elite Agents",
+            platformName: "منصة 24Shift",
             sectorTitle: "اختر قطاع عملك",
             general: "عام",
             medical: "طبي",
@@ -47,7 +48,7 @@ export const translations = {
             eliteSolutionsFor: "حلول النخبة لقطاع {industry}",
             startInterview: "قابل موظفك الآن",
             viewDashboard: "لوحة المتابعة",
-            strategicTeam: "فريق Elite Agents الاستراتيجي",
+            strategicTeam: "فريق 24Shift الاستراتيجي",
             insightsTitle: "رؤى مخصصة لنمو القطاع",
             insightsSubtitle: "حلول استراتيجية صُممت خصيصاً لتناسب احتياجات عملائك",
             accuracyLabel: "دقة في فهم متطلبات العملاء",
@@ -62,6 +63,34 @@ export const translations = {
             ctaRestaurant: "لا تفقد زبوناً بسبب انشغال الخط، إدارة احترافية لطاولاتك.",
             ctaFitness: "حوّل ناديك إلى وجهة رقمية متطورة بخدمات استقبال لا تنضب.",
             ctaButton: "تحدث مع مرشحك الأول الآن"
+        },
+
+        // Agent Templates Page
+        templates: {
+            title: "استقطاب نخبة الكوادر الوظيفية",
+            subtitle: "اختر الكفاءة المهنية الأنسب التي تليق بمستوى تطلعات منشأتك",
+            businessClient: "العميل المؤسسي",
+            individualClient: "العميل الفردي",
+            comingSoon: "قريباً",
+            availableCadres: "قاعدة بيانات الكوادر المتاحة",
+            recommendedCadres: "الكوادر الموصى بها لقطاعك",
+            loadingCadres: "جاري تحميل الكوادر المتاحة...",
+            cost: "التكلفة:",
+            points: "نقطة",
+            featured: "موصى به",
+            step2: "الخطوة الثانية: تخصيص النبرة",
+            determinePersonality: "تحديد الشخصية المهنية",
+            howToTalk: "كيف تفضل أن يتحدث {name} مع عملائك؟",
+            friendly: "ودود",
+            friendlyDesc: "محادثات دافئة",
+            professional: "احترافي",
+            professionalDesc: "رسمي ومهني",
+            casual: "غير رسمي",
+            casualDesc: "عفوي وبسيط",
+            enthusiastic: "متحمس",
+            enthusiasticDesc: "مليء بالطاقة",
+            startInterview: "🤝 ابدأ جلسة المقابلة الشخصية",
+            alertSelectAgent: "يرجى اختيار نوع الوكيل أولاً"
         },
 
         // Home Page
@@ -571,7 +600,7 @@ export const translations = {
 
         // Home Page Sections
         home: {
-            platformName: "Elite Agents Platform",
+            platformName: "24Shift Platform",
             sectorTitle: "Choose Your Industry",
             general: "General",
             medical: "Medical",
@@ -582,7 +611,7 @@ export const translations = {
             eliteSolutionsFor: "Elite Solutions for {industry}",
             startInterview: "Start Interview",
             viewDashboard: "View Dashboard",
-            strategicTeam: "Elite Agents Strategic Team",
+            strategicTeam: "24Shift Strategic Team",
             insightsTitle: "Customized Insights for Your Industry Growth",
             insightsSubtitle: "Strategic solutions tailored to meet your customer needs",
             accuracyLabel: "Accuracy in Understanding Customer Requirements",
@@ -597,6 +626,34 @@ export const translations = {
             ctaRestaurant: "Never lose a customer due to a busy line, professional management of your tables.",
             ctaFitness: "Transform your gym into an advanced digital destination with non-stop reception services.",
             ctaButton: "Talk to Your First Candidate Now"
+        },
+
+        // Agent Templates Page
+        templates: {
+            title: "Recruit Elite Cadres",
+            subtitle: "Choose the most suitable professional competence for your business",
+            businessClient: "Corporate Client",
+            individualClient: "Individual Client",
+            comingSoon: "Soon",
+            availableCadres: "Available Cadres Database",
+            recommendedCadres: "Recommended Cadres for Your Sector",
+            loadingCadres: "Loading available cadres...",
+            cost: "Cost:",
+            points: "points",
+            featured: "FEATURED",
+            step2: "Step 2: Customize Tone",
+            determinePersonality: "Determine Professional Personality",
+            howToTalk: "How do you prefer {name} to talk with your clients?",
+            friendly: "Friendly",
+            friendlyDesc: "Warm conversations",
+            professional: "Professional",
+            professionalDesc: "Formal and professional",
+            casual: "Casual",
+            casualDesc: "Spontaneous and simple",
+            enthusiastic: "Enthusiastic",
+            enthusiasticDesc: "Full of energy",
+            startInterview: "🤝 Start Personal Interview Session",
+            alertSelectAgent: "Please select an agent type first"
         },
 
         // Interview Room
@@ -796,7 +853,7 @@ export const translations = {
         awaitingFirstTask: "Awaiting first task",
 
         // Video Presentation
-        videoTitle: "See Elite Agents in Action",
+        videoTitle: "See 24Shift in Action",
         videoSubtitle: "Discover how AI transforms your business success",
 
         // Agent Management
