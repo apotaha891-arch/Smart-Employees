@@ -6,7 +6,7 @@ import {
     User, FileText, Calendar, CheckCircle2, Smartphone,
     MessageCircle, Settings, Upload, Clock, Briefcase, Sparkles,
     CreditCard, Activity, Users, Send, Plus, Edit2, Trash2, Save, X, Puzzle, Star,
-    Link as LinkIcon, Loader, Globe
+    Link as LinkIcon, Loader, Globe, Linkedin, Facebook, Instagram, Mail, HardDrive, BookOpen
 } from 'lucide-react';
 import ServicesTable from './ServicesTable';
 
@@ -800,58 +800,121 @@ const EntitySetup = () => {
                     )}
 
                     {activeTab === 'integrations' && (() => {
-                        // ── Integration cards config ───────────────────────────
                         const CARDS = [
                             {
                                 id: 'website', icon: Globe, color: '#6366F1',
                                 titleAr: 'موقع الويب المباشر', titleEn: 'Website Chatbot',
-                                descAr: 'ربط الموظف الذكي بموقعك لخدمة الزوار مباشرة والمبيعات',
-                                descEn: 'Embed the smart agent on your website for instant visitor service',
+                                descAr: 'ربط الموظف الذكي بموقعك لخدمة الزوار',
+                                descEn: 'Embed the smart agent on your website',
                                 badge: language === 'ar' ? 'مضمّن' : 'Included', badgeColor: '#22C55E',
                                 fields: [
-                                    { key: 'website', labelAr: 'رابط الموقع (دومين)', labelEn: 'Website URL (Domain)', placeholder: 'https://www.yourdomain.com', password: false, hintAr: 'الموقع المستهدف لتفعيل البوت', hintEn: 'Target site to activate the bot', guide: null }
+                                    { key: 'website', labelAr: 'رابط الموقع (دومين)', labelEn: 'Website URL', placeholder: 'https://www.yourdomain.com', password: false, hintAr: 'الموقع المستهدف', hintEn: 'Target site', guide: null }
                                 ]
                             },
                             {
                                 id: 'telegram', icon: Send, color: '#229ED9',
                                 titleAr: 'بوت تيليجرام', titleEn: 'Telegram Bot',
-                                descAr: 'ربط بوت تيليجرام الخاص بك ليستقبل الرسائل ويرد ذكياً',
-                                descEn: 'Connect your Telegram bot to receive & reply smartly',
+                                descAr: 'ربط بوت تيليجرام الخاص بك ليستقبل الرسائل',
+                                descEn: 'Connect your Telegram bot to receive & reply',
                                 badge: language === 'ar' ? 'مضمّن' : 'Included', badgeColor: '#22C55E',
                                 fields: [
-                                    { key: 'telegram_token', labelAr: 'توكن البوت', labelEn: 'Bot Token', placeholder: '123456789:AAF...', password: false, hintAr: 'من @BotFather في تيليجرام', hintEn: 'from @BotFather on Telegram', guide: 'https://core.telegram.org/bots/tutorial' }
+                                    { key: 'telegram_token', labelAr: 'توكن البوت', labelEn: 'Bot Token', placeholder: '123456789:AAF...', password: false, hintAr: 'من @BotFather في تيليجرام', hintEn: 'from @BotFather', guide: 'https://core.telegram.org/bots/tutorial' }
                                 ]
                             },
                             {
                                 id: 'whatsapp', icon: MessageCircle, color: '#25D366',
                                 titleAr: 'واتساب للأعمال', titleEn: 'WhatsApp Business',
-                                descAr: 'ربط حساب واتساب للأعمال للرد التلقائي على العملاء',
-                                descEn: 'Connect WhatsApp Business for automated customer replies',
+                                descAr: 'ربط حساب واتساب للأعمال للرد التلقائي',
+                                descEn: 'Connect WhatsApp for automated replies',
                                 badge: language === 'ar' ? 'إضافة' : 'Add-on', badgeColor: '#F59E0B',
                                 fields: [
                                     { key: 'whatsapp_number', labelAr: 'رقم الهاتف', labelEn: 'Phone Number', placeholder: '+966500000000', password: false, hintAr: 'بصيغة دولية', hintEn: 'international format', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' },
-                                    { key: 'whatsapp_api_key', labelAr: 'مفتاح API', labelEn: 'API Token', placeholder: 'EAAG...', password: true, hintAr: 'من Meta Developer Console', hintEn: 'from Meta Developer Console', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' }
+                                    { key: 'whatsapp_api_key', labelAr: 'مفتاح API', labelEn: 'API Token', placeholder: 'EAAG...', password: true, hintAr: 'من Meta Developer Console', hintEn: 'from Meta', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' }
                                 ]
                             },
                             {
                                 id: 'sheets', icon: FileText, color: '#0F9D58',
                                 titleAr: 'جداول جوجل', titleEn: 'Google Sheets',
-                                descAr: 'تصدير الحجوزات والعملاء تلقائياً إلى جدول جوجل',
-                                descEn: 'Auto-export bookings and customers to Google Sheets',
+                                descAr: 'تصدير الحجوزات والعملاء تلقائياً لجدولك',
+                                descEn: 'Auto-export bookings to Google Sheets',
                                 badge: 'Pro', badgeColor: '#F59E0B',
                                 fields: [
-                                    { key: 'google_sheets_id', labelAr: 'معرّف الجدول', labelEn: 'Spreadsheet ID', placeholder: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms', password: false, hintAr: 'الجزء من رابط الجدول بعد /d/', hintEn: 'part of the sheet URL after /d/', guide: 'https://developers.google.com/sheets/api/guides/concepts' }
+                                    { key: 'google_sheets_id', labelAr: 'معرّف الجدول', labelEn: 'Spreadsheet ID', placeholder: '1BxiMVs0XRA...', password: false, hintAr: 'بعد /d/', hintEn: 'after /d/', guide: 'https://developers.google.com/sheets/api/guides/concepts' }
                                 ]
                             },
                             {
                                 id: 'calendar', icon: Calendar, color: '#DB4437',
                                 titleAr: 'تقويم جوجل', titleEn: 'Google Calendar',
-                                descAr: 'مزامنة حجوزات العملاء مع تقويم جوجل تلقائياً',
-                                descEn: 'Sync customer bookings with Google Calendar automatically',
+                                descAr: 'مزامنة المواعيد مع تقويم جوجل تلقائياً',
+                                descEn: 'Sync with Google Calendar automatically',
                                 badge: 'Pro', badgeColor: '#F59E0B',
                                 fields: [
-                                    { key: 'google_calendar_id', labelAr: 'معرّف التقويم', labelEn: 'Calendar ID', placeholder: 'your-email@gmail.com', password: false, hintAr: 'من إعدادات التقويم', hintEn: 'from Calendar settings', guide: 'https://support.google.com/calendar/answer/37103' }
+                                    { key: 'google_calendar_id', labelAr: 'معرّف التقويم', labelEn: 'Calendar ID', placeholder: 'your-email@gmail.com', password: false, hintAr: 'من الإعدادات', hintEn: 'from settings', guide: 'https://support.google.com/calendar/answer/37103' }
                                 ]
+                            },
+                            // ── NEW INTEGRATIONS ──
+                            {
+                                id: 'linkedin_personal', icon: Linkedin, color: '#0A66C2',
+                                titleAr: 'لينكد إن (حساب شخصي)', titleEn: 'LinkedIn (Personal)',
+                                descAr: 'إنشاء ومشاركة منشورات مع متابعيك.',
+                                descEn: 'Create and share posts with your network.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                            },
+                            {
+                                id: 'linkedin_org', icon: Linkedin, color: '#0A66C2',
+                                titleAr: 'لينكد إن (الصفحات)', titleEn: 'LinkedIn (Organization)',
+                                descAr: 'إدارة حساب شركتك على لينكد إن ونشر المحتوى.',
+                                descEn: 'Create and share posts on your organization\'s behalf.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                            },
+                            {
+                                id: 'facebook', icon: Facebook, color: '#1877F2',
+                                titleAr: 'فيسبوك', titleEn: 'Facebook',
+                                descAr: 'إدارة صفحات الفيسبوك وحسابات إنستغرام والنشر.',
+                                descEn: 'Manage Facebook and Instagram pages, accounts, and posts.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                            },
+                            {
+                                id: 'instagram', icon: Instagram, color: '#E4405F',
+                                titleAr: 'إنستغرام', titleEn: 'Instagram',
+                                descAr: 'إدارة حساب إنستغرام للأعمال أو منشئ المحتوى.',
+                                descEn: 'Manage your Instagram Business or Creator account.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                            },
+                            {
+                                id: 'gmail', icon: Mail, color: '#EA4335',
+                                titleAr: 'جيميل', titleEn: 'Gmail',
+                                descAr: 'اسمح للموظفين بقراءة رسائلك الجيميل والرد عليها.',
+                                descEn: 'Let helpers send emails and read your inbox.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                            },
+                            {
+                                id: 'outlook', icon: Mail, color: '#0078D4',
+                                titleAr: 'آوتلوك', titleEn: 'Outlook',
+                                descAr: 'التعامل التلقائي مع رسائل بريدك على خدمة آوتلوك.',
+                                descEn: 'Handle your Outlook emails.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                            },
+                            {
+                                id: 'drive', icon: HardDrive, color: '#1FA463',
+                                titleAr: 'جوجل درايف', titleEn: 'Google Drive',
+                                descAr: 'إنشاء ومقروئية المستندات والجداول تلقائياً.',
+                                descEn: 'Create and read docs, sheets, and other files.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                            },
+                            {
+                                id: 'notion', icon: BookOpen, color: '#000000',
+                                titleAr: 'نوشن', titleEn: 'Notion',
+                                descAr: 'قراءة وتحديث بيانات مساحة العمل الخاصة بك.',
+                                descEn: 'Read and update your Notion data.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                            },
+                            {
+                                id: 'quickbooks', icon: Briefcase, color: '#2CA01C',
+                                titleAr: 'كويك بوكس', titleEn: 'QuickBooks',
+                                descAr: 'قراءة وتحديث الفواتير والبيانات المحاسبية.',
+                                descEn: 'Read and update your QuickBooks data.',
+                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
                             },
                         ];
 
@@ -860,115 +923,146 @@ const EntitySetup = () => {
                                 {/* Header */}
                                 <div style={{ marginBottom: '1.25rem' }}>
                                     <h3 style={{ margin: '0 0 4px', fontSize: '1.05rem', fontWeight: 700, color: '#E5E7EB' }}>
-                                        {language === 'ar' ? '🔌 مفاتيح الربط' : '🔌 Integration Keys'}
+                                        {language === 'ar' ? '🔌 أدوات الربط والمنصات' : '🔌 Connections & Integrations'}
                                     </h3>
-                                    <p style={{ margin: 0, color: '#6B7280', fontSize: '0.83rem' }}>
+                                    <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.85rem' }}>
                                         {language === 'ar'
-                                            ? 'اضغط على أي أداة لإدخال مفاتيحها وحفظها.'
-                                            : 'Tap any tool to enter and save its credentials.'}
+                                            ? 'قم بتوصيل الموظف الذكي بحساباتك ومنصاتك لتسريع سير العمل.'
+                                            : 'Connect the AI agent with your platforms to accelerate workflows.'}
                                     </p>
                                 </div>
 
-                                {/* Cards */}
-                                {CARDS.map(card => {
-                                    const isOpen = expandedIntegration === card.id;
-                                    const isConnected = card.fields.some(f => !!integrationKeys[f.key]);
-                                    const cardColor = card.color;
+                                {/* Cards Grid */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.25rem' }}>
+                                    {CARDS.map(card => {
+                                        const isOpen = expandedIntegration === card.id;
+                                        const isConnected = card.fields.some(f => !!integrationKeys[f.key]);
+                                        const cardColor = card.color;
 
-                                    return (
-                                        <div key={card.id} style={{
-                                            borderRadius: 14,
-                                            border: `1px solid ${isConnected ? 'rgba(16,185,129,0.3)' : isOpen ? `${cardColor}44` : 'rgba(255,255,255,0.07)'}`,
-                                            background: isOpen ? `${cardColor}06` : 'rgba(255,255,255,0.02)',
-                                            overflow: 'hidden', marginBottom: 10,
-                                            transition: 'all 0.2s'
-                                        }}>
-                                            {/* Header row — click to open */}
-                                            <div
-                                                onClick={() => openIntegration(card.id, card.fields)}
-                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.2rem', cursor: 'pointer', userSelect: 'none' }}
-                                            >
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                                    <div style={{ width: 42, height: 42, borderRadius: 10, background: `${cardColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: cardColor, flexShrink: 0 }}>
-                                                        <card.icon size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                                                            <span style={{ fontWeight: 700, fontSize: '0.93rem', color: '#E5E7EB' }}>
-                                                                {language === 'ar' ? card.titleAr : card.titleEn}
-                                                            </span>
-                                                            <span style={{ fontSize: '0.68rem', background: `${card.badgeColor}22`, color: card.badgeColor, padding: '2px 7px', borderRadius: 99, fontWeight: 600 }}>
-                                                                {card.badge}
-                                                            </span>
-                                                            {isConnected && (
-                                                                <span style={{ fontSize: '0.68rem', background: 'rgba(16,185,129,0.15)', color: '#10B981', padding: '2px 7px', borderRadius: 99, fontWeight: 600 }}>
-                                                                    ✅ {language === 'ar' ? 'مربوط' : 'Connected'}
+                                        return (
+                                            <div key={card.id} style={{
+                                                borderRadius: 20,
+                                                border: `1px solid ${isConnected ? 'rgba(16,185,129,0.3)' : isOpen ? `${cardColor}44` : 'rgba(255,255,255,0.08)'}`,
+                                                background: isOpen ? `${cardColor}06` : '#18181B', // Darker background to match screenshot style
+                                                overflow: 'hidden',
+                                                transition: 'all 0.2s',
+                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                                            }}>
+                                                {/* Main Interface Layout */}
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem' }}>
+
+                                                    {/* Left: Icon & Text */}
+                                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flex: 1 }}>
+                                                        <div style={{ width: 42, height: 42, borderRadius: 12, background: isConnected ? `${cardColor}20` : '#27272A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isConnected ? cardColor : '#3B82F6', flexShrink: 0, border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            {/* If it has native color use it, otherwise use blue */}
+                                                            <card.icon size={22} color={cardColor} />
+                                                        </div>
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#E5E7EB' }}>
+                                                                    {language === 'ar' ? card.titleAr : card.titleEn}
                                                                 </span>
-                                                            )}
+                                                                {isConnected && (
+                                                                    <span style={{ fontSize: '0.65rem', background: 'rgba(16,185,129,0.15)', color: '#10B981', padding: '2px 6px', borderRadius: 99, fontWeight: 700 }}>
+                                                                        ✔ {language === 'ar' ? 'مربوط' : 'Connected'}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div style={{ color: '#9CA3AF', fontSize: '0.8rem', marginTop: 4, lineHeight: 1.4 }}>
+                                                                {language === 'ar' ? card.descAr : card.descEn}
+                                                            </div>
                                                         </div>
-                                                        <div style={{ color: '#6B7280', fontSize: '0.8rem', marginTop: 2 }}>
-                                                            {language === 'ar' ? card.descAr : card.descEn}
-                                                        </div>
+                                                    </div>
+
+                                                    {/* Right: Connect Button */}
+                                                    <div style={{ flexShrink: 0, marginInlineStart: '1rem' }}>
+                                                        {card.fields.length > 0 ? (
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (isOpen) {
+                                                                        setExpandedIntegration(null);
+                                                                    } else {
+                                                                        openIntegration(card.id, card.fields);
+                                                                    }
+                                                                }}
+                                                                style={{
+                                                                    background: isOpen || isConnected ? 'rgba(255,255,255,0.08)' : '#3B82F6',
+                                                                    color: isOpen || isConnected ? '#E5E7EB' : '#FFFFFF',
+                                                                    border: isOpen || isConnected ? '1px solid rgba(255,255,255,0.12)' : 'none',
+                                                                    borderRadius: 99, padding: '7px 20px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', transition: '0.2s'
+                                                                }}>
+                                                                {isOpen ? (language === 'ar' ? 'إغلاق' : 'Close') : (language === 'ar' ? 'إعداد' : 'Connect')}
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => alert(language === 'ar' ? 'هذه الأداة ستتوفر قريباً للربط التلقائي!' : 'OAuth connection is coming soon!')}
+                                                                style={{
+                                                                    background: '#3B82F6',
+                                                                    color: '#FFFFFF',
+                                                                    border: 'none',
+                                                                    borderRadius: 99, padding: '7px 20px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', transition: '0.2s',
+                                                                    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.4)'
+                                                                }}>
+                                                                {language === 'ar' ? 'توصيل' : 'Connect'}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div style={{ color: '#6B7280', fontSize: '1rem', flexShrink: 0 }}>{isOpen ? '▲' : '▼'}</div>
+
+                                                {/* Expanded Form / Setup Fields */}
+                                                {isOpen && card.fields.length > 0 && (
+                                                    <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                                        {card.fields.map(f => (
+                                                            <div key={f.key} style={{ marginTop: 16 }}>
+                                                                <label style={{ display: 'block', color: '#E5E7EB', fontSize: '0.85rem', marginBottom: 8, fontWeight: 500 }}>
+                                                                    {language === 'ar' ? f.labelAr : f.labelEn}
+                                                                    <span style={{ fontWeight: 400, color: '#6B7280', marginInlineStart: 8 }}>
+                                                                        — {language === 'ar' ? f.hintAr : f.hintEn}
+                                                                    </span>
+                                                                </label>
+                                                                <input
+                                                                    type={f.password ? 'password' : 'text'}
+                                                                    value={integrationDraft[f.key] ?? ''}
+                                                                    onChange={e => setIntegrationDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                                                    placeholder={f.placeholder}
+                                                                    style={{
+                                                                        width: '100%', padding: '10px 14px', background: '#27272A', border: '1px solid #3F3F46', borderRadius: 10, color: '#FFFFFF',
+                                                                        fontFamily: 'monospace', fontSize: '0.9rem', letterSpacing: f.password ? '0.1em' : 'normal', outline: 'none'
+                                                                    }}
+                                                                />
+                                                                {f.guide && (
+                                                                    <span
+                                                                        onClick={(e) => { e.stopPropagation(); navigate('/help/integrations'); }}
+                                                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, color: '#60A5FA', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 500 }}>
+                                                                        <LinkIcon size={12} /> {language === 'ar' ? 'كيف أحصل على هذا المفتاح؟' : 'How to get this key?'}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        ))}
+
+                                                        <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                                                            <button
+                                                                onClick={handleSaveIntegration}
+                                                                disabled={integrationSaving}
+                                                                style={{
+                                                                    flex: 1, padding: '12px', borderRadius: 99, border: 'none',
+                                                                    background: `linear-gradient(135deg, ${cardColor}, ${cardColor}bb)`,
+                                                                    color: 'white', fontWeight: 700, cursor: integrationSaving ? 'not-allowed' : 'pointer',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: '0.95rem',
+                                                                    opacity: integrationSaving ? 0.7 : 1, boxShadow: `0 4px 14px ${cardColor}40`
+                                                                }}>
+                                                                {integrationSaving ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
+                                                                {integrationSaving
+                                                                    ? (language === 'ar' ? 'جاري الحفظ...' : 'Saving...')
+                                                                    : (language === 'ar' ? 'حفظ البيانات' : 'Save Connection')}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-
-                                            {/* Expanded form */}
-                                            {isOpen && (
-                                                <div style={{ padding: '0 1.2rem 1.2rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                                    {card.fields.map(f => (
-                                                        <div key={f.key} style={{ marginTop: 14 }}>
-                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 7, fontWeight: 600 }}>
-                                                                {language === 'ar' ? f.labelAr : f.labelEn}
-                                                                <span style={{ fontWeight: 400, color: '#4B5563', marginRight: 6, marginLeft: 6 }}>
-                                                                    — {language === 'ar' ? f.hintAr : f.hintEn}
-                                                                </span>
-                                                            </label>
-                                                            <input
-                                                                type={f.password ? 'password' : 'text'}
-                                                                value={integrationDraft[f.key] ?? ''}
-                                                                onChange={e => setIntegrationDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                                                placeholder={f.placeholder}
-                                                                style={{ ...inp, fontFamily: 'monospace', fontSize: '0.85rem', letterSpacing: f.password ? '0.1em' : 'normal' }}
-                                                            />
-                                                            {f.guide && (
-                                                                <span
-                                                                    onClick={(e) => { e.stopPropagation(); navigate('/help/integrations'); }}
-                                                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 5, color: '#60A5FA', fontSize: '0.77rem', textDecoration: 'none', cursor: 'pointer' }}>
-                                                                    🔗 {language === 'ar' ? 'كيف أحصل على هذا المفتاح؟' : 'How to get this key?'}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    ))}
-
-                                                    <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                                                        <button
-                                                            onClick={handleSaveIntegration}
-                                                            disabled={integrationSaving}
-                                                            style={{
-                                                                flex: 1, padding: '11px', borderRadius: 10, border: 'none',
-                                                                background: `linear-gradient(135deg, ${cardColor}, ${cardColor}bb)`,
-                                                                color: 'white', fontWeight: 700, cursor: integrationSaving ? 'not-allowed' : 'pointer',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: '0.9rem',
-                                                                opacity: integrationSaving ? 0.7 : 1,
-                                                            }}>
-                                                            {integrationSaving ? <Loader size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={15} />}
-                                                            {integrationSaving
-                                                                ? (language === 'ar' ? 'جاري الحفظ...' : 'Saving...')
-                                                                : (language === 'ar' ? 'حفظ المفاتيح' : 'Save Keys')}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => { setExpandedIntegration(null); setIntegrationDraft({}); }}
-                                                            style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#9CA3AF', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>
-                                                            {language === 'ar' ? 'إلغاء' : 'Cancel'}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
                         );
                     })()}
