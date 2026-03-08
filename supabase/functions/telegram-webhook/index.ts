@@ -97,19 +97,7 @@ serve(async (req) => {
             await supabase.from('profiles').update({ message_limit: owner.message_limit - 1 }).eq('id', owner.id);
             // --- END QUOTA LOGIC ---
 
-            // Helper: send Telegram message
-            async function sendTelegram(msg: string) {
-                const apiStr = `https://api.telegram.org/bot${dynamicBotToken}/sendMessage`;
-                try {
-                    await fetch(apiStr, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: chatId, text: msg })
-                    });
-                } catch (e: any) {
-                    console.error("Telegram send error:", e.message);
-                }
-            }
+
 
             // Send "Typing..." indicator
             const typingApiUrl = `https://api.telegram.org/bot${dynamicBotToken}/sendChatAction`;
