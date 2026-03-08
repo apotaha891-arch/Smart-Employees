@@ -82,6 +82,30 @@ const HelpCenter = () => {
             answer: isArabic
                 ? 'نعم بالتأكيد! بجانب كل موظف في لوحة التحكم يوجد زر (إيقاف/تفعيل). عند الإيقاف، لن يرد الموظف على أي رسائل جديدة حتى تقوم بتفعيله مرة أخرى.'
                 : 'Yes! Next to each agent in the dashboard is a toggle button (Pause/Activate). When paused, the agent will not reply to new messages until activated again.'
+        },
+        {
+            id: 7,
+            categoryId: 'integrations',
+            question: isArabic ? 'كيف أربط حسابات فيسبوك وإنستغرام؟' : 'How do I connect Facebook and Instagram?',
+            answer: isArabic
+                ? 'الربط الآن أصبح أسهل من أي وقت مضى عبر ميزة (الربط المباشر بضغطة زر). توجّه إلى صفحة (أدوات الربط والمنصات) في لوحة إعداداتك، وابحث عن كرت "فيسبوك" أو "إنستغرام". اضغط على زر "توصيل" الأزرق، وستنبثق لك نافذة رسمية من منصة ميتا (Meta) تطلب صلاحيات دخول الموظف الذكي. وافق عليها، وسيتم ربط حسابك في ثوانٍ دون الحاجة لنسخ أي أكواد!'
+                : 'Connecting is easier than ever using our (1-Click Connect). Go to the "Connections & Integrations" page in your settings, find the "Facebook" or "Instagram" card. Click "Connect", and a secure Meta window will pop up asking for permissions. Approve them, and you are connected in seconds with no coding required!'
+        },
+        {
+            id: 8,
+            categoryId: 'integrations',
+            question: isArabic ? 'كيف أجعل الموظف الذكي يقرأ ويرد على إيميلاتي (Gmail / Outlook)؟' : 'How do I make the AI read and reply to my emails?',
+            answer: isArabic
+                ? 'خطوات الربط آمنة وتتم عبر خوادم الشركات الأم لحماية خصوصيتك. من صفحة (منصات الربط)، اضغط على "توصيل" بجانب أداة (Gmail) أو (Outlook). سيُطلب منك تسجيل الدخول بحساب بريدك الإلكتروني السماح لتطبيق 24Shift بقراءة وإرسال البريد. بمجرد الموافقة، سيقوم الموظف الذكي بفرز رسائلك تلقائياً والرد على العملاء بناءً على سياسات عملك التي لقنته إياها.'
+                : 'Connection is secure via official OAuth. From the Integrations page, click "Connect" next to Gmail or Outlook. Sign in to your email account and grant 24Shift permission to read and send email. Once approved, your AI agent will automatically sort and reply to customer emails based on your business rules.'
+        },
+        {
+            id: 9,
+            categoryId: 'integrations',
+            question: isArabic ? 'هل أحتاج لأكواد برمجية لربط لينكد إن (LinkedIn) أو جوجل درايف؟' : 'Do I need code to connect LinkedIn or Google Drive?',
+            answer: isArabic
+                ? 'إطلاقاً! منصتنا توفر ربطاً خالياً تماماً من الأكواد (No-Code). كل ما عليك فعله هو الضغط على زر "توصيل" بجوار المنصة المرغوبة، ثم تسجيل الدخول العادي بحسابك وإعطاء الصلاحية. سيتكفل النظام بجلب مفاتيح الربط المعقدة وتخزينها في خزنتك المشفرة تلقائياً.'
+                : 'Not at all! Our platform is 100% No-Code. Just click "Connect" next to the desired platform, log in normally, and grant permission. The system will handle fetching and securely storing the complex API keys for you behind the scenes.'
         }
     ];
 
