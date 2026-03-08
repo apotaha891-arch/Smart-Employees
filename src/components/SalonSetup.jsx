@@ -177,11 +177,15 @@ const EntitySetup = () => {
                         setWalletBalance(balanceResult.balance);
                     }
                     const type = profileResult.data.business_type?.toLowerCase();
-                    if (type?.includes('طب') || type?.includes('صحي') || type?.includes('clinic')) setIndustry('medical');
-                    else if (type?.includes('عقار') || type?.includes('estate')) setIndustry('realestate');
-                    else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty')) setIndustry('beauty');
-                    else if (type?.includes('مطعم') || type?.includes('restau')) setIndustry('restaurant');
-                    else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit')) setIndustry('fitness');
+                    if (type?.includes('طب') || type?.includes('صحي') || type?.includes('clinic') || type === 'medical') setIndustry('medical');
+                    else if (type?.includes('عقار') || type?.includes('estate') || type === 'real_estate') setIndustry('realestate');
+                    else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty') || type === 'beauty') setIndustry('beauty');
+                    else if (type?.includes('مطعم') || type?.includes('restau') || type === 'restaurant') setIndustry('restaurant');
+                    else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit') || type === 'fitness') setIndustry('fitness');
+                    else if (type === 'retail_ecommerce') setIndustry('retail_ecommerce');
+                    else if (type === 'banking') setIndustry('banking');
+                    else if (type === 'call_center') setIndustry('call_center');
+                    else if (type === 'telecom_it') setIndustry('telecom_it');
                 }
 
                 // Fetch the salon_config for this user
