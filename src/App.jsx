@@ -21,9 +21,9 @@ import Bookings from './components/Bookings';
 import Customers from './components/Customers';
 import DeployAgent from './components/DeployAgent';
 import Employees from './components/Employees';
+import HireAgent from './components/HireAgent';
 import OnboardingSector from './components/OnboardingSector';
 import ContractSign from './components/ContractSign';
-import AgentManagement from './components/AgentManagement';
 import HelpCenter from './components/HelpCenter';
 
 // Create AuthProvider
@@ -34,7 +34,7 @@ function App() {
     return (
         <LanguageProvider>
             <AuthProvider>
-                <Router>
+                <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                     <AppContent />
                 </Router>
             </AuthProvider>
@@ -45,7 +45,7 @@ function App() {
 function AppContent() {
     const location = useLocation();
     // Routes that use the new Dashboard Layout
-    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/help'];
+    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help'];
     const isDashboard = dashboardRoutes.includes(location.pathname);
 
     return (
@@ -59,6 +59,8 @@ function AppContent() {
                 <Route path="/custom-request" element={<CustomRequest />} />
                 <Route path="/interview" element={<InterviewRoom />} />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/templates" element={<AgentTemplates />} />
+                <Route path="/pricing" element={<Pricing />} />
                 <Route path="/onboarding" element={<ProtectedRoute requiredRole="customer"><OnboardingSector /></ProtectedRoute>} />
 
                 {/* ============ ADMIN PROTECTED ROUTES ============ */}
@@ -85,22 +87,6 @@ function AppContent() {
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><SalonSetup /></ModernDashboardLayout>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/templates"
-                    element={
-                        <ProtectedRoute requiredRole="customer">
-                            <ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/pricing"
-                    element={
-                        <ProtectedRoute requiredRole="customer">
-                            <ModernDashboardLayout><Pricing /></ModernDashboardLayout>
                         </ProtectedRoute>
                     }
                 />
@@ -148,7 +134,15 @@ function AppContent() {
                     path="/agents"
                     element={
                         <ProtectedRoute requiredRole="customer">
-                            <ModernDashboardLayout><AgentManagement /></ModernDashboardLayout>
+                            <ModernDashboardLayout><Employees /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/hire-agent"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><HireAgent /></ModernDashboardLayout>
                         </ProtectedRoute>
                     }
                 />
@@ -156,6 +150,14 @@ function AppContent() {
                 <Route path="/employees" element={<Navigate to="/agents" replace />} />
                 <Route
                     path="/help"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><HelpCenter /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/help/:category"
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><HelpCenter /></ModernDashboardLayout>

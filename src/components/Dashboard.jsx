@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getCurrentUser, getProfile } from '../services/supabaseService';
+import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getCurrentUser, getProfile, getWalletBalance } from '../services/supabaseService';
 import { Link } from 'react-router-dom';
 import LowCreditModal from './LowCreditModal';
-import AgentManagement from './AgentManagement';
 import * as XLSX from 'xlsx';
+import { Bot, Zap, BookOpen, Activity, Wallet, Target, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 
 const Dashboard = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     const [tasks, setTasks] = useState([]);
     const [stats, setStats] = useState({
@@ -49,6 +49,12 @@ const Dashboard = () => {
                 const profileResult = await getProfile(user.id);
                 if (profileResult.success) {
                     const profileData = profileResult.data || { total_credits: 0, credits_used: 0, subscription_tier: '' };
+
+                    const balanceResult = await getWalletBalance(user.id);
+                    if (balanceResult.success) {
+                        profileData.wallet_balance = balanceResult.balance;
+                    }
+
                     setProfile(profileData);
 
                     // Show modal if credits are low (< 10) and not unlimited
@@ -165,71 +171,123 @@ const Dashboard = () => {
                     </button>
                 </div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-3" style={{ gap: '1rem' }}>
-                    <div className="card" style={{ padding: '1.25rem' }}>
-                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{t('tasksCompletedToday')}</div>
-                        <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent)' }}>{stats.tasksToday}</div>
-                    </div>
-                    <div className="card" style={{ padding: '1.25rem' }}>
-                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{t('aiAccuracy')}</div>
-                        <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--success)' }}>99.8%</div>
-                    </div>
-                    <div className="card" style={{ padding: '1.25rem' }}>
-                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{t('remainingCreditLabel')}</div>
-                        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#F59E0B' }}>
-                            {/* Assuming we'll fetch wallet_credits.balance and store it in profile soon */}
-                            {profile?.wallet_balance || 50000}
+                {/* Dashboard Smart Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+
+                    {/* Real Stat: Balance */}
+                    <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', background: 'linear-gradient(135deg, rgba(34,197,94,0.05), transparent)', border: '1px solid rgba(34,197,94,0.15)' }}>
+                        <div style={{ padding: '12px', background: 'rgba(34,197,94,0.15)', borderRadius: '12px', color: '#22c59e', flexShrink: 0 }}>
+                            <Wallet size={24} />
+                        </div>
+                        <div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 600 }}>{language === 'ar' ? 'رصيد الذكاء الاصطناعي' : 'AI Credit Balance'}</div>
+                            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'white', lineHeight: 1 }}>{profile?.wallet_balance?.toLocaleString() || 0}</div>
+                            <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                                {language === 'ar' ? 'يُستخدم للمحادثات والردود التلقائية ورسائل الواتساب الواردة.' : 'Used for chats, automated replies and WhatsApp messages.'}
+                            </p>
                         </div>
                     </div>
+
+                    {/* Real Stat: Tasks */}
+                    <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', background: 'linear-gradient(135deg, rgba(139,92,246,0.05), transparent)', border: '1px solid rgba(139,92,246,0.15)' }}>
+                        <div style={{ padding: '12px', background: 'rgba(139,92,246,0.15)', borderRadius: '12px', color: '#8B5CF6', flexShrink: 0 }}>
+                            <Activity size={24} />
+                        </div>
+                        <div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 600 }}>{language === 'ar' ? 'مهام أُنجزت اليوم' : 'Tasks Completed Today'}</div>
+                            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'white', lineHeight: 1 }}>{stats.tasksToday || 0}</div>
+                            <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                                {language === 'ar' ? 'محادثات وعمليات تعامل معها الموظف الرقمي بالكامل دون تدخل بشري.' : 'Operations handled entirely by your AI agent without expected intervention.'}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Instruction Guide */}
+                    <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', background: 'linear-gradient(135deg, rgba(59,130,246,0.05), transparent)', border: '1px solid rgba(59,130,246,0.15)' }}>
+                        <div style={{ padding: '12px', background: 'rgba(59,130,246,0.15)', borderRadius: '12px', color: '#3B82F6', flexShrink: 0 }}>
+                            <Target size={24} />
+                        </div>
+                        <div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '4px', fontWeight: 600 }}>{language === 'ar' ? 'نصيحة للإعداد المثالي' : 'Best Practice Setup'}</div>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '4px 0', lineHeight: 1.3 }}>{language === 'ar' ? 'زيادة وعي الموظف' : 'Enhance Agent Knowledge'}</h4>
+                            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                                {language === 'ar' ? 'تأكد من إدراج كافة خدماتك وأسعارك في "إعداد المنشأة" ليرد على عملائك بذكاء.' : 'Ensure all your services and prices are added in Entity Setup for intelligent AI replies.'}
+                            </p>
+                            <Link to="/setup" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '12px', fontSize: '0.85rem', color: '#3B82F6', textDecoration: 'none', fontWeight: 700 }}>
+                                {language === 'ar' ? 'إعداد المنشأة والخدمات' : 'Go to Setup'}
+                                {language === 'ar' ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+                            </Link>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            {/* AGENT MANAGEMENT SECTION */}
-            <div style={{ marginTop: '2rem' }}>
-                <div className="flex align-center gap-sm mb-lg">
-                    <div style={{ width: '4px', height: '24px', background: 'var(--accent)', borderRadius: '2px' }}></div>
-                    <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.3rem' }}>{t('myAgentsTab')}</h3>
-                </div>
-                <AgentManagement />
-            </div>
 
 
 
-            {/* Activity Feed */}
-            <div className="card" style={{ marginTop: '2rem' }}>
-                <div className="flex align-center gap-sm mb-lg">
-                    <div style={{ width: '4px', height: '24px', background: '#8B5CF6', borderRadius: '2px' }}></div>
-                    <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.2rem', color: '#8B5CF6' }}>{t('nightShiftLogTitle')}</h3>
-                </div>
-                <div className="table-container" style={{ border: 'none', padding: 0 }}>
-                    {tasks.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '2rem' }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📋</div>
-                            <p className="text-muted">{t('awaitingFirstTask')}</p>
+
+            {/* Customer Support Integration */}
+            <div className="card" style={{ marginTop: '2rem', padding: '0', overflow: 'hidden', border: '1px solid rgba(37,211,102,0.15)' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+
+                    {/* Visual Section */}
+                    <div style={{ flex: '1 1 300px', background: 'linear-gradient(135deg, rgba(37,211,102,0.1) 0%, rgba(37,211,102,0.02) 100%)', padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: language === 'en' ? '1px solid rgba(255,255,255,0.05)' : 'none', borderLeft: language === 'ar' ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                        <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', boxShadow: '0 8px 24px rgba(37,211,102,0.3)' }}>
+                            <MessageSquare size={32} color="#FFF" />
                         </div>
-                    ) : (
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-subtle)' }}>
-                                    <th style={{ textAlign: 'right', padding: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>{t('operationType')}</th>
-                                    <th style={{ textAlign: 'right', padding: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>{t('timestamp')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tasks.slice(0, 10).map((task) => (
-                                    <tr key={task.id} style={{ borderBottom: '1px solid var(--border-subtle)', transition: 'var(--transition)' }} className="hover-bg-glass">
-                                        <td style={{ padding: '0.75rem' }}>
-                                            <span style={{ background: 'var(--accent-soft)', color: 'var(--accent)', padding: '0.3rem 0.7rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700 }}>
-                                                {task.task_type}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{formatDate(task.completed_at)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
+                        <h3 style={{ margin: '0 0 0.5rem', fontWeight: 900, fontSize: '1.5rem', color: '#FFF' }}>
+                            {language === 'ar' ? 'نحن هنا لمساعدتك' : 'We are here to help'}
+                        </h3>
+                        <p style={{ margin: 0, color: '#9CA3AF', fontSize: '1rem', lineHeight: 1.6 }}>
+                            {language === 'ar' ? 'فريق الدعم الفني في 24Shift متواجد للرد على استفساراتك ومساعدتك في تحسين موظفك الذكي.' : 'The 24Shift support team is available to answer your questions and help you optimize your digital agent.'}
+                        </p>
+                    </div>
+
+                    {/* Action Section */}
+                    <div style={{ flex: '1 1 400px', padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#25D366', boxShadow: '0 0 10px #25D366', animation: 'pulse 2s infinite' }}></div>
+                                <span style={{ color: '#25D366', fontWeight: 700, fontSize: '0.9rem' }}>
+                                    {language === 'ar' ? 'متصلون الآن' : 'Online Now'}
+                                </span>
+                            </div>
+
+                            <div style={{ background: '#18181B', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ color: '#E4E4E7', fontWeight: 600, marginBottom: '0.25rem' }}>{language === 'ar' ? 'استفسارات فنية أو مبيعات؟' : 'Technical or Sales inquiries?'}</div>
+                                <div style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>{language === 'ar' ? 'تحدث مع فريقنا مباشرة عبر الواتساب للحصول على استجابة سريعة.' : 'Chat with our team directly via WhatsApp for a quick response.'}</div>
+                            </div>
+
+                            <a
+                                href="https://wa.me/966530916299"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.75rem',
+                                    background: '#25D366',
+                                    color: '#FFF',
+                                    padding: '1rem 2rem',
+                                    borderRadius: '12px',
+                                    fontWeight: 800,
+                                    fontSize: '1rem',
+                                    textDecoration: 'none',
+                                    marginTop: '0.5rem',
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 4px 12px rgba(37,211,102,0.2)'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            >
+                                <MessageSquare size={20} />
+                                {language === 'ar' ? 'تحدث إلى خدمة العملاء' : 'Chat with Customer Support'}
+                            </a>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

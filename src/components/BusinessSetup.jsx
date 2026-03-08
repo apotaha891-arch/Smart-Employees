@@ -96,7 +96,7 @@ const BusinessSetup = () => {
         e.preventDefault();
 
         if (!agentId) {
-            alert('لم يتم العثور على وكيل نشط، يرجى إعادة خطوات التوظيف.');
+            alert(language === 'ar' ? 'لم يتم العثور على وكيل نشط، يرجى إعادة خطوات التوظيف.' : 'No active agent found, please restart the hiring process.');
             return;
         }
 
@@ -108,7 +108,7 @@ const BusinessSetup = () => {
         });
 
         if (result.success) {
-            alert('تم تهيئة الموظف وحفظ قاعدة المعرفة بنجاح!');
+            alert(language === 'ar' ? 'تم تهيئة الموظف وحفظ قاعدة المعرفة بنجاح!' : 'Agent configured and knowledge base saved successfully!');
             // Step 7: Transition to Dashboard Integration Selection
             navigate('/deploy-agent', { state: { agentId } });
         } else {
@@ -169,13 +169,13 @@ const BusinessSetup = () => {
     };
 
     return (
-        <div className="container py-xl animate-fade-in" style={{ paddingBottom: '6rem' }} dir="rtl">
+        <div className="container py-xl animate-fade-in" style={{ paddingBottom: '6rem' }} dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1rem', background: 'linear-gradient(to bottom, #FFF, #52525B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                    الإعدادات العامة للمنشأة
+                    {language === 'ar' ? 'الإعدادات العامة للمنشأة' : 'Business General Setup'}
                 </h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-                    قم بتهيئة المعايير والبروتوكولات التي سيلتزم بها موظفك الذكي عند التعامل مع عملائك.
+                    {language === 'ar' ? 'قم بتهيئة المعايير والبروتوكولات التي سيلتزم بها موظفك الذكي عند التعامل مع عملائك.' : 'Configure the standards and protocols your smart agent will follow when interacting with clients.'}
                 </p>
             </div>
 
@@ -189,13 +189,13 @@ const BusinessSetup = () => {
                                 <Sparkles size={24} />
                             </div>
                             <div>
-                                <h3 style={{ margin: 0, color: 'white' }}>الإعداد الذكي بالذكاء الاصطناعي</h3>
-                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ارفع ملفات أو أضف روابط لتدريب موظفك الرقمي فوراً</p>
+                                <h3 style={{ margin: 0, color: 'white' }}>{language === 'ar' ? 'الإعداد الذكي بالذكاء الاصطناعي' : 'AI Smart Setup'}</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{language === 'ar' ? 'ارفع ملفات أو أضف روابط لتدريب موظفك الرقمي فوراً' : 'Upload files or add links to train your digital agent immediately'}</p>
                             </div>
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span>📁</span> رفع ملفات (PDF, Excel, Word)</label>
+                            <label className="label"><span>📁</span> {language === 'ar' ? 'رفع ملفات (PDF, Excel, Word)' : 'Upload Files (PDF, Excel, Word)'}</label>
                             <div
                                 style={{
                                     border: '2px dashed rgba(255,255,255,0.1)',
@@ -209,7 +209,7 @@ const BusinessSetup = () => {
                                 onClick={() => document.getElementById('ai-file-upload').click()}
                             >
                                 <Upload size={32} color="#9CA3AF" style={{ marginBottom: '1rem' }} />
-                                <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.9rem' }}>اضغط لاختيار الملفات أو اسحبها هنا</p>
+                                <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'اضغط لاختيار الملفات أو اسحبها هنا' : 'Click to select files or drag them here'}</p>
                                 <input
                                     id="ai-file-upload"
                                     type="file"
@@ -235,21 +235,21 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-lg">
-                            <label className="label"><span>🔗</span> روابط الصفحات وقواعد البيانات</label>
+                            <label className="label"><span>🔗</span> {language === 'ar' ? 'روابط الصفحات وقواعد البيانات' : 'Page Links & Databases'}</label>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 <div style={{ position: 'relative', flex: 1 }}>
-                                    <LinkIcon size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                                    <LinkIcon size={18} style={{ position: 'absolute', [language === 'ar' ? 'right' : 'left']: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
                                     <input
                                         type="url"
                                         className="input-field"
-                                        style={{ paddingLeft: '40px' }}
+                                        style={{ [language === 'ar' ? 'paddingRight' : 'paddingLeft']: '40px' }}
                                         placeholder="https://example.com/services"
                                         value={aiUrl}
                                         onChange={(e) => setAiUrl(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddUrl())}
                                     />
                                 </div>
-                                <button onClick={handleAddUrl} className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>إضافة</button>
+                                <button onClick={handleAddUrl} className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>{language === 'ar' ? 'إضافة' : 'Add'}</button>
                             </div>
 
                             {aiUrlsList.length > 0 && (
@@ -278,48 +278,48 @@ const BusinessSetup = () => {
                                 pointerEvents: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'none' : 'auto'
                             }}
                         >
-                            {aiLoading ? 'جاري التحليل واستخراج البيانات...' : 'أتمتة وتحليل البيانات ✨'}
+                            {aiLoading ? (language === 'ar' ? 'جاري التحليل واستخراج البيانات...' : 'Analyzing and extracting data...') : (language === 'ar' ? 'أتمتة وتحليل البيانات ✨' : 'Automate & Analyze Data ✨')}
                         </button>
                         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
-                            سيتم تحليل الملفات وملء بيانات الإعداد اليدوي أدناه تلقائياً.
+                            {language === 'ar' ? 'سيتم تحليل الملفات وملء بيانات الإعداد اليدوي أدناه تلقائياً.' : 'Files will be analyzed and the manual setup data below will be automatically filled.'}
                         </p>
                     </div>
 
                     {/* Tips Panel immediately below AI Panel */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <h3 style={{ color: 'white', marginBottom: '0.5rem', fontSize: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>💡 كيف سيساعدك موظفك الذكي؟</h3>
+                        <h3 style={{ color: 'white', marginBottom: '0.5rem', fontSize: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>💡 {language === 'ar' ? 'كيف سيساعدك موظفك الذكي؟' : 'How will your smart agent help?'}</h3>
 
-                        <div className="card" style={{ borderRight: '4px solid #8B5CF6', background: 'rgba(139, 92, 246, 0.05)', padding: '1.5rem' }}>
+                        <div className="card" style={{ [language === 'ar' ? 'borderRight' : 'borderLeft']: '4px solid #8B5CF6', background: 'rgba(139, 92, 246, 0.05)', padding: '1.5rem' }}>
                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
                                 <div style={{ fontSize: '1.75rem', background: '#8B5CF620', padding: '10px', borderRadius: '12px', display: 'flex' }}>⏱️</div>
                                 <div>
-                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>تغطية فورية 24/7</h4>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>{language === 'ar' ? 'تغطية فورية 24/7' : 'Instant 24/7 Coverage'}</h4>
                                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
-                                        موظفك لا ينام ولا يأخذ إجازات. سيقوم بالرد على استفسارات عملائك وحجز مواعيدهم في أي وقت من اليوم، حتى خارج أوقات العمل الرسمية.
+                                        {language === 'ar' ? 'موظفك لا ينام ولا يأخذ إجازات. سيقوم بالرد على استفسارات عملائك وحجز مواعيدهم في أي وقت من اليوم، حتى خارج أوقات العمل الرسمية.' : 'Your employee never sleeps or takes vacations. They will respond to customer inquiries and book appointments anytime, even outside official working hours.'}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="card" style={{ borderRight: '4px solid #10B981', background: 'rgba(16, 185, 129, 0.05)', padding: '1.5rem' }}>
+                        <div className="card" style={{ [language === 'ar' ? 'borderRight' : 'borderLeft']: '4px solid #10B981', background: 'rgba(16, 185, 129, 0.05)', padding: '1.5rem' }}>
                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
                                 <div style={{ fontSize: '1.75rem', background: '#10B98120', padding: '10px', borderRadius: '12px', display: 'flex' }}>🎯</div>
                                 <div>
-                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>دقة واحترافية متناهية</h4>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>{language === 'ar' ? 'دقة واحترافية متناهية' : 'Extreme Accuracy & Professionalism'}</h4>
                                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
-                                        ابنِ قاعدة معرفية قوية لموظفك. سيلتزم تماماً بالتعليمات والأسعار والخدمات التي تقدمها، ولن يرتكب الأخطاء البشرية الشائعة.
+                                        {language === 'ar' ? 'ابنِ قاعدة معرفية قوية لموظفك. سيلتزم تماماً بالتعليمات والأسعار والخدمات التي تقدمها، ولن يرتكب الأخطاء البشرية الشائعة.' : 'Build a strong knowledge base for your employee. They will strictly adhere to your instructions, prices, and services, eliminating common human errors.'}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="card" style={{ borderRight: '4px solid #F59E0B', background: 'rgba(245, 158, 11, 0.05)', padding: '1.5rem' }}>
+                        <div className="card" style={{ [language === 'ar' ? 'borderRight' : 'borderLeft']: '4px solid #F59E0B', background: 'rgba(245, 158, 11, 0.05)', padding: '1.5rem' }}>
                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
                                 <div style={{ fontSize: '1.75rem', background: '#F59E0B20', padding: '10px', borderRadius: '12px', display: 'flex' }}>💰</div>
                                 <div>
-                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>توفير التكاليف ومضاعفة المبيعات</h4>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>{language === 'ar' ? 'توفير التكاليف ومضاعفة المبيعات' : 'Cost Savings & Doubled Sales'}</h4>
                                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
-                                        بدلاً من توظيف فريق دعم كبير، سيتولى الذكاء الاصطناعي المهام الروتينية ليتفرغ فريقك للمبيعات والإدارة، مما يعود بالنفع على إيراداتك.
+                                        {language === 'ar' ? 'بدلاً من توظيف فريق دعم كبير، سيتولى الذكاء الاصطناعي المهام الروتينية ليتفرغ فريقك للمبيعات والإدارة، مما يعود بالنفع على إيراداتك.' : 'Instead of hiring a large support team, AI handles routine tasks so your team can focus on sales and management, benefiting your revenue.'}
                                     </p>
                                 </div>
                             </div>
@@ -327,9 +327,9 @@ const BusinessSetup = () => {
 
                         <div className="card" style={{ background: 'linear-gradient(45deg, #18181B, #09090B)', border: '1px dashed var(--accent)', padding: '1.5rem', textAlign: 'center' }}>
                             <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🚀</div>
-                            <h4 style={{ color: 'var(--secondary-accent)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>جاهز للانطلاق؟</h4>
+                            <h4 style={{ color: 'var(--secondary-accent)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>{language === 'ar' ? 'جاهز للانطلاق؟' : 'Ready to launch?'}</h4>
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
-                                أكمل بيانات المنشأة بدقة وزود موظفك بالمعلومات اللازمة، ثم احفظ الإعدادات لتبدأ ثورة الذكاء الاصطناعي في مشروعك!
+                                {language === 'ar' ? 'أكمل بيانات المنشأة بدقة وزود موظفك بالمعلومات اللازمة، ثم احفظ الإعدادات لتبدأ ثورة الذكاء الاصطناعي في مشروعك!' : 'Complete your business data accurately and provide your agent with necessary information, then save settings to start the AI revolution in your project!'}
                             </p>
                         </div>
                     </div>
@@ -338,25 +338,25 @@ const BusinessSetup = () => {
                 {/* Left Column: Manual Setup Panel */}
                 <div className="card">
                     <form onSubmit={handleSubmit}>
-                        <h3 style={{ margin: '0 0 1.5rem', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>وثيقة الإعداد اليدوي</h3>
+                        <h3 style={{ margin: '0 0 1.5rem', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>{language === 'ar' ? 'وثيقة الإعداد اليدوي' : 'Manual Setup Document'}</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
                             <div>
-                                <label className="label"><span>🏢</span> اسم المنشأة</label>
+                                <label className="label"><span>🏢</span> {language === 'ar' ? 'اسم المنشأة' : 'Business Name'}</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder="مثال: 24Shift"
+                                    placeholder={language === 'ar' ? "مثال: 24Shift" : "e.g., 24Shift"}
                                     value={formData.business_name}
                                     onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="label"><span>🏷️</span> نوع النشاط</label>
+                                <label className="label"><span>🏷️</span> {language === 'ar' ? 'نوع النشاط' : 'Business Type'}</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder="مثال: عيادة تجميل"
+                                    placeholder={language === 'ar' ? "مثال: عيادة تجميل" : "e.g., Beauty Clinic"}
                                     value={formData.business_type}
                                     onChange={(e) => setFormData({ ...formData, business_type: e.target.value })}
                                     required
@@ -365,11 +365,11 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span>⏰</span> مواعيد العمل الرسمية</label>
+                            <label className="label"><span>⏰</span> {language === 'ar' ? 'مواعيد العمل الرسمية' : 'Official Working Hours'}</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="مثال: من 9 صباحاً حتى 10 مساءً"
+                                placeholder={language === 'ar' ? "مثال: من 9 صباحاً حتى 10 مساءً" : "e.g., 9 AM to 10 PM"}
                                 value={formData.working_hours}
                                 onChange={(e) => setFormData({ ...formData, working_hours: e.target.value })}
                                 required
@@ -377,11 +377,11 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span>🧩</span> الخدمات الأساسية والأسعار</label>
+                            <label className="label"><span>🧩</span> {language === 'ar' ? 'الخدمات الأساسية والأسعار' : 'Core Services & Prices'}</label>
                             <textarea
                                 className="input-field"
                                 rows="3"
-                                placeholder="قائمة بكل ما تريد من موظفك تقديمه..."
+                                placeholder={language === 'ar' ? "قائمة بكل ما تريد من موظفك تقديمه..." : "List everything you want your agent to offer..."}
                                 value={formData.services}
                                 onChange={(e) => setFormData({ ...formData, services: e.target.value })}
                                 required
@@ -389,7 +389,7 @@ const BusinessSetup = () => {
                         </div>
 
                         <div className="mb-md">
-                            <label className="label"><span>🎭</span> أسلوب التحدث والهوية</label>
+                            <label className="label"><span>🎭</span> {language === 'ar' ? 'أسلوب التحدث والهوية' : 'Tone & Identity'}</label>
                             <select
                                 className="input-field"
                                 value={formData.branding_tone}
@@ -400,26 +400,26 @@ const BusinessSetup = () => {
                                     border: '1px solid rgba(255,255,255,0.1)'
                                 }}
                             >
-                                <option value="professional" style={{ color: 'white', background: '#1F2937' }}>رسمي واحترافي</option>
-                                <option value="friendly" style={{ color: 'white', background: '#1F2937' }}>ودود وشبابي</option>
-                                <option value="fast" style={{ color: 'white', background: '#1F2937' }}>سريع ومباشر</option>
-                                <option value="luxury" style={{ color: 'white', background: '#1F2937' }}>راقي وفاخر</option>
+                                <option value="professional" style={{ color: 'white', background: '#1F2937' }}>{language === 'ar' ? 'رسمي واحترافي' : 'Official & Professional'}</option>
+                                <option value="friendly" style={{ color: 'white', background: '#1F2937' }}>{language === 'ar' ? 'ودود وشبابي' : 'Friendly & Youthful'}</option>
+                                <option value="fast" style={{ color: 'white', background: '#1F2937' }}>{language === 'ar' ? 'سريع ومباشر' : 'Fast & Direct'}</option>
+                                <option value="luxury" style={{ color: 'white', background: '#1F2937' }}>{language === 'ar' ? 'راقي وفاخر' : 'Luxury & Refined'}</option>
                             </select>
                         </div>
 
                         <div className="mb-2xl">
-                            <label className="label"><span>🧠</span> قاعدة المعرفة الأساسية</label>
+                            <label className="label"><span>🧠</span> {language === 'ar' ? 'قاعدة المعرفة الأساسية' : 'Core Knowledge Base'}</label>
                             <textarea
                                 className="input-field"
                                 rows="12"
                                 style={{ background: 'rgba(212, 175, 55, 0.03)', borderColor: 'rgba(212, 175, 55, 0.15)' }}
-                                placeholder="أدخل هنا كل المعلومات والتعليمات التي تريد لموظفك حفظها..."
+                                placeholder={language === 'ar' ? "أدخل هنا كل المعلومات والتعليمات التي تريد لموظفك حفظها..." : "Enter all information and instructions you want your agent to memorize here..."}
                                 value={formData.knowledge_base}
                                 onChange={(e) => setFormData({ ...formData, knowledge_base: e.target.value })}
                             ></textarea>
                             <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }}></div>
-                                <small style={{ color: 'var(--text-secondary)' }}>تحديث هذه اللوحة يعيد بناء معرفة موظفك فوراً.</small>
+                                <small style={{ color: 'var(--text-secondary)' }}>{language === 'ar' ? 'تحديث هذه اللوحة يعيد بناء معرفة موظفك فوراً.' : 'Updating this board instantly rebuilds your agent\'s knowledge.'}</small>
                             </div>
                         </div>
 
@@ -428,7 +428,7 @@ const BusinessSetup = () => {
                             className={`btn btn-primary btn-block ${loading ? 'loading' : ''}`}
                             disabled={loading}
                         >
-                            {loading ? 'جاري التحديث...' : 'تحديث وتأكيد البيانات'}
+                            {loading ? (language === 'ar' ? 'جاري التحديث...' : 'Updating...') : (language === 'ar' ? 'تحديث وتأكيد البيانات' : 'Update & Confirm Data')}
                         </button>
                     </form>
                 </div>

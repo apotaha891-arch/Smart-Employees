@@ -4,7 +4,18 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        // Use localStorage explicitly (avoids IndexedDB lock contention)
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        // Bypass the Web Locks API — prevents AbortError when multiple
+        // Supabase client instances compete for the same lock (e.g. during HMR)
+        lock: (_name, _acquireTimeout, fn) => fn(),
+    }
+});
 
 // ==================== AUTHENTICATION ====================
 
@@ -715,22 +726,6 @@ export const activateSalonAgent = async (salonId, calendarToken) => {
             .eq('id', salonId);
 
         if (error) throw error;
-
-        // 2. Trigger n8n Webhook
-        const N8N_WEBHOOK_URL = 'https://primary-production-4375.up.railway.app/webhook/activate-salon';
-
-        const response = await fetch(N8N_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                salon_id: salonId,
-                google_calendar_token: calendarToken
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`n8n Trigger Failed: ${response.statusText}`);
-        }
 
         return { success: true };
     } catch (error) {

@@ -259,8 +259,9 @@ const AgentManagement = () => {
             {/* Agents List */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
                 gap: '1.5rem',
+                overflow: 'hidden',
             }}>
                 {agents.length === 0 ? (
                     <div style={{
@@ -367,10 +368,12 @@ const AgentManagement = () => {
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
+                            {/* Action Buttons — two rows */}
+                            {/* Row 1: Utility actions */}
                             <div style={{
                                 display: 'flex',
                                 gap: '0.5rem',
+                                marginBottom: '0.5rem',
                             }}>
                                 <button
                                     onClick={(e) => {
@@ -379,7 +382,7 @@ const AgentManagement = () => {
                                     }}
                                     style={{
                                         flex: 1,
-                                        padding: '0.5rem',
+                                        padding: '0.45rem 0.5rem',
                                         background: agent.status === 'active'
                                             ? 'rgba(107, 114, 128, 0.2)'
                                             : 'rgba(16, 185, 129, 0.2)',
@@ -387,17 +390,49 @@ const AgentManagement = () => {
                                         border: 'none',
                                         borderRadius: '6px',
                                         cursor: 'pointer',
-                                        fontSize: '0.8rem',
+                                        fontSize: '0.78rem',
                                         fontWeight: 600,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '0.25rem',
+                                        whiteSpace: 'nowrap',
                                     }}
                                 >
-                                    {agent.status === 'active' ? <Pause size={14} /> : <Play size={14} />}
+                                    {agent.status === 'active' ? <Pause size={13} /> : <Play size={13} />}
                                     {agent.status === 'active' ? t('stopAction') : t('startAction')}
                                 </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteAgent(agent.id);
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        padding: '0.45rem 0.5rem',
+                                        background: 'rgba(239, 68, 68, 0.2)',
+                                        color: '#FCA5A5',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.78rem',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.25rem',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    <Trash2 size={13} /> {t('deleteAction')}
+                                </button>
+                            </div>
+
+                            {/* Row 2: Integration actions */}
+                            <div style={{
+                                display: 'flex',
+                                gap: '0.5rem',
+                            }}>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -406,22 +441,23 @@ const AgentManagement = () => {
                                         setShowTelegramModal(true);
                                     }}
                                     style={{
-                                        flex: 2,
-                                        padding: '0.5rem',
+                                        flex: 1,
+                                        padding: '0.45rem 0.5rem',
                                         background: 'rgba(56, 189, 248, 0.2)',
                                         color: '#38BDF8',
                                         border: 'none',
                                         borderRadius: '6px',
                                         cursor: 'pointer',
-                                        fontSize: '0.8rem',
+                                        fontSize: '0.78rem',
                                         fontWeight: 600,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '0.25rem',
+                                        whiteSpace: 'nowrap',
                                     }}
                                 >
-                                    <Send size={14} /> {t('linkTelegramAction')}
+                                    <Send size={13} /> {t('linkTelegramAction')}
                                 </button>
                                 <button
                                     onClick={(e) => {
@@ -431,45 +467,23 @@ const AgentManagement = () => {
                                         setShowWhatsAppModal(true);
                                     }}
                                     style={{
-                                        flex: 2,
-                                        padding: '0.5rem',
+                                        flex: 1,
+                                        padding: '0.45rem 0.5rem',
                                         background: 'rgba(34, 197, 94, 0.2)',
                                         color: '#22C55E',
                                         border: 'none',
                                         borderRadius: '6px',
                                         cursor: 'pointer',
-                                        fontSize: '0.8rem',
+                                        fontSize: '0.78rem',
                                         fontWeight: 600,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '0.25rem',
+                                        whiteSpace: 'nowrap',
                                     }}
                                 >
-                                    <MessageCircle size={14} /> {t('linkWhatsAppAction')}
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteAgent(agent.id);
-                                    }}
-                                    style={{
-                                        flex: 1,
-                                        padding: '0.5rem',
-                                        background: 'rgba(239, 68, 68, 0.2)',
-                                        color: '#FCA5A5',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.8rem',
-                                        fontWeight: 600,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '0.25rem',
-                                    }}
-                                >
-                                    <Trash2 size={14} /> {t('deleteAction')}
+                                    <MessageCircle size={13} /> {t('linkWhatsAppAction')}
                                 </button>
                             </div>
                         </div>

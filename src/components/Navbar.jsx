@@ -71,13 +71,7 @@ const Navbar = () => {
                         <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>{t('nav.home')}</Link>
                     </li>
                     <li>
-                        <Link to="/templates" className={`nav-link ${isActive('/templates') ? 'active' : ''}`}>{t('nav.templates')}</Link>
-                    </li>
-                    <li>
                         <Link to="/pricing" className={`nav-link ${isActive('/pricing') ? 'active' : ''}`}>{t('nav.pricing')}</Link>
-                    </li>
-                    <li>
-                        <Link to="/interview" className={`nav-link ${isActive('/interview') ? 'active' : ''}`}>{t('nav.interview')}</Link>
                     </li>
                     {user && (
                         <li>

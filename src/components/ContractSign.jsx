@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ShieldCheck, FileText, CheckCircle, Scale } from 'lucide-react';
 import { createAgent, saveContract } from '../services/supabaseService';
+import { useLanguage } from '../LanguageContext';
 
 const ContractSign = () => {
+    const { language } = useLanguage();
+    const isArabic = language === 'ar';
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -26,13 +29,13 @@ const ContractSign = () => {
             window.history.replaceState({}, document.title, window.location.pathname);
         }
         if (query.get('canceled')) {
-            alert("تم إلغاء عملية الدفع. يمكنك المحاولة لاحقاً.");
+            alert(isArabic ? "تم إلغاء عملية الدفع. يمكنك المحاولة لاحقاً." : "Payment canceled. You can try again later.");
         }
-    }, [location.search]);
+    }, [location.search, isArabic]);
 
     const handleSignContract = async () => {
         if (!accepted || signature.trim() === '') {
-            alert('يرجى الموافقة على الشروط وتوقيع العقد باسمك.');
+            alert(isArabic ? 'يرجى الموافقة على الشروط وتوقيع العقد باسمك.' : 'Please agree to the terms and sign the contract with your name.');
             return;
         }
 
@@ -46,7 +49,7 @@ const ContractSign = () => {
             });
 
             if (!agentResult.success) {
-                alert(`حدث خطأ في إنشاء الوكيل. يرجى المحاولة مرة أخرى.\nالسبب: ${agentResult.error}`);
+                alert(isArabic ? `حدث خطأ في إنشاء الوكيل. يرجى المحاولة مرة أخرى.\nالسبب: ${agentResult.error}` : `Error creating agent. Please try again.\nReason: ${agentResult.error}`);
                 setIsSubmitting(false);
                 return;
             }
@@ -64,7 +67,7 @@ const ContractSign = () => {
             const contractResult = await saveContract(newAgentFromDB.id, contractPayload);
 
             if (!contractResult.success) {
-                alert('حدث خطأ أثناء حفظ وثيقة العقد.');
+                alert(isArabic ? 'حدث خطأ أثناء حفظ وثيقة العقد.' : 'Error saving contract document.');
                 setIsSubmitting(false);
                 return;
             }
@@ -79,13 +82,13 @@ const ContractSign = () => {
             navigate('/setup', { state: { agentId: newAgentFromDB.id, businessRules, template } });
         } catch (error) {
             console.error('Contract signing error:', error);
-            alert('حدث خطأ غير متوقع.');
+            alert(isArabic ? 'حدث خطأ غير متوقع.' : 'An unexpected error occurred.');
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="bg-light" style={{ minHeight: '100vh', paddingTop: '6rem', paddingBottom: '4rem', direction: 'rtl' }}>
+        <div className="bg-light" style={{ minHeight: '100vh', paddingTop: '6rem', paddingBottom: '4rem', direction: isArabic ? 'rtl' : 'ltr' }}>
             <div className="container" style={{ maxWidth: '800px' }}>
                 <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <div style={{
@@ -99,10 +102,10 @@ const ContractSign = () => {
                         <ShieldCheck size={40} color="#10B981" />
                     </div>
                     <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)', marginBottom: '1rem' }}>
-                        اتفاقية سرية المعلومات والموظف الرقمي
+                        {isArabic ? 'اتفاقية سرية المعلومات والموظف الرقمي' : 'Non-Disclosure Agreement & Digital Agent'}
                     </h2>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-                        خطوتك الأخيرة قبل تهيئة موظفك الذكي نحو العمل الفعلي.
+                        {isArabic ? 'خطوتك الأخيرة قبل تهيئة موظفك الذكي نحو العمل الفعلي.' : 'Your final step before configuring your smart agent for actual work.'}
                     </p>
                 </div>
 
@@ -126,12 +129,12 @@ const ContractSign = () => {
                         fontSize: '0.95rem'
                     }}>
                         <h4 style={{ color: 'white', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Scale size={20} color="#8B5CF6" /> بنود اتفاقية (NDA) وتوظيف الذكاء الاصطناعي
+                            <Scale size={20} color="#8B5CF6" /> {isArabic ? 'بنود اتفاقية (NDA) وتوظيف الذكاء الاصطناعي' : 'NDA & AI Employment Terms'}
                         </h4>
-                        <p><strong>١. حماية البيانات السرية:</strong> تتعهد منصة 24Shift بالمحافظة التامة على سرية كافة البيانات، الملفات، والمرفقات التي يتم رفعها لغرض تدريب الموظف الرقمي الخاص بك.</p>
-                        <p><strong>٢. ملكية المعلومات:</strong> جميع قواعد المعرفة المُدخلة هي ملك حصري لمنشأتك، ولن يتم استخدامها لتدريب نماذج عامة أو مشاركتها مع أطراف ثالثة نهائياً.</p>
-                        <p><strong>٣. حدود المسؤولية:</strong> الموظف الرقمي هو أداة مساعدة تعمل وفق التعليمات وقواعد البيانات المعطاة له. المنشأة تتحمل مسؤولية مراجعة التعليمات لضمان عدم تعارضها مع سياساتها الداخلية.</p>
-                        <p><strong>٤. الإلغاء والتعديل:</strong> يحق للعميل مسح بياناته بالكامل وإنهاء الاستعانة بالموظف الرقمي في أي لحظة عبر لوحة التحكم، وسيتم إتلاف قواعد المعرفة الخاصة به تلقائياً.</p>
+                        <p><strong>{isArabic ? '١. حماية البيانات السرية:' : '1. Confidentiality:'}</strong> {isArabic ? 'تتعهد منصة 24Shift بالمحافظة التامة على سرية كافة البيانات، الملفات، والمرفقات التي يتم رفعها لغرض تدريب الموظف الرقمي الخاص بك.' : '24Shift platform pledges to maintain complete confidentiality of all data, files, and attachments uploaded for training your digital agent.'}</p>
+                        <p><strong>{isArabic ? '٢. ملكية المعلومات:' : '2. Data Ownership:'}</strong> {isArabic ? 'جميع قواعد المعرفة المُدخلة هي ملك حصري لمنشأتك، ولن يتم استخدامها لتدريب نماذج عامة أو مشاركتها مع أطراف ثالثة نهائياً.' : 'All knowledge bases entered are the exclusive property of your business, and will never be used to train public models or shared with third parties.'}</p>
+                        <p><strong>{isArabic ? '٣. حدود المسؤولية:' : '3. Liability Limit:'}</strong> {isArabic ? 'الموظف الرقمي هو أداة مساعدة تعمل وفق التعليمات وقواعد البيانات المعطاة له. المنشأة تتحمل مسؤولية مراجعة التعليمات لضمان عدم تعارضها مع سياساتها الداخلية.' : 'The digital agent is an assisting tool operating under the instructions and knowledge bases given to it. The establishment is responsible for reviewing the instructions to ensure they do not conflict with its internal policies.'}</p>
+                        <p><strong>{isArabic ? '٤. الإلغاء والتعديل:' : '4. Cancellation:'}</strong> {isArabic ? 'يحق للعميل مسح بياناته بالكامل وإنهاء الاستعانة بالموظف الرقمي في أي لحظة عبر لوحة التحكم، وسيتم إتلاف قواعد المعرفة الخاصة به تلقائياً.' : 'The client has the right to completely wipe their data and terminate the use of the digital agent at any moment via the dashboard, and their knowledge bases will be destroyed automatically.'}</p>
                     </div>
 
                     <div style={{
@@ -155,27 +158,27 @@ const ContractSign = () => {
                             />
                             <div>
                                 <span style={{ color: 'white', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
-                                    أقر بأنني اطلعت على البنود وموّفق عليها
+                                    {isArabic ? 'أقر بأنني اطلعت على البنود وموّفق عليها' : 'I acknowledge that I have read and agree to the terms'}
                                 </span>
                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                                    بموافقتك، يتم تحويل العقد إلى مسودة رقمية ملزمة لضمان حقوقك فوراً.
+                                    {isArabic ? 'بموافقتك، يتم تحويل العقد إلى مسودة رقمية ملزمة لضمان حقوقك فوراً.' : 'By agreeing, the contract is converted into a binding digital draft to ensure your rights immediately.'}
                                 </span>
                             </div>
                         </label>
                     </div>
 
-                    <div style={{ marginBottom: '2.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.75rem', color: 'white', fontWeight: 600 }}>التوقيع الإلكتروني (الاسم الكامل):</label>
+                    <div style={{ marginBottom: '2.5rem', textAlign: isArabic ? 'right' : 'left' }}>
+                        <label style={{ display: 'block', marginBottom: '0.75rem', color: 'white', fontWeight: 600 }}>{isArabic ? 'التوقيع الإلكتروني (الاسم الكامل):' : 'Electronic Signature (Full Name):'}</label>
                         <div style={{ position: 'relative' }}>
-                            <FileText size={20} color="#A1A1AA" style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                            <FileText size={20} color="#A1A1AA" style={{ position: 'absolute', [isArabic ? 'right' : 'left']: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                             <input
                                 type="text"
                                 value={signature}
                                 onChange={(e) => setSignature(e.target.value)}
-                                placeholder="اكتب اسمك للمصادقة على العقد..."
+                                placeholder={isArabic ? "اكتب اسمك للمصادقة على العقد..." : "Type your name to authenticate the contract..."}
                                 style={{
                                     width: '100%',
-                                    padding: '1rem 3rem 1rem 1rem',
+                                    padding: isArabic ? '1rem 3rem 1rem 1rem' : '1rem 1rem 1rem 3rem',
                                     borderRadius: '12px',
                                     background: 'rgba(255,255,255,0.05)',
                                     border: '1px solid rgba(255,255,255,0.1)',
@@ -207,15 +210,15 @@ const ContractSign = () => {
                             boxShadow: accepted && signature.trim() !== '' ? '0 10px 25px rgba(16, 185, 129, 0.3)' : 'none'
                         }}
                     >
-                        {isSubmitting ? 'جاري توثيق العقد...' : (
+                        {isSubmitting ? (isArabic ? 'جاري توثيق العقد...' : 'Authenticating Contract...') : (
                             <>
-                                <CheckCircle size={24} /> اعتماد وتفعيل الموظف
+                                <CheckCircle size={24} /> {isArabic ? 'اعتماد وتفعيل الموظف' : 'Approve & Activate Agent'}
                             </>
                         )}
                     </button>
 
                     <div style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                        معلوماتك محمية بتشفير 256-bit آمن ولن تُشارك مع أي جهة.
+                        {isArabic ? 'معلوماتك محمية بتشفير 256-bit آمن ولن تُشارك مع أي جهة.' : 'Your information is protected with secure 256-bit encryption and will not be shared.'}
                     </div>
                 </div>
             </div>

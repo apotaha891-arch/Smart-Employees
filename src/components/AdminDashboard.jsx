@@ -286,6 +286,28 @@ export default function AdminDashboard() {
     const saveAiConfig = async () => { setSaving(true); await adminService.updatePlatformSettings('manager_ai_config', aiConfig); setSaving(false); flash('✅ تم حفظ إعدادات المستشارة الذكية'); };
     const handleLogout = async () => { await signOut(); navigate('/login'); };
 
+    const remoteLogin = async (email) => {
+        if (!email || email === '—') return flash('❌ لا يتوفر بريد إلكتروني صالح لهذا العميل!');
+        setSaving(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-support`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+                body: JSON.stringify({ targetEmail: email })
+            });
+            const d = await res.json();
+            if (d.error) throw new Error(d.error);
+            if (d.magicLink) {
+                flash('✅ جاري الدخول لحساب العميل في نافذة جديدة...');
+                setTimeout(() => window.open(d.magicLink, '_blank'), 1000);
+            }
+        } catch (e) {
+            flash('❌ حدث خطأ ⛑️ هل فعلت الدالة؟ ' + e.message);
+        }
+        setSaving(false);
+    };
+
     const cl = (uid) => agents.filter(a => a.user_id === uid || a.salon_config_id === clients.find(c => c.id === uid)?.salonConfigId);
     const bl = (uid) => bookings.filter(b => b.user_id === uid || b.salon_config_id === clients.find(c => c.id === uid)?.salonConfigId);
     const filtBk = bFilter ? bookings.filter(b => b.user_id === bFilter || b.salon_id === bFilter || b.salon_config_id === bFilter) : bookings;
@@ -378,7 +400,10 @@ export default function AdminDashboard() {
                                             <td style={{ padding: '0.75rem 0.9rem' }}><select value={c.subscription_tier || 'basic'} onChange={e => updateClientPlan(c.id, e.target.value)} style={{ background: plan.bg, color: plan.t, border: 'none', borderRadius: '6px', padding: '2px 8px', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer' }}>
                                                 {Object.entries(PLANS).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
                                             </select></td>
-                                            <td style={{ padding: '0.75rem 0.9rem' }}><button onClick={() => setSelClient(selClient?.id === c.id ? null : c)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '3px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px' }}><Eye size={12} />عرض</button></td>
+                                            <td style={{ padding: '0.75rem 0.9rem', display: 'flex', gap: '6px' }}>
+                                                <button onClick={() => setSelClient(selClient?.id === c.id ? null : c)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px' }}><Eye size={12} />عرض</button>
+                                                <button onClick={() => remoteLogin(c.email)} disabled={saving} style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px', opacity: saving ? 0.5 : 1 }}><LogOut size={12} style={{ transform: 'rotate(180deg)' }} />دعم المالك</button>
+                                            </td>
                                         </tr>;
                                     })}
                             </tbody>

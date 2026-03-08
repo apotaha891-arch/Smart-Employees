@@ -55,13 +55,16 @@ async function callGeminiAndExtract(text: string) {
   }
 
   const systemPrompt = `
-      أنت مساعد ذكي متخصص في تحليل ملفات الشركات لاستخراج المعلومات الأساسية وتجهيز الملف التعريفي للشركة (Business Profile).
+      أنت مساعد ذكي متخصص في تحليل ملفات الشركات واستخراج المعلومات الأساسية وتجهيز الملف التعريفي للشركة (Business Profile).
       قم بقراءة النص المقدم لك، واستخرج الحقول التالية بدقة وبصيغة JSON صالحة (Valid JSON) فقط، بدون أي نصوص أو تعليقات أخرى.
       
       يجب أن يكون الـ JSON بهذا الهيكل (استخدم قيم فارغة '' إذا لم تجد المعلومة):
       {
-        "business_name": "اسم الشركة",
+        "business_name": "اسم الشركة / المنشأة",
         "business_type": "نوع النشاط (مثال: صالون تجميل، عيادة، مطعم..)",
+        "phone": "رقم التواصل أو الهاتف",
+        "address": "الموقع أو العنوان",
+        "website": "رابط الموقع الإلكتروني إن وجد",
         "working_hours": "ساعات العمل المذكورة",
         "services": "قائمة بالخدمات المقدمة (مفصولة بفواصل أو بنقاط، باختصار)",
         "description": "وصف عام وموجز للنشاط التجاري",
@@ -71,12 +74,12 @@ async function callGeminiAndExtract(text: string) {
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  // Fallback Loop
+  // Fallback Loop — same models as agent-handler (proven working)
   const MODELS = [
-    "gemini-3-flash-preview",
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-1.5-flash",
-    "gemini-3.1-pro-preview"
+    "gemini-3-flash-preview",          // fastest
+    "gemini-2.5-flash-preview-04-17",  // fast fallback
+    "gemini-3.1-pro-preview",          // most capable
+    "gemini-2.0-flash",                // stable fallback
   ];
 
   let lastError = null;

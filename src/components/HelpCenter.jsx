@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { HelpCircle, Search, ChevronDown, ChevronUp, MessageCircle, Bot, Zap, Settings, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const HelpCenter = () => {
     const { t, language } = useLanguage();
+    const { category } = useParams();
+    const navigate = useNavigate();
+
     const isArabic = language === 'ar';
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('all');
+    const [activeCategory, setActiveCategory] = useState(category || 'all');
     const [openFaq, setOpenFaq] = useState(null);
+
+    // Sync state with URL change
+    useEffect(() => {
+        if (category) {
+            setActiveCategory(category);
+        }
+    }, [category]);
+
+    const handleCategoryClick = (id) => {
+        setActiveCategory(id);
+        navigate(`/help/${id !== 'all' ? id : ''}`, { replace: true });
+    };
 
     const categories = [
         { id: 'all', icon: BookOpen, label: isArabic ? 'الكل' : 'All' },
@@ -127,7 +143,7 @@ const HelpCenter = () => {
                         return (
                             <button
                                 key={cat.id}
-                                onClick={() => setActiveCategory(cat.id)}
+                                onClick={() => handleCategoryClick(cat.id)}
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',

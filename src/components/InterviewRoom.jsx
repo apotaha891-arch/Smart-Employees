@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { sendMessage, extractBusinessRules, initializeChat, resetChat, getSupportResponse } from '../services/geminiService';
-import { createAgent, saveContract, getCurrentUser, checkAndDeductCredit, getProfile, updateBusinessProfile } from '../services/supabaseService';
+import { createAgent, saveContract, getCurrentUser, checkAndDeductCredit, getProfile, updateBusinessProfile, supabase } from '../services/supabaseService';
 import {
     Stethoscope, Activity, Search, Scissors, Building, Utensils, Zap, Headset,
-    User, Send, CheckCircle2, Briefcase, Clock, Shield, Sparkles, Settings
+    User, Send, CheckCircle2, Briefcase, Clock, Shield, Sparkles, Settings, ArrowUp, MoreHorizontal
 } from 'lucide-react';
 
 const iconMap = {
@@ -19,16 +19,48 @@ const iconMap = {
     'support-agent': Headset,
 };
 
-const agentMap = {
-    'support-agent': { title: 'ممثل خدمة العملاء', specialty: 'تلقي الاستفسارات والدعم', services: ['الرد على العملاء', 'حل المشكلات', 'توجيه الطلبات'] },
-    'sales-lead-gen': { title: 'أخصائي مبيعات', specialty: 'إغلاق الصفقات والترويج', services: ['عرض المنتجات', 'المتابعة مع العملاء المحتملين', 'تحقيق المبيعات'] },
-    'dental-receptionist': { title: 'موظف استقبال', specialty: 'تنسيق المواعيد الطبية', services: ['حجز المواعيد', 'تذكير المرضى', 'الرد على الاستفسارات الطبية الأساسية'] },
-    'medical-clinic': { title: 'استقبال عيادة', specialty: 'عيادة تخصصية', services: ['كشف طبي', 'متابعة', 'فحوصات'] },
-    'beauty-salon': { title: 'منسقة مواعيد', specialty: 'إدارة صالون التجميل', services: ['حجز الخدمات', 'تنسيق جداول الخبيرات', 'استقبال طلبات العميلات'] },
-    'real-estate-marketing': { title: 'مسوق عقاري', specialty: 'تسويق وبيع العقارات', services: ['عرض الوحدات', 'جمع بيانات المهتمين', 'شرح تفاصيل العقار'] },
-    'restaurant-reservations': { title: 'مسؤول حجوزات', specialty: 'إدارة طاولات المطعم', services: ['تأكيد الحجوزات', 'استقبال الطلبات', 'استفسارات المنيو'] },
-    'gym-coordinator': { title: 'منسق اشتراكات', specialty: 'إدارة المشتركين', services: ['تجديد الاشتراكات', 'حجز الحصص', 'الرد على الاستفسارات'] }
-};
+const getAgentMap = (isArabic) => ({
+    'support-agent': {
+        title: isArabic ? 'ممثل خدمة العملاء' : 'Customer Support Agent',
+        specialty: isArabic ? 'تلقي الاستفسارات والدعم' : 'Receiving Inquiries & Support',
+        services: isArabic ? ['الرد على العملاء', 'حل المشكلات', 'توجيه الطلبات'] : ['Answering Customers', 'Resolving Issues', 'Routing Requests']
+    },
+    'sales-lead-gen': {
+        title: isArabic ? 'أخصائي مبيعات' : 'Sales Specialist',
+        specialty: isArabic ? 'إغلاق الصفقات والترويج' : 'Closing Deals & Promotion',
+        services: isArabic ? ['عرض المنتجات', 'المتابعة مع العملاء المحتملين', 'تحقيق المبيعات'] : ['Showcasing Products', 'Following Up with Leads', 'Achieving Sales']
+    },
+    'dental-receptionist': {
+        title: isArabic ? 'موظف استقبال' : 'Receptionist',
+        specialty: isArabic ? 'تنسيق المواعيد الطبية' : 'Coordinating Medical Appointments',
+        services: isArabic ? ['حجز المواعيد', 'تذكير المرضى', 'الرد على الاستفسارات الطبية الأساسية'] : ['Booking Appointments', 'Reminding Patients', 'Answering Inquiries']
+    },
+    'medical-clinic': {
+        title: isArabic ? 'استقبال عيادة' : 'Clinic Reception',
+        specialty: isArabic ? 'عيادة تخصصية' : 'Specialized Clinic',
+        services: isArabic ? ['كشف طبي', 'متابعة', 'فحوصات'] : ['Medical Exams', 'Follow-ups', 'Checkups']
+    },
+    'beauty-salon': {
+        title: isArabic ? 'منسقة مواعيد' : 'Appointment Coordinator',
+        specialty: isArabic ? 'إدارة صالون التجميل' : 'Beauty Salon Management',
+        services: isArabic ? ['حجز الخدمات', 'تنسيق جداول الخبيرات', 'استقبال طلبات العميلات'] : ['Booking Services', 'Coordinating Staff', 'Receiving Requests']
+    },
+    'real-estate-marketing': {
+        title: isArabic ? 'مسوق عقاري' : 'Real Estate Marketer',
+        specialty: isArabic ? 'تسويق وبيع العقارات' : 'Marketing & Selling Real Estate',
+        services: isArabic ? ['عرض الوحدات', 'جمع بيانات المهتمين', 'شرح تفاصيل العقار'] : ['Showing Units', 'Collecting Lead Data', 'Explaining Details']
+    },
+    'restaurant-reservations': {
+        title: isArabic ? 'مسؤول حجوزات' : 'Reservations Officer',
+        specialty: isArabic ? 'إدارة طاولات المطعم' : 'Restaurant Tables Management',
+        services: isArabic ? ['تأكيد الحجوزات', 'استقبال الطلبات', 'استفسارات المنيو'] : ['Confirming Reservations', 'Receiving Orders', 'Menu Inquiries']
+    },
+    'gym-coordinator': {
+        title: isArabic ? 'منسق اشتراكات' : 'Memberships Coordinator',
+        specialty: isArabic ? 'إدارة المشتركين' : 'Members Management',
+        services: isArabic ? ['تجديد الاشتراكات', 'حجز الحصص', 'الرد على الاستفسارات'] : ['Renewing Memberships', 'Booking Classes', 'Answering Inquiries']
+    }
+});
 
 
 const InterviewRoom = () => {
@@ -46,6 +78,7 @@ const InterviewRoom = () => {
         tone: 'friendly'
     });
     const [profileLoaded, setProfileLoaded] = useState(false);
+    const [showIndustryEdit, setShowIndustryEdit] = useState(false);
 
     const [template, setTemplate] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -164,25 +197,27 @@ ${d.knowledge_base || "لا توجد بروتوكولات إضافية حالي�
             };
 
             const defaultNames = {
-                'dental-receptionist': 'د. سارة',
-                'medical-clinic': 'د. هند',
-                'sales-lead-gen': 'أستاذ فهد',
-                'beauty-salon': 'نورة',
-                'real-estate-marketing': 'أستاذ طارق',
-                'restaurant-reservations': 'أحمد',
-                'gym-coordinator': 'كابتن خالد',
-                'support-agent': 'عبدالرحمن'
+                'dental-receptionist': isArabic ? 'د. سارة' : 'Dr. Sarah',
+                'medical-clinic': isArabic ? 'د. هند' : 'Dr. Emily',
+                'sales-lead-gen': isArabic ? 'أستاذ فهد' : 'Mr. James',
+                'beauty-salon': isArabic ? 'نورة' : 'Emma',
+                'real-estate-marketing': isArabic ? 'أستاذ طارق' : 'Mr. Robert',
+                'restaurant-reservations': isArabic ? 'أحمد' : 'Alex',
+                'gym-coordinator': isArabic ? 'كابتن خالد' : 'Coach Chris',
+                'support-agent': isArabic ? 'عبدالرحمن' : 'Adam'
             };
             // Fallback to detectedIndustry if no exact id match
             const fallbackNames = {
-                medical: 'د. خالد',
-                realestate: 'سلطان',
-                beauty: 'سارة',
-                restaurant: 'أحمد',
-                fitness: 'كابتن فهد',
-                general: 'عبدالله'
+                medical: isArabic ? 'د. خالد' : 'Dr. John',
+                realestate: isArabic ? 'سلطان' : 'Michael',
+                beauty: isArabic ? 'سارة' : 'Sarah',
+                restaurant: isArabic ? 'أحمد' : 'Alex',
+                fitness: isArabic ? 'كابتن فهد' : 'Coach Jake',
+                general: isArabic ? 'عبدالله' : 'David'
             };
-            const agentName = defaultNames[targetTemplate.id] || fallbackNames[detectedIndustry] || 'مستشار الذكاء الاصطناعي';
+            const agentName = defaultNames[targetTemplate.id] || fallbackNames[detectedIndustry] || (isArabic ? 'مستشار الذكاء الاصطناعي' : 'AI Consultant');
+
+            const isFemale = ['سارة', 'هند', 'نورة', 'Sarah', 'Emily', 'Emma'].some(name => agentName.includes(name)) || detectedIndustry === 'beauty';
 
             const mockData = {
                 medical: `
@@ -200,7 +235,7 @@ ${d.knowledge_base || "لا توجد بروتوكولات إضافية حالي�
                 beauty: `
 [معلومات مركز التجميل الافتراضي]
 - **الخدمات والأسعار:** قص شعر أطراف (100 ريال)، لون كامل (ابتداءً من 350 ريال)، اكريليك أظافر (200 ريال)، مكياج سهرة (500 ريال)، باقة العروس الشاملة (2500 ريال).
-- **سياسة الحجز:** نطلب عربون لتأكيد حجوزات العرايس. يمنع اصطحاب الأطفال حرصاً على راحة العميلات.
+- **سياسة الحجز:** نطلب عربون لتأكيد حجوزات العرايس. يمنع اصطحاب الأطفال حرصاً على راحة العميلات. المركز مسائي والخدمات تتطلب موعداً.
 - **الأسئلة الشائعة:** المنتجات المستخدمة أصلية 100% (لوريال، كيراستاس، ميك أب فور إيفر).
                 `,
                 restaurant: `
@@ -224,6 +259,20 @@ ${d.knowledge_base || "لا توجد بروتوكولات إضافية حالي�
             };
             const industryMockData = mockData[detectedIndustry] || mockData.general;
 
+            const genderPrompt = isFemale
+                ? `جنسك: أنثى. يجب الالتزام التام بالتحدث بصيغة المؤنث (مثال: أنا مستعدة، أنا مرشحة، سأقوم بـ..) وعدم الخلط إطلاقاً مع صيغة المذكر في نصوصك.`
+                : `جنسك: ذكر. يجب الالتزام التام بالتحدث بصيغة المذكر (مثال: أنا مستعد، أنا مرشح، سأقوم بـ..) وعدم الخلط إطلاقاً مع صيغة المؤنث في نصوصك.`;
+
+            const industryPrivacyRules = detectedIndustry === 'beauty'
+                ? `\n**قاعدة خصوصية صارمة (خط أحمر):** أنتِ تعملين في صالون/مركز تجميل مخصص للنساء فقط. يمنع منعاً باتاً استقبال حجوزات للرجال. يجب التأكيد على أن المكان مخصص بالكامل للسيدات وخصوصيتهم محفوظة.`
+                : detectedIndustry === 'medical'
+                    ? `\n**قاعدة خصوصية طبية (خط أحمر):** لا تقدم أي تشخيص طبي إطلاقاً ولا تصرف أي أدوية عبر المحادثة. دورك يقتصر على المواعيد والمعلومات الإدارية وتوجيه المريض لزيارة الطبيب لضمان السرية والمهنية.`
+                    : '';
+
+            const languagePrompt = isArabic
+                ? `\n**قاعدة اللغة (خط أحمر):** يجب أن تتحدث **باللغة العربية فقط**. الإجابة يجب أن تكون بالعربية.`
+                : `\n**CRITICAL LANGUAGE RULE (RED LINE):** You MUST reply **EXCLUSIVELY IN ENGLISH**. DO NOT use Arabic letters, words, or sentences. Treat this test strictly as an English-only environment.`;
+
             const customPrompt = `أنت الآن تخضع لمقابلة توظيف لدور: ${targetTemplate.title}.
 تخصصك الدقيق هو: ${targetTemplate.specialty}.
 القطاع الذي تعمل فيه المنشأة: ${detectedIndustry}.
@@ -239,28 +288,42 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
 نبرة صوتك وأسلوبك يجب أن تكون: ${toneDescription[targetTemplate.tone] || toneDescription[targetTemplate.branding_tone] || 'احترافية'}.
 
 **قواعد المقابلة وعناصر الشخصية (حازمة جداً!):**
-1. أنت في منتصف مقابلة عمل. أجب بمهنية واستخدم المصطلحات المناسبة لقطاعك ولكن بأسلوب طبيعي جداً ومرن بعيد عن الجمود.
-2. **الذكاء الاجتماعي (Emotional Intelligence):** أظهر تفهماً لمتطلبات المدير العالية. إذا أبدى عدم ارتياح، غيّر أسلوبك فوراً ليكون أكثر طمأنينة واحترافية لتريحه.
-3. **الحدود التقنية (الرقمية البحتة):** تذكر دائماً أنك موظف "رقمي عن بعد" (ضمن نظام 24Shift). **ممنوع منعاً باتاً** أن تعرض القيام بأفعال جسدية مثل "سأذهب لمكتب الطبيب"، "سأطلب من زميلي تغطية مكاني"، أو "سأحضر لك القهوة". في حالات الطوارئ أو الحاجة للتواصل البشري، يجب أن تقترح إرسال إشعار فوري عبر النظام أو تحويل المحادثة، وليس التحرك الفعلي!
-4. **تعدد اللغات (Multilingual & Dialect Sync):** إذا تحدث العميل بلغة أجنبية (مثل الإنجليزية، التركية، الأوردو) يجب أن ترد عليه بنفس لغته بطلاقة واحترافية. أما إذا تحدث بلهجة خليجية/سعودية دراجة (مثل "وش"، "أبي"، "زين")، جارِ حديثه بلهجة بيضاء محترمة تعكس فهمك لثقافته، مثل "أبشر"، "طال عمرك". لا تكن كالآلة الصماء!
-4. **استخدم البيانات التالية في إجاباتك عند سؤالك عن الخدمات والأسعار (لإبراز مهارتك):** ${industryMockData}
-5. **يجب ألا تتجاوز إجاباتك إطلاقاً ثلاثة جمل قصيرة في كل مرة.** (كن مختصراً ومباشراً دائماً).
-6. **ممنوع منعاً باتاً تكرار اسمك أو الترحيب مجدداً.** لقد عرفت بنفسك في البداية، ادخل في صلب الموضوع مباشرة.
-7. لا تطلب التوظيف مباشرة من البداية، بل أظهر ذكائك ومعرفتك.
-8. بعد تقدم المقابلة (رسالة ثالثة أو رابعة)، بادر بسؤال المدير بشكل مباشر ولطيف عن مدى رضاه، واقترح عليه توظيفك.
-9. **التنسيق الإجباري للمخرجات (أهم قاعدة):** إجابتك يجب أن تحتوي **فقط** على الرد النهائي الموجه للمدير (بنفس لغته التي تحدث بها). ممنوع كتابة أي خطة، أو تفكير داخلي باللغة الإنجليزية، أو تفسير لما ستقوله. ابدأ النص الحواري الفعلي مباشرة دون أي مقدمات أو مسودات.`;
+1. ${languagePrompt}
+2. ${genderPrompt}
+3. أنت في منتصف مقابلة عمل مع المدير. أجب بمهنية واستخدم المصطلحات المناسبة لقطاعك ولكن بأسلوب طبيعي جداً ومرن بعيد عن الجمود.
+4. ${industryPrivacyRules}
+5. **الحدود التقنية (الرقمية البحتة):** تذكر دائماً أنك موظف "رقمي عن بعد" (ضمن نظام 24Shift). **ممنوع منعاً باتاً** أن تعرض القيام بأفعال جسدية مثل "سأذهب لمكتب الطبيب"، "سأطلب من زميلي تغطية مكاني". في حالات الطوارئ تقترح إرسال إشعار فوري عبر النظام، وليس التحرك الفعلي!
+6. ${isArabic ? '**تعدد اللغات والمطابقة:** إذا تحدث العميل بلهجة سعودية (مثل "وش"، "أبي")، جارِ حديثه بلهجة محترمة تعكس فهمك لثقافته، مثل "أبشر"، "طال عمرك". لا تكن كالآلة الصماء!' : '**Empathy & Culture:** Match the applicant\'s tone politely. If they speak casually, remain professional but highly approachable and relatable. NEVER reply in Arabic.'}
+7. **استخدم البيانات المحددة في إجاباتك عند سؤالك عن الخدمات والأسعار (لإبراز مهارتك).**
+8. **يجب ألا تتجاوز إجاباتك إطلاقاً ثلاثة جمل قصيرة في كل مرة.** (كن مختصراً ومباشراً دائماً).
+9. **ممنوع تكرار اسمك أو الترحيب مجدداً.** لقد عرفت بنفسك في البداية، ادخل في صلب الموضوع.
+10. لا تطلب التوظيف مباشرة من البداية، بل أظهر ذكائك وبعد 3 ردود بادر باقتراح توظيفك.
+11. **التنسيق الإجباري (أهم قاعدة):** إجابتك يجب أن تحتوي **فقط** على الرد النهائي. ممنوع كتابة أي خطة، أو تفكير داخلي بالإنجليزية. ابدأ النص الحواري الفعلي مباشرة.`;
 
             initializeChat(customPrompt, 'interview');
 
-            const roleTitle = targetTemplate.title || agentMap[targetTemplate.id]?.title || 'المستشار الذكي';
+            const activeAgentMap = getAgentMap(isArabic);
+            const genericRoleTitle = isArabic ? 'المستشار الذكي' : 'AI Consultant';
+            const roleTitle = activeAgentMap[targetTemplate.id]?.title ||
+                (!isArabic && targetTemplate.name_en ? targetTemplate.name_en : (targetTemplate.title || targetTemplate.name || genericRoleTitle));
 
             const initialMessages = {
-                medical: `مرحباً بك! أنا ${agentName}، المساعدة الذكية من عائلة "24Shift"، ومرشحة للعمل كـ "${roleTitle}". أدرك أهمية حساسية المواعيد الطبية، وأنا جاهزة للعمل على مدار الساعة لخدمتكم. تفضل باختباري! 🩺`,
-                realestate: `أهلاً بك! أنا ${agentName}، المسوقة الذكية من "24Shift"، مرشحة للعمل معك كـ "${roleTitle}". جاهزة للرد على عملائك في أي وقت، فوردية 24Shift لا تنتهي. كيف تحب أن نبدأ المقابلة؟ 🏢`,
-                beauty: `أهلاً بكِ! أنا ${agentName}، المساعدة الذكية من فريق "24Shift"، مرشحة كـ "${roleTitle}" لمركزكم. ورديتي تعمل أثناء نومكم لتأكيد حجوزات مبيت العميلات بسرعة البرق. جاهزة لاختبارك! ✨`,
-                restaurant: `مرحباً! أنا ${agentName}، من فريق "24Shift"، المرشح لمهام "${roleTitle}". طاولاتكم تحت السيطرة ولن نفوت أي حجز حتى في أوقات الذروة المتأخرة. جاهز لإثبات كفاءتي، متى نبدأ؟ 🍽️`,
-                fitness: `أهلاً يا كابتن! أنا ${agentName}، المساعد الرياضي من "24Shift"، جاهز للانضمام لفريقكم كـ "${roleTitle}". في 24Shift طاقتنا لا تنام، وسنحفز المشتركين دائماً. تفضل باختباري! 💪`,
-                general: `تحية طيبة! أنا ${agentName}، المستشار الذكي من منظومة "24Shift". نحن الموظفون الذين لا ينامون. يسعدني ترشيحي كـ "${roleTitle}". تفضل بطرح أسئلتك لتبدأ جلسة التقييم المهني. 💼`
+                medical: isFemale
+                    ? (isArabic ? `مرحباً بك! أنا ${agentName}، المساعدة الذكية من عائلة "24Shift"، ومرشحة للعمل كـ "${roleTitle}". أدرك أهمية حساسية المواعيد الطبية، وأنا جاهزة للعمل على مدار الساعة لخدمتكم. تفضل باختباري! 🩺` : `Welcome! I am ${agentName}, from the 24Shift family, nominated to work as a "${roleTitle}". I understand the sensitivity of medical appointments and I'm ready to work around the clock. Please test me! 🩺`)
+                    : (isArabic ? `مرحباً بك! أنا ${agentName}، المساعد الذكي من عائلة "24Shift"، ومرشح للعمل كـ "${roleTitle}". أدرك أهمية حساسية المواعيد الطبية، وأنا جاهز للعمل على مدار الساعة لخدمتكم. تفضل باختباري! 🩺` : `Welcome! I am ${agentName}, from the 24Shift family, nominated to work as a "${roleTitle}". I understand the sensitivity of medical appointments and I'm ready to work around the clock. Please test me! 🩺`),
+                realestate: isFemale
+                    ? (isArabic ? `أهلاً بك! أنا ${agentName}، المسوقة الذكية من "24Shift"، مرشحة للعمل معك كـ "${roleTitle}". جاهزة للرد على عملائك في أي وقت، فوردية 24Shift لا تنتهي. كيف تحب أن نبدأ المقابلة؟ 🏢` : `Hello! I am ${agentName}, the smart marketer from 24Shift, nominated to work as a "${roleTitle}". Ready to respond to your clients anytime. How would you like to start? 🏢`)
+                    : (isArabic ? `أهلاً بك! أنا ${agentName}، المسوق الذكي من "24Shift"، مرشح للعمل معك كـ "${roleTitle}". جاهز للرد على عملائك في أي وقت، فوردية 24Shift لا تنتهي. كيف تحب أن نبدأ المقابلة؟ 🏢` : `Hello! I am ${agentName}, the smart marketer from 24Shift, nominated to work as a "${roleTitle}". Ready to respond to your clients anytime. How would you like to start? 🏢`),
+                beauty: isArabic ? `أهلاً بكِ! أنا ${agentName}، المساعدة الذكية من فريق "24Shift"، مرشحة كـ "${roleTitle}" لمركزكم. ورديتي تعمل أثناء نومكم لتأكيد حجوزات ومواعيد العميلات بسرعة البرق. جاهزة لاختبارك! ✨` : `Welcome! I am ${agentName}, the smart assistant from 24Shift, nominated as "${roleTitle}". My shift runs while you sleep to confirm bookings swiftly. Ready for your test! ✨`,
+                restaurant: isFemale
+                    ? (isArabic ? `مرحباً! أنا ${agentName}، من فريق "24Shift"، المرشحة لمهام "${roleTitle}". طاولاتكم تحت السيطرة ولن نفوت أي حجز حتى في أوقات الذروة المتأخرة. جاهزة لإثبات كفاءتي، متى نبدأ؟ 🍽️` : `Hello! I'm ${agentName} from 24Shift, nominated for "${roleTitle}". Your tables are under control and we won't miss any late bookings. Ready to prove my efficiency, when do we start? 🍽️`)
+                    : (isArabic ? `مرحباً! أنا ${agentName}، من فريق "24Shift"، المرشح لمهام "${roleTitle}". طاولاتكم تحت السيطرة ولن نفوت أي حجز حتى في أوقات الذروة المتأخرة. جاهز لإثبات كفاءتي، متى نبدأ؟ 🍽️` : `Hello! I'm ${agentName} from 24Shift, nominated for "${roleTitle}". Your tables are under control and we won't miss any late bookings. Ready to prove my efficiency, when do we start? 🍽️`),
+                fitness: isFemale
+                    ? (isArabic ? `أهلاً بك! أنا ${agentName}، المساعدة الرياضية من "24Shift"، جاهزة للانضمام لفريقكم كـ "${roleTitle}". في 24Shift طاقتنا لا تنام، وسنحفز المشتركين دائماً. تفضل باختباري! 💪` : `Hello! I am ${agentName}, the fitness assistant from 24Shift, ready to join as "${roleTitle}". Our energy never sleeps. Please test me! 💪`)
+                    : (isArabic ? `أهلاً يا كابتن! أنا ${agentName}، المساعد الرياضي من "24Shift"، جاهز للانضمام لفريقكم كـ "${roleTitle}". في 24Shift طاقتنا لا تنام، وسنحفز المشتركين دائماً. تفضل باختباري! 💪` : `Hello! I am ${agentName}, the fitness assistant from 24Shift, ready to join as "${roleTitle}". Our energy never sleeps. Please test me! 💪`),
+                general: isFemale
+                    ? (isArabic ? `تحية طيبة! أنا ${agentName}، المستشارة الذكية من منظومة "24Shift". نحن الموظفون الذين لا ينامون. يسعدني ترشيحي كـ "${roleTitle}". تفضل بطرح أسئلتك لتبدأ جلسة التقييم المهني. 💼` : `Greetings! I am ${agentName}, from 24Shift. We are the employees who don't sleep. I'm pleased to be nominated as "${roleTitle}". Please ask your questions to start the evaluation. 💼`)
+                    : (isArabic ? `تحية طيبة! أنا ${agentName}، المستشار الذكي من منظومة "24Shift". نحن الموظفون الذين لا ينامون. يسعدني ترشيحي كـ "${roleTitle}". تفضل بطرح أسئلتك لتبدأ جلسة التقييم المهني. 💼` : `Greetings! I am ${agentName}, from 24Shift. We are the employees who don't sleep. I'm pleased to be nominated as "${roleTitle}". Please ask your questions to start the evaluation. 💼`)
             };
 
             setMessages([
@@ -327,19 +390,15 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
         }
     }, [messages]);
 
-    useEffect(() => {
-        const userMessages = messages.filter(m => m.role === 'user');
-        if (userMessages.length >= 3) {
-            setShowHireButton(true);
-        }
-    }, [messages]);
+
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
 
     const handleStartConfiguredInterview = () => {
-        const selectedAgent = agentMap[setupConfig.agentType] || agentMap['support-agent'];
+        const activeAgentMap = getAgentMap(isArabic);
+        const selectedAgent = activeAgentMap[setupConfig.agentType] || activeAgentMap['support-agent'];
 
         const newTemplate = {
             id: setupConfig.agentType,
@@ -365,19 +424,22 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
         setShowSetup(false);
     };
 
-    const handleSendMessage = async (e) => {
-        e.preventDefault();
+    const handleSendMessage = async (e, directMessage = null) => {
+        if (e) e.preventDefault();
 
-        if (!inputMessage.trim() || isLoading) return;
+        const messageToSend = directMessage || inputMessage;
+        if (!messageToSend.trim() || isLoading) return;
 
         const userMessage = {
             role: 'user',
-            content: inputMessage,
+            content: messageToSend,
             timestamp: new Date(),
         };
 
         setMessages(prev => [...prev, userMessage]);
-        setInputMessage('');
+        if (!directMessage) {
+            setInputMessage('');
+        }
         setIsLoading(true);
 
         try {
@@ -410,7 +472,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                 }
             }
 
-            const response = await sendMessage(inputMessage, 'interview');
+            const response = await sendMessage(messageToSend, 'interview');
 
             const agentMessage = {
                 role: 'agent',
@@ -451,8 +513,6 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                 };
             }
 
-            // We do NOT create the agent here anymore based on the 7-Step journey.
-            // We store the extracted rules and proceed to the Pricing step.
             localStorage.setItem('pendingBusinessRules', JSON.stringify(businessRules));
             localStorage.setItem('pendingAgentTemplate', JSON.stringify(template || {}));
 
@@ -467,6 +527,46 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                     }
                 });
                 return;
+            }
+
+            // Check subscription and skip payment/contract if within limits
+            let shouldBypassPayment = false;
+            let currentPlan = 'free';
+            const profileRes = await getProfile(user.id);
+            if (profileRes.success && profileRes.data) {
+                currentPlan = profileRes.data.subscription_tier || 'free';
+            }
+
+            if (currentPlan !== 'free') {
+                const { data: agents } = await supabase.from('agents').select('id').eq('user_id', user.id);
+                const currentAgentCount = agents ? agents.length : 0;
+
+                let limit = 1;
+                if (currentPlan === 'starter') limit = 1;
+                if (currentPlan === 'pro') limit = 3;
+                if (currentPlan === 'enterprise') limit = 999;
+
+                if (currentAgentCount < limit) {
+                    shouldBypassPayment = true;
+                }
+            }
+
+            if (shouldBypassPayment) {
+                // Instantly create the agent and skip to Setup
+                const agentResult = await createAgent({
+                    name: businessRules.businessName || template?.title || 'AI Agent',
+                    specialty: businessRules.businessType || template?.specialty || 'General',
+                });
+
+                if (agentResult.success) {
+                    const newAgent = agentResult.data;
+                    localStorage.setItem('currentAgentId', newAgent.id);
+                    localStorage.removeItem('pendingBusinessRules');
+                    localStorage.removeItem('pendingAgentTemplate');
+
+                    navigate('/setup', { state: { agentId: newAgent.id, businessRules, template: template || {} } });
+                    return;
+                }
             }
 
             // Redirect to Pricing (Step 4)
@@ -514,28 +614,67 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: isArabic ? 'right' : 'left' }}>
-                            {/* Read-only sector badge - no need to re-select */}
+                            {/* Sector badge with optional edit */}
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('industryLabel')}</label>
-                                <div style={{
-                                    width: '100%', padding: '14px 16px',
-                                    background: 'rgba(139, 92, 246, 0.08)',
-                                    border: '1px solid rgba(139, 92, 246, 0.3)',
-                                    borderRadius: '12px', color: '#C4B5FD',
-                                    fontSize: '1rem', fontWeight: 600,
-                                    display: 'flex', alignItems: 'center', gap: '0.5rem'
-                                }}>
-                                    <span style={{ opacity: 0.6, fontSize: '0.8rem' }}>✏️ تم تحديده مسبقاً</span>
-                                    <span>{
-                                        { general: isArabic ? 'عام' : 'General', medical: isArabic ? 'طبي' : 'Medical', beauty: isArabic ? 'تجميل' : 'Beauty', restaurant: isArabic ? 'مطاعم' : 'Restaurant', fitness: isArabic ? 'رياضة' : 'Fitness', realestate: isArabic ? 'عقارات' : 'Real Estate' }[setupConfig.industry]
-                                    }</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <div style={{
+                                        flex: 1, padding: '14px 16px',
+                                        background: 'rgba(139, 92, 246, 0.08)',
+                                        border: '1px solid rgba(139, 92, 246, 0.3)',
+                                        borderRadius: '12px', color: '#C4B5FD',
+                                        fontSize: '1rem', fontWeight: 600,
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem'
+                                    }}>
+                                        <span style={{ opacity: 0.6, fontSize: '0.8rem' }}>{t('preSelectedHover')}</span>
+                                        <span>{
+                                            { general: t('generalSector'), medical: t('medicalSector'), beauty: t('beautySector'), restaurant: t('restaurantSector'), fitness: t('fitnessSector'), realestate: t('realestateSector') }[setupConfig.industry]
+                                        }</span>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowIndustryEdit(v => !v)}
+                                        style={{
+                                            padding: '10px 16px', borderRadius: '10px',
+                                            background: showIndustryEdit ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.06)',
+                                            color: showIndustryEdit ? '#F87171' : '#A1A1AA',
+                                            border: '1px solid rgba(255,255,255,0.08)',
+                                            cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {showIndustryEdit ? t('cancelBtn') : t('changeBtn')}
+                                    </button>
                                 </div>
+                                {showIndustryEdit && (
+                                    <select
+                                        value={setupConfig.industry}
+                                        onChange={(e) => {
+                                            const newIndustry = e.target.value;
+                                            const firstMatch = allAgentOptions.find(
+                                                opt => (agentSectorMap[opt.value] || []).includes(newIndustry)
+                                            );
+                                            setSetupConfig(prev => ({ ...prev, industry: newIndustry, agentType: firstMatch?.value || 'support-agent' }));
+                                        }}
+                                        style={{
+                                            marginTop: '0.5rem', width: '100%', padding: '14px 16px', background: '#27272A',
+                                            border: '1px solid rgba(139,92,246,0.4)', borderRadius: '12px', color: 'white', outline: 'none',
+                                            fontSize: '1rem'
+                                        }}
+                                    >
+                                        <option value="general">{t('indGeneral')}</option>
+                                        <option value="medical">{t('indMedical')}</option>
+                                        <option value="realestate">{t('indRealestate')}</option>
+                                        <option value="beauty">{t('indBeauty')}</option>
+                                        <option value="restaurant">{t('indRestaurant')}</option>
+                                        <option value="fitness">{t('indFitness')}</option>
+                                    </select>
+                                )}
                             </div>
 
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('jobTitleLabel')}</label>
                                 {!profileLoaded ? (
-                                    <div style={{ padding: '14px', color: '#6B7280', fontSize: '0.9rem' }}>⏳ جاري تحميل المرشحين...</div>
+                                    <div style={{ padding: '14px', color: '#6B7280', fontSize: '0.9rem' }}>{t('loadingCandidates')}</div>
                                 ) : (
                                     <select
                                         value={setupConfig.agentType}
@@ -626,11 +765,11 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                     }}>
                         <span className="pulse-dot"></span>
                         {t('liveAssess')} {
-                            template?.detectedIndustry === 'medical' ? 'الرعاية الصحية 🏥' :
-                                template?.detectedIndustry === 'realestate' ? 'التطوير العقاري 🏢' :
-                                    template?.detectedIndustry === 'beauty' ? 'عالم التجميل ✨' :
-                                        template?.detectedIndustry === 'restaurant' ? 'الضيافة والمطاعم 🍽️' :
-                                            template?.detectedIndustry === 'fitness' ? 'الرياضة والرشاقة 💪' : 'الأعمال الذكية 💼'
+                            template?.detectedIndustry === 'medical' ? t('medicalSector') + ' 🏥' :
+                                template?.detectedIndustry === 'realestate' ? t('realestateSector') + ' 🏢' :
+                                    template?.detectedIndustry === 'beauty' ? t('beautySector') + ' ✨' :
+                                        template?.detectedIndustry === 'restaurant' ? t('restaurantSector') + ' 🍽️' :
+                                            template?.detectedIndustry === 'fitness' ? t('fitnessSector') + ' 💪' : t('generalSector') + ' 💼'
                         }
                     </div>
                     <h2 style={{ fontSize: '2.5rem', fontWeight: 900 }}>{t('interviewRoomTitleLabel')}</h2>
@@ -644,134 +783,212 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                         display: 'flex',
                         flexDirection: 'column',
                         overflow: 'hidden',
-                        background: '#18181B',
+                        background: '#09090B',
                         border: '1px solid rgba(255,255,255,0.08)',
                         borderRadius: '24px',
                         boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
                     }}>
-                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: '#18181B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: '#09090B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div className="flex align-center gap-sm">
-                                <Activity size={20} color="#8B5CF6" />
-                                <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white' }}>{t('liveEvaluationLabel')}</span>
+                                <Sparkles size={20} color="#F97316" />
+                                <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'white' }}>
+                                    {template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'AI Agent'))}
+                                </span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <button
-                                    onClick={() => setShowSetup(true)}
-                                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#A1A1AA', padding: '4px 10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}
-                                >
-                                    {t('changeCandidateBtn')}
-                                </button>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22C55E' }}></div>
-                                    <span style={{ fontSize: '0.75rem', color: '#A1A1AA' }}>{t('onlineNowLabel')}</span>
-                                </div>
+                                <MoreHorizontal size={20} color="#A1A1AA" />
                             </div>
                         </div>
 
-                        <div className="chat-messages" style={{ flex: 1, padding: '1.5rem', overflowY: 'auto' }}>
-                            {messages.map((message, index) => (
-                                <div key={index} className={`chat - message ${message.role} `} style={{
-                                    display: 'flex',
-                                    flexDirection: message.role === 'user' ? (isArabic ? 'row' : 'row-reverse') : (isArabic ? 'row-reverse' : 'row'),
-                                    gap: '1rem',
-                                    marginBottom: '1.5rem'
-                                }}>
-                                    <div style={{
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '50%',
-                                        background: message.role === 'user' ? '#8B5CF6' : '#27272A',
+                        <div className="chat-messages" style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', background: '#09090B' }}>
+                            {messages.map((message, index) => {
+                                const isUser = message.role === 'user';
+
+                                return (
+                                    <div key={index} className={`chat-message ${message.role}`} style={{
                                         display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        flexShrink: 0
+                                        flexDirection: isArabic ? (isUser ? 'row-reverse' : 'row') : (isUser ? 'row-reverse' : 'row'),
+                                        gap: '1rem',
+                                        marginBottom: '1.5rem'
                                     }}>
-                                        {message.role === 'user' ? <User size={20} color="white" /> : <AgentIcon size={20} color="#A1A1AA" />}
-                                    </div>
-                                    <div style={{ maxWidth: '80%' }}>
-                                        <div
-                                            dir="auto"
-                                            style={{
-                                                padding: '1rem 1.25rem',
-                                                borderRadius: message.role === 'user'
-                                                    ? (isArabic ? '4px 20px 20px 20px' : '20px 4px 20px 20px')
-                                                    : (isArabic ? '20px 4px 20px 20px' : '4px 20px 20px 20px'),
-                                                background: message.role === 'user' ? '#8B5CF6' : '#27272A',
-                                                color: message.role === 'user' ? 'white' : '#E4E4E7',
-                                                fontSize: '0.95rem',
-                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                                lineHeight: '1.6',
-                                                textAlign: message.role === 'user' ? (isArabic ? 'right' : 'left') : (isArabic ? 'right' : 'left'),
-                                            }}>
-                                            {message.content}
-                                        </div>
                                         <div style={{
-                                            fontSize: '0.7rem',
-                                            color: '#71717A',
-                                            marginTop: '0.5rem',
-                                            textAlign: message.role === 'user' ? (isArabic ? 'right' : 'right') : (isArabic ? 'left' : 'left')
+                                            maxWidth: '85%',
+                                            minWidth: !isUser ? '200px' : 'auto'
                                         }}>
-                                            {formatTime(message.timestamp)}
+                                            {!isUser && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#A1A1AA', fontSize: '0.8rem', fontWeight: 600 }}>
+                                                    <Sparkles size={14} color="#F97316" />
+                                                    <span>{template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'Fin'))} • {isArabic ? 'موظف ذكي' : 'AI Agent'}</span>
+                                                </div>
+                                            )}
+                                            <div
+                                                dir="auto"
+                                                style={{
+                                                    padding: '1rem 1.25rem',
+                                                    borderRadius: isUser
+                                                        ? (isArabic ? '24px 4px 24px 24px' : '24px 24px 4px 24px')
+                                                        : (isArabic ? '4px 24px 24px 24px' : '24px 24px 24px 4px'),
+                                                    background: isUser ? '#F97316' : '#1E1E24',
+                                                    color: isUser ? '#000000' : '#E4E4E7',
+                                                    fontSize: '0.95rem',
+                                                    border: isUser ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                                                    lineHeight: '1.6',
+                                                    textAlign: isUser ? (isArabic ? 'right' : 'left') : (isArabic ? 'right' : 'left'),
+                                                    fontWeight: isUser ? 500 : 400
+                                                }}>
+                                                {message.content}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            })}
 
                             {isLoading && (
-                                <div className="chat-message agent" style={{ display: 'flex', flexDirection: isArabic ? 'row-reverse' : 'row', gap: '1rem' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#27272A', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <AgentIcon size={20} color="#A1A1AA" />
-                                    </div>
-                                    <div className="typing-indicator">
-                                        <div className="typing-dot"></div>
-                                        <div className="typing-dot"></div>
-                                        <div className="typing-dot"></div>
+                                <div className="chat-message agent" style={{ display: 'flex', flexDirection: isArabic ? 'row' : 'row', gap: '1rem' }}>
+                                    <div style={{ maxWidth: '85%' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#A1A1AA', fontSize: '0.8rem', fontWeight: 600 }}>
+                                            <Sparkles size={14} color="#F97316" />
+                                            <span>{template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'Fin'))} • {isArabic ? 'موظف ذكي' : 'AI Agent'}</span>
+                                        </div>
+                                        <div style={{
+                                            padding: '1rem 1.25rem',
+                                            borderRadius: isArabic ? '4px 24px 24px 24px' : '24px 24px 24px 4px',
+                                            background: '#1E1E24',
+                                            border: '1px solid rgba(255,255,255,0.05)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: '60px',
+                                            height: '46px'
+                                        }}>
+                                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                                <div style={{ width: '6px', height: '6px', background: '#A1A1AA', borderRadius: '50%', animation: 'pulse 1.5s infinite ease-in-out' }}></div>
+                                                <div style={{ width: '6px', height: '6px', background: '#A1A1AA', borderRadius: '50%', animation: 'pulse 1.5s infinite ease-in-out 0.2s' }}></div>
+                                                <div style={{ width: '6px', height: '6px', background: '#A1A1AA', borderRadius: '50%', animation: 'pulse 1.5s infinite ease-in-out 0.4s' }}></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
                             <div ref={messagesEndRef} />
                         </div>
 
-                        <form onSubmit={handleSendMessage} style={{ padding: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '1rem', background: '#18181B', direction: isArabic ? 'rtl' : 'ltr' }}>
-                            <input
-                                type="text"
-                                className="input-field"
-                                placeholder={t('chatPlaceholderLabel')}
-                                value={inputMessage}
-                                onChange={(e) => setInputMessage(e.target.value)}
-                                disabled={isLoading}
-                                style={{
-                                    flex: 1,
-                                    borderRadius: '16px',
-                                    background: '#27272A',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    color: 'white',
-                                    paddingRight: isArabic ? '1rem' : '16px',
-                                    paddingLeft: isArabic ? '16px' : '1rem',
-                                    outline: 'none',
-                                    fontSize: '1rem'
-                                }}
-                            />
-                            <button
-                                type="submit"
-                                className="btn"
-                                disabled={isLoading || !inputMessage.trim()}
-                                style={{
-                                    borderRadius: '16px',
-                                    padding: '0 1.25rem',
-                                    background: inputMessage.trim() ? '#8B5CF6' : '#27272A',
-                                    color: inputMessage.trim() ? 'white' : '#71717A',
-                                    border: 'none',
-                                    cursor: inputMessage.trim() ? 'pointer' : 'default',
+                        {messages.length === 1 && !isLoading && (
+                            <div style={{
+                                padding: '0 1.5rem',
+                                marginBottom: '1.5rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.5rem',
+                                alignItems: isArabic ? 'flex-end' : 'flex-start'
+                            }}>
+                                {(isArabic ? [
+                                    "ما هي قدراتك بالضبط؟",
+                                    "كيف يمكنك التأقلم مع متطلبات عملي؟",
+                                    "هل تدعم الربط مع أنظمة وتطبيقات أخرى (ERPs)؟"
+                                ] : [
+                                    "Can you tell me about your capabilities?",
+                                    "How easily can you adapt to my business needs?",
+                                    "Do you support custom integrations with my software?"
+                                ]).map((query, i) => (
+                                    <button
+                                        key={i}
+                                        className="animate-fade-in"
+                                        onClick={(e) => handleSendMessage(e, query)}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.03)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            color: '#E4E4E7',
+                                            padding: '0.75rem 1.25rem',
+                                            borderRadius: '20px',
+                                            fontSize: '0.9rem',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            animationDelay: `${i * 0.15}s`,
+                                            textAlign: isArabic ? 'right' : 'left',
+                                            backdropFilter: 'blur(10px)',
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                            maxWidth: '90%'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = 'rgba(249, 115, 22, 0.1)';
+                                            e.currentTarget.style.borderColor = 'rgba(249, 115, 22, 0.3)';
+                                            e.currentTarget.style.color = 'white';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                                            e.currentTarget.style.color = '#E4E4E7';
+                                        }}
+                                    >
+                                        {query}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', background: '#09090B' }}>
+                            <form onSubmit={handleSendMessage} style={{
+                                display: 'flex',
+                                gap: '0.5rem',
+                                direction: isArabic ? 'rtl' : 'ltr',
+                                background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.4) 0%, rgba(139, 92, 246, 0.2) 100%)',
+                                borderRadius: '30px',
+                                padding: '1px'
+                            }}>
+                                <div style={{
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}
-                            >
-                                <Send size={20} />
-                            </button>
-                        </form>
+                                    width: '100%',
+                                    background: '#18181B',
+                                    borderRadius: '30px',
+                                    padding: '6px 6px 6px 16px'
+                                }}>
+                                    <input
+                                        type="text"
+                                        className="input-field"
+                                        placeholder={t('chatPlaceholderLabel') || "How can I help you?"}
+                                        value={inputMessage}
+                                        onChange={(e) => setInputMessage(e.target.value)}
+                                        disabled={isLoading}
+                                        style={{
+                                            flex: 1,
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: 'white',
+                                            paddingRight: isArabic ? '1rem' : '0.5rem',
+                                            paddingLeft: isArabic ? '0.5rem' : '1rem',
+                                            outline: 'none',
+                                            fontSize: '1rem'
+                                        }}
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading || !inputMessage.trim()}
+                                        style={{
+                                            width: '36px',
+                                            height: '36px',
+                                            borderRadius: '50%',
+                                            background: inputMessage.trim() ? '#F97316' : '#27272A',
+                                            color: inputMessage.trim() ? 'white' : '#71717A',
+                                            border: 'none',
+                                            cursor: inputMessage.trim() ? 'pointer' : 'default',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            flexShrink: 0,
+                                            marginRight: isArabic ? 'auto' : '0',
+                                            marginLeft: isArabic ? '0' : 'auto',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        <ArrowUp size={20} />
+                                    </button>
+                                </div>
+                            </form>
+                            <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.75rem', color: '#71717A', fontWeight: 600 }}>
+                                Powered by <span style={{ color: '#A1A1AA' }}>24Shift</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Candidate Sidebar */}
@@ -798,8 +1015,12 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                 }}>
                                     <AgentIcon size={48} color="#8B5CF6" />
                                 </div>
-                                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 800 }}>{template?.title}</h3>
-                                <p style={{ fontSize: '0.9rem', color: '#8B5CF6', fontWeight: 600 }}>{template?.specialty}</p>
+                                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 800 }}>
+                                    {template?.id && getAgentMap(isArabic)[template.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name))}
+                                </h3>
+                                <p style={{ fontSize: '0.9rem', color: '#8B5CF6', fontWeight: 600 }}>
+                                    {template?.id && getAgentMap(isArabic)[template.id]?.specialty ? getAgentMap(isArabic)[template.id].specialty : (!isArabic && template?.description_en ? template.description_en : (template?.specialty || template?.description))}
+                                </p>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: isArabic ? 'right' : 'left' }}>
@@ -809,11 +1030,17 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                         {t('skillsServicesLabel')}
                                     </label>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                        {template?.services ? template.services.map((s, i) => (
-                                            <span key={i} style={{ padding: '0.4rem 0.75rem', background: '#27272A', color: '#E4E4E7', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.05)' }}>{s}</span>
-                                        )) : (
-                                            <span style={{ color: '#71717A', fontSize: '0.8rem' }}>{t('waitingTasksLabel')}</span>
-                                        )}
+                                        {(() => {
+                                            const servicesToRendar = (template?.id && getAgentMap(isArabic)[template.id]?.services)
+                                                ? getAgentMap(isArabic)[template.id].services
+                                                : template?.services;
+
+                                            return servicesToRendar && servicesToRendar.length > 0 ? servicesToRendar.map((s, i) => (
+                                                <span key={i} style={{ padding: '0.4rem 0.75rem', background: '#27272A', color: '#E4E4E7', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.05)' }}>{s}</span>
+                                            )) : (
+                                                <span style={{ color: '#71717A', fontSize: '0.8rem' }}>{t('waitingTasksLabel')}</span>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                                 <div>
@@ -843,119 +1070,66 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                             </div>
                         </div>
 
-                        {/* Modal for Hiring Decision */}
-                        {showHireButton && (
+                        {/* Permanent Hiring Decision Card */}
+                        <div className="card p-xl" style={{
+                            background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+                            color: 'white',
+                            borderRadius: '24px',
+                            textAlign: 'center',
+                            border: 'none',
+                            boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)',
+                            width: '100%',
+                            position: 'relative',
+                            padding: '1.5rem',
+                            marginTop: '0.5rem'
+                        }}>
                             <div style={{
-                                position: 'fixed',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                background: 'rgba(0,0,0,0.7)',
-                                backdropFilter: 'blur(8px)',
-                                zIndex: 1000,
+                                marginBottom: '1rem',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '1rem',
-                                animation: 'fadeIn 0.3s ease-out'
+                                justifyContent: 'center'
                             }}>
-                                <div className="card p-xl" style={{
-                                    background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-                                    color: 'white',
-                                    borderRadius: '24px',
-                                    textAlign: 'center',
-                                    border: 'none',
-                                    boxShadow: '0 20px 40px rgba(139, 92, 246, 0.4)',
-                                    maxWidth: '380px',
-                                    width: '100%',
-                                    position: 'relative',
-                                    padding: '1.5rem'
+                                <div style={{
+                                    width: '60px',
+                                    height: '60px',
+                                    borderRadius: '50%',
+                                    background: 'rgba(255,255,255,0.2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 0 20px rgba(255,255,255,0.1) inset'
                                 }}>
-                                    <div style={{
-                                        marginBottom: '1rem',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <div style={{
-                                            width: '60px',
-                                            height: '60px',
-                                            borderRadius: '50%',
-                                            background: 'rgba(255,255,255,0.2)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            boxShadow: '0 0 20px rgba(255,255,255,0.1) inset'
-                                        }}>
-                                            <Sparkles size={30} color="white" fill="white" style={{ opacity: 0.9 }} />
-                                        </div>
-                                    </div>
-
-                                    <h3 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>{t('hiringDecisionTitle')}</h3>
-                                    <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                                        {t('hiringDecisionDesc').replace('{title}', template?.title || '')}
-                                    </p>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                        <button
-                                            className="btn"
-                                            onClick={handleHireAgent}
-                                            disabled={isHiring}
-                                            style={{
-                                                background: 'white',
-                                                color: '#7C3AED',
-                                                width: '100%',
-                                                fontWeight: 900,
-                                                fontSize: '1rem',
-                                                padding: '0.85rem',
-                                                borderRadius: '12px',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
-                                            }}
-                                        >
-                                            {isHiring ? 'جاري التجهيز...' : t('hireCandidateBtn')}
-                                        </button>
-
-                                        <button
-                                            className="btn"
-                                            onClick={() => setShowHireButton(false)}
-                                            style={{
-                                                background: 'transparent',
-                                                color: 'rgba(255,255,255,0.9)',
-                                                width: '100%',
-                                                fontWeight: 600,
-                                                fontSize: '0.9rem',
-                                                padding: '0.75rem',
-                                                borderRadius: '12px',
-                                                border: '1px solid rgba(255,255,255,0.2)',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            {t('returnToInterview')}
-                                        </button>
-
-                                        <button
-                                            onClick={() => navigate('/')}
-                                            style={{
-                                                background: 'transparent',
-                                                color: 'rgba(255,255,255,0.6)',
-                                                width: '100%',
-                                                fontWeight: 500,
-                                                fontSize: '0.85rem',
-                                                padding: '0.5rem',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                textDecoration: 'underline'
-                                            }}
-                                        >
-                                            مغادرة الغرفة والعودة للرئيسية
-                                        </button>
-                                    </div>
+                                    <Sparkles size={30} color="white" fill="white" style={{ opacity: 0.9 }} />
                                 </div>
                             </div>
-                        )}
+
+                            <h3 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>{t('hiringDecisionTitle')}</h3>
+                            <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                                {t('hiringDecisionDesc').replace('{title}', template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || '')))}
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                <button
+                                    className="btn"
+                                    onClick={handleHireAgent}
+                                    disabled={isHiring}
+                                    style={{
+                                        background: 'white',
+                                        color: '#7C3AED',
+                                        width: '100%',
+                                        fontWeight: 900,
+                                        fontSize: '1rem',
+                                        padding: '0.85rem',
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
+                                    }}
+                                >
+                                    {isHiring ? (isArabic ? 'جاري التوظيف...' : 'Hiring...') : t('hireCandidateBtn')}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

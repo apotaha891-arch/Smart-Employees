@@ -238,6 +238,25 @@ export const removeServiceFromAgent = async (agentId, serviceId) => {
 };
 
 
+// Update agent WhatsApp settings
+export const updateAgentWhatsAppSettings = async (agentId, whatsappSettings) => {
+    try {
+        const { data, error } = await supabase
+            .from('agents')
+            .update({ whatsapp_settings: whatsappSettings })
+            .eq('id', agentId)
+            .select();
+
+        if (error) throw error;
+
+        return { success: true, data: data[0] };
+    } catch (error) {
+        console.error('Error updating WhatsApp settings:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+
 export const agentService = {
     getAgentTemplates,
     getAgentTemplate,
@@ -248,6 +267,7 @@ export const agentService = {
     deleteAgent,
     updateAgentStatus,
     updateAgentTelegramToken,
+    updateAgentWhatsAppSettings,
     addServiceToAgent,
     removeServiceFromAgent
 };

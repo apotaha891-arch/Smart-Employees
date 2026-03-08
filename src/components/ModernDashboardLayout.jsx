@@ -53,10 +53,10 @@ const ModernDashboardLayout = ({ children }) => {
     // Customer Navigation Items
     const customerNavItems = [
         { icon: LayoutDashboard, label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard', path: '/dashboard' },
-        { icon: Bot, label: language === 'ar' ? 'الموظفون' : 'Employees', path: '/agents' },
+        { icon: Bot, label: language === 'ar' ? 'الوكيل الذكي' : 'AI Agent', path: '/agents' },
         { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Bookings', path: '/bookings' },
         { icon: Users, label: language === 'ar' ? 'العملاء' : 'Customers', path: '/customers' },
-        { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Setup', path: '/salon-setup' },
+        { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/salon-setup' },
         { icon: CreditCard, label: language === 'ar' ? 'الأسعار' : 'Pricing', path: '/pricing' },
         { icon: HelpCircle, label: language === 'ar' ? 'مركز المساعدة' : 'Help Center', path: '/help' },
     ];

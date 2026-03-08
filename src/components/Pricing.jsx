@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Zap, Shield, Star, Crown, Loader } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import { useLanguage } from '../LanguageContext';
+import ManusHero from './ManusHero';
 
 const Pricing = () => {
     const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
@@ -111,6 +112,69 @@ const Pricing = () => {
         }
     };
 
+    // Chat Simulation State
+    const [visibleMessages, setVisibleMessages] = useState([]);
+    const [isTyping, setIsTyping] = useState(false);
+
+    useEffect(() => {
+        const messages = [
+            { id: 1, role: 'user', contentAr: 'مرحباً! أعتذر عن الإزعاج في هذا الوقت المتأخر، هل يمكنني حجز موعد غداً صباحاً؟', contentEn: 'Hi! Sorry to bother you this late. Can I book an appointment tomorrow morning?' },
+            { id: 2, role: 'agent', contentAr: 'أهلاً بك! لا يوجد أي إزعاج أبداً، أنا هنا لخدمتك على مدار الساعة ✨ نعم، يوجد موعد متاح غداً الساعة 10:00 صباحاً. هل أؤكده لك؟', contentEn: 'Welcome! No bother at all, I am here 24/7 ✨ Yes, we have a slot at 10:00 AM tomorrow. Should I confirm it for you?' },
+            { id: 3, role: 'user', contentAr: 'واو! شكراً لسرعة الرد. نعم أرجوك أكدي الموعد.', contentEn: 'Wow! Thanks for the fast reply. Yes please, confirm it.' },
+            { id: 4, role: 'agent', contentAr: 'تم تأكيد موعدك بنجاح ✅ أرسلت لك تفاصيل الموقع. طابت ليلتك ونتطلع لرؤيتك غداً!', contentEn: 'Your appointment is confirmed ✅ I sent you the location details. Have a good night and see you tomorrow!' }
+        ];
+
+        let currentIndex = 0;
+        let timeoutIds = [];
+
+        const simulateChat = () => {
+            if (currentIndex >= messages.length) {
+                // Restart animation after a long pause
+                const restartId = setTimeout(() => {
+                    setVisibleMessages([]);
+                    currentIndex = 0;
+                    simulateChat();
+                }, 5000);
+                timeoutIds.push(restartId);
+                return;
+            }
+
+            const currentMsg = messages[currentIndex];
+
+            // Show typing indicator if agent
+            if (currentMsg.role === 'agent') {
+                setIsTyping(true);
+                const typingDuration = currentMsg.contentEn.length * 30; // Simulate typing delay based on length
+
+                const showMsgId = setTimeout(() => {
+                    setIsTyping(false);
+                    setVisibleMessages(prev => [...prev, currentMsg]);
+                    currentIndex++;
+                    simulateChat();
+                }, Math.min(typingDuration, 2000)); // Cap at 2 seconds
+                timeoutIds.push(showMsgId);
+            } else {
+                // User messages appear instantly after a short pause
+                const showUserMsgId = setTimeout(() => {
+                    setVisibleMessages(prev => [...prev, currentMsg]);
+                    currentIndex++;
+                    simulateChat();
+                }, 1000);
+                timeoutIds.push(showUserMsgId);
+            }
+        };
+
+        // Start animation loop
+        const initialStartId = setTimeout(() => {
+            simulateChat();
+        }, 1000);
+        timeoutIds.push(initialStartId);
+
+        return () => {
+            timeoutIds.forEach(clearTimeout);
+        };
+    }, []);
+
     const { t, language } = useLanguage();
     const pricingPlans = t('pricingPlans');
 
@@ -164,218 +228,302 @@ const Pricing = () => {
         <div className="bg-light" style={{ paddingTop: '8rem', paddingBottom: '6rem', minHeight: '100vh', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
             <div className="container">
                 <div className="text-center mb-3xl">
-                    <div className="badge badge-success mb-md" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6', padding: '0.6rem 1.75rem', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                        {t('pricingBadge')}
-                    </div>
-                    <h2 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1.5rem', color: 'var(--primary)', lineHeight: 1.2 }}>
-                        {t('pricingTitle')}
-                    </h2>
-                    <p className="text-secondary" style={{ fontSize: '1.2rem', maxWidth: '750px', margin: '0 auto 2.5rem', lineHeight: 1.7, fontWeight: 500 }}>
-                        {t('pricingDesc')}
-                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', alignItems: 'center', marginBottom: '4rem' }}>
+                        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                            <div className="badge badge-success mb-md" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6', padding: '0.6rem 1.75rem', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+                                {language === 'ar' ? 'استثمار ذكي لمستقبل منشأتك' : 'Smart Investment for Your Business'}
+                            </div>
+                            <h2 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1.5rem', color: 'var(--primary)', lineHeight: 1.2 }}>
+                                {language === 'ar' ? 'موظف لا ينام، بتكلفة لا تقارن.' : 'An Employee Who Never Sleeps, at an Unbeatable Cost.'}
+                            </h2>
+                            <p className="text-secondary" style={{ fontSize: '1.25rem', lineHeight: 1.7, fontWeight: 500, margin: '0' }}>
+                                {language === 'ar' ? 'تخيل موظفاً يرد على عملائك فيตี3 فجراً، يغلق الصفقات، ويحجز المواعيد بلباقة تامة، بدون إجازات أو أخطاء وبجزء بسيط من تكلفة الموظف التقليدي.' : 'Imagine an employee replying to your customers at 3 AM, closing deals, and booking appointments politely, with no days off or errors, at a fraction of the cost.'}
+                            </p>
+                        </div>
 
-                    {/* Billing Toggle */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '1rem',
-                        margin: '0 auto 4rem',
-                        background: 'rgba(255,255,255,0.03)',
-                        padding: '0.5rem',
-                        borderRadius: '20px',
-                        width: 'fit-content',
-                        border: '1px solid rgba(255,255,255,0.05)'
-                    }}>
-                        <button
-                            onClick={() => setBillingCycle('monthly')}
-                            style={{
-                                padding: '1rem 2rem',
-                                borderRadius: '16px',
-                                border: 'none',
-                                background: billingCycle === 'monthly' ? '#8B5CF6' : 'transparent',
-                                color: billingCycle === 'monthly' ? '#FFF' : '#A1A1AA',
-                                fontWeight: 800,
-                                fontSize: '1.05rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s'
-                            }}
+                        {/* Convincing Telegram Chat Mockup */}
+                        <div style={{
+                            width: '100%',
+                            maxWidth: '450px',
+                            background: '#0F172A',
+                            borderRadius: '24px',
+                            overflow: 'hidden',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            transform: 'rotate(-2deg)',
+                            transition: 'transform 0.3s ease',
+                        }}
+                            onMouseEnter={e => e.currentTarget.style.transform = 'rotate(0)'}
+                            onMouseLeave={e => e.currentTarget.style.transform = 'rotate(-2deg)'}
                         >
-                            {t('payMonthly')}
-                        </button>
-                        <button
-                            onClick={() => setBillingCycle('yearly')}
-                            style={{
-                                padding: '1rem 2rem',
-                                borderRadius: '16px',
-                                border: 'none',
-                                background: billingCycle === 'yearly' ? '#8B5CF6' : 'transparent',
-                                color: billingCycle === 'yearly' ? '#FFF' : '#A1A1AA',
-                                fontWeight: 800,
-                                fontSize: '1.05rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s',
+                            {/* Telegram Header */}
+                            <div style={{
+                                background: '#1E293B',
+                                padding: '1rem',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.75rem'
-                            }}
-                        >
-                            {t('payYearly')}
-                            <span style={{
-                                background: billingCycle === 'yearly' ? 'white' : 'rgba(139, 92, 246, 0.15)',
-                                color: billingCycle === 'yearly' ? '#8B5CF6' : '#8B5CF6',
-                                padding: '0.3rem 0.7rem',
-                                borderRadius: '10px',
-                                fontSize: '0.8rem',
-                                fontWeight: 900
-                            }}>{t('save20')}</span>
-                        </button>
+                                gap: '1rem',
+                                borderBottom: '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #8B5CF6, #3B82F6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                    <Star size={20} />
+                                </div>
+                                <div style={{ textAlign: language === 'ar' ? 'right' : 'left', flex: 1 }}>
+                                    <div style={{ color: 'white', fontWeight: 700, fontSize: '1rem' }}>{language === 'ar' ? 'سارة - موظفة المبيعات' : 'Sarah - Sales Agent'}</div>
+                                    <div style={{ color: '#10B981', fontSize: '0.8rem', fontWeight: 600 }}>{language === 'ar' ? 'متصل الآن (3:14 ص)' : 'Online Now (3:14 AM)'}</div>
+                                </div>
+                            </div>
+
+                            {/* Chat Messages */}
+                            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#09090B', minHeight: '300px' }}>
+                                {visibleMessages.map((msg) => (
+                                    <div key={msg.id} className="animate-fade-in" style={{
+                                        alignSelf: msg.role === 'user' ? 'flex-start' : 'flex-end',
+                                        background: msg.role === 'user' ? '#27272A' : 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
+                                        padding: '0.75rem 1rem',
+                                        borderRadius: msg.role === 'user' ? '16px 16px 16px 4px' : '16px 16px 4px 16px',
+                                        color: msg.role === 'user' ? '#E4E4E7' : 'white',
+                                        fontSize: '0.9rem',
+                                        maxWidth: '85%',
+                                        border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(139, 92, 246, 0.3)',
+                                        boxShadow: msg.role === 'user' ? 'none' : '0 4px 12px rgba(139,92,246,0.1)'
+                                    }}>
+                                        {language === 'ar' ? msg.contentAr : msg.contentEn}
+                                    </div>
+                                ))}
+
+                                {isTyping && (
+                                    <div className="animate-fade-in" style={{
+                                        alignSelf: 'flex-end',
+                                        background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
+                                        padding: '0.75rem 1rem',
+                                        borderRadius: '16px 16px 4px 16px',
+                                        maxWidth: '85%',
+                                        border: '1px solid rgba(139, 92, 246, 0.3)'
+                                    }}>
+                                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '14px' }}>
+                                            <div style={{ width: '6px', height: '6px', background: '#A78BFA', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both', animationDelay: '-0.32s' }}></div>
+                                            <div style={{ width: '6px', height: '6px', background: '#A78BFA', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both', animationDelay: '-0.16s' }}></div>
+                                            <div style={{ width: '6px', height: '6px', background: '#A78BFA', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both' }}></div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Add pulsing circle to draw attention */}
+                    <div style={{ marginTop: '-2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#8B5CF6', fontWeight: 600, fontSize: '0.9rem', background: 'rgba(139, 92, 246, 0.1)', padding: '0.5rem 1.25rem', borderRadius: '20px', border: '1px solid rgba(139,92,246,0.2)', zIndex: 2 }}>
+                        <div style={{ width: '8px', height: '8px', background: '#8B5CF6', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></div>
+                        {language === 'ar' ? 'شاهد المحاكاة الحية أعلاه' : 'Watch Live Simulation Above'}
                     </div>
                 </div>
 
+                {/* Manus Inspiration Layout */}
+                <ManusHero />
+
+                {/* Billing Toggle */}
                 <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                    gap: '2rem',
-                    alignItems: 'start',
-                    maxWidth: '1200px',
-                    margin: '0 auto'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '1rem',
+                    margin: '0 auto 4rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.5rem',
+                    borderRadius: '20px',
+                    width: 'fit-content',
+                    border: '1px solid rgba(255,255,255,0.05)'
                 }}>
-                    {plans.map((plan) => {
-                        const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
-                        return (
-                            <div
-                                key={plan.id}
-                                className="card"
-                                style={{
-                                    background: plan.popular ? 'linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, rgba(24, 24, 27, 1) 100%)' : '#18181B',
-                                    border: plan.popular ? `2px solid ${plan.color}` : '1px solid rgba(255,255,255,0.08)',
-                                    borderRadius: '32px',
-                                    padding: '2.5rem',
-                                    position: 'relative',
-                                    transform: plan.popular ? 'scale(1.03)' : 'none',
-                                    boxShadow: plan.popular ? `0 20px 50px rgba(${hexToRgb(plan.color)}, 0.15)` : '0 10px 30px rgba(0,0,0,0.1)',
-                                    zIndex: plan.popular ? 2 : 1,
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    height: '100%'
-                                }}
-                            >
-                                {plan.popular && (
+                    <button
+                        onClick={() => setBillingCycle('monthly')}
+                        style={{
+                            padding: '1rem 2rem',
+                            borderRadius: '16px',
+                            border: 'none',
+                            background: billingCycle === 'monthly' ? '#8B5CF6' : 'transparent',
+                            color: billingCycle === 'monthly' ? '#FFF' : '#A1A1AA',
+                            fontWeight: 800,
+                            fontSize: '1.05rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s'
+                        }}
+                    >
+                        {t('payMonthly')}
+                    </button>
+                    <button
+                        onClick={() => setBillingCycle('yearly')}
+                        style={{
+                            padding: '1rem 2rem',
+                            borderRadius: '16px',
+                            border: 'none',
+                            background: billingCycle === 'yearly' ? '#8B5CF6' : 'transparent',
+                            color: billingCycle === 'yearly' ? '#FFF' : '#A1A1AA',
+                            fontWeight: 800,
+                            fontSize: '1.05rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem'
+                        }}
+                    >
+                        {t('payYearly')}
+                        <span style={{
+                            background: billingCycle === 'yearly' ? 'white' : 'rgba(139, 92, 246, 0.15)',
+                            color: billingCycle === 'yearly' ? '#8B5CF6' : '#8B5CF6',
+                            padding: '0.3rem 0.7rem',
+                            borderRadius: '10px',
+                            fontSize: '0.8rem',
+                            fontWeight: 900
+                        }}>{t('save20')}</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: '2rem',
+                alignItems: 'start',
+                maxWidth: '1200px',
+                margin: '0 auto'
+            }}>
+                {plans.map((plan) => {
+                    const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
+                    return (
+                        <div
+                            key={plan.id}
+                            className="card"
+                            style={{
+                                background: plan.popular ? 'linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, rgba(24, 24, 27, 1) 100%)' : '#18181B',
+                                border: plan.popular ? `2px solid ${plan.color}` : '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '32px',
+                                padding: '2.5rem',
+                                position: 'relative',
+                                transform: plan.popular ? 'scale(1.03)' : 'none',
+                                boxShadow: plan.popular ? `0 20px 50px rgba(${hexToRgb(plan.color)}, 0.15)` : '0 10px 30px rgba(0,0,0,0.1)',
+                                zIndex: plan.popular ? 2 : 1,
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                height: '100%'
+                            }}
+                        >
+                            {plan.popular && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '-16px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    background: plan.color,
+                                    color: 'white',
+                                    padding: '0.5rem 1.5rem',
+                                    borderRadius: '20px',
+                                    fontWeight: 800,
+                                    fontSize: '0.9rem',
+                                    boxShadow: `0 10px 20px rgba(${hexToRgb(plan.color)}, 0.3)`,
+                                    whiteSpace: 'nowrap',
+                                    border: '1px solid rgba(255,255,255,0.2)'
+                                }}>
+                                    {t('mostPopular')}
+                                </div>
+                            )}
+
+                            <div style={{ marginBottom: '2rem' }}>
+                                <div style={{
+                                    width: '64px', height: '64px',
+                                    borderRadius: '18px',
+                                    background: `rgba(${hexToRgb(plan.color)}, 0.15)`,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    marginBottom: '1.5rem',
+                                    border: `1px solid rgba(${hexToRgb(plan.color)}, 0.3)`
+                                }}>
+                                    {plan.icon}
+                                </div>
+                                <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '0.75rem', color: '#FFF' }}>
+                                    {plan.name}
+                                </h3>
+                                <p style={{ color: '#A1A1AA', fontSize: '1rem', lineHeight: 1.6, minHeight: '48px' }}>
+                                    {plan.description}
+                                </p>
+                            </div>
+
+                            <div style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    <span style={{ fontSize: plan.id === 'enterprise' ? '2.5rem' : '3.5rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{price}</span>
+                                    {plan.id !== 'enterprise' && <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>$ / {billingCycle === 'monthly' ? t('month') : t('monthYearly')}</span>}
+                                </div>
+                                {plan.trialPrice && (
                                     <div style={{
-                                        position: 'absolute',
-                                        top: '-16px',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
-                                        background: plan.color,
-                                        color: 'white',
-                                        padding: '0.5rem 1.5rem',
-                                        borderRadius: '20px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        background: 'rgba(16, 185, 129, 0.1)',
+                                        color: '#10B981',
+                                        padding: '0.6rem 1.25rem',
+                                        borderRadius: '12px',
                                         fontWeight: 800,
-                                        fontSize: '0.9rem',
-                                        boxShadow: `0 10px 20px rgba(${hexToRgb(plan.color)}, 0.3)`,
-                                        whiteSpace: 'nowrap',
-                                        border: '1px solid rgba(255,255,255,0.2)'
+                                        fontSize: '0.95rem',
+                                        border: '1px solid rgba(16, 185, 129, 0.2)'
                                     }}>
-                                        {t('mostPopular')}
+                                        <Zap size={18} fill="currentColor" />
+                                        {t('trialNote').replace('{price}', plan.trialPrice)}
                                     </div>
                                 )}
-
-                                <div style={{ marginBottom: '2rem' }}>
-                                    <div style={{
-                                        width: '64px', height: '64px',
-                                        borderRadius: '18px',
-                                        background: `rgba(${hexToRgb(plan.color)}, 0.15)`,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        marginBottom: '1.5rem',
-                                        border: `1px solid rgba(${hexToRgb(plan.color)}, 0.3)`
-                                    }}>
-                                        {plan.icon}
-                                    </div>
-                                    <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '0.75rem', color: '#FFF' }}>
-                                        {plan.name}
-                                    </h3>
-                                    <p style={{ color: '#A1A1AA', fontSize: '1rem', lineHeight: 1.6, minHeight: '48px' }}>
-                                        {plan.description}
-                                    </p>
-                                </div>
-
-                                <div style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
-                                        <span style={{ fontSize: plan.id === 'enterprise' ? '2.5rem' : '3.5rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{price}</span>
-                                        {plan.id !== 'enterprise' && <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>$ / {billingCycle === 'monthly' ? t('month') : t('monthYearly')}</span>}
-                                    </div>
-                                    {plan.trialPrice && (
-                                        <div style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '0.5rem',
-                                            background: 'rgba(16, 185, 129, 0.1)',
-                                            color: '#10B981',
-                                            padding: '0.6rem 1.25rem',
-                                            borderRadius: '12px',
-                                            fontWeight: 800,
-                                            fontSize: '0.95rem',
-                                            border: '1px solid rgba(16, 185, 129, 0.2)'
-                                        }}>
-                                            <Zap size={18} fill="currentColor" />
-                                            {t('trialNote').replace('{price}', plan.trialPrice)}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2.5rem 0', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
-                                    {plan.features.map((feature, idx) => (
-                                        <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                                            <div style={{ marginTop: '3px' }}>
-                                                <CheckCircle2 size={18} color={plan.color} />
-                                            </div>
-                                            <span style={{ color: '#E4E4E7', fontSize: '1rem', fontWeight: 500, lineHeight: 1.5 }}>
-                                                {feature}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <button
-                                    onClick={() => handleSelectPlan(plan)}
-                                    style={{
-                                        display: 'block',
-                                        width: '100%',
-                                        padding: '1.25rem',
-                                        borderRadius: '16px',
-                                        background: plan.popular ? plan.color : '#27272A',
-                                        color: plan.popular ? '#FFF' : '#E4E4E7',
-                                        textAlign: 'center',
-                                        fontWeight: 900,
-                                        fontSize: '1.1rem',
-                                        border: plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s',
-                                        boxShadow: plan.popular ? `0 10px 25px rgba(${hexToRgb(plan.color)}, 0.3)` : 'none'
-                                    }}
-                                    onMouseOver={(e) => {
-                                        if (!plan.popular) {
-                                            e.currentTarget.style.background = '#3F3F46';
-                                        } else {
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }
-                                    }}
-                                    onMouseOut={(e) => {
-                                        if (!plan.popular) {
-                                            e.currentTarget.style.background = '#27272A';
-                                        } else {
-                                            e.currentTarget.style.transform = 'none';
-                                        }
-                                    }}
-                                >
-                                    {isHiringFlow ? t('approvePlanContract') : plan.cta}
-                                </button>
                             </div>
-                        );
-                    })}
-                </div>
+
+                            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2.5rem 0', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+                                {plan.features.map((feature, idx) => (
+                                    <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                                        <div style={{ marginTop: '3px' }}>
+                                            <CheckCircle2 size={18} color={plan.color} />
+                                        </div>
+                                        <span style={{ color: '#E4E4E7', fontSize: '1rem', fontWeight: 500, lineHeight: 1.5 }}>
+                                            {feature}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <button
+                                onClick={() => handleSelectPlan(plan)}
+                                style={{
+                                    display: 'block',
+                                    width: '100%',
+                                    padding: '1.25rem',
+                                    borderRadius: '16px',
+                                    background: plan.popular ? plan.color : '#27272A',
+                                    color: plan.popular ? '#FFF' : '#E4E4E7',
+                                    textAlign: 'center',
+                                    fontWeight: 900,
+                                    fontSize: '1.1rem',
+                                    border: plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s',
+                                    boxShadow: plan.popular ? `0 10px 25px rgba(${hexToRgb(plan.color)}, 0.3)` : 'none'
+                                }}
+                                onMouseOver={(e) => {
+                                    if (!plan.popular) {
+                                        e.currentTarget.style.background = '#3F3F46';
+                                    } else {
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                    }
+                                }}
+                                onMouseOut={(e) => {
+                                    if (!plan.popular) {
+                                        e.currentTarget.style.background = '#27272A';
+                                    } else {
+                                        e.currentTarget.style.transform = 'none';
+                                    }
+                                }}
+                            >
+                                {isHiringFlow ? t('approvePlanContract') : plan.cta}
+                            </button>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
