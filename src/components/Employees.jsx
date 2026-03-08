@@ -10,6 +10,10 @@ const SECTOR_LABELS = {
     restaurant: { emoji: '🍽', color: '#F59E0B' },
     fitness: { emoji: '🏋', color: '#10B981' },
     real_estate: { emoji: '🏠', color: '#8B5CF6' },
+    retail_ecommerce: { emoji: '🛍', color: '#10B981' },
+    banking: { emoji: '🏦', color: '#8B5CF6' },
+    call_center: { emoji: '🎧', color: '#06B6D4' },
+    telecom_it: { emoji: '📡', color: '#EF4444' },
     general: { emoji: '🏢', color: '#6B7280' },
 };
 

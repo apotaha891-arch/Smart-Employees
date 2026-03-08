@@ -121,6 +121,10 @@ const Home = () => {
                     else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty')) setIndustry('beauty');
                     else if (type?.includes('مطعم') || type?.includes('restau')) setIndustry('restaurant');
                     else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit')) setIndustry('fitness');
+                    else if (type?.includes('تجزئة') || type?.includes('متجر') || type?.includes('retail') || type?.includes('ecommerce')) setIndustry('retail_ecommerce');
+                    else if (type?.includes('بنك') || type?.includes('مالي') || type?.includes('bank') || type?.includes('finance')) setIndustry('banking');
+                    else if (type?.includes('عملاء') || type?.includes('اتصال') || type?.includes('call') || type?.includes('support')) setIndustry('call_center');
+                    else if (type?.includes('اتصالات') || type?.includes('تقنية') || type?.includes('telecom') || type?.includes('it')) setIndustry('telecom_it');
                 }
             }
         };
@@ -138,7 +142,7 @@ const Home = () => {
 
                     <div className="container flex justify-center gap-md align-center" style={{ overflowX: 'auto', padding: '0 1rem', position: 'relative', zIndex: 1, direction: language === 'en' ? 'ltr' : 'rtl' }}>
                         <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{t('home.sectorTitle')}</span>
-                        {['general', 'medical', 'realestate', 'beauty', 'restaurant', 'fitness'].map(type => (
+                        {['general', 'medical', 'realestate', 'beauty', 'restaurant', 'fitness', 'retail_ecommerce', 'banking', 'call_center', 'telecom_it'].map(type => (
                             <button
                                 key={type}
                                 onClick={() => { setIndustry(type); setImgLoaded(false); }}

@@ -253,6 +253,10 @@ export const translations = {
             restaurant: "مطاعم وضيافة",
             fitness: "رياضة وصحة",
             real_estate: "عقارات",
+            retail_ecommerce: "تجزئة ومتاجر إلكترونية",
+            banking: "بنوك وقطاع مالي",
+            call_center: "مراكز اتصال وخدمة عملاء",
+            telecom_it: "اتصالات وتقنية معلومات",
             general: "عام"
         },
 
@@ -823,8 +827,12 @@ export const translations = {
             beauty: "Beauty & Care",
             medical: "Medical / Clinics",
             restaurant: "Restaurants & Hospitality",
-            fitness: "Sports & Health",
+            fitness: "Fitness & Health",
             real_estate: "Real Estate",
+            retail_ecommerce: "Retail & E-commerce",
+            banking: "Banking & Finance",
+            call_center: "Call Centers & Customer Service",
+            telecom_it: "Telecom & IT",
             general: "General"
         },
 
