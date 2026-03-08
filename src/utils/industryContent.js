@@ -2,41 +2,41 @@ export const industryData = {
     ar: {
         general: {
             id: 'general',
-            heroTitle: "وظّف وكلاءك الأذكياء لرفع كفاءة منشأتك",
-            heroDescription: "منصة 24Shift تمكنك من استقطاب أفضل الكفاءات الرقمية المدربة على أعلى المعايير لخدمة عملائك وزيادة مبيعاتك على مدار الساعة.",
+            heroTitle: "مرحباً بك في عصر القوة العاملة الرقمية النخبوية",
+            heroDescription: "ارتقِ بخدمة عملائك وضاعف مبيعاتك مع 24Shift. استقطب موظفين رقميين من النخبة، يعملون بدقة 90% على مدار الساعة للارتقاء بأعمالك وتوفير وقتك وجهدك.",
             img: "https://images.pexels.com/photos/3182811/pexels-photo-3182811.jpeg?auto=compress&cs=tinysrgb&w=800",
-            quote: "نحن لا نوفر تقنية، نحن نوفر الوقت والراحة لمدراء المستقبل.",
+            quote: "24Shift: قوتك العاملة النخبوية، دائمًا على رأس العمل.",
             recommendations: [
                 {
-                    title: "تحسين تجربة العميل",
-                    desc: "وكلاء الاستقبال الرقمي يقللون وقت الانتظار بنسبة 80% ويزيدون من رضا العملاء.",
+                    title: "موظفون من النخبة",
+                    desc: "أبعد من مجرد شات بوت! كفاءات متخصصة ومدربة لتقديم حلول استراتيجية تعزز ولاء عملائك.",
                     iconName: "Smile",
                     animationPath: "/animations/support.json"
                 },
                 {
-                    title: "التوسع السريع",
-                    desc: "أضف كفاءات جديدة في دقائق بدلاً من شهور البحث والتدريب التقليدي.",
+                    title: "توسع سريع بتكاليف أقل",
+                    desc: "أضف موظفين جدد في دقائق وقلل نفقات التشغيل التقليدية بشكل هائل مع زيادة رضا العملاء.",
                     iconName: "TrendingUp",
                     animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
                 {
-                    value: "99%",
+                    value: "90%+",
                     label: "دقة استجابة واحترافية",
-                    subLabel: "محاكاة تامة للرد البشري في فهم طلبات عملائك وتلبيتها",
+                    subLabel: "اعتمادية وثقة تامة في توجيه العملاء وحل مشكلاتهم.",
                     gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
                 },
                 {
                     value: "24/7",
                     label: "تغطية مهنية لا تتوقف",
-                    subLabel: "رد فوري على الاستفسارات خارج أوقات العمل الرسمية",
+                    subLabel: "مبيعات وخدمة عملاء مستمرة بلا انقطاع أو إجازات.",
                     gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
                 },
                 {
                     value: "0.5s",
                     label: "سرعة استجابة فائقة",
-                    subLabel: "تحليل والرد على استفسار العميل في أقل من ثانية",
+                    subLabel: "أسرع بآلاف المرات من العنصر البشري لضمان عدم فقدان أي صفقة.",
                     gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
@@ -250,41 +250,41 @@ export const industryData = {
     en: {
         general: {
             id: 'general',
-            heroTitle: "Hire Smart AI Agents to Boost Your Business Efficiency",
-            heroDescription: "24Shift platform enables you to recruit top-tier digital talent trained to the highest standards to serve your customers and increase sales around the clock.",
+            heroTitle: "Elevate Service. Automate Success. With 24Shift.",
+            heroDescription: "Automate and elevate your customer interactions and operational efficiency with 24/7, high-accuracy elite digital agents. Scale your operations in minutes and free up your managers' time.",
             img: "https://images.pexels.com/photos/3182811/pexels-photo-3182811.jpeg?auto=compress&cs=tinysrgb&w=800",
-            quote: "We don't provide technology, we provide time and peace of mind for tomorrow's leaders.",
+            quote: "24Shift: Your Always-On, Always-Elite Digital Workforce.",
             recommendations: [
                 {
-                    title: "Improve Customer Experience",
-                    desc: "Digital reception agents reduce wait times by 80% and increase customer satisfaction significantly.",
+                    title: "Elite Digital Employees",
+                    desc: "Beyond generic chatbots. Our highly specialized digital workforce builds customer loyalty and provides strategic solutions.",
                     iconName: "Smile",
                     animationPath: "/animations/support.json"
                 },
                 {
-                    title: "Rapid Expansion",
-                    desc: "Add new capabilities in minutes instead of months of traditional recruitment and training.",
+                    title: "Rapid Expansion & Savings",
+                    desc: "Scale operations quickly by adding agents in minutes, significantly reducing costs compared to human staffing.",
                     iconName: "TrendingUp",
                     animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
                 {
-                    value: "99%",
-                    label: "Professional Accuracy",
-                    subLabel: "Perfectly mirrors human intelligence in understanding and fulfilling client needs.",
+                    value: "90%+",
+                    label: "Response Accuracy",
+                    subLabel: "Dependable trustworthiness perfectly mirroring your business policies.",
                     gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
                 },
                 {
                     value: "24/7",
-                    label: "Non-stop Coverage",
-                    subLabel: "Immediate responses to inquiries outside of official working hours.",
+                    label: "Professional Coverage",
+                    subLabel: "Continuous, uninterrupted service ensuring you never miss a sale.",
                     gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
                 },
                 {
                     value: "0.5s",
                     label: "Lightning-Fast Responses",
-                    subLabel: "Analyze and reply to complex customer inquiries in less than a second.",
+                    subLabel: "Unmatched speed and efficiency directly impacting customer satisfaction.",
                     gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
