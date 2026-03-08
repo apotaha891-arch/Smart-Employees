@@ -263,6 +263,26 @@ const AgentTemplates = () => {
                             })}
                         </div>
                     )}
+
+                    {/* Custom Request CTA */}
+                    <div className="animate-fade-in" style={{ marginTop: '2rem', background: 'rgba(59, 130, 246, 0.1)', border: '1px dashed rgba(59, 130, 246, 0.3)', borderRadius: '16px', padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                        <div>
+                            <h3 style={{ fontSize: '1.1rem', margin: '0 0 6px', color: '#60A5FA' }}>
+                                {language === 'ar' ? 'لم تجد الموظف المطلوب؟' : 'Cannot find the required employee?'}
+                            </h3>
+                            <p style={{ fontSize: '0.9rem', color: '#9CA3AF', margin: 0 }}>
+                                {language === 'ar'
+                                    ? 'يسعدنا تلقي طلبات لتدريب وتخصيص موظفات لمهام وخدمات غير موجودة لدينا، وسيقوم فريق الهندسة بتجهيزها خلال أقل من 24 ساعة.'
+                                    : 'We are happy to receive requests to train and customize employees for tasks and services not currently listed. Our engineering team will prepare them in less than 24 hours.'}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => navigate('/custom-request')}
+                            style={{ background: '#3B82F6', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap', transition: 'all 0.3s' }}
+                        >
+                            {language === 'ar' ? 'تقديم طلب موظف مخصص' : 'Submit Custom Request'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Personality/Tone Selection */}

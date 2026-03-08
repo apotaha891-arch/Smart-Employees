@@ -292,6 +292,28 @@ const HireAgent = () => {
                             );
                         })}
                     </div>
+
+                    {/* Custom Request CTA */}
+                    <div style={{ marginTop: '1.5rem', background: 'rgba(59, 130, 246, 0.1)', border: '1px dashed rgba(59, 130, 246, 0.3)', borderRadius: '14px', padding: '1.25rem', textAlign: isAr ? 'right' : 'left' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between' }}>
+                            <div>
+                                <h3 style={{ fontSize: '1rem', margin: '0 0 4px', color: '#60A5FA' }}>
+                                    {isAr ? 'لم تجد دور الموظف المطلوب؟' : 'Cannot find the required role?'}
+                                </h3>
+                                <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: 0 }}>
+                                    {isAr
+                                        ? 'يسعدنا تلقي طلبات الموظفين المخصصين لمهام متخصصة غير مدرجة هنا.'
+                                        : 'We are happy to receive requests for custom employees for specialized tasks not listed here.'}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => navigate('/custom-request')}
+                                style={{ background: '#3B82F6', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap' }}
+                            >
+                                {isAr ? 'طلب موظف مخصص' : 'Request Custom Agent'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

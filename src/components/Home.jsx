@@ -323,6 +323,37 @@ const Home = () => {
                 </div>
             </section>
 
+            {/* Custom Request Banner */}
+            <section className="container" style={{ paddingBottom: '3rem' }}>
+                <div style={{
+                    background: 'rgba(59, 130, 246, 0.05)',
+                    border: '1px dashed rgba(59, 130, 246, 0.4)',
+                    borderRadius: '24px',
+                    padding: '2.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '1.5rem',
+                    textAlign: language === 'ar' ? 'right' : 'left',
+                    direction: language === 'ar' ? 'rtl' : 'ltr'
+                }}>
+                    <div style={{ flex: '1 1 500px' }}>
+                        <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#60A5FA', marginBottom: '0.75rem' }}>
+                            {language === 'ar' ? 'هل تبحث عن خدمات ذكية متخصصة غير مدرجة؟' : 'Looking for specialized smart services not listed?'}
+                        </h3>
+                        <p style={{ color: '#9CA3AF', fontSize: '1.05rem', margin: 0, lineHeight: '1.6' }}>
+                            {language === 'ar'
+                                ? 'يسعدنا جداً تلقي طلباتكم لتخصيص موظفين رقميين لخدمات أو قطاعات غير متوفرة حالياً. فريقنا الهندسي مستعد لتطوير حلول استثنائية لمنشأتك.'
+                                : 'We are very happy to receive your requests to customize digital employees for services or sectors not currently available. Our engineering team is ready to develop exceptional solutions for your facility.'}
+                        </p>
+                    </div>
+                    <Link to="/custom-request" className="btn" style={{ background: '#3B82F6', color: 'white', padding: '1rem 2rem', fontSize: '1.1rem', borderRadius: '14px', fontWeight: 700, border: 'none', transition: 'all 0.3s', whiteSpace: 'nowrap' }}>
+                        {language === 'ar' ? 'اطلب موظف مخصص الآن' : 'Request Custom Agent Now'}
+                    </Link>
+                </div>
+            </section>
+
             {/* Video Presentation Section */}
             <VideoPresentation industry={industry} language={language} />
 
