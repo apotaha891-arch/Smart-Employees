@@ -39,12 +39,14 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
+        const origin = req.headers.get('origin') || 'https://24shift.solutions'
+
         // Generate Magic Link for the target user
         const { data, error } = await supabaseAdmin.auth.admin.generateLink({
             type: 'magiclink',
             email: targetEmail,
             options: {
-                redirectTo: 'http://localhost:5173/dashboard' // This will be handled by Supabase automatically redirecting to your app's URL
+                redirectTo: `${origin}/dashboard` // This will be handled by Supabase automatically redirecting to your app's URL
             }
         })
 
