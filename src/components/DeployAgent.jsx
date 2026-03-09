@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { Bot, CheckCircle2, MessageCircle, Send, Instagram, Zap, Headphones, Settings, ShieldCheck, CreditCard, Loader2, Globe, X } from 'lucide-react';
-import { getAgentApps, submitCustomRequest } from '../services/supabaseService';
+import { supabase, getAgentApps, submitCustomRequest } from '../services/supabaseService';
 import { agentService } from '../services/agentService';
 
 const IntegrationsAddons = () => {
@@ -66,11 +66,31 @@ const IntegrationsAddons = () => {
 
         try {
             if (currentAgentId) {
+                let updatedName = agentName;
+                const platformNames = [];
+                if (activeAddons.includes('telegram')) platformNames.push(isArabic ? 'تيليقرام' : 'Telegram');
+                if (activeAddons.includes('whatsapp')) platformNames.push(isArabic ? 'واتساب' : 'WhatsApp');
+                if (activeAddons.includes('instagram')) platformNames.push(isArabic ? 'انستقرام' : 'Instagram');
+
+                if (platformNames.length > 0) {
+                    const suffix = isArabic ? ` (${platformNames.join(' و ')})` : ` (${platformNames.join(' & ')})`;
+                    if (!updatedName.includes('(')) {
+                        updatedName += suffix;
+                    }
+                }
+
+                // Update settings AND name
+                const updateData = { name: updatedName };
+                if (activeAddons.includes('telegram') && telegramToken) updateData.telegram_token = telegramToken;
+                if (activeAddons.includes('whatsapp') && (whatsappSettings.token || whatsappSettings.phoneNumberId)) {
+                    updateData.whatsapp_settings = whatsappSettings;
+                }
+
+                await supabase.from('agents').update(updateData).eq('id', currentAgentId);
+
+                // Also trigger specific service updates if needed
                 if (activeAddons.includes('telegram') && telegramToken) {
                     await agentService.updateAgentTelegramToken(currentAgentId, telegramToken);
-                }
-                if (activeAddons.includes('whatsapp') && (whatsappSettings.token || whatsappSettings.phoneNumberId)) {
-                    await agentService.updateAgentWhatsAppSettings(currentAgentId, whatsappSettings);
                 }
             }
         } catch (error) {

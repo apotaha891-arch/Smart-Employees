@@ -70,7 +70,7 @@ const HireAgent = () => {
     const [form, setForm] = useState({ name: '', description: '', platforms: ['telegram'] });
     const [saving, setSaving] = useState(false);
     const [done, setDone] = useState(false);
-    const [sector, setSector] = useState('beauty');
+    const [sector, setSector] = useState('telecom_it');
     const [entityReady, setEntityReady] = useState(null); // null=checking, true=ready, false=not set
     const [maxTools, setMaxTools] = useState(2); // default 2 tools for starter plan
 

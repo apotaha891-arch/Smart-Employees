@@ -14,20 +14,27 @@ export const useAuth = () => {
 const getRoleFromUser = async (authUser) => {
     if (!authUser) return null;
 
-    // 1. app_metadata — most reliable, stored in JWT
+    // 1. JWT app_metadata (set via admin actions/SQL directly)
     if (authUser.app_metadata?.role) return authUser.app_metadata.role;
 
-    // 2. user_metadata
+    // 2. JWT user_metadata
     if (authUser.user_metadata?.role) return authUser.user_metadata.role;
 
-    // 3. profiles table with a short timeout to avoid hanging
-    try {
-        const { data } = await Promise.race([
-            supabase.from('profiles').select('role').eq('id', authUser.id).maybeSingle(),
-            new Promise(resolve => setTimeout(() => resolve({ data: null }), 3000))
-        ]);
-        if (data?.role) return data.role;
-    } catch { /* ignore */ }
+    // 3. Profiles table with short retries (to allow trigger to fire)
+    let attempts = 0;
+    while (attempts < 3) {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', authUser.id)
+                .maybeSingle();
+            if (data?.role) return data.role;
+            if (error) throw error;
+        } catch { /* wait & retry */ }
+        attempts++;
+        await new Promise(r => setTimeout(r, 500 * attempts));
+    }
 
     return 'customer';
 };

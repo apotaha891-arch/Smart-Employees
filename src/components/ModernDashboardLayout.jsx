@@ -53,7 +53,7 @@ const ModernDashboardLayout = ({ children }) => {
     // Customer Navigation Items
     const customerNavItems = [
         { icon: LayoutDashboard, label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard', path: '/dashboard' },
-        { icon: Bot, label: language === 'ar' ? 'الوكيل الذكي' : 'AI Agent', path: '/agents' },
+        { icon: Bot, label: language === 'ar' ? 'الموظفون' : 'Employees', path: '/agents' },
         { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Bookings', path: '/bookings' },
         { icon: Users, label: language === 'ar' ? 'العملاء' : 'Customers', path: '/customers' },
         { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/salon-setup' },
@@ -162,11 +162,22 @@ const ModernDashboardLayout = ({ children }) => {
                     </div>
                     <button
                         onClick={handleLogout}
+                        className="btn-logout"
                         style={{
                             width: '100%',
                             display: 'flex', alignItems: 'center', gap: '1rem',
-                            padding: '10px', background: 'rgba(239, 68, 68, 0.1)',
-                            color: '#EF4444', border: 'none', borderRadius: '8px', cursor: 'pointer'
+                            padding: '12px', background: 'rgba(239, 68, 68, 0.08)',
+                            color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.1)',
+                            borderRadius: '10px', cursor: 'pointer',
+                            fontWeight: 600, transition: 'all 0.3s'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)';
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.1)';
                         }}
                     >
                         <LogOut size={18} />

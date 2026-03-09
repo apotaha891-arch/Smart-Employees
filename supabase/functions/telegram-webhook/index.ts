@@ -51,12 +51,12 @@ serve(async (req) => {
             // Find the matching Agent — fetch first active agent
             const { data: agent, error: agentError } = await supabase
                 .from('agents')
-                .select('id, telegram_token')
+                .select('id, user_id, telegram_token')
                 .eq('id', targetAgentId)
                 .single();
 
             if (agentError || !agent) {
-                console.error("Agent not found:", agentError?.message);
+                console.error("Agent not found:", agentError?.message, "ID:", targetAgentId);
                 return;
             }
 

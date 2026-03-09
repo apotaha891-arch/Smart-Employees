@@ -109,7 +109,23 @@ const Navbar = () => {
 
                     {user ? (
                         <li>
-                            <button onClick={handleLogout} className="btn btn-secondary btn-sm" style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: '0.8rem' }}>
+                            <button
+                                onClick={handleLogout}
+                                className="nav-logout-btn"
+                                style={{
+                                    padding: '0.4rem 0.9rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                                    background: 'rgba(239, 68, 68, 0.05)',
+                                    color: '#EF4444',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s'
+                                }}
+                                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'; }}
+                            >
                                 {t('nav.logout')}
                             </button>
                         </li>

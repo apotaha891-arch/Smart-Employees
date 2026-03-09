@@ -16,7 +16,7 @@ const FALLBACK_SECTORS = [
 const OnboardingSector = () => {
     const navigate = useNavigate();
     const [sectors, setSectors] = useState(FALLBACK_SECTORS);
-    const [selected, setSelected] = useState(null);
+    const [selected, setSelected] = useState('telecom_it');
     const [saving, setSaving] = useState(false);
     const [hovering, setHovering] = useState(null);
 

@@ -45,7 +45,7 @@ function App() {
 function AppContent() {
     const location = useLocation();
     // Routes that use the new Dashboard Layout
-    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help'];
+    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/interview', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help'];
     const isDashboard = dashboardRoutes.includes(location.pathname);
 
     return (
@@ -57,10 +57,10 @@ function AppContent() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/custom-request" element={<CustomRequest />} />
-                <Route path="/interview" element={<InterviewRoom />} />
+                <Route path="/interview" element={isDashboard ? <ModernDashboardLayout><InterviewRoom /></ModernDashboardLayout> : <InterviewRoom />} />
                 <Route path="/reports" element={<Reports />} />
-                <Route path="/templates" element={<AgentTemplates />} />
-                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/templates" element={isDashboard ? <ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout> : <AgentTemplates />} />
+                <Route path="/pricing" element={isDashboard ? <ModernDashboardLayout><Pricing /></ModernDashboardLayout> : <Pricing />} />
                 <Route path="/onboarding" element={<ProtectedRoute requiredRole="customer"><OnboardingSector /></ProtectedRoute>} />
 
                 {/* ============ ADMIN PROTECTED ROUTES ============ */}

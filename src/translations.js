@@ -32,7 +32,8 @@ export const translations = {
         // Authentication
         authentication: {
             signIn: "دخول",
-            createAccount: "إنشاء حساب"
+            createAccount: "إنشاء حساب",
+            googleSignRecommendation: "يوصى به للتكامل الأسهل مع أدوات جوجل (تقويم، جداول بيانات)"
         },
 
         // Home Page Sections
@@ -41,10 +42,14 @@ export const translations = {
             sectorTitle: "اختر قطاع عملك",
             general: "عام",
             medical: "طبي",
-            fitness: "لياقة بدنية",
-            restaurant: "مطعم",
+            real_estate: "عقارات",
             beauty: "تجميل",
-            realestate: "عقارات",
+            restaurant: "مطعم",
+            fitness: "لياقة بدنية",
+            retail_ecommerce: "تجزئة ومتاجر",
+            banking: "بنوك ومالية",
+            call_center: "خدمات العملاء",
+            telecom_it: "اتصالات وتقنية",
             eliteSolutionsFor: "حلول النخبة لقطاع {industry}",
             startInterview: "قابل موظفك الآن",
             viewDashboard: "لوحة المتابعة",
@@ -62,6 +67,10 @@ export const translations = {
             ctaGeneral: "اكتشف قوة الأتمتة الذكية وقاد أعمالك نحو المستقبل.",
             ctaRestaurant: "لا تفقد زبوناً بسبب انشغال الخط، إدارة احترافية لطاولاتك.",
             ctaFitness: "حوّل ناديك إلى وجهة رقمية متطورة بخدمات استقبال لا تنضب.",
+            ctaRetail: "ضاعف مبيعات متجرك الإلكتروني عبر خدمة عملاء ذكية تغلق الصفقات فوراً.",
+            ctaBanking: "ارتقِ بالخدمات المصرفية الرقمية عبر استجابة فورية وآمنة لعملائك.",
+            ctaCallCenter: "حوّل مركز الاتصال الخاص بك إلى خلية نحل ذكية تعمل بدقة متناهية.",
+            ctaTelecom: "قد ثورة الاتصالات عبر حلول تقنية ذكية تسبق تطلعات المشتركين.",
             ctaButton: "تحدث مع مرشحك الأول الآن"
         },
 
@@ -603,7 +612,8 @@ export const translations = {
         // Authentication
         authentication: {
             signIn: "Sign In",
-            createAccount: "Create Account"
+            createAccount: "Create Account",
+            googleSignRecommendation: "Recommended for easier integration with Google tools (Calendar, Sheets)"
         },
 
         // Branding
@@ -618,10 +628,14 @@ export const translations = {
             sectorTitle: "Choose Your Industry",
             general: "General",
             medical: "Medical",
-            fitness: "Fitness",
-            restaurant: "Restaurant",
+            real_estate: "Real Estate",
             beauty: "Beauty",
-            realestate: "Real Estate",
+            restaurant: "Restaurant",
+            fitness: "Fitness",
+            retail_ecommerce: "Retail & E-commerce",
+            banking: "Banking & Finance",
+            call_center: "Call Center",
+            telecom_it: "Telecom & IT",
             eliteSolutionsFor: "Elite Solutions for {industry}",
             startInterview: "Start Interview",
             viewDashboard: "View Dashboard",
@@ -639,6 +653,10 @@ export const translations = {
             ctaGeneral: "Discover the power of smart automation and lead your business toward the future.",
             ctaRestaurant: "Never lose a customer due to a busy line, professional management of your tables.",
             ctaFitness: "Transform your gym into an advanced digital destination with non-stop reception services.",
+            ctaRetail: "Double your e-commerce sales with smart customer service that closes deals instantly.",
+            ctaBanking: "Elevate digital banking services with immediate and secure responses for your customers.",
+            ctaCallCenter: "Transform your call center into a smart hub operating with extreme precision.",
+            ctaTelecom: "Lead the telecom revolution with smart tech solutions that exceed subscriber expectations.",
             ctaButton: "Talk to Your First Candidate Now"
         },
 

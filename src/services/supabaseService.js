@@ -48,6 +48,26 @@ export const signIn = async (email, password) => {
     }
 };
 
+export const signInWithGoogle = async () => {
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                scopes: 'email profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/spreadsheets',
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                },
+                redirectTo: `${window.location.origin}/dashboard`,
+            },
+        });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
 export const signOut = async () => {
     try {
         const { error } = await supabase.auth.signOut();

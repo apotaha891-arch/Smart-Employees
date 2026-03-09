@@ -41,8 +41,25 @@ export default function AdminDashboard() {
     const [msg, setMsg] = useState('');
 
     // Dynamic Configs
-    const [sectors, setSectors] = useState({ beauty: { l: 'تجميل', e: '🌸', c: '#EC4899', on: true }, medical: { l: 'طبي', e: '🩺', c: '#3B82F6', on: true }, restaurant: { l: 'مطاعم', e: '🍽', c: '#F59E0B', on: true }, fitness: { l: 'رياضة', e: '🏋', c: '#10B981', on: false }, real_estate: { l: 'عقارات', e: '🏠', c: '#8B5CF6', on: false }, general: { l: 'عام', e: '🏢', c: '#6B7280', on: true } });
-    const [roles, setRoles] = useState({ booking: { l: 'منسقة حجوزات', c: '#8B5CF6' }, support: { l: 'خدمة عملاء', c: '#10B981' }, sales: { l: 'مبيعات', c: '#F59E0B' }, followup: { l: 'متابعة', c: '#3B82F6' } });
+    const [sectors, setSectors] = useState({
+        telecom_it: { l: 'اتصالات وتقنية', e: '📡', c: '#EF4444', on: true },
+        banking: { l: 'بنوك ومالية', e: '🏦', c: '#8B5CF6', on: true },
+        retail_ecommerce: { l: 'تجزئة ومتاجر', e: '🛍', c: '#10B981', on: true },
+        call_center: { l: 'خدمات العملاء', e: '🎧', c: '#06B6D4', on: true },
+        medical: { l: 'طبي وصحي', e: '🩺', c: '#3B82F6', on: true },
+        beauty: { l: 'تجميل وعناية', e: '🌸', c: '#EC4899', on: true },
+        restaurant: { l: 'مطاعم وضيافة', e: '🍽', c: '#F59E0B', on: true },
+        real_estate: { l: 'عقارات', e: '🏠', c: '#D946EF', on: true },
+        general: { l: 'عام', e: '🏢', c: '#6B7280', on: true }
+    });
+    const [roles, setRoles] = useState({
+        booking: { l: 'منسقة حجوزات', c: '#8B5CF6' },
+        support: { l: 'خدمة عملاء', c: '#10B981' },
+        sales: { l: 'مبيعات', c: '#F59E0B' },
+        hr: { l: 'موارد بشرية', c: '#3B82F6' },
+        email: { l: 'منسق بريد', c: '#EC4899' },
+        followup: { l: 'متابعة', c: '#06B6D4' }
+    });
     const [agentAppsConfig, setAgentAppsConfig] = useState([
         { id: 'email_notify', icon: 'Mail', label: 'إشعار بريد إلكتروني', desc: 'رسالة للمدير عند كل حجز جديد' },
         { id: 'sms_notify', icon: 'MessageSquare', label: 'إشعار SMS', desc: 'رسالة نصية للعميل بتأكيد حجزه' },
@@ -62,7 +79,7 @@ export default function AdminDashboard() {
     const [logs, setLogs] = useState([]);
     const [logParams, setLogParams] = useState({ category: '', level: '', limit: 50 });
     const [templates, setTemplates] = useState([]);
-    const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'beauty', description: '', description_en: '' });
+    const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '👩' });
     const [showAddTemplate, setShowAddTemplate] = useState(false);
     const [aiConfig, setAiConfig] = useState({ knowledge: '', prompt_ar: '', prompt_en: '', max_length: 150 });
 
@@ -73,7 +90,7 @@ export default function AdminDashboard() {
     const [intTab, setIntTab] = useState('platform');
     const [selIntClient, setSelIntClient] = useState(null);
     const [showAddAgent, setShowAddAgent] = useState(false);
-    const [newAgent, setNewAgent] = useState({ name: '', specialty: 'booking', business_type: 'beauty', user_id: '' });
+    const [newAgent, setNewAgent] = useState({ name: '', specialty: 'booking', business_type: 'telecom_it', user_id: '' });
     const [agentApps, setAgentApps] = useState({}); // {agentId: {appId: bool}}
 
     useEffect(() => { load(); }, []);
@@ -175,11 +192,12 @@ export default function AdminDashboard() {
                 description: newTemplate.description,
                 description_en: newTemplate.description_en,
                 specialty: newTemplate.specialty,
-                business_type: newTemplate.business_type
+                business_type: newTemplate.business_type,
+                avatar: newTemplate.avatar
             });
             setTemplates(p => [data, ...p]);
             setShowAddTemplate(false);
-            setNewTemplate({ name: '', name_en: '', specialty: 'booking', business_type: 'beauty', description: '', description_en: '' });
+            setNewTemplate({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '👩' });
             flash('✅ تم إنشاء قالب الموظفة');
         } catch (err) { flash('❌ فشل إنشاء القالب: ' + err.message); }
     };
@@ -222,8 +240,14 @@ export default function AdminDashboard() {
 
     const saveAgentEdit = async (a) => {
         try {
-            // Removed 'description' as it doesn't exist in DB
-            const { error } = await supabase.from('agents').update({ name: a.name, specialty: a.specialty }).eq('id', a.id);
+            const { error } = await supabase.from('agents').update({
+                name: a.name,
+                specialty: a.specialty,
+                business_type: a.business_type,
+                telegram_token: a.telegram_token,
+                whatsapp_settings: a.whatsapp_settings || {}
+            }).eq('id', a.id);
+
             if (error) throw error;
             setAgents(p => p.map(x => x.id === a.id ? a : x));
             setEditAgent(null);
@@ -482,20 +506,51 @@ export default function AdminDashboard() {
                             const isActive = agent.status === 'active';
                             const isEd = editAgent?.id === agent.id;
                             const apps = agentApps[agent.id] || {};
+                            const client = clients.find(c => c.id === agent.user_id);
+
                             return <Card key={agent.id} s={{ border: `1px solid ${isActive ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)'}` }} c={<>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '7px' }}>
-                                    {isEd ? <input value={editAgent.name} onChange={e => setEditAgent({ ...editAgent, name: e.target.value })} style={{ background: '#1F2937', border: '1px solid #8B5CF6', borderRadius: '5px', color: 'white', padding: '2px 7px', fontWeight: 700, flex: 1, marginLeft: '5px', fontSize: '0.85rem' }} />
-                                        : <div style={{ fontWeight: 700, color: 'white', fontSize: '0.87rem' }}>{agent.name}</div>}
+                                    <div style={{ flex: 1 }}>
+                                        {isEd ? <input value={editAgent.name} onChange={e => setEditAgent({ ...editAgent, name: e.target.value })} style={{ background: '#1F2937', border: '1px solid #8B5CF6', borderRadius: '5px', color: 'white', padding: '2px 7px', fontWeight: 700, width: '100%', fontSize: '0.85rem', marginBottom: '4px' }} />
+                                            : <div style={{ fontWeight: 700, color: 'white', fontSize: '0.87rem' }}>{agent.name}</div>}
+                                        <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>مالك: <span style={{ color: '#A78BFA' }}>{client?.full_name || client?.email || '—'}</span></div>
+                                    </div>
                                     <div style={{ display: 'flex', gap: '3px' }}>
                                         {isEd ? <><button onClick={() => saveAgentEdit(editAgent)} style={{ background: '#10B98120', color: '#10B981', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Check size={12} /></button><button onClick={() => setEditAgent(null)} style={{ background: '#EF444420', color: '#EF4444', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><X size={12} /></button></>
                                             : <><button onClick={() => setEditAgent({ ...agent })} style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Edit2 size={12} /></button>
                                                 <button onClick={() => deleteAgent(agent.id)} style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Trash2 size={12} /></button></>}
                                     </div>
                                 </div>
+
                                 <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                                    <span style={{ background: `${role.c}20`, color: role.c, padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{role.l}</span>
+                                    {isEd ? (
+                                        <select value={editAgent.specialty} onChange={e => setEditAgent({ ...editAgent, specialty: e.target.value })} style={{ background: '#1F2937', border: '1px solid #374151', borderRadius: '4px', color: 'white', fontSize: '0.7rem', padding: '2px' }}>
+                                            {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
+                                        </select>
+                                    ) : <span style={{ background: `${role.c}20`, color: role.c, padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{role.l}</span>}
                                     <span style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{sectors[agent.business_type]?.e || '🏢'}</span>
                                 </div>
+
+                                {/* Integration Settings */}
+                                <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '8px', marginBottom: '10px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.03)' }}>
+                                    <div style={{ marginBottom: '6px' }}>
+                                        <label style={{ color: '#0088cc', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                            <MessageSquare size={10} /> Telegram Token
+                                        </label>
+                                        {isEd ? <Input value={editAgent.telegram_token || ''} onChange={e => setEditAgent({ ...editAgent, telegram_token: e.target.value })} placeholder="7434105220:..." />
+                                            : <div style={{ color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.telegram_token || '❌ غير مرتبط'}</div>}
+                                    </div>
+                                    <div>
+                                        <label style={{ color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                            <Zap size={10} /> WhatsApp Enabled
+                                        </label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: agent.whatsapp_settings?.enabled ? '#10B981' : '#374151' }} />
+                                            <span style={{ color: '#9CA3AF' }}>{agent.whatsapp_settings?.enabled ? 'نشط' : 'معطل'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* Agent Apps */}
                                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px', marginBottom: '8px' }}>
                                     <div style={{ fontSize: '0.7rem', color: '#6B7280', marginBottom: '5px', fontWeight: 600 }}>التطبيقات والإضافات:</div>
@@ -626,8 +681,10 @@ export default function AdminDashboard() {
                                     <textarea value={newTemplate.description} onChange={e => setNewTemplate(p => ({ ...p, description: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151', minHeight: '60px' }} placeholder="اشرح مهام هذه الموظفة بالعربية..." /></div>
                                 <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (إنجليزي)</label>
                                     <textarea value={newTemplate.description_en} onChange={e => setNewTemplate(p => ({ ...p, description_en: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151', minHeight: '60px' }} placeholder="Explain this agent's tasks in English..." dir="ltr" /></div>
+                                <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>أيقونة/إيموجي الموظفة</label>
+                                    <Input value={newTemplate.avatar} onChange={e => setNewTemplate(p => ({ ...p, avatar: e.target.value }))} placeholder="👩" /></div>
                             </div>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                                 <Btn onClick={addTemplate}><Check size={14} />حفظ القالب</Btn>
                                 <button onClick={() => setShowAddTemplate(false)} style={{ background: 'transparent', color: '#6B7280', border: 'none', cursor: 'pointer' }}>إلغاء</button>
                             </div>
@@ -688,109 +745,115 @@ export default function AdminDashboard() {
                 </div>}
 
                 {/* ── PRICING ── */}
-                {tab === 'pricing' && <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                        <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>الباقات والأسعار</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>تعديل أسعار اشتراكات المنصة</p></div>
-                        <Btn onClick={async () => { setSaving(true); await adminService.updatePlatformSettings('pricing_plans', pricing); setSaving(false); flash('✅ تم الحفظ'); }} disabled={saving}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ'}</Btn>
+                {
+                    tab === 'pricing' && <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>الباقات والأسعار</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>تعديل أسعار اشتراكات المنصة</p></div>
+                            <Btn onClick={async () => { setSaving(true); await adminService.updatePlatformSettings('pricing_plans', pricing); setSaving(false); flash('✅ تم الحفظ'); }} disabled={saving}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ'}</Btn>
+                        </div>
+                        <div style={{ display: 'grid', gap: '0.9rem' }}>
+                            {pricing.map((plan, idx) => <Card key={plan.id} c={<>
+                                <h3 style={{ color: '#A78BFA', fontWeight: 800, marginBottom: '0.9rem', fontSize: '0.9rem' }}>{plan.name}</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+                                    {[['monthlyPrice', 'السعر الشهري (ريال)'], ['yearlyPrice', 'السعر السنوي/شهر (ريال)']].map(([f, l]) => <div key={f}>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{l}</label>
+                                        <input type="number" value={plan[f]} onChange={e => { const u = [...pricing]; u[idx][f] = e.target.value; setPricing(u); }} style={{ width: '100%', padding: '8px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', boxSizing: 'border-box' }} />
+                                    </div>)}
+                                </div>
+                            </>} />)}
+                        </div>
                     </div>
-                    <div style={{ display: 'grid', gap: '0.9rem' }}>
-                        {pricing.map((plan, idx) => <Card key={plan.id} c={<>
-                            <h3 style={{ color: '#A78BFA', fontWeight: 800, marginBottom: '0.9rem', fontSize: '0.9rem' }}>{plan.name}</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-                                {[['monthlyPrice', 'السعر الشهري (ريال)'], ['yearlyPrice', 'السعر السنوي/شهر (ريال)']].map(([f, l]) => <div key={f}>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{l}</label>
-                                    <input type="number" value={plan[f]} onChange={e => { const u = [...pricing]; u[idx][f] = e.target.value; setPricing(u); }} style={{ width: '100%', padding: '8px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', boxSizing: 'border-box' }} />
-                                </div>)}
-                            </div>
-                        </>} />)}
-                    </div>
-                </div>}
+                }
 
                 {/* ── INTEGRATIONS ── */}
-                {tab === 'integrations' && <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 1.1rem' }}>الربط التقني</h1>
-                    <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: '#111827', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
-                        {[['platform', '⚙️ مفاتيح المنصة'], ['client', '👤 مفاتيح العملاء']].map(([id, lbl]) => <button key={id} onClick={() => setIntTab(id)} style={{ padding: '7px 18px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', background: intTab === id ? '#8B5CF6' : 'transparent', color: intTab === id ? 'white' : '#6B7280' }}>
-                            {lbl}
-                        </button>)}
-                    </div>
+                {
+                    tab === 'integrations' && <div>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 1.1rem' }}>الربط التقني</h1>
+                        <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: '#111827', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
+                            {[['platform', '⚙️ مفاتيح المنصة'], ['client', '👤 مفاتيح العملاء']].map(([id, lbl]) => <button key={id} onClick={() => setIntTab(id)} style={{ padding: '7px 18px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', background: intTab === id ? '#8B5CF6' : 'transparent', color: intTab === id ? 'white' : '#6B7280' }}>
+                                {lbl}
+                            </button>)}
+                        </div>
 
-                    {intTab === 'platform' && <div>
-                        <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>هذه المفاتيح تخدم المنصة بأكملها — OpenAI لتشغيل الذكاء الاصطناعي، n8n لأتمتة العمليات. تُخزَّن في جدول <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>platform_settings</code>.</p>
-                        {integrations.map((integ, idx) => {
-                            const conn = integ.status === 'Connected';
-                            return (
-                                <div key={integ.id} style={{ marginBottom: '0.9rem', background: '#111827', borderRadius: '13px', border: `1px solid ${conn ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}`, padding: '1.1rem' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
-                                        <h3 style={{ color: 'white', margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{integ.name}</h3>
-                                        <select value={integ.status} onChange={e => { const u = [...integrations]; u[idx].status = e.target.value; setIntegrations(u); }} style={{ background: conn ? '#10B98120' : '#EF444420', color: conn ? '#10B981' : '#EF4444', border: 'none', borderRadius: '6px', padding: '2px 9px', fontWeight: 600, cursor: 'pointer', fontSize: '0.75rem' }}>
-                                            <option value="Disconnected">غير متصل ❌</option>
-                                            <option value="Connected">متصل ✅</option>
-                                        </select>
+                        {intTab === 'platform' && <div>
+                            <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>هذه المفاتيح تخدم المنصة بأكملها — OpenAI لتشغيل الذكاء الاصطناعي، n8n لأتمتة العمليات. تُخزَّن في جدول <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>platform_settings</code>.</p>
+                            {integrations.map((integ, idx) => {
+                                const conn = integ.status === 'Connected';
+                                return (
+                                    <div key={integ.id} style={{ marginBottom: '0.9rem', background: '#111827', borderRadius: '13px', border: `1px solid ${conn ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}`, padding: '1.1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
+                                            <h3 style={{ color: 'white', margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{integ.name}</h3>
+                                            <select value={integ.status} onChange={e => { const u = [...integrations]; u[idx].status = e.target.value; setIntegrations(u); }} style={{ background: conn ? '#10B98120' : '#EF444420', color: conn ? '#10B981' : '#EF4444', border: 'none', borderRadius: '6px', padding: '2px 9px', fontWeight: 600, cursor: 'pointer', fontSize: '0.75rem' }}>
+                                                <option value="Disconnected">غير متصل ❌</option>
+                                                <option value="Connected">متصل ✅</option>
+                                            </select>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+                                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>Webhook URL</label>
+                                                <Input value={integ.url} placeholder="https://..." onChange={e => { const u = [...integrations]; u[idx].url = e.target.value; setIntegrations(u); }} /></div>
+                                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>API Key / Token</label>
+                                                <Input type="password" value={integ.key} placeholder="sk-..." onChange={e => { const u = [...integrations]; u[idx].key = e.target.value; setIntegrations(u); }} /></div>
+                                        </div>
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-                                        <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>Webhook URL</label>
-                                            <Input value={integ.url} placeholder="https://..." onChange={e => { const u = [...integrations]; u[idx].url = e.target.value; setIntegrations(u); }} /></div>
-                                        <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>API Key / Token</label>
-                                            <Input type="password" value={integ.key} placeholder="sk-..." onChange={e => { const u = [...integrations]; u[idx].key = e.target.value; setIntegrations(u); }} /></div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
 
-                        <Btn onClick={savePlatformInteg} disabled={saving} style={{ marginTop: '0.75rem' }}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ مفاتيح المنصة'}</Btn>
-                        <p style={{ color: '#4B5563', fontSize: '0.72rem', marginTop: '0.6rem' }}>💡 إذا ظهر خطأ: تأكد من وجود جدول <code style={{ background: '#1F2937', padding: '1px 4px', borderRadius: '3px' }}>platform_settings</code> في Supabase.</p>
-                    </div>}
-
-                    {intTab === 'client' && <div>
-                        <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>أضف مفاتيح الربط لعميل معين — تُخزَّن في <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>salon_configs</code></p>
-                        <select value={selIntClient || ''} onChange={e => setSelIntClient(e.target.value || null)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 12px', fontSize: '0.83rem', minWidth: '260px', marginBottom: '1rem' }}>
-                            <option value="">اختر عميلاً...</option>
-                            {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
-                        </select>
-                        {selIntClient && <div style={{ maxWidth: '500px', background: '#111827', borderRadius: '13px', border: '1px solid rgba(255,255,255,0.06)', padding: '1.1rem' }}>
-                            {[['telegram_token', '🤖 Telegram Bot Token', 'توكن البوت من @BotFather'], ['whatsapp_number', '📱 رقم WhatsApp', 'مثال: 966501234567'], ['whatsapp_api_key', '🔑 WhatsApp API Key', 'مفتاح الوصول لـ API']].map(([f, l, hint]) => <div key={f} style={{ marginBottom: '0.9rem' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.78rem', marginBottom: '3px' }}>{l}</label>
-                                <div style={{ fontSize: '0.7rem', color: '#4B5563', marginBottom: '5px' }}>{hint}</div>
-                                <Input type={f.includes('key') || f.includes('token') ? 'password' : 'text'} value={clientKeys[selIntClient]?.[f] || ''} placeholder="—" onChange={e => setClientKeys(p => ({ ...p, [selIntClient]: { ...(p[selIntClient] || {}), [f]: e.target.value } }))} />
-                            </div>)}
-                            <Btn onClick={() => saveClientKey(selIntClient)} style={{ width: '100%', justifyContent: 'center' }}><Key size={14} />حفظ مفاتيح العميل</Btn>
+                            <Btn onClick={savePlatformInteg} disabled={saving} style={{ marginTop: '0.75rem' }}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ مفاتيح المنصة'}</Btn>
+                            <p style={{ color: '#4B5563', fontSize: '0.72rem', marginTop: '0.6rem' }}>💡 إذا ظهر خطأ: تأكد من وجود جدول <code style={{ background: '#1F2937', padding: '1px 4px', borderRadius: '3px' }}>platform_settings</code> في Supabase.</p>
                         </div>}
 
-                    </div>}
+                        {intTab === 'client' && <div>
+                            <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>أضف مفاتيح الربط لعميل معين — تُخزَّن في <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>salon_configs</code></p>
+                            <select value={selIntClient || ''} onChange={e => setSelIntClient(e.target.value || null)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 12px', fontSize: '0.83rem', minWidth: '260px', marginBottom: '1rem' }}>
+                                <option value="">اختر عميلاً...</option>
+                                {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
+                            </select>
+                            {selIntClient && <div style={{ maxWidth: '500px', background: '#111827', borderRadius: '13px', border: '1px solid rgba(255,255,255,0.06)', padding: '1.1rem' }}>
+                                {[['telegram_token', '🤖 Telegram Bot Token', 'توكن البوت من @BotFather'], ['whatsapp_number', '📱 رقم WhatsApp', 'مثال: 966501234567'], ['whatsapp_api_key', '🔑 WhatsApp API Key', 'مفتاح الوصول لـ API']].map(([f, l, hint]) => <div key={f} style={{ marginBottom: '0.9rem' }}>
+                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.78rem', marginBottom: '3px' }}>{l}</label>
+                                    <div style={{ fontSize: '0.7rem', color: '#4B5563', marginBottom: '5px' }}>{hint}</div>
+                                    <Input type={f.includes('key') || f.includes('token') ? 'password' : 'text'} value={clientKeys[selIntClient]?.[f] || ''} placeholder="—" onChange={e => setClientKeys(p => ({ ...p, [selIntClient]: { ...(p[selIntClient] || {}), [f]: e.target.value } }))} />
+                                </div>)}
+                                <Btn onClick={() => saveClientKey(selIntClient)} style={{ width: '100%', justifyContent: 'center' }}><Key size={14} />حفظ مفاتيح العميل</Btn>
+                            </div>}
 
-                </div>}
+                        </div>}
+
+                    </div>
+                }
 
                 {/* ── AI SETTINGS ── */}
-                {tab === 'ai-settings' && <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                        <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>المستشارة الذكية</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>إعدادات الذكاء الاصطناعي الخاص بنورة</p></div>
-                        <Btn onClick={saveAiConfig} disabled={saving}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}</Btn>
+                {
+                    tab === 'ai-settings' && <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>المستشارة الذكية</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>إعدادات الذكاء الاصطناعي الخاص بنورة</p></div>
+                            <Btn onClick={saveAiConfig} disabled={saving}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}</Btn>
+                        </div>
+                        <Card c={<div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>1. قاعدة المعرفة (Knowledge Base)</label>
+                                <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>جميع المعلومات التي تستند إليها المستشارة عن منصة 24Shift (الأسعار، الخدمات، الشروط)</p>
+                                <textarea value={aiConfig.knowledge || ''} onChange={e => setAiConfig({ ...aiConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '180px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل بيانات المنصة هنا..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>2. التوجيهات الخاصة (System Prompt) - عربي</label>
+                                <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>تعليمات الشخصية وأسلوب التحدث بالعربية</p>
+                                <textarea value={aiConfig.prompt_ar || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_ar: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أنتِ نورة المستشارة..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>2. التوجيهات الخاصة (System Prompt) - إنجليزي</label>
+                                <textarea dir="ltr" value={aiConfig.prompt_en || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_en: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="You are Noura..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>3. الحد الأقصى لطول الرد (حروف)</label>
+                                <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>لإجبار المستشارة على الردود القصيرة والمباشرة، استخدم قيمة بين 100 و 300</p>
+                                <Input type="number" value={aiConfig.max_length || 150} onChange={e => setAiConfig({ ...aiConfig, max_length: Number(e.target.value) })} />
+                            </div>
+                        </div>} />
                     </div>
-                    <Card c={<div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                        <div>
-                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>1. قاعدة المعرفة (Knowledge Base)</label>
-                            <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>جميع المعلومات التي تستند إليها المستشارة عن منصة 24Shift (الأسعار، الخدمات، الشروط)</p>
-                            <textarea value={aiConfig.knowledge || ''} onChange={e => setAiConfig({ ...aiConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '180px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل بيانات المنصة هنا..." />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>2. التوجيهات الخاصة (System Prompt) - عربي</label>
-                            <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>تعليمات الشخصية وأسلوب التحدث بالعربية</p>
-                            <textarea value={aiConfig.prompt_ar || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_ar: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أنتِ نورة المستشارة..." />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>2. التوجيهات الخاصة (System Prompt) - إنجليزي</label>
-                            <textarea dir="ltr" value={aiConfig.prompt_en || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_en: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="You are Noura..." />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>3. الحد الأقصى لطول الرد (حروف)</label>
-                            <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>لإجبار المستشارة على الردود القصيرة والمباشرة، استخدم قيمة بين 100 و 300</p>
-                            <Input type="number" value={aiConfig.max_length || 150} onChange={e => setAiConfig({ ...aiConfig, max_length: Number(e.target.value) })} />
-                        </div>
-                    </div>} />
-                </div>}
+                }
 
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }

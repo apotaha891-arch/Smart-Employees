@@ -103,7 +103,7 @@ const Home = () => {
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [imgLoaded, setImgLoaded] = useState(false);
-    const [industry, setIndustry] = useState('general');
+    const [industry, setIndustry] = useState('telecom_it');
 
     useEffect(() => {
         const checkUser = async () => {
@@ -137,35 +137,76 @@ const Home = () => {
         <div className="animate-fade-in">
             {/* Industry Switcher (Only if not logged in or during exploration) */}
             {!profile && (
-                <div style={{ background: 'linear-gradient(90deg, rgba(139,92,246,0.03) 0%, rgba(59,130,246,0.03) 50%, rgba(168,85,247,0.03) 100%)', backdropFilter: 'blur(8px)', padding: '2.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', top: 0, left: '50%', width: '500px', height: '100%', background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(40px)', pointerEvents: 'none' }}></div>
+                <div style={{
+                    background: 'linear-gradient(180deg, rgba(139,92,246,0.05) 0%, transparent 100%)',
+                    padding: '4rem 0 2rem',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{ position: 'absolute', top: 0, left: '50%', width: '800px', height: '100%', background: 'radial-gradient(circle at center, rgba(139,92,246,0.1) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }}></div>
 
-                    <div className="container flex justify-center gap-md align-center" style={{ overflowX: 'auto', padding: '0 1rem', position: 'relative', zIndex: 1, direction: language === 'en' ? 'ltr' : 'rtl' }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{t('home.sectorTitle')}</span>
-                        {['general', 'medical', 'realestate', 'beauty', 'restaurant', 'fitness', 'retail_ecommerce', 'banking', 'call_center', 'telecom_it'].map(type => (
-                            <button
-                                key={type}
-                                onClick={() => { setIndustry(type); setImgLoaded(false); }}
-                                style={{
-                                    padding: '0.65rem 1.5rem',
-                                    ...(language === 'ar' ? { marginLeft: '1rem' } : { marginRight: '1rem' }),
-                                    borderRadius: '22px',
-                                    border: '1px solid',
-                                    borderColor: industry === type ? 'rgba(139, 92, 246, 0.6)' : 'rgba(255, 255, 255, 0.12)',
-                                    background: industry === type ? 'rgba(139, 92, 246, 0.18)' : 'rgba(255, 255, 255, 0.04)',
-                                    color: industry === type ? 'var(--accent)' : 'var(--text-muted)',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s',
-                                    whiteSpace: 'nowrap',
-                                    backdropFilter: 'blur(10px)',
-                                    boxShadow: industry === type ? '0 0 20px rgba(139, 92, 246, 0.2)' : 'none'
-                                }}
-                            >
-                                {t(`home.${type}`)}
-                            </button>
-                        ))}
+                    <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {t('home.sectorTitle')}
+                        </h2>
+
+                        <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            justifyContent: 'center',
+                            gap: '0.75rem',
+                            maxWidth: '1000px',
+                            margin: '0 auto',
+                            padding: '0.5rem'
+                        }}>
+                            {[
+                                'general', 'medical', 'realestate', 'beauty', 'restaurant',
+                                'fitness', 'retail_ecommerce', 'banking', 'call_center', 'telecom_it'
+                            ].map(type => {
+                                const isActive = industry === type;
+                                const label = t(`home.${type}`);
+
+                                return (
+                                    <button
+                                        key={type}
+                                        onClick={() => { setIndustry(type); setImgLoaded(false); }}
+                                        className="industry-pill"
+                                        style={{
+                                            padding: '0.75rem 1.5rem',
+                                            borderRadius: '30px',
+                                            border: '1px solid',
+                                            borderColor: isActive ? 'rgba(139, 92, 246, 0.5)' : 'rgba(255, 255, 255, 0.08)',
+                                            background: isActive ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                                            color: isActive ? 'var(--primary)' : 'var(--text-muted)',
+                                            fontSize: '0.88rem',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease',
+                                            whiteSpace: 'nowrap',
+                                            backdropFilter: 'blur(10px)',
+                                            boxShadow: isActive ? '0 4px 20px rgba(139, 92, 246, 0.2)' : 'none',
+                                            transform: isActive ? 'translateY(-2px)' : 'none',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem'
+                                        }}
+                                    >
+                                        <span style={{
+                                            width: '8px',
+                                            height: '8px',
+                                            borderRadius: '50%',
+                                            background: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
+                                            boxShadow: isActive ? '0 0 10px var(--accent)' : 'none'
+                                        }} />
+                                        {label && label !== `home.${type}` ? label : (
+                                            // Fallback to stylized name if translation fails
+                                            type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             )}
@@ -192,11 +233,21 @@ const Home = () => {
                     </p>
 
                     <div className="flex gap-md">
-                        <Link to="/templates" className="btn btn-primary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
+                        <Link
+                            to="/templates"
+                            state={{ industry }}
+                            className="btn btn-primary"
+                            style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}
+                        >
                             {t('home.startInterview')}
                         </Link>
                         {user ? (
-                            <Link to="/templates" className="btn btn-secondary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
+                            <Link
+                                to="/templates"
+                                state={{ industry }}
+                                className="btn btn-secondary"
+                                style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}
+                            >
                                 {t('nav.templates')}
                             </Link>
                         ) : (
@@ -390,7 +441,15 @@ const Home = () => {
                                             ? t('home.ctaRestaurant')
                                             : industry === 'fitness'
                                                 ? t('home.ctaFitness')
-                                                : t('home.ctaGeneral')}
+                                                : industry === 'retail_ecommerce'
+                                                    ? t('home.ctaRetail')
+                                                    : industry === 'banking'
+                                                        ? t('home.ctaBanking')
+                                                        : industry === 'call_center'
+                                                            ? t('home.ctaCallCenter')
+                                                            : industry === 'telecom_it'
+                                                                ? t('home.ctaTelecom')
+                                                                : t('home.ctaGeneral')}
                         </p>
                         <Link to="/templates" className="btn btn-lg" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #06B6D4 100%)', color: 'var(--primary)', padding: '1.25rem 3rem', fontSize: '1.2rem', borderRadius: '18px', fontWeight: 800, border: 'none', boxShadow: '0 15px 40px rgba(139, 92, 246, 0.3)' }}>
                             {t('home.ctaButton')}

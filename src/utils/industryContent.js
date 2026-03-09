@@ -82,8 +82,8 @@ export const industryData = {
                 }
             ]
         },
-        realestate: {
-            id: 'realestate',
+        real_estate: {
+            id: 'real_estate',
             heroTitle: "مستشارك العقاري الرقمي.. لا تفوت أي فرصة بيع",
             heroDescription: "حوّل استفسارات واتساب إلى صفقات حقيقية. وكلائنا الأذكياء مدربون على عرض العقارات، الرد على اعتراضات العملاء، وتصنيف المهتمين بدقة عالية.",
             img: "https://images.pexels.com/photos/8293778/pexels-photo-8293778.jpeg?auto=compress&cs=tinysrgb&w=800",
@@ -245,6 +245,170 @@ export const industryData = {
                     gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
+        },
+        retail_ecommerce: {
+            id: 'retail_ecommerce',
+            heroTitle: "موظف مبيعات رقمي لمتجرك.. مبيعاتك لا تتوقف أبداً",
+            heroDescription: "حوّل زوار متجرك الإلكتروني إلى عملاء دائمين. وكلاؤنا الأذكياء متخصصون في إتمام عمليات البيع، الرد على استفسارات المنتجات، ومتابعة السلال المتروكة بدقة فائقة.",
+            img: "/retail_ecommerce_hero_1773000795918.png",
+            quote: "نجاح التجارة الإلكترونية يكمن في سرعة الاستجابة ودقة التوجيه.",
+            recommendations: [
+                {
+                    title: "إتمام عمليات البيع",
+                    desc: "مساعدة العملاء في اختيار المنتجات المناسبة وإتمام عملية الدفع بأسلوب مقنع وسلس.",
+                    iconName: "Zap",
+                    animationPath: "/animations/retail-sales.json"
+                },
+                {
+                    title: "استعادة السلال المتروكة",
+                    desc: "آلية ذكية للتواصل مع العملاء الذين لم يكملوا شراءهم وتحفيزهم بخصومات مخصصة.",
+                    iconName: "Target",
+                    animationPath: "/animations/retail-cart.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "95%+",
+                    label: "نسبة التحويل الرقمي",
+                    subLabel: "زيادة ملحوظة في مبيعات المتجر عبر الإغلاق الفوري للصفقات.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "متجرك مفتوح دائماً",
+                    subLabel: "خدمة عملاء ومبيعات تعمل حتى أثناء نومك.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "سرعة في عرض المنتجات",
+                    subLabel: "إرسال تفاصيل المنتجات والصور والروابط فور طلب العميل.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
+                }
+            ]
+        },
+        banking: {
+            id: 'banking',
+            heroTitle: "مستشار مالي رقمي.. خدمات بنكية بمستوى النخبة",
+            heroDescription: "ارتقِ بتجربة عملائك المصرفية. وكلاؤنا الأذكياء مدربون على تقديم الدعم الفوري للاستفسارات المالية، شرح المميزات البنكية، وتسهيل الإجراءات الإدارية بأمان تام.",
+            img: "/banking_finance_hero_1773000813076.png",
+            quote: "الأمان والدقة هما الركيزتان الأساسيتان لكل خدمة مالية ناجحة.",
+            recommendations: [
+                {
+                    title: "دعم الاستفسارات المالية",
+                    desc: "شرح تفصيلي للمنتجات البنكية والقروض والبطاقات الائتمانية بأسلوب احترافي.",
+                    iconName: "ShieldCheck",
+                    animationPath: "/animations/banking-security.json"
+                },
+                {
+                    title: "تسهيل الإجراءات الرقمية",
+                    desc: "مساعدة العملاء في تفعيل الخدمات أو تحديث البيانات عبر توجيهات ذكية وبسيطة.",
+                    iconName: "UserCheck",
+                    animationPath: "/animations/banking-user.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "100%",
+                    label: "أمان وموثوقية البيانات",
+                    subLabel: "التزام كامل ببروتوكولات الخصوصية والأمن السيبراني المصرفي.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "دعم بنكي لا يتوقف",
+                    subLabel: "الإجابة على الاستفسارات في حالات فقدان البطاقات أو تفعيل الخدمات.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "رد مالي فوري",
+                    subLabel: "توفير المعلومات اللازمة للعملاء دون انتظار في قوائم الهاتف.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
+                }
+            ]
+        },
+        call_center: {
+            id: 'call_center',
+            heroTitle: "مركز اتصال ذكي.. كفاءة خارقة في خدمة العملاء",
+            heroDescription: "حوّل مركز الاتصال الخاص بك إلى منظومة رقمية لا تعرف الكلل. وكلاؤنا الأذكياء يديرون آلاف المحادثات في الوقت ذاته بدقة 90%، مما يقلل الضغط على فريقك البشري.",
+            img: "/call_center_hero_1773000831995.png",
+            quote: "العملاء السعداء هم نتيجة خدمة فورية واحترافية لا تتأخر أبداً.",
+            recommendations: [
+                {
+                    title: "إدارة الحشود والمكالمات",
+                    desc: "استقبال كافة طلبات العملاء في أوقات الذروة دون الحاجة لزيادة عدد الموظفين.",
+                    iconName: "Users",
+                    animationPath: "/animations/callcenter-users.json"
+                },
+                {
+                    title: "حل المشكلات الفوري",
+                    desc: "القدرة على حل الاستفسارات الشائعة (FAQ) بنسبة 100% دون تدخل بشري.",
+                    iconName: "Zap",
+                    animationPath: "/animations/callcenter-zap.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "0s",
+                    label: "وقت انتظار صفري",
+                    subLabel: "يتم الرد على جميع العملاء في نفس اللحظة مهما بلغ عددهم.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "90%+",
+                    label: "رضا العملاء (CSAT)",
+                    subLabel: "تحسن كبير في تقييمات الخدمة بفضل الاستجابة السريعة والدقيقة.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "جهوزية تامة",
+                    subLabel: "تغطية كاملة للمناوبات الليلية والعطلات الرسمية بكفاءة عالية.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
+                }
+            ]
+        },
+        telecom_it: {
+            id: 'telecom_it',
+            heroTitle: "مهندس تقني رقمي.. حلول ذكية لقطاع التكنولوجيا",
+            heroDescription: "ارتقِ بخدماتك التقنية. وكلاؤنا الأذكياء مدربون على تقديم الدعم الفني المبدئي، شرح باقات الإنترنت، وتنسيق زيارات المهندسين لعملائك بدقة متناهية.",
+            img: "/telecom_it_hero_1773000847200.png",
+            quote: "في عالم التقنية، الابتكار يبدأ من تقديم خدمة عملاء سابقة لعصرها.",
+            recommendations: [
+                {
+                    title: "دعم فني مؤتمت",
+                    desc: "حل مشاكل الاتصال والإعدادات عبر توجيهات تفاعلية وذكية للعملاء.",
+                    iconName: "Zap",
+                    animationPath: "/animations/telecom-zap.json"
+                },
+                {
+                    title: "تنسيق الصيانة الميدانية",
+                    desc: "حجز مواعيد الفنيين وربطها بالموقع الجغرافي للعميل تلقائياً بأسلوب منظم.",
+                    iconName: "Target",
+                    animationPath: "/animations/telecom-target.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "80%+",
+                    label: "حل المشكلات آلياً",
+                    subLabel: "توفير جهد المهندسين عبر حل المشاكل التقنية الروتينية.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "تغطية تقنية شاملة",
+                    subLabel: "دعم فني ومتابعة أعطال على مدار الساعة دون توقف.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "استجابة رقمية ثورية",
+                    subLabel: "الرد على استفسارات الباقات والسرعات في أقل من ثانية.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
+                }
+            ]
         }
     },
     en: {
@@ -330,8 +494,8 @@ export const industryData = {
                 }
             ]
         },
-        realestate: {
-            id: 'realestate',
+        real_estate: {
+            id: 'real_estate',
             heroTitle: "Your Digital Real Estate Advisor - Don't Miss Any Sale",
             heroDescription: "Convert WhatsApp inquiries into real deals. Our smart agents are trained to showcase properties, handle customer objections, and identify serious buyers with high accuracy.",
             img: "https://images.pexels.com/photos/8293778/pexels-photo-8293778.jpeg?auto=compress&cs=tinysrgb&w=800",
@@ -490,6 +654,170 @@ export const industryData = {
                     value: "0.5s",
                     label: "Quick Athletic Interaction",
                     subLabel: "Explaining class features and timings instantly to potential members.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
+                }
+            ]
+        },
+        retail_ecommerce: {
+            id: 'retail_ecommerce',
+            heroTitle: "E-commerce Sales Agent - Your Store Never Sleeps",
+            heroDescription: "Convert store visitors into lifelong customers. Our smart agents specialize in closing sales, answering product inquiries, and recovering abandoned carts with extreme precision.",
+            img: "/retail_ecommerce_hero_1773000795918.png",
+            quote: "E-commerce success lies in the speed of response and precision of guidance.",
+            recommendations: [
+                {
+                    title: "Sales Conversion",
+                    desc: "Help customers choose the right products and complete payments in a persuasive, seamless manner.",
+                    iconName: "Zap",
+                    animationPath: "/animations/retail-sales.json"
+                },
+                {
+                    title: "Abandoned Cart Recovery",
+                    desc: "Smart mechanism to contact customers who haven't completed their purchase with custom discounts.",
+                    iconName: "Target",
+                    animationPath: "/animations/retail-cart.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "95%+",
+                    label: "Digital Conversion Rate",
+                    subLabel: "Significant boost in store sales through instant deal closing.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Always Open",
+                    subLabel: "Customer service and sales that work even while you sleep.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Fast Product Showcase",
+                    subLabel: "Sending product details, images, and links the moment a customer asks.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
+                }
+            ]
+        },
+        banking: {
+            id: 'banking',
+            heroTitle: "Digital Financial Advisor - Elite Level Banking Services",
+            heroDescription: "Elevate your customers' banking experience. Our smart agents are trained to provide instant support for financial inquiries, explain features, and facilitate procedures securely.",
+            img: "/banking_finance_hero_1773000813076.png",
+            quote: "Security and precision are the two fundamental pillars of every successful financial service.",
+            recommendations: [
+                {
+                    title: "Financial Inquiry Support",
+                    desc: "Detailed explanation of banking products, loans, and credit cards in a professional manner.",
+                    iconName: "ShieldCheck",
+                    animationPath: "/animations/banking-security.json"
+                },
+                {
+                    title: "Digital Procedure Support",
+                    desc: "Help customers activate services or update data through smart and simple guidance.",
+                    iconName: "UserCheck",
+                    animationPath: "/animations/banking-user.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "100%",
+                    label: "Data Security & Reliability",
+                    subLabel: "Full commitment to privacy protocols and banking cybersecurity.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Sleepless Banking Support",
+                    subLabel: "Answering inquiries in case of lost cards or service activations.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Instant Financial Response",
+                    subLabel: "Providing necessary information to customers without waiting on phone queues.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
+                }
+            ]
+        },
+        call_center: {
+            id: 'call_center',
+            heroTitle: "Smart Call Center - Extraordinary Customer Service Efficiency",
+            heroDescription: "Transform your call center into a tireless digital system. Our smart agents manage thousands of conversations simultaneously with 90% accuracy.",
+            img: "/call_center_hero_1773000831995.png",
+            quote: "Happy customers are the result of immediate and professional service that never delays.",
+            recommendations: [
+                {
+                    title: "Crowd & Call Management",
+                    desc: "Receive all customer requests during peak times without needing to increase staffing.",
+                    iconName: "Users",
+                    animationPath: "/animations/callcenter-users.json"
+                },
+                {
+                    title: "Instant Problem Resolution",
+                    desc: "Capacity to solve 100% of common inquiries (FAQ) without human intervention.",
+                    iconName: "Zap",
+                    animationPath: "/animations/callcenter-zap.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "0s",
+                    label: "Zero Wait Time",
+                    subLabel: "All customers are answered in the same moment regardless of their number.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "90%+",
+                    label: "Customer Satisfaction (CSAT)",
+                    subLabel: "Significant improvement in service ratings thanks to fast responses.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Full Readiness",
+                    subLabel: "Complete coverage of night shifts and public holidays with high efficiency.",
+                    gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
+                }
+            ]
+        },
+        telecom_it: {
+            id: 'telecom_it',
+            heroTitle: "Digital Tech Engineer - Smart Solutions for the Tech Sector",
+            heroDescription: "Elevate your tech services. Our smart agents are trained to provide initial technical support, explain internet packages, and coordinate engineer visits flawlessly.",
+            img: "/telecom_it_hero_1773000847200.png",
+            quote: "In the world of technology, innovation starts with offering futuristic customer service.",
+            recommendations: [
+                {
+                    title: "Automated Tech Support",
+                    desc: "Resolve connection issues and settings through interactive, smart guidance for customers.",
+                    iconName: "Zap",
+                    animationPath: "/animations/telecom-zap.json"
+                },
+                {
+                    title: "Field Maintenance Coordination",
+                    desc: "Book technician appointments and link them to the client's geographic location automatically.",
+                    iconName: "Target",
+                    animationPath: "/animations/telecom-target.json"
+                }
+            ],
+            stats: [
+                {
+                    value: "80%+",
+                    label: "Automated Problem Solving",
+                    subLabel: "Sparing engineer effort by resolving routine technical issues.",
+                    gradient: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)"
+                },
+                {
+                    value: "24/7",
+                    label: "Full Tech Coverage",
+                    subLabel: "Technical support and outage tracking around the clock without stops.",
+                    gradient: "linear-gradient(135deg, #06B6D4 0%, #10B981 100%)"
+                },
+                {
+                    value: "0.5s",
+                    label: "Revolutionary Digital Response",
+                    subLabel: "Responding to package and speed inquiries in less than a second.",
                     gradient: "linear-gradient(135deg, #10B981 0%, #8B5CF6 100%)"
                 }
             ]
