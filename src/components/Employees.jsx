@@ -59,14 +59,16 @@ const Employees = () => {
                 if (config.business_type) setUserSector(config.business_type);
             }
         }
-        const { data } = await supabase.from('agents').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('agents').select('*').order('created_at', { ascending: false });
+        if (error) console.error("Error fetching agents:", error);
+        console.log("Fetched agents:", data);
         setAgents(data || []);
         setLoading(false);
     };
 
     const toggleAgent = async (agent) => {
         const isTelegram = (agent.platform || '').includes('telegram');
-        const hasToken = salonConfig?.telegram_token;
+        const hasToken = agent.telegram_token || salonConfig?.telegram_token;
 
         if (agent.status !== 'active' && isTelegram && !hasToken) {
             setLinkingAgent(agent);
@@ -100,6 +102,7 @@ const Employees = () => {
                 .update({
                     name: updatedName,
                     telegram_token: linkToken,
+                    platform: linkingAgent.platform ? (linkingAgent.platform.includes('telegram') ? linkingAgent.platform : `${linkingAgent.platform},telegram`) : 'telegram',
                     status: 'active'
                 })
                 .eq('id', linkingAgent.id);
@@ -213,7 +216,7 @@ const Employees = () => {
                         const RoleIcon = role.icon;
                         const isActive = agent.status === 'active';
                         const isTelegram = (agent.platform || '').includes('telegram');
-                        const hasToken = salonConfig?.telegram_token;
+                        const hasToken = agent.telegram_token || salonConfig?.telegram_token;
                         const needsLink = isTelegram && !hasToken;
 
                         return (

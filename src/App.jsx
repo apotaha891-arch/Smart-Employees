@@ -25,6 +25,9 @@ import HireAgent from './components/HireAgent';
 import OnboardingSector from './components/OnboardingSector';
 import ContractSign from './components/ContractSign';
 import HelpCenter from './components/HelpCenter';
+import SalesLeadsManager from './components/SalesLeadsManager';
+import SupportTicketManager from './components/SupportTicketManager';
+import HRRecruitmentManager from './components/HRRecruitmentManager';
 
 // Create AuthProvider
 const AuthProvider = createAuthProvider();
@@ -45,7 +48,7 @@ function App() {
 function AppContent() {
     const location = useLocation();
     // Routes that use the new Dashboard Layout
-    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/interview', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help'];
+    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/interview', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
     const isDashboard = dashboardRoutes.includes(location.pathname);
 
     return (
@@ -153,6 +156,30 @@ function AppContent() {
                     element={
                         <ProtectedRoute requiredRole="customer">
                             <ModernDashboardLayout><HelpCenter /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/sales"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><SalesLeadsManager /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/support"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><SupportTicketManager /></ModernDashboardLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/hr"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <ModernDashboardLayout><HRRecruitmentManager /></ModernDashboardLayout>
                         </ProtectedRoute>
                     }
                 />

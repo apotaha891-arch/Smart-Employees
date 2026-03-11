@@ -60,6 +60,16 @@ const IntegrationsAddons = () => {
         );
     };
 
+    useEffect(() => {
+        // Pre-select platforms if they come from the template metadata
+        if (agentData?.metadata?.platforms && Array.isArray(agentData.metadata.platforms)) {
+            setActiveAddons(prev => {
+                const combined = new Set([...prev, ...agentData.metadata.platforms]);
+                return Array.from(combined);
+            });
+        }
+    }, [agentData]);
+
     const handleDeploy = async () => {
         setStatus('loading');
         const currentAgentId = location.state?.agentId || localStorage.getItem('currentAgentId');
@@ -68,9 +78,20 @@ const IntegrationsAddons = () => {
             if (currentAgentId) {
                 let updatedName = agentName;
                 const platformNames = [];
-                if (activeAddons.includes('telegram')) platformNames.push(isArabic ? 'تيليقرام' : 'Telegram');
-                if (activeAddons.includes('whatsapp')) platformNames.push(isArabic ? 'واتساب' : 'WhatsApp');
-                if (activeAddons.includes('instagram')) platformNames.push(isArabic ? 'انستقرام' : 'Instagram');
+                const platformKeys = [];
+
+                if (activeAddons.includes('telegram')) {
+                    platformNames.push(isArabic ? 'تيليقرام' : 'Telegram');
+                    platformKeys.push('telegram');
+                }
+                if (activeAddons.includes('whatsapp')) {
+                    platformNames.push(isArabic ? 'واتساب' : 'WhatsApp');
+                    platformKeys.push('whatsapp');
+                }
+                if (activeAddons.includes('instagram')) {
+                    platformNames.push(isArabic ? 'انستقرام' : 'Instagram');
+                    platformKeys.push('instagram');
+                }
 
                 if (platformNames.length > 0) {
                     const suffix = isArabic ? ` (${platformNames.join(' و ')})` : ` (${platformNames.join(' & ')})`;
@@ -79,8 +100,12 @@ const IntegrationsAddons = () => {
                     }
                 }
 
-                // Update settings AND name
-                const updateData = { name: updatedName };
+                // Update settings AND name AND platform
+                const updateData = {
+                    name: updatedName,
+                    platform: platformKeys.join(',')
+                };
+
                 if (activeAddons.includes('telegram') && telegramToken) updateData.telegram_token = telegramToken;
                 if (activeAddons.includes('whatsapp') && (whatsappSettings.token || whatsappSettings.phoneNumberId)) {
                     updateData.whatsapp_settings = whatsappSettings;

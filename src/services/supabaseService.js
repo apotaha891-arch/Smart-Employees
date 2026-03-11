@@ -276,6 +276,9 @@ export const createAgent = async (agentData) => {
                 {
                     name: agentData.name || 'AI Agent',
                     specialty: agentData.specialty || 'General',
+                    avatar: agentData.avatar || '👩',
+                    business_type: agentData.business_type || null,
+                    platform: agentData.platform || (agentData.metadata?.platforms ? agentData.metadata.platforms.join(',') : null),
                     status: 'active',
                     user_id: user.id
                 }

@@ -79,9 +79,13 @@ const Pricing = () => {
                     console.log("Stripe Edge Function not found. Simulating successful checkout for flow progression.");
                     // Fallback using React Router's navigate instead of hard page reload if possible
                     if (isHiringFlow) {
-                        navigate(`/contract?session_id=mock_session_404&success=true&plan=${plan.id}`);
+                        navigate(`/contract?session_id=mock_session_404&success=true&plan=${plan.id}`, {
+                            state: { businessRules, template, fromInterview: true }
+                        });
                     } else {
-                        navigate(`/deploy-agent?session_id=mock_session_404&success=true`);
+                        navigate(`/deploy-agent?session_id=mock_session_404&success=true`, {
+                            state: { businessRules, template }
+                        });
                     }
                     return;
                 }

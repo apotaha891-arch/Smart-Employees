@@ -1,191 +1,202 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../LanguageContext';
+import { supabase } from '../services/supabaseService';
+import { TrendingUp, Plus, Search, Filter, MoreHorizontal, User, Users, Mail, Phone, Calendar, CheckCircle2, Clock, XCircle, Tag } from 'lucide-react';
 
 const SalesLeadsManager = () => {
-    const [isSearching, setIsSearching] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const { t, language } = useLanguage();
+    const isAr = language === 'ar';
     const [leads, setLeads] = useState([]);
-    const [statusLogs, setStatusLogs] = useState([]);
-    const [isAutoMode, setIsAutoMode] = useState(() => {
-        return localStorage.getItem('executive_auto_mode') === 'true';
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+
+    useEffect(() => {
+        fetchLeads();
+    }, []);
+
+    const fetchLeads = async () => {
+        setLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            // First get the business config to find the right customers
+            const { data: config } = await supabase
+                .from('salon_configs')
+                .select('id')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            let query = supabase.from('customers').select('*');
+
+            if (config) {
+                query = query.eq('salon_config_id', config.id);
+            } else {
+                // Fallback to user_id if config not found (assuming migration run or legacy data)
+                query = query.eq('user_id', user.id);
+            }
+
+            const { data, error } = await query.order('created_at', { ascending: false });
+
+            if (error) {
+                console.warn('Error fetching leads:', error.message);
+                // If column user_id is missing (400), we just return empty
+                if (error.code === 'PGRST204') setLeads([]);
+            } else {
+                setLeads(data || []);
+            }
+        } catch (err) {
+            console.error('Leads Hub Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'new': return { bg: '#3B82F620', text: '#3B82F6', label: isAr ? 'جديد' : 'New' };
+            case 'contacted': return { bg: '#F59E0B20', text: '#F59E0B', label: isAr ? 'تم التواصل' : 'Contacted' };
+            case 'qualified': return { bg: '#8B5CF620', text: '#8B5CF6', label: isAr ? 'مؤهل' : 'Qualified' };
+            case 'closed': return { bg: '#10B98120', text: '#10B981', label: isAr ? 'مغلق (ناجح)' : 'Closed Won' };
+            case 'lost': return { bg: '#EF444420', text: '#EF4444', label: isAr ? 'خسارة' : 'Closed Lost' };
+            default: return { bg: '#6B728020', text: '#9CA3AF', label: status || (isAr ? 'غير محدد' : 'Unknown') };
+        }
+    };
+
+    const filteredLeads = leads.filter(l => {
+        const matchesSearch = (l.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (l.email || '').toLowerCase().includes(search.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || l.status === statusFilter;
+        return matchesSearch && matchesStatus;
     });
 
-    const addLog = (msg) => {
-        setStatusLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 5));
-    };
-
-    // Simulated "Background Activity" when Auto Mode is on
-    useEffect(() => {
-        let interval;
-        if (isAutoMode) {
-            addLog("المكتب التنفيذي: تم ربط الأنظمة بنظام المسح الجغرافي المستمر. جاري المراقبة...");
-            interval = setInterval(() => {
-                const activities = [
-                    "فحص العملاء المحتملين في النطاق الجغرافي النشط...",
-                    "المكتب التنفيذي: تم تحديث بيانات 3 منشآت مكتشفة حديثاً.",
-                    "تحديث قائمة الفرص البيعية بناءً على التقييمات الجديدة...",
-                    "المكتب التنفيذي: لا توجد تغيرات كبيرة في منطقتك حالياً، جاري توسيع النطاق..."
-                ];
-                const randomMsg = activities[Math.floor(Math.random() * activities.length)];
-                addLog(randomMsg);
-            }, 15000);
-        }
-        return () => clearInterval(interval);
-    }, [isAutoMode]);
-
-    const handleSearch = () => {
-        if (!searchQuery) return;
-        setIsSearching(true);
-        setLeads([]);
-        setStatusLogs([]);
-
-        addLog("المكتب التنفيذي: بدأت عملية المسح الجغرافي للمنطقة...");
-
-        setTimeout(() => addLog("جاري الاتصال بقاعدة بيانات خرائط جوجل..."), 800);
-        setTimeout(() => addLog(`تم تحديد 15 منشأة في نطاق "${searchQuery}"`), 1600);
-        setTimeout(() => addLog("جاري استخراج أرقام التواصل وتصنيف العملاء..."), 2400);
-
-        // Simulate Google Maps Prospecting
-        setTimeout(() => {
-            const mockLeads = [
-                { name: 'مجمع عيادات الابتسامة', phone: '055XXX1234', rating: '4.5', location: 'الصحافة، الرياض', status: 'Hot' },
-                { name: 'مركز الرعاية المتكاملة', phone: '050XXX5678', rating: '4.2', location: 'الملقا، الرياض', status: 'Interested' },
-                { name: 'صالون لافندر للتجميل', phone: '054XXX9012', rating: '4.8', location: 'حطين، الرياض', status: 'Hot' },
-                { name: 'شركة ريادة العقارية', phone: '056XXX3456', rating: '4.0', location: 'الياسمين، الرياض', status: 'New' },
-            ];
-            setLeads(mockLeads);
-            setIsSearching(false);
-            addLog("المكتب التنفيذي: اكتملت المهمة بنجاح. القائمة جاهزة للتواصل.");
-        }, 4000);
-    };
-
-    const toggleAutoMode = () => {
-        const newState = !isAutoMode;
-        setIsAutoMode(newState);
-        localStorage.setItem('executive_auto_mode', newState);
-        if (newState) {
-            addLog("المكتب التنفيذي: تم تفعيل وضع الاستحواذ الآلي. سأعمل في الخلفية لجلب العملاء.");
-        } else {
-            addLog("المكتب التنفيذي: تم الانتقال للوضع اليدوي بناءً على طلبك.");
-        }
-    };
-
     return (
-        <div className="card p-xl animate-fade-in" style={{ background: 'var(--n8n-surface-card)', borderRadius: '24px', border: '1px solid var(--n8n-border)' }}>
-            <div className="flex align-center justify-between mb-xl">
-                <div className="flex align-center gap-md">
-                    <div style={{ width: '60px', height: '60px', background: 'linear-gradient(45deg, #0F172A, #334155)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', color: 'white' }}>🌎</div>
-                    <div>
-                        <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '0.2rem' }}>نظام الاستحواذ الجغرافي (Maps)</h3>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: 0 }}>تحت إشراف المدير التنفيذي - أتمتة جلب العملاء الجدد</p>
-                    </div>
+        <div className="animate-fade-in" style={{ padding: '1.5rem', direction: isAr ? 'rtl' : 'ltr' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', marginBottom: '0.5rem' }}>
+                        {isAr ? 'إدارة المبيعات والعملاء المحتملين' : 'Sales & Leads Management'}
+                    </h1>
+                    <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
+                        {isAr ? 'تابع رحلة عملائك من الاهتمام الأولي حتى إغلاق الصفقة' : 'Track your customer journey from initial interest to closing deals'}
+                    </p>
                 </div>
-                <div className="flex align-center gap-md">
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isAutoMode ? 'var(--success)' : 'var(--text-muted)' }}>
-                        {isAutoMode ? '⚡ وضع الاستحواذ الآلي نشط' : 'التحكم اليدوي'}
-                    </span>
-                    <button
-                        onClick={toggleAutoMode}
-                        className={`btn btn-sm ${isAutoMode ? 'btn-success' : 'btn-secondary'}`}
-                        style={{ borderRadius: '20px' }}
-                    >
-                        {isAutoMode ? 'تعطيل الاستحواذ' : 'تشغيل الاستحواذ الآلي'}
-                    </button>
-                </div>
+                <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Plus size={18} /> {isAr ? 'إضافة عميل محتمل' : 'Add New Lead'}
+                </button>
             </div>
 
-            <div style={{ background: 'var(--n8n-background-dark)', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid var(--n8n-border)' }}>
-                <p style={{ margin: '0 0 1rem 0', fontWeight: 700, fontSize: '0.9rem' }}>🎯 تحديد الهدف الجغرافي للاستحواذ:</p>
-                <div className="flex gap-md">
-                    <input
-                        type="text"
-                        className="input-field"
-                        placeholder="مثال: مكاتب عقارية في جدة، حي الروضة..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ flex: 1, background: 'var(--n8n-surface-card)', marginTop: 0 }}
-                    />
-                    <button
-                        className="btn btn-primary"
-                        onClick={handleSearch}
-                        disabled={isSearching}
-                        style={{ padding: '0 2rem', fontWeight: 800 }}
-                    >
-                        {isSearching ? 'جاري الاستخراج...' : 'بدء عملية الجلب'}
-                    </button>
-                </div>
-            </div>
-
-            {statusLogs.length > 0 && (
-                <div className="mb-xl" style={{ background: '#0F172A', color: '#94A3B8', padding: '1rem', borderRadius: '12px', fontSize: '0.8rem', fontFamily: 'monospace', border: '1px solid #1E293B' }}>
-                    {statusLogs.map((log, i) => (
-                        <div key={i} style={{ marginBottom: '0.25rem', color: i === 0 ? 'var(--accent)' : 'inherit' }}>
-                            {log}
+            {/* Stats Overview */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+                {[
+                    { label: isAr ? 'إجمالي المحتملين' : 'Total Leads', value: leads.length, icon: Users, color: '#3B82F6' },
+                    { label: isAr ? 'فرص نشطة' : 'Active Deals', value: leads.filter(l => l.status === 'qualified').length, icon: TrendingUp, color: '#F59E0B' },
+                    { label: isAr ? 'صفقات مغلقة' : 'Closed Won', value: leads.filter(l => l.status === 'closed').length, icon: CheckCircle2, color: '#10B981' },
+                    { label: isAr ? 'معدل التحويل' : 'Conversion Rate', value: leads.length ? Math.round((leads.filter(l => l.status === 'closed').length / leads.length) * 100) + '%' : '0%', icon: Tag, color: '#8B5CF6' },
+                ].map((stat, idx) => (
+                    <div key={idx} style={{ background: '#111827', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <span style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>{stat.label}</span>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${stat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
+                                <stat.icon size={18} />
+                            </div>
                         </div>
-                    ))}
-                </div>
-            )}
-
-            {isSearching && (
-                <div className="text-center py-xl">
-                    <div className="loading-spinner mb-md" style={{ margin: '0 auto' }}></div>
-                    <p style={{ color: 'var(--primary)', fontWeight: 800 }}>المكتب التنفيذي يقوم الآن بتحليل الخرائط الجغرافية...</p>
-                </div>
-            )}
-
-            {!isSearching && leads.length > 0 && (
-                <div className="animate-fade-in">
-                    <div className="flex align-center justify-between mb-md">
-                        <h4 style={{ margin: 0 }}>📊 قائمة الفرص البيعية المستخرجة ({leads.length})</h4>
-                        <button className="btn btn-sm" style={{ background: 'var(--success-soft)', color: 'var(--success)', fontWeight: 800 }}>تصدير إلى CRM 📥</button>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white' }}>{stat.value}</div>
                     </div>
-                    <div className="table-container">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>الاسم التجاري</th>
-                                    <th>الموقع / الحي</th>
-                                    <th>الحالة</th>
-                                    <th>رقم التواصل</th>
-                                    <th>الإجراء التنفيذي</th>
+                ))}
+            </div>
+
+            {/* Filters & Search */}
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: '300px' }}>
+                    <Search size={18} style={{ position: 'absolute', [isAr ? 'right' : 'left']: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                    <input
+                        className="input-field"
+                        placeholder={isAr ? 'البحث عن عميل بالاسم أو البريد...' : 'Search by name or email...'}
+                        style={{ paddingInlineStart: '40px' }}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select
+                        className="input-field"
+                        style={{ width: 'auto', minWidth: '150px' }}
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="all">{isAr ? 'كل الحالات' : 'All Statuses'}</option>
+                        <option value="new">{isAr ? 'جديد' : 'New'}</option>
+                        <option value="contacted">{isAr ? 'تم التواصل' : 'Contacted'}</option>
+                        <option value="qualified">{isAr ? 'مؤهل' : 'Qualified'}</option>
+                        <option value="closed">{isAr ? 'مغلق' : 'Closed'}</option>
+                    </select>
+                    <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Filter size={18} /> {isAr ? 'فلترة متقدمة' : 'Filters'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Leads Table */}
+            <div style={{ background: '#111827', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isAr ? 'right' : 'left' }}>
+                    <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'العميل' : 'Lead'}</th>
+                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'الحالة' : 'Status'}</th>
+                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'تاريخ الإضافة' : 'Date Added'}</th>
+                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'المتابعة القادمة' : 'Next Follow-up'}</th>
+                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#9CA3AF' }}>{isAr ? 'جاري التحميل...' : 'Loading...'}</td></tr>
+                        ) : filteredLeads.length === 0 ? (
+                            <tr><td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF' }}>{isAr ? 'لا يوجد عملاء محتملون يطابقون البحث' : 'No leads found matching your criteria'}</td></tr>
+                        ) : filteredLeads.map((lead) => {
+                            const status = getStatusColor(lead.status || 'new');
+                            return (
+                                <tr key={lead.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                    <td style={{ padding: '1rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', fontWeight: 700 }}>
+                                                {(lead.full_name || 'U').charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div style={{ fontWeight: 600, color: 'white' }}>{lead.full_name || (isAr ? 'غير معروف' : 'Unknown')}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{lead.email}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <span style={{ padding: '4px 10px', borderRadius: '99px', background: status.bg, color: status.text, fontSize: '0.75rem', fontWeight: 700 }}>
+                                            {status.label}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '1rem', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                        {new Date(lead.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}
+                                    </td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                            <Clock size={14} />
+                                            {isAr ? 'غداً، 10:00 ص' : 'Tomorrow, 10:00 AM'}
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                        <button style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }}>
+                                            <MoreHorizontal size={20} />
+                                        </button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {leads.map((lead, i) => (
-                                    <tr key={i}>
-                                        <td style={{ fontWeight: 800, color: 'var(--primary)' }}>{lead.name}</td>
-                                        <td>{lead.location}</td>
-                                        <td>
-                                            <span style={{
-                                                padding: '0.25rem 0.5rem',
-                                                borderRadius: '6px',
-                                                fontSize: '0.7rem',
-                                                fontWeight: 800,
-                                                background: lead.status === 'Hot' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                                                color: lead.status === 'Hot' ? '#EF4444' : '#3B82F6'
-                                            }}>
-                                                {lead.status === 'Hot' ? '🔥 عميل جاد' : '💎 فرصة نمو'}
-                                            </span>
-                                        </td>
-                                        <td>{lead.phone}</td>
-                                        <td>
-                                            <button className="btn btn-sm" style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px' }}>
-                                                إرسال الموظف للمتابعة 🤖
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {!isSearching && leads.length === 0 && !isAutoMode && (
-                <div style={{ padding: '3rem', background: 'var(--n8n-background-dark)', borderRadius: '20px', textAlign: 'center', border: '2px dashed var(--n8n-border)' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌎</div>
-                    <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>أهلاً بك في نظام الاستحواذ الجغرافي. بصفتي مديرك التنفيذي، سأقوم بجلب قائمة العملاء المحتملين لك آلياً بمجرد تحديد الهدف.</p>
-                </div>
-            )}
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

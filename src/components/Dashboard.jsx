@@ -4,7 +4,7 @@ import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getCurr
 import { Link } from 'react-router-dom';
 import LowCreditModal from './LowCreditModal';
 import * as XLSX from 'xlsx';
-import { Bot, Zap, BookOpen, Activity, Wallet, Target, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Bot, Zap, BookOpen, Activity, Wallet, Target, ChevronLeft, ChevronRight, MessageSquare, TrendingUp, Calendar, Users } from 'lucide-react';
 
 const Dashboard = () => {
     const { t, language } = useLanguage();
@@ -220,6 +220,38 @@ const Dashboard = () => {
                         </div>
                     </div>
 
+                </div>
+
+                {/* CRM Operations Hub */}
+                <div style={{ marginTop: '2.5rem' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Zap size={20} color="#8B5CF6" />
+                        {language === 'ar' ? 'مركز العمليات والنظام المتكامل' : 'CRM & Operations Hub'}
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                        {[
+                            { label: language === 'ar' ? 'إدارة الحجوزات' : 'Reservations', icon: Calendar, path: '/bookings', color: '#8B5CF6', desc: language === 'ar' ? 'تنظيم المواعيد والجلسات' : 'Manage schedules' },
+                            { label: language === 'ar' ? 'المبيعات والعملاء' : 'Leads & Sales', icon: TrendingUp, path: '/sales', color: '#10B981', desc: language === 'ar' ? 'تتبع الصفقات والمبيعات' : 'Track deals' },
+                            { label: language === 'ar' ? 'تذاكر الدعم' : 'Support Tickets', icon: MessageSquare, path: '/support', color: '#3B82F6', desc: language === 'ar' ? 'حل استفسارات العملاء' : 'Resolve inquiries' },
+                            { label: language === 'ar' ? 'التوظيف (HR)' : 'Recruitment (HR)', icon: Users, path: '/hr', color: '#F59E0B', desc: language === 'ar' ? 'إدارة المتقدمين والمقابلات' : 'Manage hiring' },
+                        ].map((hub, i) => (
+                            <Link key={i} to={hub.path} style={{ textDecoration: 'none' }}>
+                                <div className="card" style={{ padding: '1.25rem', height: '100%', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: '12px', transition: 'transform 0.2s' }}>
+                                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: `${hub.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: hub.color }}>
+                                        <hub.icon size={22} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem' }}>{hub.label}</div>
+                                        <div style={{ fontSize: '0.8rem', color: '#9CA3AF', marginTop: '4px' }}>{hub.desc}</div>
+                                    </div>
+                                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: hub.color, fontWeight: 700 }}>
+                                        {language === 'ar' ? 'دخول المركز' : 'Access Center'}
+                                        {language === 'ar' ? <ChevronLeft size={12} /> : <ChevronRight size={12} />}
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
             </div>
 

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Store, Users, User, Settings, LogOut,
     Bell, Search, Menu, X, ChevronLeft, CreditCard, Calendar,
-    BarChart3, Lock, Zap, Bot, UserCheck, HelpCircle
+    BarChart3, Lock, Zap, Bot, UserCheck, HelpCircle, MessageSquare
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -52,12 +52,19 @@ const ModernDashboardLayout = ({ children }) => {
 
     // Customer Navigation Items
     const customerNavItems = [
-        { icon: LayoutDashboard, label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard', path: '/dashboard' },
-        { icon: Bot, label: language === 'ar' ? 'الموظفون' : 'Employees', path: '/agents' },
-        { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Bookings', path: '/bookings' },
-        { icon: Users, label: language === 'ar' ? 'العملاء' : 'Customers', path: '/customers' },
+        { icon: LayoutDashboard, label: language === 'ar' ? 'نظرة عامة' : 'Overview', path: '/dashboard' },
+        { icon: Bot, label: language === 'ar' ? 'الفريق الرقمي' : 'Digital Team', path: '/agents' },
+
+        { type: 'title', label: language === 'ar' ? 'نظام CRM المتكامل' : 'CRM & Operations' },
+        { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Reservations', path: '/bookings' },
+        { icon: Zap, label: language === 'ar' ? 'المبيعات والعملاء' : 'Leads & Sales', path: '/sales' },
+        { icon: MessageSquare, label: language === 'ar' ? 'مركز الدعم' : 'Support Tickets', path: '/support' },
+        { icon: UserCheck, label: language === 'ar' ? 'التوظيف (HR)' : 'Recruitment (HR)', path: '/hr' },
+        { icon: Users, label: language === 'ar' ? 'قاعدة العملاء' : 'Customer Base', path: '/customers' },
+
+        { type: 'title', label: language === 'ar' ? 'الحساب والإعدادات' : 'Account & Config' },
         { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/salon-setup' },
-        { icon: CreditCard, label: language === 'ar' ? 'الأسعار' : 'Pricing', path: '/pricing' },
+        { icon: CreditCard, label: language === 'ar' ? 'الأسعار والفوترة' : 'Pricing & Billing', path: '/pricing' },
         { icon: HelpCircle, label: language === 'ar' ? 'مركز المساعدة' : 'Help Center', path: '/help' },
     ];
 
@@ -112,24 +119,41 @@ const ModernDashboardLayout = ({ children }) => {
                     )}
 
                     <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {navItems.map((item) => (
-                            <li key={item.path} style={{ marginBottom: '0.5rem' }}>
-                                <Link to={item.path} style={{
-                                    display: 'flex', alignItems: 'center', gap: '1rem',
-                                    padding: '12px 16px',
-                                    borderRadius: '12px',
-                                    color: isActive(item.path) ? 'white' : '#9CA3AF',
-                                    background: isActive(item.path) ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
-                                    borderRight: language === 'ar' ? 'none' : (isActive(item.path) ? '3px solid #8B5CF6' : '3px solid transparent'),
-                                    borderLeft: language === 'ar' ? (isActive(item.path) ? '3px solid #8B5CF6' : '3px solid transparent') : 'none',
-                                    transition: 'all 0.2s',
-                                    textDecoration: 'none'
-                                }}>
-                                    <item.icon size={22} color={isActive(item.path) ? '#8B5CF6' : 'currentColor'} />
-                                    {isSidebarOpen && <span style={{ fontSize: '0.95rem' }}>{item.label}</span>}
-                                </Link>
-                            </li>
-                        ))}
+                        {navItems.map((item, idx) => {
+                            if (item.type === 'title') {
+                                return isSidebarOpen ? (
+                                    <li key={`title-${idx}`} style={{ padding: '1.5rem 1rem 0.5rem', marginBottom: '0.5rem', opacity: 0.6 }}>
+                                        <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#9CA3AF', fontWeight: 800, letterSpacing: '0.1em' }}>
+                                            {item.label}
+                                        </span>
+                                    </li>
+                                ) : (
+                                    <li key={`sep-${idx}`} style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '1.5rem 1rem' }} />
+                                );
+                            }
+
+                            const path = item.path || '#';
+                            const active = isActive(path);
+
+                            return (
+                                <li key={path + idx} style={{ marginBottom: '0.25rem' }}>
+                                    <Link to={path} style={{
+                                        display: 'flex', alignItems: 'center', gap: '1rem',
+                                        padding: '12px 16px',
+                                        borderRadius: '12px',
+                                        color: active ? 'white' : '#9CA3AF',
+                                        background: active ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                                        borderRight: language === 'ar' ? 'none' : (active ? '3px solid #8B5CF6' : '3px solid transparent'),
+                                        borderLeft: language === 'ar' ? (active ? '3px solid #8B5CF6' : '3px solid transparent') : 'none',
+                                        transition: 'all 0.2s',
+                                        textDecoration: 'none'
+                                    }}>
+                                        {item.icon && <item.icon size={20} color={active ? '#8B5CF6' : 'currentColor'} />}
+                                        {isSidebarOpen && <span style={{ fontSize: '0.9rem', fontWeight: active ? 600 : 400 }}>{item.label}</span>}
+                                    </Link>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </nav>
 

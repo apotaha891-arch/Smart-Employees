@@ -266,7 +266,13 @@ export const translations = {
             banking: "بنوك وقطاع مالي",
             call_center: "مراكز اتصال وخدمة عملاء",
             telecom_it: "اتصالات وتقنية معلومات",
-            general: "عام"
+            general: "عام",
+            "مركز رياضي / نادي لياقة بدنية": "مركز رياضي / نادي لياقة بدنية",
+            "إدارة صالون التجميل": "إدارة صالون التجميل",
+            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "منصة خدمات موظفين افتراضيين / مساعد ذكي",
+            "صالون تجميل": "صالون تجميل",
+            "مبيعات وتسويق": "مبيعات وتسويق",
+            "Restaurant": "مطعم"
         },
 
         // Roles (used in Employees)
@@ -274,7 +280,16 @@ export const translations = {
             booking: "منسقة حجوزات",
             support: "خدمة عملاء",
             sales: "متابعة مبيعات",
-            followup: "متابعة"
+            followup: "متابعة",
+            hr: "موارد بشرية",
+            email: "منسق بريد",
+            "مركز رياضي / نادي لياقة بدنية": "مركز رياضي / نادي لياقة بدنية",
+            "إدارة صالون التجميل": "إدارة صالون التجميل",
+            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "منصة خدمات موظفين افتراضيين / مساعد ذكي",
+            "صالون تجميل": "صالون تجميل",
+            "مبيعات وتسويق": "مبيعات وتسويق",
+            "Restaurant": "مطعم",
+            "خدمة عملاء": "خدمة عملاء"
         },
 
         // Employees Component
@@ -851,7 +866,13 @@ export const translations = {
             banking: "Banking & Finance",
             call_center: "Call Centers & Customer Service",
             telecom_it: "Telecom & IT",
-            general: "General"
+            general: "General",
+            "مركز رياضي / نادي لياقة بدنية": "Sports Center / Fitness Club",
+            "إدارة صالون التجميل": "Beauty Salon Management",
+            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "Virtual Employee Platform / Smart Assistant",
+            "صالون تجميل": "Beauty Salon",
+            "مبيعات وتسويق": "Sales & Marketing",
+            "Restaurant": "Restaurant"
         },
 
         // Roles (used in Employees)
@@ -859,7 +880,16 @@ export const translations = {
             booking: "Booking Coordinator",
             support: "Customer Support",
             sales: "Sales Follow-up",
-            followup: "Follow-up"
+            followup: "Follow-up",
+            hr: "HR Specialist",
+            email: "Email Coordinator",
+            "مركز رياضي / نادي لياقة بدنية": "Sports Center / Fitness Club",
+            "إدارة صالون التجميل": "Beauty Salon Management",
+            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "Virtual Employee Platform / Smart Assistant",
+            "صالون تجميل": "Beauty Salon",
+            "مبيعات وتسويق": "Sales & Marketing",
+            "Restaurant": "Restaurant",
+            "خدمة عملاء": "Customer Support"
         },
 
         // Employees Component

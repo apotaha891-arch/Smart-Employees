@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Widget Test Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #F3F4F6;
+            color: #1F2937;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 500px;
+        }
+        h1 { margin-bottom: 0.5rem; color: #8B5CF6; }
+        p { color: #6B7280; line-height: 1.6; }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #EDE9FE;
+            color: #8B5CF6;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .instructions {
+            margin-top: 2rem;
+            text-align: left;
+            background: #F9FAFB;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="badge">Preview Mode</div>
+        <h1 id="title">Your Smart Agent is Live!</h1>
+        <p>This is a test environment to visualize how the 24Shift Smart Agent will look and behave on your actual website.</p>
+        
+        <div class="instructions">
+            <strong>How to test:</strong>
+            <ol>
+                <li>Look for the chat bubble in the bottom-right corner.</li>
+                <li>Click it to open the conversation window.</li>
+                <li>Ask about your services, pricing, or try to book an appointment.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- The Script -->
+    <script id="shift-loader"></script>
+
+    <script>
+        // Get params from URL
+        const params = new URLSearchParams(window.location.search);
+        const agentId = params.get('agentId');
+        const name = params.get('name') || 'Smart Assistant';
+        const welcome = params.get('welcome') || 'Hello! How can I help you?';
+
+        if (agentId) {
+            const script = document.getElementById('shift-loader');
+            script.src = './widget.js';
+            script.setAttribute('data-agent-id', agentId);
+            script.setAttribute('data-name', name);
+            script.setAttribute('data-welcome', welcome);
+            script.setAttribute('data-color', '#8B5CF6');
+            
+            document.getElementById('title').innerText = name + " is Live!";
+        } else {
+            alert('No agentId found in URL. Please open this from the Entity Setup page.');
+        }
+    </script>
+</body>
+</html>

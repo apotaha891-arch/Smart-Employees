@@ -32,6 +32,8 @@ const EntitySetup = () => {
     const [integrationSaving, setIntegrationSaving] = useState(false);
     const [expandedIntegration, setExpandedIntegration] = useState(null);
     const [loadingOAuth, setLoadingOAuth] = useState(null);
+    const [agentId, setAgentId] = useState(null);
+    const [appBaseUrl, setAppBaseUrl] = useState(window.location.origin);
 
     const handleOAuthConnect = async (platformId) => {
         setLoadingOAuth(platformId);
@@ -217,6 +219,27 @@ const EntitySetup = () => {
                         google_sheets_id: configs.google_sheets_id || '',
                         google_calendar_id: configs.google_calendar_id || '',
                     });
+
+                    // Fetch the agent for this salon to get the ID for the widget
+                    const { data: agentData } = await supabase
+                        .from('agents')
+                        .select('id')
+                        .eq('salon_config_id', configs.id)
+                        .limit(1)
+                        .maybeSingle();
+                    
+                    if (agentData) {
+                        setAgentId(agentData.id);
+                    } else {
+                        // If not specifically linked to salon_config_id, try user_id
+                        const { data: userAgent } = await supabase
+                            .from('agents')
+                            .select('id')
+                            .eq('user_id', user.id)
+                            .limit(1)
+                            .maybeSingle();
+                        if (userAgent) setAgentId(userAgent.id);
+                    }
                 }
             }
         };
@@ -290,9 +313,10 @@ const EntitySetup = () => {
 
         // Clean up empty fields to be NULL in DB for optional values
         const payload = {
-            ...newService,
+            service_name: newService.service_name,
             price: newService.price || 0,
             duration_minutes: newService.duration_minutes || 0,
+            description: newService.description || null,
             salon_config_id: salonConfigId
         };
 
@@ -313,9 +337,10 @@ const EntitySetup = () => {
         }
 
         const payload = {
-            ...editingService,
+            service_name: editingService.service_name,
             price: editingService.price || 0,
             duration_minutes: editingService.duration_minutes || 0,
+            description: editingService.description || null,
         };
 
         const result = await updateService(serviceId, payload);
@@ -409,23 +434,35 @@ const EntitySetup = () => {
         if (Object.keys(integrationDraft).length === 0) return;
         setIntegrationSaving(true);
         try {
-            const { error } = await supabase
+            console.log("Saving integration payload:", integrationDraft, "for ID:", salonConfigId);
+            const { data, error } = await supabase
                 .from('salon_configs')
                 .update(integrationDraft)
-                .eq('id', salonConfigId);
+                .eq('id', salonConfigId)
+                .select();
+                
             if (error) throw error;
+            console.log("Integration saved successfully:", data);
+            
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
             setExpandedIntegration(null);
             setIntegrationDraft({});
-            alert(language === 'ar' ? '✅ تم حفظ مفاتيح الربط بنجاح!' : '✅ Integration keys saved!');
+            
+            setTimeout(() => {
+                alert(language === 'ar' ? '✅ تم حفظ الإعدادات بنجاح!' : '✅ Settings saved successfully!');
+            }, 100);
         } catch (err) {
+            console.error("Save integration error:", err);
             const col = err.message?.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
             const hint = col
                 ? `\n\nℹ️ أضف عمود مفقود في Supabase:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
                 : '';
-            alert((language === 'ar' ? 'خطأ في الحفظ: ' : 'Save error: ') + err.message + hint);
+            setTimeout(() => {
+                alert((language === 'ar' ? 'خطأ في الحفظ: ' : 'Save error: ') + err.message + hint);
+            }, 100);
+        } finally {
+            setIntegrationSaving(false);
         }
-        setIntegrationSaving(false);
     };
 
     // Stat Card Component
@@ -822,8 +859,66 @@ const EntitySetup = () => {
                                 descEn: 'Embed the smart agent on your website',
                                 badge: language === 'ar' ? 'مضمّن' : 'Included', badgeColor: '#22C55E',
                                 fields: [
-                                    { key: 'website', labelAr: 'رابط الموقع (دومين)', labelEn: 'Website URL', placeholder: 'https://www.yourdomain.com', password: false, hintAr: 'الموقع المستهدف', hintEn: 'Target site', guide: null }
-                                ]
+                                    { key: 'app_base_url', labelAr: 'رابط لوحة التحكم (الرابط الحالي)', labelEn: 'App Base URL (Current App)', placeholder: 'https://your-dash.com', password: false, hintAr: 'المكان الذي يتواجد فيه ملف widget.js', hintEn: 'Where widget.js is hosted', guide: null },
+                                    { key: 'website', labelAr: 'رابط موقعك (دومين العميل)', labelEn: 'Target Website URL', placeholder: 'https://www.customer-site.com', password: false, hintAr: 'الموقع المستهدف', hintEn: 'Target site', guide: null },
+                                    { key: 'welcome_message', labelAr: 'رسالة الترحيب', labelEn: 'Welcome Message', placeholder: 'Hello! How can I help you?', password: false, hintAr: 'تظهر عند فتح المحادثة', hintEn: 'Shows when chat opens', guide: null }
+                                ],
+                                customContent: agentId && integrationKeys.website ? (
+                                    <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22C55E' }}></div>
+                                            <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#818CF8' }}>
+                                                {language === 'ar' ? 'جاهز للتضمين' : 'Ready to Embed'}
+                                            </span>
+                                        </div>
+                                        <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                                            {language === 'ar' 
+                                                ? 'انسخ الكود أدناه وضعه قبل وسم </body> في موقعك. تأكد من أن رابط لوحة التحكم هو الرابط "الحقيقي" المرفوع على الإنترنت ليعمل الكود عند زوارك.' 
+                                                : 'Copy the code below and paste it before the </body> tag on your website. Ensure the App Base URL is your live deployment link (not localhost) for customers to see it.'}
+                                        </p>
+                                        <div style={{ position: 'relative' }}>
+                                            <pre style={{ 
+                                                background: '#0F172A', 
+                                                padding: '1rem', 
+                                                borderRadius: '8px', 
+                                                fontSize: '0.75rem', 
+                                                color: '#E2E8F0', 
+                                                overflowX: 'auto',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                fontFamily: 'monospace'
+                                            }}>
+                                                {`<script 
+  src="${integrationKeys.app_base_url || window.location.origin}/widget.js" 
+  data-agent-id="${agentId}"
+  data-name="${formData.businessName}"
+  data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}"
+  data-color="#8B5CF6"
+></script>`}
+                                            </pre>
+                                            <button 
+                                                onClick={() => {
+                                                    const finalBase = integrationKeys.app_base_url || window.location.origin;
+                                                    const code = `<script src="${finalBase}/widget.js" data-agent-id="${agentId}" data-name="${formData.businessName}" data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}" data-color="#8B5CF6"></script>`;
+                                                    navigator.clipboard.writeText(code);
+                                                    alert(language === 'ar' ? 'تم نسخ الكود!' : 'Code copied!');
+                                                }}
+                                                style={{
+                                                    position: 'absolute', top: '8px', [language === 'ar' ? 'left' : 'right']: '8px',
+                                                    background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white',
+                                                    padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer'
+                                                }}>
+                                                {language === 'ar' ? 'نسخ' : 'Copy'}
+                                            </button>
+                                        </div>
+                                        <div style={{ marginTop: '1rem', display: 'flex', gap: '10px' }}>
+                                            <a href={`/test-widget.html?agentId=${agentId}&name=${encodeURIComponent(formData.businessName)}&welcome=${encodeURIComponent(integrationKeys.welcome_message || 'Hello!')}`} target="_blank" rel="noreferrer" style={{
+                                                fontSize: '0.8rem', color: '#818CF8', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px'
+                                            }}>
+                                                <Globe size={14} /> {language === 'ar' ? 'تجربة المحادثة الآن' : 'Test Widget Now'}
+                                            </a>
+                                        </div>
+                                    </div>
+                                ) : null
                             },
                             {
                                 id: 'telegram', icon: Send, color: '#229ED9',
@@ -1074,6 +1169,8 @@ const EntitySetup = () => {
                                                                     : (language === 'ar' ? 'حفظ البيانات' : 'Save Connection')}
                                                             </button>
                                                         </div>
+
+                                                        {card.customContent && card.customContent}
                                                     </div>
                                                 )}
                                             </div>

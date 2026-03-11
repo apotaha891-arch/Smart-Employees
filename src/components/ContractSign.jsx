@@ -44,8 +44,11 @@ const ContractSign = () => {
         try {
             // Now we actually create the Agent in the database, because the user has paid and signed
             const agentResult = await createAgent({
-                name: businessRules.businessName || 'AI Agent',
-                specialty: businessRules.businessType || 'General',
+                name: businessRules.businessName || template.title || 'AI Agent',
+                specialty: template.id || businessRules.businessType || 'General',
+                avatar: template.avatar || template.icon || '👩',
+                business_type: businessRules.businessSector || template.detectedIndustry || null,
+                platform: template.metadata?.platforms ? template.metadata.platforms.join(',') : null
             });
 
             if (!agentResult.success) {
