@@ -68,6 +68,21 @@ export const signInWithGoogle = async () => {
     }
 };
 
+export const signInWithApple = async () => {
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'apple',
+            options: {
+                redirectTo: `${window.location.origin}/dashboard`,
+            },
+        });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
 export const signOut = async () => {
     try {
         const { error } = await supabase.auth.signOut();

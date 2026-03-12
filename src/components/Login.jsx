@@ -4,7 +4,7 @@ import { signIn, signUp, signInWithGoogle, supabase } from '../services/supabase
 import { useAuth } from '../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
 import { useLanguage } from '../LanguageContext';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Mail, CheckCircle } from 'lucide-react';
 
 // Helper: get role and sector from DB
 const getUserDestination = async (userId) => {
@@ -25,6 +25,7 @@ const Login = () => {
     const [fullName, setFullName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [signUpSuccess, setSignUpSuccess] = useState(false);
     const { t, language } = useLanguage();
     const navigate = useNavigate();
     const location = useLocation();
@@ -60,6 +61,11 @@ const Login = () => {
             : await signIn(email, password);
 
         if (result.success) {
+            if (isSignUp) {
+                setSignUpSuccess(true);
+                setLoading(false);
+                return;
+            }
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 const { isAdmin, hasSector } = await getUserDestination(user.id);
@@ -70,7 +76,12 @@ const Login = () => {
                 }
             }
         } else {
-            setError(result.error);
+            // Handle unconfirmed email error specifically
+            if (result.error?.includes('Email not confirmed')) {
+                setError(language === 'ar' ? 'يرجى تفعيل بريدك الإلكتروني أولاً. تم إرسال رابط التفعيل مسبقاً.' : 'Please confirm your email first. A confirmation link was sent to your inbox.');
+            } else {
+                setError(result.error);
+            }
         }
         setLoading(false);
     };
@@ -116,102 +127,132 @@ const Login = () => {
                     </div>
                 )}
 
-                <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-                    <button
-                        onClick={handleGoogleSignIn}
-                        className="btn btn-outline btn-block"
-                        style={{
-                            padding: '1.25rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '12px',
-                            background: 'white',
-                            color: '#1F2937',
-                            border: '2px solid var(--accent)',
-                            fontWeight: 800,
-                            borderRadius: '14px',
-                            boxShadow: '0 4px 15px var(--accent-soft)',
-                            transition: 'all 0.3s'
-                        }}
-                        disabled={loading}
-                    >
-                        <FcGoogle size={28} />
-                        <div style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>
-                            <div style={{ fontSize: '1rem', lineHeight: 1.2 }}>{isSignUp ? t('createGoogleAct') : t('loginGoogleAct')}</div>
-                            <div style={{ fontSize: '0.65rem', color: '#6B7280', fontWeight: 500, marginTop: '2px' }}>{t('authentication.googleSignRecommendation')}</div>
-                        </div>
-                    </button>
-                    {/* Recommendation Badge */}
-                    <div style={{
-                        position: 'absolute',
-                        top: '-12px',
-                        [language === 'ar' ? 'left' : 'right']: '20px',
-                        background: 'var(--accent)',
-                        color: 'white',
-                        padding: '2px 10px',
-                        borderRadius: '20px',
-                        fontSize: '0.7rem',
-                        fontWeight: 900,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        boxShadow: '0 2px 10px rgba(139, 92, 246, 0.4)',
-                        zIndex: 2
+                {signUpSuccess ? (
+                    <div className="animate-fade-in" style={{ 
+                        background: 'rgba(16, 185, 129, 0.1)', 
+                        color: '#10B981', 
+                        padding: '1.5rem', 
+                        borderRadius: '16px', 
+                        marginBottom: '1.5rem', 
+                        textAlign: 'center',
+                        border: '1px solid rgba(16, 185, 129, 0.2)'
                     }}>
-                        <Sparkles size={10} /> {language === 'ar' ? 'موصى به' : 'RECOMMENDED'}
+                        <CheckCircle size={40} style={{ marginBottom: '1rem' }} />
+                        <h3 style={{ marginBottom: '0.5rem', fontWeight: 800 }}>
+                            {language === 'ar' ? 'تم إنشاء الحساب بنجاح!' : 'Account Created Successfully!'}
+                        </h3>
+                        <p style={{ fontSize: '0.9rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                            {language === 'ar' 
+                                ? 'لقد أرسلنا رابط تفعيل إلى بريدك الإلكتروني. يرجى تفعيله لتتمكن من الدخول إلى المنصة.' 
+                                : 'We have sent a confirmation link to your email. Please activate it to access the platform.'}
+                        </p>
+                        <button 
+                            onClick={() => { setSignUpSuccess(false); setIsSignUp(false); }}
+                            className="btn btn-primary btn-sm mt-md"
+                        >
+                            {language === 'ar' ? 'العودة لتسجيل الدخول' : 'Back to Login'}
+                        </button>
                     </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#6B7280', fontSize: '0.9rem' }}>
-                    <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                    <span style={{ padding: '0 1rem' }}>{t('orViaEmail')}</span>
-                    <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                </div>
-
-                <form onSubmit={handleSubmit}>
-                    {isSignUp && (
-                        <div className="mb-md">
-                            <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('fullName')}</label>
-                            <input
-                                type="text"
-                                className="input-field"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                required
-                            />
+                ) : (
+                    <>
+                        <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
+                            <button
+                                onClick={handleGoogleSignIn}
+                                className="btn btn-outline btn-block"
+                                style={{
+                                    padding: '1.25rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    background: 'white',
+                                    color: '#1F2937',
+                                    border: '2px solid var(--accent)',
+                                    fontWeight: 800,
+                                    borderRadius: '14px',
+                                    boxShadow: '0 4px 15px var(--accent-soft)',
+                                    transition: 'all 0.3s'
+                                }}
+                                disabled={loading}
+                            >
+                                <FcGoogle size={28} />
+                                <div style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>
+                                    <div style={{ fontSize: '1rem', lineHeight: 1.2 }}>{isSignUp ? t('createGoogleAct') : t('loginGoogleAct')}</div>
+                                    <div style={{ fontSize: '0.65rem', color: '#6B7280', fontWeight: 500, marginTop: '2px' }}>{t('authentication.googleSignRecommendation')}</div>
+                                </div>
+                            </button>
+                            {/* Recommendation Badge */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '-12px',
+                                [language === 'ar' ? 'left' : 'right']: '20px',
+                                background: 'var(--accent)',
+                                color: 'white',
+                                padding: '2px 10px',
+                                borderRadius: '20px',
+                                fontSize: '0.7rem',
+                                fontWeight: 900,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                boxShadow: '0 2px 10px rgba(139, 92, 246, 0.4)',
+                                zIndex: 2
+                            }}>
+                                <Sparkles size={10} /> {language === 'ar' ? 'موصى به' : 'RECOMMENDED'}
+                            </div>
                         </div>
-                    )}
-                    <div className="mb-md">
-                        <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('workEmail')}</label>
-                        <input
-                            type="email"
-                            className="input-field"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="mb-2xl">
-                        <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('password')}</label>
-                        <input
-                            type="password"
-                            className="input-field"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
 
-                    <button
-                        type="submit"
-                        className={`btn btn-primary btn-block ${loading ? 'loading' : ''}`}
-                        disabled={loading}
-                        style={{ padding: '1rem' }}
-                    >
-                        {loading ? t('verifying') : (isSignUp ? t('createCorpAct') : t('enterCenter'))}
-                    </button>
-                </form>
+                        <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#6B7280', fontSize: '0.9rem' }}>
+                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                            <span style={{ padding: '0 1rem' }}>{t('orViaEmail')}</span>
+                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            {isSignUp && (
+                                <div className="mb-md">
+                                    <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('fullName')}</label>
+                                    <input
+                                        type="text"
+                                        className="input-field"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            )}
+                            <div className="mb-md">
+                                <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('workEmail')}</label>
+                                <input
+                                    type="email"
+                                    className="input-field"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-2xl">
+                                <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('password')}</label>
+                                <input
+                                    type="password"
+                                    className="input-field"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={`btn btn-primary btn-block ${loading ? 'loading' : ''}`}
+                                disabled={loading}
+                                style={{ padding: '1rem' }}
+                            >
+                                {loading ? t('verifying') : (isSignUp ? t('createCorpAct') : t('enterCenter'))}
+                            </button>
+                        </form>
+                    </>
+                )}
 
                 <div className="text-center mt-xl">
                     <button
