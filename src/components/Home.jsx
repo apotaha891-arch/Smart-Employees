@@ -53,10 +53,10 @@ const VideoPresentation = ({ industry, language }) => {
         <section className="container" style={{ paddingTop: '2rem', paddingBottom: '6rem' }}>
             <div className="page-header text-center" style={{ marginBottom: '3.5rem' }}>
                 <h2 style={{ marginBottom: '0.75rem', fontSize: '2.5rem', fontWeight: 800 }}>
-                    {t('videoTitle')}
+                    {t('home.videoTitle')}
                 </h2>
                 <p style={{ color: 'var(--text-muted)' }}>
-                    {t('videoSubtitle')}
+                    {t('home.videoSubtitle')}
                 </p>
             </div>
 
@@ -117,7 +117,7 @@ const Home = () => {
                     // Match business_type to industry key
                     const type = profileResult.data.business_type?.toLowerCase();
                     if (type?.includes('طب') || type?.includes('صحي') || type?.includes('clinic')) setIndustry('medical');
-                    else if (type?.includes('عقار') || type?.includes('estate')) setIndustry('realestate');
+                    else if (type?.includes('عقار') || type?.includes('estate')) setIndustry('real_estate');
                     else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty')) setIndustry('beauty');
                     else if (type?.includes('مطعم') || type?.includes('restau')) setIndustry('restaurant');
                     else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit')) setIndustry('fitness');
@@ -161,7 +161,7 @@ const Home = () => {
                             padding: '0.5rem'
                         }}>
                             {[
-                                'general', 'medical', 'realestate', 'beauty', 'restaurant',
+                                'general', 'medical', 'real_estate', 'beauty', 'restaurant',
                                 'fitness', 'retail_ecommerce', 'banking', 'call_center', 'telecom_it'
                             ].map(type => {
                                 const isActive = industry === type;
@@ -433,7 +433,7 @@ const Home = () => {
                         <p style={{ color: 'rgba(255,255,255,0.85)', marginBottom: '3.5rem', fontSize: '1.15rem', maxWidth: '700px', margin: '0 auto 3.5rem', lineHeight: '1.8', fontWeight: 500 }}>
                             {industry === 'medical'
                                 ? t('home.ctaMedical')
-                                : industry === 'realestate'
+                                : industry === 'real_state' || industry === 'real_estate'
                                     ? t('home.ctaRealEstate')
                                     : industry === 'beauty'
                                         ? t('home.ctaBeauty')

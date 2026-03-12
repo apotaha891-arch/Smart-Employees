@@ -79,6 +79,10 @@ const Login = () => {
             // Handle unconfirmed email error specifically
             if (result.error?.includes('Email not confirmed')) {
                 setError(language === 'ar' ? 'يرجى تفعيل بريدك الإلكتروني أولاً. تم إرسال رابط التفعيل مسبقاً.' : 'Please confirm your email first. A confirmation link was sent to your inbox.');
+            } else if (result.error?.includes('rate limit exceeded')) {
+                setError(language === 'ar' 
+                    ? 'تم تجاوز حد إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى بعد ساعة، أو استخدم تسجيل الدخول عبر Google.' 
+                    : 'Email rate limit exceeded. Please try again in an hour, or use Google Sign-in to continue immediately.');
             } else {
                 setError(result.error);
             }

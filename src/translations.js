@@ -10,6 +10,26 @@ export const translations = {
         agentStep4Label: "التخصيص",
         agentStep4Desc: "خصص الإعدادات والمهام",
         step: "الخطوة",
+        roles: {
+            booking: "منسقة حجوزات",
+            support: "خدمة عملاء",
+            sales: "مبيعات",
+            hr: "موارد بشرية",
+            email: "منسق بريد",
+            followup: "متابعة"
+        },
+        sectors: {
+            telecom_it: "اتصالات وتقنية",
+            banking: "بنوك ومالية",
+            retail_ecommerce: "تجزئة ومتاجر",
+            call_center: "خدمات العملاء",
+            medical: "طبي وصحي",
+            beauty: "تجميل وعناية",
+            restaurant: "مطاعم وضيافة",
+            real_estate: "عقارات",
+            general: "خدمات عامة",
+            fitness: "لياقة بدنية"
+        },
         // Branding
         brand: {
             name: "24Shift",
@@ -71,7 +91,9 @@ export const translations = {
             ctaBanking: "ارتقِ بالخدمات المصرفية الرقمية عبر استجابة فورية وآمنة لعملائك.",
             ctaCallCenter: "حوّل مركز الاتصال الخاص بك إلى خلية نحل ذكية تعمل بدقة متناهية.",
             ctaTelecom: "قد ثورة الاتصالات عبر حلول تقنية ذكية تسبق تطلعات المشتركين.",
-            ctaButton: "تحدث مع مرشحك الأول الآن"
+            ctaButton: "تحدث مع مرشحك الأول الآن",
+            videoTitle: "استكشف مستقبل أعمالك في دقيقتين",
+            videoSubtitle: "شاهد كيف تقوم منصة 24Shift بتحويل منشأتك إلى خلية نحل رقمية فائقة الذكاء"
         },
 
         // Agent Templates Page
@@ -99,7 +121,15 @@ export const translations = {
             enthusiastic: "متحمس",
             enthusiasticDesc: "مليء بالطاقة",
             startInterview: "🤝 ابدأ جلسة المقابلة الشخصية",
-            alertSelectAgent: "يرجى اختيار نوع الوكيل أولاً"
+            alertSelectAgent: "يرجى اختيار نوع الوكيل أولاً",
+            confirmSectorTitle: "تأكيد قطاع الأعمال",
+            confirmSectorDesc: "يرجى اختيار القطاع المناسب لمنشأتك لنقوم بعرض أفضل الكوادر المهنية الموصى بها لك.",
+            confirmAction: "تأكيد المتابعة",
+            changeSector: "تغيير القطاع",
+            candidatesCount: "مرشحين",
+            customTitle: "لم تجد الموظف المطلوب؟",
+            customDesc: "يسعدنا تلقي طلبات لتدريب وتخصيص موظفات لمهام وخدمات غير موجودة لدينا، وسيقوم فريق الهندسة بتجهيزها خلال أقل من 24 ساعة.",
+            customAction: "تقديم طلب موظف مخصص"
         },
 
         // Home Page
@@ -612,6 +642,26 @@ export const translations = {
         agentStep4Label: "Customize",
         agentStep4Desc: "Customize settings and tasks",
         step: "Step",
+        roles: {
+            booking: "Booking Coordinator",
+            support: "Customer Support",
+            sales: "Sales Specialist",
+            hr: "Human Resources",
+            email: "Email Coordinator",
+            followup: "Customer Follow-up"
+        },
+        sectors: {
+            telecom_it: "Telecom & IT",
+            banking: "Banking & Finance",
+            retail_ecommerce: "Retail & E-commerce",
+            call_center: "Customer Support",
+            medical: "Medical & Health",
+            beauty: "Beauty & Care",
+            restaurant: "Restaurant & Hospitality",
+            real_estate: "Real Estate",
+            general: "General Services",
+            fitness: "Fitness & Gym"
+        },
         // Navigation
         nav: {
             home: "Home",
@@ -670,6 +720,8 @@ export const translations = {
             ctaFitness: "Transform your gym into an advanced digital destination with non-stop reception services.",
             ctaRetail: "Double your e-commerce sales with smart customer service that closes deals instantly.",
             ctaBanking: "Elevate digital banking services with immediate and secure responses for your customers.",
+            videoTitle: "Explore the Future of Your Business in 2 Minutes",
+            videoSubtitle: "See how 24Shift transforms your facility into a super-intelligent digital workforce",
             ctaCallCenter: "Transform your call center into a smart hub operating with extreme precision.",
             ctaTelecom: "Lead the telecom revolution with smart tech solutions that exceed subscriber expectations.",
             ctaButton: "Talk to Your First Candidate Now"
@@ -700,7 +752,15 @@ export const translations = {
             enthusiastic: "Enthusiastic",
             enthusiasticDesc: "Full of energy",
             startInterview: "🤝 Start Personal Interview Session",
-            alertSelectAgent: "Please select an agent type first"
+            alertSelectAgent: "Please select an agent type first",
+            confirmSectorTitle: "Confirm Business Sector",
+            confirmSectorDesc: "Please select your business sector to view the most relevant AI employees for your facility.",
+            confirmAction: "Confirm and Continue",
+            changeSector: "Change Sector",
+            candidatesCount: "candidates",
+            customTitle: "Didn't find the required employee?",
+            customDesc: "We are happy to receive requests to train and customize employees for unique tasks. Our engineering team will prepare them in less than 24 hours.",
+            customAction: "Submit Custom Request"
         },
 
         // Interview Room

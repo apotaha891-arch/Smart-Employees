@@ -25,17 +25,18 @@ const ModernDashboardLayout = ({ children }) => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                // Fetch salon_config to get business related info instead
-                const { data: config } = await supabase
-                    .from('salon_configs')
-                    .select('business_type')
-                    .eq('user_id', user.id)
-                    .maybeSingle();
+                // Fetch salon_config and profile
+                const [configRes, profileRes] = await Promise.all([
+                    supabase.from('salon_configs').select('business_type').eq('user_id', user.id).maybeSingle(),
+                    supabase.from('profiles').select('business_type').eq('id', user.id).maybeSingle()
+                ]);
+
+                const businessType = profileRes.data?.business_type || configRes.data?.business_type || '';
 
                 setUserData({
                     name: user.user_metadata?.full_name || user.email.split('@')[0],
                     email: user.email,
-                    business_name: config?.business_type || ''
+                    business_name: businessType
                 });
             }
         } catch (error) {

@@ -44,26 +44,48 @@ const Employees = () => {
 
     const loadSectorAndAgents = async () => {
         setLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            const { data: config } = await supabase
-                .from('salon_configs')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: config } = await supabase
+                    .from('salon_configs')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
 
-            if (config) {
-                setSalonConfig(config);
-                if (config.business_type) setUserSector(config.business_type);
+                if (config) {
+                    setSalonConfig(config);
+                    if (config.business_type) setUserSector(config.business_type);
+                }
+
+                // Also fetch profile to get business_type as fallback
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('business_type')
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                if (profile?.business_type && (!config || !config.business_type)) {
+                    setUserSector(profile.business_type);
+                }
+
+                // IMPORTANT: Filter by user_id to avoid seeing other customers' agents
+                const { data, error } = await supabase
+                    .from('agents')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                setAgents(data || []);
             }
+        } catch (err) {
+            console.error("Error loading sector/agents:", err);
+        } finally {
+            setLoading(false);
         }
-        const { data, error } = await supabase.from('agents').select('*').order('created_at', { ascending: false });
-        if (error) console.error("Error fetching agents:", error);
-        console.log("Fetched agents:", data);
-        setAgents(data || []);
-        setLoading(false);
     };
 
     const toggleAgent = async (agent) => {

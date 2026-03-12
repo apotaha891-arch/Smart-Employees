@@ -342,9 +342,13 @@ export const updateAgent = async (agentId, agentData) => {
 
 export const getAgents = async () => {
     try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
         const { data, error } = await supabase
             .from('agents')
             .select('*')
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -635,7 +639,7 @@ export const getProfile = async (userId) => {
     try {
         const { data, error } = await supabase
             .from('profiles')
-            .select('role, total_credits, credits_used, subscription_tier, message_limit, subscription_plan')
+            .select('role, total_credits, credits_used, subscription_tier, message_limit, subscription_plan, business_type')
             .eq('id', userId)
             .maybeSingle(); // Use maybeSingle to avoid 406 error on missing row
 
