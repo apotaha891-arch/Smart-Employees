@@ -174,7 +174,7 @@
             </div>
             <div id="shift-chat-area">
                 <div class="shift-msg shift-msg-ai">${welcomeMsg}</div>
-                <div id="shift-typing-indicator" class="shift-typing">Agent is typing...</div>
+                <div id="shift-typing-indicator" class="shift-typing">${businessName} is typing...</div>
             </div>
             <form id="shift-input-area">
                 <input type="text" id="shift-input" placeholder="Type your message..." autocomplete="off">
@@ -183,7 +183,7 @@
                 </button>
             </form>
             <div style="text-align: center; padding: 10px; font-size: 0.7rem; color: #9CA3AF; background: #F9FAFB;">
-                Powered by <a href="#" style="color: ${accentColor}; text-decoration: none; font-weight: bold;">24Shift</a>
+                Powered by <a href="https://24shift.solutions" target="_blank" style="color: ${accentColor}; text-decoration: none; font-weight: bold;">24Shift</a>
             </div>
         </div>
         <div id="shift-widget-bubble">

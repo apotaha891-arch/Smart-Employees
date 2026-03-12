@@ -860,7 +860,8 @@ const EntitySetup = () => {
                                 badge: language === 'ar' ? 'مضمّن' : 'Included', badgeColor: '#22C55E',
                                 fields: [
                                     { key: 'website', labelAr: 'رابط موقعك (دومين العميل)', labelEn: 'Target Website URL', placeholder: 'https://www.customer-site.com', password: false, hintAr: 'الموقع المستهدف', hintEn: 'Target site', guide: null },
-                                    { key: 'welcome_message', labelAr: 'رسالة الترحيب', labelEn: 'Welcome Message', placeholder: 'Hello! How can I help you?', password: false, hintAr: 'تظهر عند فتح المحادثة', hintEn: 'Shows when chat opens', guide: null }
+                                    { key: 'welcome_message', labelAr: 'رسالة الترحيب', labelEn: 'Welcome Message', placeholder: 'Hello! How can I help you?', password: false, hintAr: 'تظهر عند فتح المحادثة', hintEn: 'Shows when chat opens', guide: null },
+                                    { key: 'widget_color', labelAr: 'لون المحادثة', labelEn: 'Widget Color', type: 'color', password: false, hintAr: 'لون ليناسب هوية موقعك', hintEn: 'Match your website brand', guide: null }
                                 ],
                                 customContent: agentId && integrationKeys.website ? (
                                     <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
@@ -891,13 +892,13 @@ const EntitySetup = () => {
   data-agent-id="${agentId}"
   data-name="${formData.businessName}"
   data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}"
-  data-color="#8B5CF6"
+  data-color="${integrationKeys.widget_color || '#8B5CF6'}"
 ></script>`}
                                             </pre>
                                             <button 
                                                 onClick={() => {
                                                     const finalBase = window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin;
-                                                    const code = `<script src="${finalBase}/widget.js" data-agent-id="${agentId}" data-name="${formData.businessName}" data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}" data-color="#8B5CF6"></script>`;
+                                                    const code = `<script src="${finalBase}/widget.js" data-agent-id="${agentId}" data-name="${formData.businessName}" data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}" data-color="${integrationKeys.widget_color || '#8B5CF6'}"></script>`;
                                                     navigator.clipboard.writeText(code);
                                                     alert(language === 'ar' ? 'تم نسخ الكود!' : 'Code copied!');
                                                 }}
@@ -935,6 +936,7 @@ const EntitySetup = () => {
                                 descAr: 'ربط حساب واتساب للأعمال للرد التلقائي',
                                 descEn: 'Connect WhatsApp for automated replies',
                                 badge: language === 'ar' ? 'إضافة' : 'Add-on', badgeColor: '#F59E0B',
+                                comingSoon: true,
                                 fields: [
                                     { key: 'whatsapp_number', labelAr: 'رقم الهاتف', labelEn: 'Phone Number', placeholder: '+966500000000', password: false, hintAr: 'بصيغة دولية', hintEn: 'international format', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' },
                                     { key: 'whatsapp_api_key', labelAr: 'مفتاح API', labelEn: 'API Token', placeholder: 'EAAG...', password: true, hintAr: 'من Meta Developer Console', hintEn: 'from Meta', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' }
@@ -946,6 +948,7 @@ const EntitySetup = () => {
                                 descAr: 'تصدير الحجوزات والعملاء تلقائياً لجدولك',
                                 descEn: 'Auto-export bookings to Google Sheets',
                                 badge: 'Pro', badgeColor: '#F59E0B',
+                                comingSoon: true,
                                 fields: [
                                     { key: 'google_sheets_id', labelAr: 'معرّف الجدول', labelEn: 'Spreadsheet ID', placeholder: '1BxiMVs0XRA...', password: false, hintAr: 'بعد /d/', hintEn: 'after /d/', guide: 'https://developers.google.com/sheets/api/guides/concepts' }
                                 ]
@@ -956,6 +959,7 @@ const EntitySetup = () => {
                                 descAr: 'مزامنة المواعيد مع تقويم جوجل تلقائياً',
                                 descEn: 'Sync with Google Calendar automatically',
                                 badge: 'Pro', badgeColor: '#F59E0B',
+                                comingSoon: true,
                                 fields: [
                                     { key: 'google_calendar_id', labelAr: 'معرّف التقويم', labelEn: 'Calendar ID', placeholder: 'your-email@gmail.com', password: false, hintAr: 'من الإعدادات', hintEn: 'from settings', guide: 'https://support.google.com/calendar/answer/37103' }
                                 ]
@@ -966,63 +970,63 @@ const EntitySetup = () => {
                                 titleAr: 'لينكد إن (حساب شخصي)', titleEn: 'LinkedIn (Personal)',
                                 descAr: 'إنشاء ومشاركة منشورات مع متابعيك.',
                                 descEn: 'Create and share posts with your network.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                             {
                                 id: 'linkedin_org', icon: Linkedin, color: '#0A66C2',
                                 titleAr: 'لينكد إن (الصفحات)', titleEn: 'LinkedIn (Organization)',
                                 descAr: 'إدارة حساب شركتك على لينكد إن ونشر المحتوى.',
                                 descEn: 'Create and share posts on your organization\'s behalf.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                             {
                                 id: 'facebook', icon: Facebook, color: '#1877F2',
                                 titleAr: 'فيسبوك', titleEn: 'Facebook',
                                 descAr: 'إدارة صفحات الفيسبوك وحسابات إنستغرام والنشر.',
                                 descEn: 'Manage Facebook and Instagram pages, accounts, and posts.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                             {
                                 id: 'instagram', icon: Instagram, color: '#E4405F',
                                 titleAr: 'إنستغرام', titleEn: 'Instagram',
                                 descAr: 'إدارة حساب إنستغرام للأعمال أو منشئ المحتوى.',
                                 descEn: 'Manage your Instagram Business or Creator account.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                             {
                                 id: 'gmail', icon: Mail, color: '#EA4335',
                                 titleAr: 'جيميل', titleEn: 'Gmail',
                                 descAr: 'اسمح للموظفين بقراءة رسائلك الجيميل والرد عليها.',
                                 descEn: 'Let helpers send emails and read your inbox.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                             {
                                 id: 'outlook', icon: Mail, color: '#0078D4',
                                 titleAr: 'آوتلوك', titleEn: 'Outlook',
                                 descAr: 'التعامل التلقائي مع رسائل بريدك على خدمة آوتلوك.',
                                 descEn: 'Handle your Outlook emails.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                             {
                                 id: 'drive', icon: HardDrive, color: '#1FA463',
                                 titleAr: 'جوجل درايف', titleEn: 'Google Drive',
                                 descAr: 'إنشاء ومقروئية المستندات والجداول تلقائياً.',
                                 descEn: 'Create and read docs, sheets, and other files.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                             {
                                 id: 'notion', icon: BookOpen, color: '#000000',
                                 titleAr: 'نوشن', titleEn: 'Notion',
                                 descAr: 'قراءة وتحديث بيانات مساحة العمل الخاصة بك.',
                                 descEn: 'Read and update your Notion data.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                             {
                                 id: 'quickbooks', icon: Briefcase, color: '#2CA01C',
                                 titleAr: 'كويك بوكس', titleEn: 'QuickBooks',
                                 descAr: 'قراءة وتحديث الفواتير والبيانات المحاسبية.',
                                 descEn: 'Read and update your QuickBooks data.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
                         ];
 
@@ -1084,7 +1088,19 @@ const EntitySetup = () => {
 
                                                     {/* Right: Connect Button */}
                                                     <div style={{ flexShrink: 0, marginInlineStart: '1rem' }}>
-                                                        {card.fields.length > 0 ? (
+                                                        {card.comingSoon ? (
+                                                            <div style={{
+                                                                background: 'rgba(255,255,255,0.05)',
+                                                                color: '#9CA3AF',
+                                                                padding: '6px 14px',
+                                                                borderRadius: 99,
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: 600,
+                                                                border: '1px solid rgba(255,255,255,0.1)'
+                                                            }}>
+                                                                {language === 'ar' ? 'قريباً' : 'Coming Soon'}
+                                                            </div>
+                                                        ) : card.fields.length > 0 ? (
                                                             <button
                                                                 onClick={() => {
                                                                     if (isOpen) {
@@ -1132,13 +1148,13 @@ const EntitySetup = () => {
                                                                     </span>
                                                                 </label>
                                                                 <input
-                                                                    type={f.password ? 'password' : 'text'}
-                                                                    value={integrationDraft[f.key] ?? ''}
+                                                                    type={f.password ? 'password' : f.type || 'text'}
+                                                                    value={integrationDraft[f.key] ?? (f.type === 'color' ? '#8B5CF6' : '')}
                                                                     onChange={e => setIntegrationDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
                                                                     placeholder={f.placeholder}
                                                                     style={{
-                                                                        width: '100%', padding: '10px 14px', background: '#27272A', border: '1px solid #3F3F46', borderRadius: 10, color: '#FFFFFF',
-                                                                        fontFamily: 'monospace', fontSize: '0.9rem', letterSpacing: f.password ? '0.1em' : 'normal', outline: 'none'
+                                                                        width: '100%', padding: f.type === 'color' ? '2px 6px' : '10px 14px', height: f.type === 'color' ? '42px' : 'auto', background: '#27272A', border: '1px solid #3F3F46', borderRadius: 10, color: '#FFFFFF',
+                                                                        fontFamily: 'monospace', fontSize: '0.9rem', letterSpacing: f.password ? '0.1em' : 'normal', outline: 'none', cursor: f.type === 'color' ? 'pointer' : 'text'
                                                                     }}
                                                                 />
                                                                 {f.guide && (
