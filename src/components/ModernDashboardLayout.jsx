@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Store, Users, User, Settings, LogOut,
     Bell, Search, Menu, X, ChevronLeft, CreditCard, Calendar,
-    BarChart3, Lock, Zap, Bot, UserCheck, HelpCircle, MessageSquare
+    BarChart3, Lock, Zap, Bot, UserCheck, HelpCircle, MessageSquare, Puzzle
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -65,6 +65,7 @@ const ModernDashboardLayout = ({ children }) => {
 
         { type: 'title', label: language === 'ar' ? 'الحساب والإعدادات' : 'Account & Config' },
         { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/salon-setup' },
+        { icon: Puzzle, label: language === 'ar' ? 'أدوات الربط والمنصات' : 'Tools & Connections', path: '/salon-setup?tab=integrations' },
         { icon: CreditCard, label: language === 'ar' ? 'الأسعار والفوترة' : 'Pricing & Billing', path: '/pricing' },
         { icon: HelpCircle, label: language === 'ar' ? 'مركز المساعدة' : 'Help Center', path: '/help' },
     ];

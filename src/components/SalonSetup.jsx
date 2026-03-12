@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { getCurrentUser, getProfile, getWalletBalance, saveSalonConfig, activateSalonAgent, getServices, addService, updateService, deleteService, linkGoogleAccount, saveIntegrationCredentials, getIntegrations, supabase, invokeMultiFileWorkflow } from '../services/supabaseService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     User, FileText, Calendar, CheckCircle2, Smartphone,
     MessageCircle, Settings, Upload, Clock, Briefcase, Sparkles,
@@ -14,7 +14,10 @@ const EntitySetup = () => {
     const { t, language } = useLanguage();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('sources');
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const initialTab = queryParams.get('tab') || 'sources';
+    const [activeTab, setActiveTab] = useState(initialTab);
     const [salonConfigId, setSalonConfigId] = useState(null);
     const [industry, setIndustry] = useState('general');
     const [walletBalance, setWalletBalance] = useState(null);

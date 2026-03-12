@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { supabase } from '../services/supabaseService';
-import { MessageSquare, Plus, Search, Filter, AlertCircle, CheckCircle2, Clock, Inbox, Reply, ExternalLink } from 'lucide-react';
+import { MessageSquare, Plus, Search, Filter, AlertCircle, CheckCircle2, Clock, Inbox, Reply, ExternalLink, Bot, MessageCircle } from 'lucide-react';
 
 const SupportTicketManager = () => {
     const { t, language } = useLanguage();
