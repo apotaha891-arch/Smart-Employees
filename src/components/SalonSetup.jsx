@@ -34,6 +34,10 @@ const EntitySetup = () => {
     const [loadingOAuth, setLoadingOAuth] = useState(null);
     const [agentId, setAgentId] = useState(null);
     const [appBaseUrl, setAppBaseUrl] = useState(window.location.origin);
+    const [requestToolName, setRequestToolName] = useState('');
+    const [requestReason, setRequestReason] = useState('');
+    const [requestSuccess, setRequestSuccess] = useState(false);
+
 
     const handleOAuthConnect = async (platformId) => {
         setLoadingOAuth(platformId);
@@ -431,6 +435,10 @@ const EntitySetup = () => {
             alert(language === 'ar' ? 'يرجى حفظ بيانات المنشأة أولاً.' : 'Please save entity info first.');
             return;
         }
+        if (expandedIntegration === 'custom_request') {
+            handleCustomToolRequest();
+            return;
+        }
         if (Object.keys(integrationDraft).length === 0) return;
         setIntegrationSaving(true);
         try {
@@ -460,6 +468,35 @@ const EntitySetup = () => {
             setTimeout(() => {
                 alert((language === 'ar' ? 'خطأ في الحفظ: ' : 'Save error: ') + err.message + hint);
             }, 100);
+        } finally {
+            setIntegrationSaving(false);
+        }
+    };
+
+    const handleCustomToolRequest = async () => {
+        if (!requestToolName.trim()) return;
+        setIntegrationSaving(true);
+        try {
+            const { error } = await supabase.from('system_logs').insert([{
+                level: 'info',
+                category: 'system',
+                message: `New Tool Request: ${requestToolName}`,
+                details: {
+                    tool_name: requestToolName,
+                    reason: requestReason,
+                    salon_config_id: salonConfigId
+                }
+            }]);
+            if (error) throw error;
+            setRequestSuccess(true);
+            setTimeout(() => {
+                setExpandedIntegration(null);
+                setRequestSuccess(false);
+                setRequestToolName('');
+                setRequestReason('');
+            }, 2500);
+        } catch (err) {
+            alert('Error sending request: ' + err.message);
         } finally {
             setIntegrationSaving(false);
         }
@@ -1028,6 +1065,17 @@ const EntitySetup = () => {
                                 descEn: 'Read and update your QuickBooks data.',
                                 badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
                             },
+                            {
+                                id: 'custom_request', icon: Puzzle, color: '#8B5CF6',
+                                titleAr: 'طلب أداة مخصصة', titleEn: 'Request Custom Tool',
+                                descAr: 'هل تحتاج لربط أداة غير موجودة؟ اطلبها الآن.',
+                                descEn: 'Need an integration not listed here? Let us know.',
+                                badge: language === 'ar' ? 'جديد' : 'New', badgeColor: '#F59E0B',
+                                fields: [
+                                    { key: 'tool_name', labelAr: 'اسم الأداة', labelEn: 'Tool Name', placeholder: 'Slack, Zapier...', password: false, hintAr: 'الأداة المطلوبة', hintEn: 'Required service', guide: null },
+                                    { key: 'reason', labelAr: 'سبب الاستخدام', labelEn: 'How will you use it?', placeholder: 'Describe your workflow...', password: false, hintAr: 'اختياري', hintEn: 'Optional', guide: null }
+                                ]
+                            },
                         ];
 
                         return (
@@ -1139,33 +1187,56 @@ const EntitySetup = () => {
                                                 {/* Expanded Form / Setup Fields */}
                                                 {isOpen && card.fields.length > 0 && (
                                                     <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                                        {card.fields.map(f => (
-                                                            <div key={f.key} style={{ marginTop: 16 }}>
-                                                                <label style={{ display: 'block', color: '#E5E7EB', fontSize: '0.85rem', marginBottom: 8, fontWeight: 500 }}>
-                                                                    {language === 'ar' ? f.labelAr : f.labelEn}
-                                                                    <span style={{ fontWeight: 400, color: '#6B7280', marginInlineStart: 8 }}>
-                                                                        — {language === 'ar' ? f.hintAr : f.hintEn}
-                                                                    </span>
-                                                                </label>
-                                                                <input
-                                                                    type={f.password ? 'password' : f.type || 'text'}
-                                                                    value={integrationDraft[f.key] ?? (f.type === 'color' ? '#8B5CF6' : '')}
-                                                                    onChange={e => setIntegrationDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                                                    placeholder={f.placeholder}
-                                                                    style={{
-                                                                        width: '100%', padding: f.type === 'color' ? '2px 6px' : '10px 14px', height: f.type === 'color' ? '42px' : 'auto', background: '#27272A', border: '1px solid #3F3F46', borderRadius: 10, color: '#FFFFFF',
-                                                                        fontFamily: 'monospace', fontSize: '0.9rem', letterSpacing: f.password ? '0.1em' : 'normal', outline: 'none', cursor: f.type === 'color' ? 'pointer' : 'text'
-                                                                    }}
-                                                                />
-                                                                {f.guide && (
-                                                                    <span
-                                                                        onClick={(e) => { e.stopPropagation(); navigate('/help/integrations'); }}
-                                                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, color: '#60A5FA', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 500 }}>
-                                                                        <LinkIcon size={12} /> {language === 'ar' ? 'كيف أحصل على هذا المفتاح؟' : 'How to get this key?'}
-                                                                    </span>
-                                                                )}
+                                                        {card.id === 'custom_request' ? (
+                                                            /* Render special custom request fields if ID matches */
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+                                                                <div>
+                                                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                        {language === 'ar' ? 'اسم الأداة أو المنصة' : 'Tool / Platform Name'}
+                                                                    </label>
+                                                                    <input style={inp} value={requestToolName}
+                                                                        onChange={e => setRequestToolName(e.target.value)}
+                                                                        placeholder="e.g. Slack, WhatsApp API, Zapier..." />
+                                                                </div>
+                                                                <div>
+                                                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                        {language === 'ar' ? 'وصف الاحتياج' : 'Description of Need'}
+                                                                    </label>
+                                                                    <textarea style={{ ...inp, resize: 'vertical' }} rows={2}
+                                                                        value={requestReason}
+                                                                        onChange={e => setRequestReason(e.target.value)}
+                                                                        placeholder={language === 'ar' ? 'لماذا تحتاج هذا الربط؟' : 'How will this help your workflow?'} />
+                                                                </div>
                                                             </div>
-                                                        ))}
+                                                        ) : (
+                                                            card.fields.map(f => (
+                                                                <div key={f.key} style={{ marginTop: 16 }}>
+                                                                    <label style={{ display: 'block', color: '#E5E7EB', fontSize: '0.85rem', marginBottom: 8, fontWeight: 500 }}>
+                                                                        {language === 'ar' ? f.labelAr : f.labelEn}
+                                                                        <span style={{ fontWeight: 400, color: '#6B7280', marginInlineStart: 8 }}>
+                                                                            — {language === 'ar' ? f.hintAr : f.hintEn}
+                                                                        </span>
+                                                                    </label>
+                                                                    <input
+                                                                        type={f.password ? 'password' : f.type || 'text'}
+                                                                        value={integrationDraft[f.key] ?? (f.type === 'color' ? '#8B5CF6' : '')}
+                                                                        onChange={e => setIntegrationDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                                                        placeholder={f.placeholder}
+                                                                        style={{
+                                                                            width: '100%', padding: f.type === 'color' ? '2px 6px' : '10px 14px', height: f.type === 'color' ? '42px' : 'auto', background: '#27272A', border: '1px solid #3F3F46', borderRadius: 10, color: '#FFFFFF',
+                                                                            fontFamily: 'monospace', fontSize: '0.9rem', letterSpacing: f.password ? '0.1em' : 'normal', outline: 'none', cursor: f.type === 'color' ? 'pointer' : 'text'
+                                                                        }}
+                                                                    />
+                                                                    {f.guide && (
+                                                                        <span
+                                                                            onClick={(e) => { e.stopPropagation(); navigate('/help/integrations'); }}
+                                                                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, color: '#60A5FA', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 500 }}>
+                                                                            <LinkIcon size={12} /> {language === 'ar' ? 'كيف أحصل على هذا المفتاح؟' : 'How to get this key?'}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            ))
+                                                        )}
 
                                                         <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
                                                             <button
@@ -1178,10 +1249,16 @@ const EntitySetup = () => {
                                                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: '0.95rem',
                                                                     opacity: integrationSaving ? 0.7 : 1, boxShadow: `0 4px 14px ${cardColor}40`
                                                                 }}>
-                                                                {integrationSaving ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
+                                                                {integrationSaving ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : (requestSuccess ? <CheckCircle2 size={16} /> : <Save size={16} />)}
                                                                 {integrationSaving
-                                                                    ? (language === 'ar' ? 'جاري الحفظ...' : 'Saving...')
-                                                                    : (language === 'ar' ? 'حفظ البيانات' : 'Save Connection')}
+                                                                    ? (language === 'ar' ? 'جاري الإرسال...' : 'Sending Request...')
+                                                                    : (requestSuccess 
+                                                                        ? (language === 'ar' ? 'تم الإرسال!' : 'Request Sent!')
+                                                                        : (isOpen && card.id === 'custom_request' 
+                                                                            ? (language === 'ar' ? 'إرسال الطلب' : 'Send Request')
+                                                                            : (language === 'ar' ? 'حفظ البيانات' : 'Save Connection')
+                                                                          )
+                                                                      )}
                                                             </button>
                                                         </div>
 
