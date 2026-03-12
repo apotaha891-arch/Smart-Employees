@@ -859,7 +859,6 @@ const EntitySetup = () => {
                                 descEn: 'Embed the smart agent on your website',
                                 badge: language === 'ar' ? 'مضمّن' : 'Included', badgeColor: '#22C55E',
                                 fields: [
-                                    { key: 'app_base_url', labelAr: 'رابط لوحة التحكم (الرابط الحالي)', labelEn: 'App Base URL (Current App)', placeholder: 'https://your-dash.com', password: false, hintAr: 'المكان الذي يتواجد فيه ملف widget.js', hintEn: 'Where widget.js is hosted', guide: null },
                                     { key: 'website', labelAr: 'رابط موقعك (دومين العميل)', labelEn: 'Target Website URL', placeholder: 'https://www.customer-site.com', password: false, hintAr: 'الموقع المستهدف', hintEn: 'Target site', guide: null },
                                     { key: 'welcome_message', labelAr: 'رسالة الترحيب', labelEn: 'Welcome Message', placeholder: 'Hello! How can I help you?', password: false, hintAr: 'تظهر عند فتح المحادثة', hintEn: 'Shows when chat opens', guide: null }
                                 ],
@@ -872,23 +871,23 @@ const EntitySetup = () => {
                                             </span>
                                         </div>
                                         <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#9CA3AF', lineHeight: 1.5 }}>
-                                            {language === 'ar' 
-                                                ? 'انسخ الكود أدناه وضعه قبل وسم </body> في موقعك. تأكد من أن رابط لوحة التحكم هو الرابط "الحقيقي" المرفوع على الإنترنت ليعمل الكود عند زوارك.' 
-                                                : 'Copy the code below and paste it before the </body> tag on your website. Ensure the App Base URL is your live deployment link (not localhost) for customers to see it.'}
+                                            {language === 'ar'
+                                                ? 'انسخ الكود أدناه وضعه قبل وسم </body> في موقعك ليتمكن الزوار من التحدث مع موظفك الذكي.'
+                                                : 'Copy the code below and paste it before the </body> tag on your website to allow visitors to chat with your agent.'}
                                         </p>
                                         <div style={{ position: 'relative' }}>
-                                            <pre style={{ 
-                                                background: '#0F172A', 
-                                                padding: '1rem', 
-                                                borderRadius: '8px', 
-                                                fontSize: '0.75rem', 
-                                                color: '#E2E8F0', 
+                                            <pre style={{
+                                                background: '#0F172A',
+                                                padding: '1rem',
+                                                borderRadius: '8px',
+                                                fontSize: '0.75rem',
+                                                color: '#E2E8F0',
                                                 overflowX: 'auto',
                                                 border: '1px solid rgba(255,255,255,0.1)',
                                                 fontFamily: 'monospace'
                                             }}>
-                                                {`<script 
-  src="${integrationKeys.app_base_url || window.location.origin}/widget.js" 
+                                                {`<script
+  src="${(window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin)}/widget.js"
   data-agent-id="${agentId}"
   data-name="${formData.businessName}"
   data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}"
@@ -897,7 +896,7 @@ const EntitySetup = () => {
                                             </pre>
                                             <button 
                                                 onClick={() => {
-                                                    const finalBase = integrationKeys.app_base_url || window.location.origin;
+                                                    const finalBase = window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin;
                                                     const code = `<script src="${finalBase}/widget.js" data-agent-id="${agentId}" data-name="${formData.businessName}" data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}" data-color="#8B5CF6"></script>`;
                                                     navigator.clipboard.writeText(code);
                                                     alert(language === 'ar' ? 'تم نسخ الكود!' : 'Code copied!');
