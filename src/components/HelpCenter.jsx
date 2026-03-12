@@ -106,6 +106,14 @@ const HelpCenter = () => {
             answer: isArabic
                 ? 'إطلاقاً! منصتنا توفر ربطاً خالياً تماماً من الأكواد (No-Code). كل ما عليك فعله هو الضغط على زر "توصيل" بجوار المنصة المرغوبة، ثم تسجيل الدخول العادي بحسابك وإعطاء الصلاحية. سيتكفل النظام بجلب مفاتيح الربط المعقدة وتخزينها في خزنتك المشفرة تلقائياً.'
                 : 'Not at all! Our platform is 100% No-Code. Just click "Connect" next to the desired platform, log in normally, and grant permission. The system will handle fetching and securely storing the complex API keys for you behind the scenes.'
+        },
+        {
+            id: 10,
+            categoryId: 'integrations',
+            question: isArabic ? 'كيف أقوم بتضمين الموظف الذكي في موقعي الإلكتروني؟' : 'How do I embed the smart agent on my website?',
+            answer: isArabic
+                ? 'تضمين الموظف سهل جداً. اذهب إلى "إعداد المنشأة" > "الربط والمنصات" > "موقع الويب المباشر". هناك ستجد كود برمجياً جاهزاً (Script). انسخه وضعه في ملف HTML الخاص بموقعك قبل إغلاق وسم </body>. بمجرد الحفظ، سيظهر الموظف الذكي لزوار موقعك فوراً.'
+                : 'Embedding is simple! Go to "Entity Setup" > "Integrations" > "Website Chatbot". There you will find a code snippet (Script). Copy and paste it into your website\'s HTML just before the closing </body> tag. Once saved, the agent will appear instantly for your visitors.'
         }
     ];
 
