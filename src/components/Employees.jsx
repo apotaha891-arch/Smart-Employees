@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseService';
-import { Bot, Plus, Calendar, MessageCircle, TrendingUp, Users, Mail, Power, Settings, Link as LinkIcon, X, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Bot, Plus, Calendar, MessageCircle, TrendingUp, Users, Mail, Power, Settings, Link as LinkIcon, X, AlertCircle, CheckCircle2, Box, ArrowRight, Trash2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 
 const SECTOR_LABELS = {
@@ -11,6 +11,7 @@ const SECTOR_LABELS = {
     fitness: { emoji: '🏋', color: '#10B981' },
     real_estate: { emoji: '🏠', color: '#8B5CF6' },
     retail_ecommerce: { emoji: '🛍', color: '#10B981' },
+    commerce: { emoji: '🛍', color: '#10B981' },
     banking: { emoji: '🏦', color: '#8B5CF6' },
     call_center: { emoji: '🎧', color: '#06B6D4' },
     telecom_it: { emoji: '📡', color: '#EF4444' },
@@ -26,13 +27,16 @@ const ROLE_LABELS = {
 };
 
 const Employees = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const isAr = language === 'ar';
     const navigate = useNavigate();
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [userSector, setUserSector] = useState('beauty');
+    const [userSector, setUserSector] = useState('general');
     const [filterRole, setFilterRole] = useState('');
     const [salonConfig, setSalonConfig] = useState(null);
+    const [templates, setTemplates] = useState([]);
+    const [fetchingTemplates, setFetchingTemplates] = useState(false);
 
     // Modal states
     const [showLinkModal, setShowLinkModal] = useState(false);
@@ -79,7 +83,25 @@ const Employees = () => {
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
-                setAgents(data || []);
+                const userAgents = data || [];
+                setAgents(userAgents);
+
+                // Fetch templates if agents is empty OR just to show available options
+                if (userAgents.length === 0) {
+                    setFetchingTemplates(true);
+                    const { data: tmpls } = await supabase
+                        .from('agent_templates')
+                        .select('*')
+                        .eq('is_public', true);
+                    
+                    if (tmpls) {
+                        // Filter by sector
+                        const currentSector = profile?.business_type || config?.business_type || 'beauty';
+                        const sectorTmpls = tmpls.filter(t => t.business_type === currentSector || t.business_type === 'general');
+                        setTemplates(sectorTmpls);
+                    }
+                    setFetchingTemplates(false);
+                }
             }
         } catch (err) {
             console.error("Error loading sector/agents:", err);
@@ -113,7 +135,7 @@ const Employees = () => {
 
             // Update Name to include Telegram if not already there
             let updatedName = linkingAgent.name || 'موظف';
-            const platformTag = t.language === 'en' ? '(Telegram)' : '(تيليجرام)';
+            const platformTag = isAr ? '(تيليجرام)' : '(Telegram)';
             if (!updatedName.includes('(')) {
                 updatedName = `${updatedName} ${platformTag}`;
             }
@@ -160,6 +182,23 @@ const Employees = () => {
             alert('حدث خطأ أثناء حفظ الإعدادات.');
         } finally {
             setSavingLink(false);
+        }
+    };
+
+    const handleDeleteAgent = async (agent) => {
+        const confirmMsg = isAr 
+            ? `هل أنت متأكد من رغبتك في حذف الموظف "${agent.name}"؟` 
+            : `Are you sure you want to delete "${agent.name}"?`;
+        
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+            const { error } = await supabase.from('agents').delete().eq('id', agent.id);
+            if (error) throw error;
+            loadSectorAndAgents();
+        } catch (err) {
+            console.error("Error deleting agent:", err);
+            alert(isAr ? "فشل حذف الموظف." : "Failed to delete agent.");
         }
     };
 
@@ -220,16 +259,56 @@ const Employees = () => {
                     <div className="loader" style={{ width: '40px', height: '40px', border: '3px solid rgba(139,92,246,0.1)', borderTopColor: '#8B5CF6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
                     {t('loadingFallback')}
                 </div>
-            ) : filtered.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '5rem 2rem', background: 'rgba(17, 24, 39, 0.4)', borderRadius: '24px', border: '2px dashed rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.02)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                        <Bot size={40} color="#374151" />
+            ) : agents.length === 0 ? (
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '3rem', padding: '3rem', background: 'rgba(139, 92, 246, 0.03)', borderRadius: '24px', border: '1px dashed rgba(139, 92, 246, 0.2)' }}>
+                        <div style={{ width: '80px', height: '80px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                            <Bot size={40} color="#8B5CF6" />
+                        </div>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.75rem' }}>{isAr ? 'ابتدئ فريقك الرقمي الآن' : 'Start Your Digital Team'}</h2>
+                        <p style={{ color: '#9CA3AF', fontSize: '1rem', maxWidth: '500px', margin: '0 0 1.5rem', lineHeight: 1.6 }}>
+                            {isAr 
+                                ? 'لم تقم بتوظيف أي موظف بعد. اختر من القوالب الجاهزة أدناه والمدربة خصيصاً لقطاعك لبدء أتمتة أعمالك.' 
+                                : 'You haven’t hired any agents yet. Choose from our pre-trained templates below to start automating your business.'}
+                        </p>
                     </div>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.75rem' }}>{t('noEmployeesYet')}</h3>
-                    <p style={{ color: '#6B7280', fontSize: '0.95rem', maxWidth: '320px', margin: '0 0 1.5rem', lineHeight: 1.6 }}>{t('startHiringDesc') || 'ابدأ بتعيين كادر مميز لمساعدتك في أتمتة أعمالك اليومية.'}</p>
-                    <button onClick={() => navigate('/hire-agent')} style={{ background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 32px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 4px 20px rgba(139, 92, 246, 0.2)' }}>
-                        {t('hireFirstEmployeeBtn')}
-                    </button>
+
+                    <div style={{ textAlign: 'start', marginBottom: '1.5rem' }}>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Box size={22} color="#8B5CF6" />
+                            {isAr ? 'قوالب مقترحة لقطاعك' : 'Suggested Templates for Your Sector'}
+                        </h3>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                        {templates.map(tmpl => (
+                            <div key={tmpl.id} className="card shadow-premium" style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'transform 0.2s' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                                        {tmpl.avatar || '🤖'}
+                                    </div>
+                                    <div style={{ textAlign: 'start' }}>
+                                        <h4 style={{ fontWeight: 800, margin: 0, fontSize: '1.05rem' }}>
+                                            {isAr ? (tmpl.name_ar || tmpl.name) : tmpl.name}
+                                        </h4>
+                                        <span style={{ fontSize: '0.7rem', color: '#8B5CF6', fontWeight: 700, textTransform: 'uppercase' }}>
+                                            {t(`roles.${tmpl.specialty || 'booking'}`)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p style={{ fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.6, textAlign: 'start', flex: 1 }}>
+                                    {isAr ? (tmpl.description_ar || tmpl.description) : tmpl.description}
+                                </p>
+                                <button 
+                                    onClick={() => navigate('/interview', { state: { template: tmpl } })}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(139, 92, 246, 0.1)', color: '#A78BFA', border: '1px solid rgba(139, 92, 246, 0.2)', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                >
+                                    {isAr ? 'مقابلة وتوظيف' : 'Interview & Hire'}
+                                    <ArrowRight size={16} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
@@ -310,6 +389,20 @@ const Employees = () => {
                                         onMouseLeave={e => e.currentTarget.style.background = isActive ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)'}
                                     >
                                         <Power size={16} /> {isActive ? t('stopBtn') : t('activateBtn')}
+                                    </button>
+                                    <button onClick={() => handleDeleteAgent(agent)}
+                                        style={{
+                                            width: '44px',
+                                            background: 'rgba(239, 68, 68, 0.05)',
+                                            color: '#EF4444',
+                                            border: '1px solid rgba(239, 68, 68, 0.1)',
+                                            borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s'
+                                        }}
+                                        title={isAr ? "حذف" : "Delete"}
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'}
+                                    >
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             </div>

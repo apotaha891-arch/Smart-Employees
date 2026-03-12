@@ -22,6 +22,7 @@ export const translations = {
             telecom_it: "اتصالات وتقنية",
             banking: "بنوك ومالية",
             retail_ecommerce: "تجزئة ومتاجر",
+            commerce: "التجارة والبيع بالتجزئة",
             call_center: "خدمات العملاء",
             medical: "طبي وصحي",
             beauty: "تجميل وعناية",

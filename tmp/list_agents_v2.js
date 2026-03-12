@@ -3,18 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
 
-async function check() {
-    const { data, error } = await supabase.from('agents').select('*');
+async function listAgents() {
+    const { data: agents, error } = await supabase.from('agents').select('id, name, user_id, specialty');
     if (error) {
-        console.error('FETCH ERROR:', error.message, error.code);
-    } else {
-        console.log('AGENTS COUNT:', data?.length || 0);
-        console.log('DATA:', JSON.stringify(data, null, 2));
+        console.error(error);
+        return;
     }
+    console.log("Agents in DB:");
+    agents.forEach(a => {
+        console.log(`- ${a.name} (${a.specialty}) | UserID: ${a.user_id}`);
+    });
 }
 
-check();
+listAgents();
