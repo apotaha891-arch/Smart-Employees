@@ -463,30 +463,47 @@ const EntitySetup = () => {
         setIntegrationSaving(true);
         try {
             console.log("Saving integration payload:", integrationDraft, "for ID:", salonConfigId);
-            const { data, error } = await supabase
+            
+            // Add a timeout to the request to prevent hanging UI
+            const savePromise = supabase
                 .from('salon_configs')
                 .update(integrationDraft)
                 .eq('id', salonConfigId)
                 .select();
+
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Request timeout after 15 seconds")), 15000)
+            );
+
+            const { data, error } = await Promise.race([savePromise, timeoutPromise]);
                 
-            if (error) throw error;
+            if (error) {
+                console.error("Supabase error during save:", error);
+                throw error;
+            }
             console.log("Integration saved successfully:", data);
             
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
-            setExpandedIntegration(null);
-            setIntegrationDraft({});
+            // We don't clear draft or collapse immediately if it's the website, 
+            // to allow the user to see the updated code snippet.
+            if (expandedIntegration !== 'website') {
+                setExpandedIntegration(null);
+                setIntegrationDraft({});
+            }
             
             setTimeout(() => {
                 alert(language === 'ar' ? '✅ تم حفظ الإعدادات بنجاح!' : '✅ Settings saved successfully!');
             }, 100);
         } catch (err) {
-            console.error("Save integration error:", err);
-            const col = err.message?.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
+            console.error("Save integration error detail:", err);
+            const msg = err.message || "Unknown error";
+            const col = msg.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
             const hint = col
                 ? `\n\nℹ️ أضف عمود مفقود في Supabase:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
-                : '';
+                : (msg.includes('CORS') || msg.includes('fetch') ? '\n\n⚠️ خطأ في الاتصال (CORS): تأكد من إضافة الدومين في إعدادات Supabase.' : '');
+            
             setTimeout(() => {
-                alert((language === 'ar' ? 'خطأ في الحفظ: ' : 'Save error: ') + err.message + hint);
+                alert((language === 'ar' ? '⚠️ حدث خطأ أثناء الحفظ: ' : '⚠️ Save error: ') + msg + hint);
             }, 100);
         } finally {
             setIntegrationSaving(false);
@@ -946,7 +963,7 @@ const EntitySetup = () => {
                                     { key: 'welcome_message', labelAr: 'رسالة الترحيب', labelEn: 'Welcome Message', placeholder: 'Hello! How can I help you?', password: false, hintAr: 'تظهر عند فتح المحادثة', hintEn: 'Shows when chat opens', guide: null },
                                     { key: 'widget_color', labelAr: 'لون المحادثة', labelEn: 'Widget Color', type: 'color', password: false, hintAr: 'لون ليناسب هوية موقعك', hintEn: 'Match your website brand', guide: null }
                                 ],
-                                customContent: (agentId && (integrationKeys.website || integrationDraft.website)) ? (
+                                customContent: (expandedIntegration === 'website') ? (
                                     <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
                                             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: agentId ? '#22C55E' : '#F59E0B' }}></div>
