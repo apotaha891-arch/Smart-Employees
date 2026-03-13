@@ -39,7 +39,7 @@ const Pricing = () => {
             }
 
             const origin = window.location.origin;
-            let successUrl = `${origin}/deploy-agent?session_id={CHECKOUT_SESSION_ID}&success=true`;
+            let successUrl = `${origin}/salon-setup?tab=integrations&session_id={CHECKOUT_SESSION_ID}&success=true`;
             let cancelUrl = `${origin}/pricing?canceled=true`;
 
             if (isHiringFlow) {
@@ -83,7 +83,7 @@ const Pricing = () => {
                             state: { businessRules, template, fromInterview: true }
                         });
                     } else {
-                        navigate(`/deploy-agent?session_id=mock_session_404&success=true`, {
+                        navigate(`/salon-setup?tab=integrations&session_id=mock_session_404&success=true`, {
                             state: { businessRules, template }
                         });
                     }

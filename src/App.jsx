@@ -119,11 +119,7 @@ function AppContent() {
                 />
                 <Route
                     path="/deploy-agent"
-                    element={
-                        <ProtectedRoute requiredRole="customer">
-                            <ModernDashboardLayout><DeployAgent /></ModernDashboardLayout>
-                        </ProtectedRoute>
-                    }
+                    element={<Navigate to="/salon-setup?tab=integrations" replace />}
                 />
                 <Route
                     path="/customers"

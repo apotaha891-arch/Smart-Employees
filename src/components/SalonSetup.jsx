@@ -22,6 +22,15 @@ const EntitySetup = () => {
     const [industry, setIndustry] = useState('general');
     const [walletBalance, setWalletBalance] = useState(null);
     const [connectedIntegrations, setConnectedIntegrations] = useState({ google: false, whatsapp: false });
+    const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+    useEffect(() => {
+        if (queryParams.get('success')) {
+            setPaymentSuccess(true);
+            // Clear URL
+            window.history.replaceState({}, document.title, window.location.pathname + '?tab=' + activeTab);
+        }
+    }, []);
 
     // Integration Keys State
     const [integrationKeys, setIntegrationKeys] = useState({
@@ -535,6 +544,31 @@ const EntitySetup = () => {
         <div className="fade-in" dir={language === 'ar' ? 'rtl' : 'ltr'} style={{ textAlign: language === 'ar' ? 'right' : 'left', color: 'white' }}>
 
             {/* Page Header */}
+            {paymentSuccess && (
+                <div className="animate-fade-in" style={{
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                    padding: '1rem 1.5rem',
+                    borderRadius: '16px',
+                    marginBottom: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    color: '#10B981'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <CheckCircle2 size={24} />
+                        <div>
+                            <span style={{ fontWeight: 800, display: 'block' }}>{language === 'ar' ? 'تم تفعيل الخدمة بنجاح!' : 'Plan Activated Successfully!'}</span>
+                            <span style={{ fontSize: '0.85rem' }}>{language === 'ar' ? 'يمكنك الآن البدء بربط الأدوات وتدريب موظفك.' : 'You can now start connecting tools and training your agent.'}</span>
+                        </div>
+                    </div>
+                    <button onClick={() => setPaymentSuccess(false)} style={{ background: 'none', border: 'none', color: '#10B981', cursor: 'pointer' }}>
+                        <X size={20} />
+                    </button>
+                </div>
+            )}
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
                 <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(139,92,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8B5CF6' }}>
                     <Briefcase size={24} />
@@ -989,16 +1023,26 @@ const EntitySetup = () => {
                                     { key: 'telegram_token', labelAr: 'توكن البوت', labelEn: 'Bot Token', placeholder: '123456789:AAF...', password: false, hintAr: 'من @BotFather في تيليجرام', hintEn: 'from @BotFather', guide: 'https://core.telegram.org/bots/tutorial' }
                                 ]
                             },
+
                             {
                                 id: 'whatsapp', icon: MessageCircle, color: '#25D366',
                                 titleAr: 'واتساب للأعمال', titleEn: 'WhatsApp Business',
                                 descAr: 'ربط حساب واتساب للأعمال للرد التلقائي',
                                 descEn: 'Connect WhatsApp for automated replies',
-                                badge: language === 'ar' ? 'إضافة' : 'Add-on', badgeColor: '#F59E0B',
-                                comingSoon: true,
+                                badge: 'Add-on', badgeColor: '#10B981',
                                 fields: [
-                                    { key: 'whatsapp_number', labelAr: 'رقم الهاتف', labelEn: 'Phone Number', placeholder: '+966500000000', password: false, hintAr: 'بصيغة دولية', hintEn: 'international format', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' },
-                                    { key: 'whatsapp_api_key', labelAr: 'مفتاح API', labelEn: 'API Token', placeholder: 'EAAG...', password: true, hintAr: 'من Meta Developer Console', hintEn: 'from Meta', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' }
+                                    { key: 'whatsapp_number', labelAr: 'معرف رقم الهاتف (Phone ID)', labelEn: 'Phone Number ID', placeholder: '101234567890', password: false, hintAr: 'من Meta Developers', hintEn: 'from Meta Developers', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' },
+                                    { key: 'whatsapp_api_key', labelAr: 'رمز الوصول (Access Token)', labelEn: 'Access Token', placeholder: 'EAAG...', password: true, hintAr: 'رمز الوصول الدائم', hintEn: 'Permanent Access Token', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' }
+                                ]
+                            },
+                            {
+                                id: 'instagram', icon: Instagram, color: '#E1306C',
+                                titleAr: 'انستقرام (قريباً)', titleEn: 'Instagram (Beta)',
+                                descAr: 'الرد على الرسائل الخاصة والتعليقات',
+                                descEn: 'Reply to DMs and comments automatically',
+                                badge: 'Beta', badgeColor: '#F59E0B',
+                                fields: [
+                                    { key: 'instagram_id', labelAr: 'معرف الحساب', labelEn: 'Account ID', placeholder: '12345...', password: false, hintAr: 'اختياري في المرحلة التجريبية', hintEn: 'Optional in beta', guide: null }
                                 ]
                             },
                             {

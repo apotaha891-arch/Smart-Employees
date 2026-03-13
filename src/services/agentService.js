@@ -19,6 +19,7 @@ export const getAgentTemplates = async (userId) => {
                 else if (type.includes('تجميل') || type.includes('salon') || type.includes('beauty') || type === 'beauty') industry = 'beauty';
                 else if (type.includes('مطعم') || type.includes('restau') || type === 'restaurant') industry = 'restaurant';
                 else if (type.includes('رياض') || type.includes('gym') || type.includes('club') || type.includes('fit') || type === 'fitness') industry = 'fitness';
+                else if (type.includes('تجارة') || type.includes('commerce') || type.includes('retail') || type.includes('shop')) industry = 'general'; // Commerce maps to general for now or its own if we add it
             }
         }
 

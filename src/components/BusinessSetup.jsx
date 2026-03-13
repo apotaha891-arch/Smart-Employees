@@ -109,8 +109,8 @@ const BusinessSetup = () => {
 
         if (result.success) {
             alert(language === 'ar' ? 'تم تهيئة الموظف وحفظ قاعدة المعرفة بنجاح!' : 'Agent configured and knowledge base saved successfully!');
-            // Step 7: Transition to Dashboard Integration Selection
-            navigate('/deploy-agent', { state: { agentId } });
+            // Step 7: Transition to Dashboard Integration Selection (New Tool Page)
+            navigate('/salon-setup?tab=integrations', { state: { agentId } });
         } else {
             alert(t('errorPrefix') + result.error);
         }
