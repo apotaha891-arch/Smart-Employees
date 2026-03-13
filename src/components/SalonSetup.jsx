@@ -393,6 +393,7 @@ const EntitySetup = () => {
 
             // 1. Update Salon Config
             const configResult = await saveSalonConfig({
+                id: salonConfigId, // Pass existing ID if available to update instead of insert
                 user_id: user.id,
                 agent_name: formData.businessName,
                 specialty: formData.businessType,
@@ -473,36 +474,28 @@ const EntitySetup = () => {
             return;
         }
         if (Object.keys(integrationDraft).length === 0) return;
+        
         setIntegrationSaving(true);
         try {
-            console.log("Saving integration payload:", integrationDraft, "for ID:", salonConfigId);
+            const { data: { user } } = await supabase.auth.getUser();
+            console.log("Saving integration via Service:", integrationDraft, "for ID:", salonConfigId);
             
-            // Add a timeout to the request to prevent hanging UI
-            const savePromise = supabase
-                .from('salon_configs')
-                .update(integrationDraft)
-                .eq('id', salonConfigId)
-                .select();
-
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("Request timeout after 30 seconds")), 30000)
-            );
-
-            const result = await Promise.race([savePromise, timeoutPromise]);
+            // Use the main save service which has proven reliable for the first tab
+            const result = await saveSalonConfig({
+                id: salonConfigId,
+                user_id: user?.id, // include user_id to satisfy RLS/indexes
+                ...integrationDraft
+            });
             
-            if (!result || result.error) {
-                const error = result?.error || new Error("Request failed or timeout");
-                console.error("Supabase error during save:", error);
-                throw error;
+            if (!result.success) {
+                throw new Error(result.error || "Failed to save integration settings");
             }
             
-            console.log("Integration saved successfully:", result.data);
+            console.log("Integration saved successfully ✅");
             
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
             
-            setTimeout(() => {
-                alert(language === 'ar' ? '✅ تم حفظ الإعدادات بنجاح!' : '✅ Settings saved successfully!');
-            }, 100);
+            alert(language === 'ar' ? '✅ تم حفظ الإعدادات بنجاح!' : '✅ Settings saved successfully!');
             
             // Only collapse if not website (to keep the code snippet visible)
             if (expandedIntegration !== 'website') {
@@ -513,17 +506,20 @@ const EntitySetup = () => {
             const msg = err.message || "Unknown error";
             const col = msg.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
             const isCors = msg.includes('CORS') || msg.includes('fetch');
-            const isTimeout = msg.includes('timeout');
+            const isTimeout = msg.includes('timeout') || msg.includes('30 seconds');
 
-            const hint = col
-                ? `\n\nℹ️ أضف عمود مفقود في Supabase:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
-                : (isCors || isTimeout 
-                    ? `\n\n⚠️ خطأ في الاتصال: تأكد من إضافة الدومين ${window.location.origin} في إعدادات Supabase -> API -> Allow Origins.` 
-                    : '');
+            let hint = "";
+            if (col) {
+                hint = language === 'ar'
+                    ? `\n\nℹ️ أضف عمود مفقود في Supabase:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
+                    : `\n\nℹ️ Missing column. Run this in Supabase SQL Editor:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`;
+            } else if (isCors || isTimeout) {
+                hint = language === 'ar'
+                    ? `\n\n⚠️ تأكد من:\n1. إضافة ${window.location.origin} في Allow Origins في Supabase.\n2. عدم وجود Webhooks معطلة في Supabase -> Database -> Webhooks.\n3. جودة اتصال الإنترنت.`
+                    : `\n\n⚠️ Please check:\n1. Domain ${window.location.origin} is in Supabase -> API -> Allow Origins.\n2. No hanging Webhooks in Supabase -> Database -> Webhooks.\n3. Your internet connection.`;
+            }
             
-            setTimeout(() => {
-                alert((language === 'ar' ? '⚠️ فشل الاتصال بقاعدة البيانات: ' : '⚠️ Database connection failed: ') + msg + hint);
-            }, 100);
+            alert((language === 'ar' ? '⚠️ فشل الاتصال بقاعدة البيانات: ' : '⚠️ Database connection failed: ') + msg + hint);
         } finally {
             setIntegrationSaving(false);
         }

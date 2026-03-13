@@ -756,17 +756,33 @@ export const submitCustomRequest = async (requestData) => {
 
 export const saveSalonConfig = async (config) => {
     try {
-        const { data, error } = await supabase
-            .from('salon_configs')
-            .upsert([config])
-            .select()
-            .single();
+        console.log("SupabaseService: Saving config:", config.id ? `UPDATE ${config.id}` : 'INSERT NEW');
+        
+        let query;
+        if (config.id) {
+            // Explicit UPDATE - safer for RLS and locks
+            query = supabase
+                .from('salon_configs')
+                .update(config)
+                .eq('id', config.id);
+        } else {
+            // Explicit INSERT
+            query = supabase
+                .from('salon_configs')
+                .insert([config]);
+        }
 
-        if (error) throw error;
+        const { data, error } = await query.select().maybeSingle();
+
+        if (error) {
+            console.error('Database Operation Error:', error);
+            throw error;
+        }
+        
         return { success: true, data };
     } catch (error) {
-        console.error('Save Salon Config Error:', error);
-        return { success: false, error: error.message };
+        console.error('Save Salon Config Exception:', error);
+        return { success: false, error: error.message || 'Database connection error' };
     }
 };
 
