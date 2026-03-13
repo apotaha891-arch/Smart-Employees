@@ -201,11 +201,12 @@
     const chatArea = document.getElementById('shift-chat-area');
     const typing = document.getElementById('shift-typing-indicator');
 
-    // Persistence
-    let sessionId = localStorage.getItem('shift_session_id');
+    // Persistence - Isolate session per agent to prevent context leakage
+    let sessionKey = `shift_session_id_${agentId}`;
+    let sessionId = localStorage.getItem(sessionKey);
     if (!sessionId) {
         sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('shift_session_id', sessionId);
+        localStorage.setItem(sessionKey, sessionId);
     }
 
     // Toggle Window

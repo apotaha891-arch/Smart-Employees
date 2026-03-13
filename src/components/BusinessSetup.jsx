@@ -101,10 +101,20 @@ const BusinessSetup = () => {
         }
 
         setLoading(true);
-        // Save knowledge and update basic identity in the designated Agent!
+        // 1. Fetch the latest salon_config to create a hard link
+        const { data: latestConfig } = await supabase
+            .from('salon_configs')
+            .select('id')
+            .eq('user_id', user?.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        // 2. Save knowledge and update basic identity in the designated Agent!
         const result = await updateAgent(agentId, {
             name: formData.business_name,
             specialty: formData.business_type,
+            salon_config_id: latestConfig?.id || null, // Create hard link to prevent context leakage
             knowledge_base: formData.knowledge_base + (formData.working_hours ? '\n\nمواعيد العمل:\n' + formData.working_hours : '') + (formData.services ? '\n\nتفاصيل الخدمات:\n' + formData.services : ''),
             branding_tone: formData.branding_tone
         });

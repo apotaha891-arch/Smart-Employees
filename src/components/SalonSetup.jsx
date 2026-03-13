@@ -408,12 +408,14 @@ const EntitySetup = () => {
             setSalonConfigId(configResult.data.id);
 
             // 2. Sync to Agent Identity (VERY IMPORTANT to fix "Beauty Salon" personality issues)
-            if (agentId) {
-                console.log("Syncing business identity to agent:", agentId);
-                await updateAgent(agentId, {
+            if (agentId && configResult.data?.id) {
+                console.log("Syncing business identity to agent:", agentId, "with config:", configResult.data.id);
+                const syncResult = await updateAgent(agentId, {
                     name: formData.businessName,
-                    specialty: formData.businessType
+                    specialty: formData.businessType,
+                    salon_config_id: configResult.data.id // HARD LINK to prevent context bleeding
                 });
+                if (syncResult.success) console.log("Agent identity synced successfully ✅");
             }
 
             alert(language === 'ar' ? '✅ تم تحديث بروفايل المنشأة ومزامنة الموظف!' : '✅ Business profile updated and agent synced!');

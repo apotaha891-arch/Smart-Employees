@@ -110,10 +110,18 @@ serve(async (req) => {
         // 2b. Fetch business info and services for this agent's salon
         let businessContext = '';
         let servicesText = '';
+
+        // Add Agent's OWN defined context first
+        if (agent.description) businessContext += `\nAgent Primary Role: ${agent.description}`;
+        if (agent.knowledge_base) businessContext += `\nAgent Knowledge Base: ${agent.knowledge_base}`;
+
         try {
             // Resolve salon_config_id
             let salonConfigId = agent.salon_config_id;
-            if (!salonConfigId) {
+            
+            // SECURITY FIX: Only fallback to user_id if we have a valid user_id
+            if (!salonConfigId && agent.user_id) {
+                console.log("No specific salon_config_id, falling back to latest for user:", agent.user_id);
                 const { data: sc } = await supabaseClient
                     .from('salon_configs')
                     .select('id, description, knowledge_base')
@@ -122,16 +130,16 @@ serve(async (req) => {
                     .limit(1)
                     .maybeSingle();
                 salonConfigId = sc?.id;
-                if (sc?.description) businessContext += `\nBusiness Description: ${sc.description}`;
-                if (sc?.knowledge_base) businessContext += `\nKnowledge Base / Policies: ${sc.knowledge_base}`;
-            } else {
+                if (sc?.description) businessContext += `\nCompany Profile: ${sc.description}`;
+                if (sc?.knowledge_base) businessContext += `\nCompany General Policies: ${sc.knowledge_base}`;
+            } else if (salonConfigId) {
                  const { data: sc } = await supabaseClient
                     .from('salon_configs')
                     .select('description, knowledge_base')
                     .eq('id', salonConfigId)
                     .maybeSingle();
-                if (sc?.description) businessContext += `\nBusiness Description: ${sc.description}`;
-                if (sc?.knowledge_base) businessContext += `\nKnowledge Base / Policies: ${sc.knowledge_base}`;
+                if (sc?.description) businessContext += `\nCompany Profile: ${sc.description}`;
+                if (sc?.knowledge_base) businessContext += `\nCompany General Policies: ${sc.knowledge_base}`;
             }
 
             if (salonConfigId) {
@@ -292,6 +300,7 @@ YOUR GUIDELINES:
                 .from('chat_sessions')
                 .select('history')
                 .eq('session_id', sessionId)
+                .eq('agent_id', agentId)
                 .maybeSingle();
 
             if (sessionData?.history && Array.isArray(sessionData.history)) {
