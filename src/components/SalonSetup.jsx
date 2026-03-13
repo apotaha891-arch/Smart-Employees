@@ -213,7 +213,7 @@ const EntitySetup = () => {
                 // Fetch the salon_config for this user
                 const { data: configs } = await supabase
                     .from('salon_configs')
-                    .select('id, agent_name, specialty, tone, working_hours, phone, address, website, description, telegram_token, whatsapp_number, whatsapp_api_key, google_sheets_id, google_calendar_id')
+                    .select('id, agent_name, specialty, tone, working_hours, phone, address, website, description, telegram_token, whatsapp_number, whatsapp_api_key, google_sheets_id, google_calendar_id, welcome_message, widget_color')
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
                     .limit(1)
@@ -232,12 +232,14 @@ const EntitySetup = () => {
                         workingHours: configs.working_hours || { start: '09:00', end: '22:00' },
                     }));
                     setIntegrationKeys({
-                        website: configs.website || '', // Map integration data
+                        website: configs.website || '',
                         telegram_token: configs.telegram_token || '',
                         whatsapp_number: configs.whatsapp_number || '',
                         whatsapp_api_key: configs.whatsapp_api_key || '',
                         google_sheets_id: configs.google_sheets_id || '',
                         google_calendar_id: configs.google_calendar_id || '',
+                        welcome_message: configs.welcome_message || '',
+                        widget_color: configs.widget_color || '#8B5CF6',
                     });
 
                     // Fetch the agent for this salon to get the ID for the widget
@@ -944,7 +946,7 @@ const EntitySetup = () => {
                                     { key: 'welcome_message', labelAr: 'رسالة الترحيب', labelEn: 'Welcome Message', placeholder: 'Hello! How can I help you?', password: false, hintAr: 'تظهر عند فتح المحادثة', hintEn: 'Shows when chat opens', guide: null },
                                     { key: 'widget_color', labelAr: 'لون المحادثة', labelEn: 'Widget Color', type: 'color', password: false, hintAr: 'لون ليناسب هوية موقعك', hintEn: 'Match your website brand', guide: null }
                                 ],
-                                customContent: integrationKeys.website ? (
+                                customContent: (agentId && (integrationKeys.website || integrationDraft.website)) ? (
                                     <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
                                             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: agentId ? '#22C55E' : '#F59E0B' }}></div>
@@ -976,14 +978,14 @@ const EntitySetup = () => {
   src="${(window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin)}/widget.js"
   data-agent-id="${agentId}"
   data-name="${formData.businessName || 'Elite Agent'}"
-  data-welcome="${integrationKeys.welcome_message || 'Hello!'}"
-  data-color="${integrationKeys.widget_color || '#8B5CF6'}"
+  data-welcome="${integrationDraft.welcome_message || integrationKeys.welcome_message || 'Hello!'}"
+  data-color="${integrationDraft.widget_color || integrationKeys.widget_color || '#8B5CF6'}"
 ></script>`}
                                                     </pre>
                                                     <button 
                                                         onClick={() => {
                                                             const finalBase = window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin;
-                                                            const code = `<script src="${finalBase}/widget.js" data-agent-id="${agentId}" data-name="${formData.businessName || 'Elite Agent'}" data-welcome="${integrationKeys.welcome_message || 'Hello!'}" data-color="${integrationKeys.widget_color || '#8B5CF6'}"></script>`;
+                                                            const code = `<script src="${finalBase}/widget.js" data-agent-id="${agentId}" data-name="${formData.businessName || 'Elite Agent'}" data-welcome="${integrationDraft.welcome_message || integrationKeys.welcome_message || 'Hello!'}" data-color="${integrationDraft.widget_color || integrationKeys.widget_color || '#8B5CF6'}"></script>`;
                                                             navigator.clipboard.writeText(code);
                                                             alert(language === 'ar' ? 'تم نسخ الكود!' : 'Code copied!');
                                                         }}

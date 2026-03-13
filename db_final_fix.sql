@@ -41,7 +41,18 @@ ALTER TABLE public.agent_templates
 ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT TRUE,
 ADD COLUMN IF NOT EXISTS avatar TEXT;
 
--- 5. REFRESH PERMISSIONS
+-- 5. CREATE 'platform_settings' TABLE IF MISSING
+CREATE TABLE IF NOT EXISTS public.platform_settings (
+    key TEXT PRIMARY KEY,
+    value JSONB,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. REFRESH PERMISSIONS
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated, service_role;
+
+-- 7. ENSURE 'integrations' TABLE PERMISSIONS (Used for OAuth and custom integrations)
+GRANT ALL ON public.integrations TO anon, authenticated, service_role;
+
