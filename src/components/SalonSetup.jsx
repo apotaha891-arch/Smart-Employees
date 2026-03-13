@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, getProfile, getWalletBalance, saveSalonConfig, activateSalonAgent, getServices, addService, updateService, deleteService, linkGoogleAccount, saveIntegrationCredentials, getIntegrations, supabase, invokeMultiFileWorkflow } from '../services/supabaseService';
+import { getCurrentUser, getProfile, getWalletBalance, saveSalonConfig, activateSalonAgent, getServices, addService, updateService, deleteService, linkGoogleAccount, saveIntegrationCredentials, getIntegrations, updateAgent, supabase, invokeMultiFileWorkflow } from '../services/supabaseService';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     User, FileText, Calendar, CheckCircle2, Smartphone,
@@ -485,7 +485,7 @@ const EntitySetup = () => {
                 .select();
 
             const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("Request timeout after 15 seconds")), 15000)
+                setTimeout(() => reject(new Error("Request timeout after 30 seconds")), 30000)
             );
 
             const result = await Promise.race([savePromise, timeoutPromise]);
@@ -499,23 +499,27 @@ const EntitySetup = () => {
             console.log("Integration saved successfully:", result.data);
             
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
-            // We don't clear draft or collapse immediately if it's the website, 
-            // to allow the user to see the updated code snippet.
-            if (expandedIntegration !== 'website') {
-                setExpandedIntegration(null);
-                setIntegrationDraft({});
-            }
             
             setTimeout(() => {
                 alert(language === 'ar' ? '✅ تم حفظ الإعدادات بنجاح!' : '✅ Settings saved successfully!');
             }, 100);
+            
+            // Only collapse if not website (to keep the code snippet visible)
+            if (expandedIntegration !== 'website') {
+                setExpandedIntegration(null);
+            }
         } catch (err) {
             console.error("Save integration error detail:", err);
             const msg = err.message || "Unknown error";
             const col = msg.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
+            const isCors = msg.includes('CORS') || msg.includes('fetch');
+            const isTimeout = msg.includes('timeout');
+
             const hint = col
                 ? `\n\nℹ️ أضف عمود مفقود في Supabase:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
-                : (msg.includes('CORS') || msg.includes('fetch') ? '\n\n⚠️ خطأ في الاتصال (CORS): تأكد من إضافة الدومين ' + window.location.origin + ' في إعدادات Supabase -> API -> Allow Origins.' : '');
+                : (isCors || isTimeout 
+                    ? `\n\n⚠️ خطأ في الاتصال: تأكد من إضافة الدومين ${window.location.origin} في إعدادات Supabase -> API -> Allow Origins.` 
+                    : '');
             
             setTimeout(() => {
                 alert((language === 'ar' ? '⚠️ فشل الاتصال بقاعدة البيانات: ' : '⚠️ Database connection failed: ') + msg + hint);
