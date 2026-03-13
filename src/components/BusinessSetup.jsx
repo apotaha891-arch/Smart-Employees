@@ -101,18 +101,20 @@ const BusinessSetup = () => {
         }
 
         setLoading(true);
-        // Save knowledge directly to the designated Agent!
+        // Save knowledge and update basic identity in the designated Agent!
         const result = await updateAgent(agentId, {
-            knowledge_base: formData.knowledge_base + '\n\nمواعيد العمل:\n' + formData.working_hours,
+            name: formData.business_name,
+            specialty: formData.business_type,
+            knowledge_base: formData.knowledge_base + (formData.working_hours ? '\n\nمواعيد العمل:\n' + formData.working_hours : '') + (formData.services ? '\n\nتفاصيل الخدمات:\n' + formData.services : ''),
             branding_tone: formData.branding_tone
         });
 
         if (result.success) {
-            alert(language === 'ar' ? 'تم تهيئة الموظف وحفظ قاعدة المعرفة بنجاح!' : 'Agent configured and knowledge base saved successfully!');
+            alert(language === 'ar' ? '✅ تم تهيئة الموظف بنجاح! الرابط جاهز للربط.' : '✅ Agent configured successfully! Connection ready.');
             // Step 7: Transition to Dashboard Integration Selection (New Tool Page)
             navigate('/salon-setup?tab=integrations', { state: { agentId } });
         } else {
-            alert(t('errorPrefix') + result.error);
+            alert((language === 'ar' ? 'حدث خطأ: ' : 'Error: ') + result.error);
         }
         setLoading(false);
     };

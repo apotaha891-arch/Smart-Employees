@@ -391,6 +391,7 @@ const EntitySetup = () => {
             const { user } = await getCurrentUser();
             if (!user) throw new Error('Auth required');
 
+            // 1. Update Salon Config
             const configResult = await saveSalonConfig({
                 user_id: user.id,
                 agent_name: formData.businessName,
@@ -405,12 +406,22 @@ const EntitySetup = () => {
 
             if (!configResult.success) throw new Error(configResult.error);
             setSalonConfigId(configResult.data.id);
-            alert(language === 'ar' ? '✅ تم حفظ بيانات المنشأة بنجاح!' : '✅ Entity profile saved!');
+
+            // 2. Sync to Agent Identity (VERY IMPORTANT to fix "Beauty Salon" personality issues)
+            if (agentId) {
+                console.log("Syncing business identity to agent:", agentId);
+                await updateAgent(agentId, {
+                    name: formData.businessName,
+                    specialty: formData.businessType
+                });
+            }
+
+            alert(language === 'ar' ? '✅ تم تحديث بروفايل المنشأة ومزامنة الموظف!' : '✅ Business profile updated and agent synced!');
             setLoading(false);
         } catch (error) {
-            console.error(error);
+            console.error("Profile save error:", error);
             setLoading(false);
-            alert(`Error: ${error.message}`);
+            alert((language === 'ar' ? 'حدث خطأ: ' : 'Error: ') + error.message);
         }
     };
 
@@ -475,13 +486,15 @@ const EntitySetup = () => {
                 setTimeout(() => reject(new Error("Request timeout after 15 seconds")), 15000)
             );
 
-            const { data, error } = await Promise.race([savePromise, timeoutPromise]);
-                
-            if (error) {
+            const result = await Promise.race([savePromise, timeoutPromise]);
+            
+            if (!result || result.error) {
+                const error = result?.error || new Error("Request failed or timeout");
                 console.error("Supabase error during save:", error);
                 throw error;
             }
-            console.log("Integration saved successfully:", data);
+            
+            console.log("Integration saved successfully:", result.data);
             
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
             // We don't clear draft or collapse immediately if it's the website, 
@@ -500,10 +513,10 @@ const EntitySetup = () => {
             const col = msg.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
             const hint = col
                 ? `\n\nℹ️ أضف عمود مفقود في Supabase:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
-                : (msg.includes('CORS') || msg.includes('fetch') ? '\n\n⚠️ خطأ في الاتصال (CORS): تأكد من إضافة الدومين في إعدادات Supabase.' : '');
+                : (msg.includes('CORS') || msg.includes('fetch') ? '\n\n⚠️ خطأ في الاتصال (CORS): تأكد من إضافة الدومين ' + window.location.origin + ' في إعدادات Supabase -> API -> Allow Origins.' : '');
             
             setTimeout(() => {
-                alert((language === 'ar' ? '⚠️ حدث خطأ أثناء الحفظ: ' : '⚠️ Save error: ') + msg + hint);
+                alert((language === 'ar' ? '⚠️ فشل الاتصال بقاعدة البيانات: ' : '⚠️ Database connection failed: ') + msg + hint);
             }, 100);
         } finally {
             setIntegrationSaving(false);
@@ -1348,6 +1361,33 @@ const EntitySetup = () => {
                                                         </div>
 
                                                         {card.customContent && card.customContent}
+
+                                                        {card.id === 'website' && (
+                                                            <div style={{ marginTop: '1.5rem', padding: '1rem', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.05)' }}>
+                                                                <h4 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: '#EF4444', fontWeight: 700 }}>
+                                                                    {language === 'ar' ? '⚠️ تجديد ذكاء الموظف' : '⚠️ Reset Industry Intelligence'}
+                                                                </h4>
+                                                                <p style={{ margin: '0 0 12px', fontSize: '0.75rem', color: '#9CA3AF', lineHeight: 1.4 }}>
+                                                                    {language === 'ar'
+                                                                        ? 'إذا كان الموظف يرد بمعلومات خاطئة عن نشاطك (مثلاً يرد كصالون تجميل وأنت شركة برمجيات)، اضغط هنا لمسح البيانات القديمة.'
+                                                                        : 'If the agent is giving wrong info (e.g. answering like a salon when you are a software firm), reset old data here.'}
+                                                                </p>
+                                                                <button 
+                                                                    onClick={async () => {
+                                                                        if (!confirm(language === 'ar' ? 'هل أنت متأكد من مسح خدمات النشاط؟' : 'Are you sure you want to wipe business services?')) return;
+                                                                        try {
+                                                                            const { error } = await supabase.from('salon_services').delete().eq('salon_config_id', salonConfigId);
+                                                                            if (error) throw error;
+                                                                            alert(language === 'ar' ? '✅ تم تصفير البيانات! قم بتحديث الصفحة وسيعود الذكاء لبروفايلك الحالي.' : '✅ Data cleared! Refresh page to force AI reset.');
+                                                                        } catch (e) {
+                                                                            alert('Error: ' + e.message);
+                                                                        }
+                                                                    }}
+                                                                    style={{ background: 'transparent', border: '1px solid #EF4444', color: '#EF4444', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>
+                                                                    {language === 'ar' ? 'مسح بيانات الخدمات القديمة' : 'Wipe Stale Service Data'}
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

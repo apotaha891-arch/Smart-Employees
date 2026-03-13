@@ -191,12 +191,12 @@ serve(async (req) => {
         const businessName = agent.business_name || agentName;
 
         // Helper: detect specialty bucket
-        const isBooking = ['حجز', 'استقبال', 'مواعيد', 'صالون', 'عيادة', 'مطعم', 'نادي', 'beauty', 'salon', 'clinic', 'medical', 'restaurant', 'fitness', 'booking', 'receptionist', 'coordinator'].some(k => specialty.includes(k));
-        const isSales = ['مبيعات', 'تسويق', 'استشاري', 'consultant', 'sales', 'sell', 'marketing', 'lead'].some(k => specialty.includes(k));
-        const isHR = ['موارد', 'توظيف', 'hr', 'human resources', 'recruit', 'interview'].some(k => specialty.includes(k));
-        const isSupport = ['دعم', 'خدمة عملاء', 'support', 'customer service', 'technical', 'help'].some(k => specialty.includes(k));
+        const isBooking = ['حجز', 'استقبال', 'مواعيد', 'صالون', 'عيادة', 'مطعم', 'نادي', 'مركز', 'beauty', 'salon', 'clinic', 'medical', 'restaurant', 'fitness', 'booking', 'receptionist', 'coordinator', 'spa'].some(k => specialty.includes(k));
+        const isSales = ['مبيعات', 'تسويق', 'استشاري', 'برمجة', 'تطوير', 'ويب', 'web', 'software', 'it', 'digital', 'consultant', 'sales', 'sell', 'marketing', 'lead', 'agency', 'creative'].some(k => specialty.includes(k));
+        const isHR = ['موارد', 'توظيف', 'hr', 'human resources', 'recruit', 'interview', 'career'].some(k => specialty.includes(k));
+        const isSupport = ['دعم', 'صيانة', 'خدمة عملاء', 'technical', 'support', 'customer service', 'help', 'repair'].some(k => specialty.includes(k));
         const isEmail = ['بريد', 'ايميل', 'email', 'mail', 'correspondence'].some(k => specialty.includes(k));
-        const isRealEstate = ['عقار', 'real estate', 'property', 'leasing', 'realty'].some(k => specialty.includes(k));
+        const isRealEstate = ['عقار', 'real estate', 'property', 'leasing', 'realty', 'villa', 'apartment'].some(k => specialty.includes(k));
 
         let systemInstruction: string;
 
@@ -267,19 +267,20 @@ YOUR EXPERTISE:
 4. Match user language and maintain a premium, trustworthy tone.
             `;
         } else {
-            // Default: Booking agent
+            // Default: Professional Assistant
             systemInstruction = `
-You are a polite and professional receptionist working for ${businessName} (${agentName}).
-Specialty: ${agent.specialty || 'Services'}.
-Today's date: ${currentDateStr} (${isoDateStr} Gregorian)${businessContext}${servicesText}
+You are a highly professional and intelligent executive assistant working for ${businessName} (${agentName}).
+Specialty: ${agent.specialty || 'Professional Services'}.
+Today's date: ${currentDateStr} (${isoDateStr} Gregorian)
+${businessContext}${servicesText}
 
-STRICT INSTRUCTIONS:
-1. LANGUAGE MATCH: If the user speaks English, respond in English. If Arabic, respond in Arabic (you can use their dialect).
-2. TONE: Warm, friendly, and helpful.
-3. SERVICES & PRICING: Answer from the provided list only. Do not claim lack of authorization.
-4. BOOKING FLOW: Collect info step-by-step (Service → Time → Name & Phone).
-5. TOOL USE: Once you have ALL 4 details, immediately call (book_appointment).
-6. Be concise. One question or actionable step per turn.
+YOUR GUIDELINES:
+1. IDENTITY: You are a key part of ${businessName}. Match their professional brand personality perfectly.
+2. KNOWLEDGE BASE: Use the "Business Description" and "Knowledge Base" sections provided above as your primary sources of truth.
+3. SERVICES & PRICING: If a "SERVICE MENU" is provided, use only those prices. If not, act as a general expert in ${agent.specialty || 'this industry'}.
+4. GOAL: Be helpful, answer questions accurately, and build trust with the visitor. 
+5. LANGUAGE: Seamlessly match the user's language (Arabic vs English).
+6. IF BOOKING IS NEEDED: Collect Service, Time, Name, and Phone, then use (book_appointment).
             `;
         }
         // ────────────────────────────────────────────────────────────────────────
