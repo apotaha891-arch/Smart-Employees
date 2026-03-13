@@ -55,8 +55,13 @@ async function callGeminiAndExtract(parts: any[]) {
     `;
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  // Prefer Flash for speed, fallback to Pro
-  const models = ["gemini-1.5-flash", "gemini-1.5-pro"];
+  // EXACT sequence from agent-handler as requested
+  const models = [
+    "gemini-3-flash-preview",         // 🥇 Fastest (Futuristic)
+    "gemini-2.5-flash-preview-04-17", // 🥈 Rapid Backup
+    "gemini-1.5-flash",               // 🥉 Stable Production
+    "gemini-3.1-pro-preview",         // 🏅 Ultra-Deep Analysis
+  ];
 
   for (const modelName of models) {
     try {

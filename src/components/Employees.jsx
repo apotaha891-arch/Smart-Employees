@@ -86,18 +86,20 @@ const Employees = () => {
                 const userAgents = data || [];
                 setAgents(userAgents);
 
-                // Fetch templates if agents is empty OR just to show available options
+                // Fetch templates
                 if (userAgents.length === 0) {
                     setFetchingTemplates(true);
-                    const { data: tmpls } = await supabase
-                        .from('agent_templates')
-                        .select('*')
-                        .eq('is_public', true);
+                    let query = supabase.from('agent_templates').select('*');
+                    
+                    // We'll try to filter by is_public if possible, otherwise just get active ones
+                    const { data: tmpls, error: tmplError } = await query;
                     
                     if (tmpls) {
-                        // Filter by sector
                         const currentSector = profile?.business_type || config?.business_type || 'beauty';
-                        const sectorTmpls = tmpls.filter(t => t.business_type === currentSector || t.business_type === 'general');
+                        const sectorTmpls = tmpls.filter(t => 
+                            (t.is_public !== false) && // Handle both true and null/undefined as public
+                            (t.business_type === currentSector || t.business_type === 'general')
+                        );
                         setTemplates(sectorTmpls);
                     }
                     setFetchingTemplates(false);

@@ -637,15 +637,29 @@ CREATE POLICY "Allow all operations on tasks" ON tasks FOR ALL USING (true);
 
 export const getProfile = async (userId) => {
     try {
+        // Try to get all extended fields
         const { data, error } = await supabase
             .from('profiles')
             .select('role, total_credits, credits_used, subscription_tier, message_limit, subscription_plan, business_type')
             .eq('id', userId)
-            .maybeSingle(); // Use maybeSingle to avoid 406 error on missing row
+            .maybeSingle();
 
-        if (error) throw error;
+        if (error) {
+            console.warn("Extended profile fetch failed, falling back to basic:", error.message);
+            // Fallback to minimal fields if some columns are missing
+            const { data: fallbackData, error: fallbackError } = await supabase
+                .from('profiles')
+                .select('id, full_name, email')
+                .eq('id', userId)
+                .maybeSingle();
+            
+            if (fallbackError) throw fallbackError;
+            return { success: true, data: fallbackData };
+        }
+        
         return { success: true, data };
     } catch (error) {
+        console.error("Profile fetch error:", error);
         return { success: false, error: error.message };
     }
 };

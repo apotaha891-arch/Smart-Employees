@@ -432,7 +432,9 @@ const EntitySetup = () => {
             return;
         }
         const initial = {};
-        fields.forEach(f => { initial[f.key] = integrationKeys[f.key] || ''; });
+        fields.forEach(f => { 
+            initial[f.key] = integrationKeys[f.key] || (f.type === 'color' ? '#8B5CF6' : ''); 
+        });
         setIntegrationDraft(initial);
         setExpandedIntegration(id);
     };
@@ -908,55 +910,67 @@ const EntitySetup = () => {
                                     { key: 'welcome_message', labelAr: 'رسالة الترحيب', labelEn: 'Welcome Message', placeholder: 'Hello! How can I help you?', password: false, hintAr: 'تظهر عند فتح المحادثة', hintEn: 'Shows when chat opens', guide: null },
                                     { key: 'widget_color', labelAr: 'لون المحادثة', labelEn: 'Widget Color', type: 'color', password: false, hintAr: 'لون ليناسب هوية موقعك', hintEn: 'Match your website brand', guide: null }
                                 ],
-                                customContent: agentId && integrationKeys.website ? (
+                                customContent: integrationKeys.website ? (
                                     <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
-                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22C55E' }}></div>
-                                            <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#818CF8' }}>
-                                                {language === 'ar' ? 'جاهز للتضمين' : 'Ready to Embed'}
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: agentId ? '#22C55E' : '#F59E0B' }}></div>
+                                            <span style={{ fontWeight: 700, fontSize: '0.85rem', color: agentId ? '#818CF8' : '#F59E0B' }}>
+                                                {agentId 
+                                                    ? (language === 'ar' ? 'جاهز للتضمين' : 'Ready to Embed') 
+                                                    : (language === 'ar' ? 'يرجى تعيين موظف أولاً' : 'Hire an Agent first')}
                                             </span>
                                         </div>
-                                        <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#9CA3AF', lineHeight: 1.5 }}>
-                                            {language === 'ar'
-                                                ? 'انسخ الكود أدناه وضعه قبل وسم </body> في موقعك ليتمكن الزوار من التحدث مع موظفك الذكي.'
-                                                : 'Copy the code below and paste it before the </body> tag on your website to allow visitors to chat with your agent.'}
-                                        </p>
-                                        <div style={{ position: 'relative' }}>
-                                            <pre style={{
-                                                background: '#0F172A',
-                                                padding: '1rem',
-                                                borderRadius: '8px',
-                                                fontSize: '0.75rem',
-                                                color: '#E2E8F0',
-                                                overflowX: 'auto',
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                fontFamily: 'monospace'
-                                            }}>
-                                                {`<script
+                                        {agentId ? (
+                                            <>
+                                                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                                                    {language === 'ar'
+                                                        ? 'انسخ الكود أدناه وضعه قبل وسم </body> في موقعك ليتمكن الزوار من التحدث مع موظفك الذكي.'
+                                                        : 'Copy the code below and paste it before the </body> tag on your website to allow visitors to chat with your agent.'}
+                                                </p>
+                                                <div style={{ position: 'relative' }}>
+                                                    <pre style={{
+                                                        background: '#0F172A',
+                                                        padding: '1rem',
+                                                        borderRadius: '8px',
+                                                        fontSize: '0.75rem',
+                                                        color: '#E2E8F0',
+                                                        overflowX: 'auto',
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        fontFamily: 'monospace'
+                                                    }}>
+                                                        {`<script
   src="${(window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin)}/widget.js"
   data-agent-id="${agentId}"
-  data-name="${formData.businessName}"
-  data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}"
+  data-name="${formData.businessName || 'Elite Agent'}"
+  data-welcome="${integrationKeys.welcome_message || 'Hello!'}"
   data-color="${integrationKeys.widget_color || '#8B5CF6'}"
 ></script>`}
-                                            </pre>
-                                            <button 
-                                                onClick={() => {
-                                                    const finalBase = window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin;
-                                                    const code = `<script src="${finalBase}/widget.js" data-agent-id="${agentId}" data-name="${formData.businessName}" data-welcome="${integrationKeys.welcome_message || 'Hello! How can I help you?'}" data-color="${integrationKeys.widget_color || '#8B5CF6'}"></script>`;
-                                                    navigator.clipboard.writeText(code);
-                                                    alert(language === 'ar' ? 'تم نسخ الكود!' : 'Code copied!');
-                                                }}
-                                                style={{
-                                                    position: 'absolute', top: '8px', [language === 'ar' ? 'left' : 'right']: '8px',
-                                                    background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white',
-                                                    padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer'
-                                                }}>
-                                                {language === 'ar' ? 'نسخ' : 'Copy'}
-                                            </button>
-                                        </div>
+                                                    </pre>
+                                                    <button 
+                                                        onClick={() => {
+                                                            const finalBase = window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin;
+                                                            const code = `<script src="${finalBase}/widget.js" data-agent-id="${agentId}" data-name="${formData.businessName || 'Elite Agent'}" data-welcome="${integrationKeys.welcome_message || 'Hello!'}" data-color="${integrationKeys.widget_color || '#8B5CF6'}"></script>`;
+                                                            navigator.clipboard.writeText(code);
+                                                            alert(language === 'ar' ? 'تم نسخ الكود!' : 'Code copied!');
+                                                        }}
+                                                        style={{
+                                                            position: 'absolute', top: '8px', [language === 'ar' ? 'left' : 'right']: '8px',
+                                                            background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white',
+                                                            padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer'
+                                                        }}>
+                                                        {language === 'ar' ? 'نسخ' : 'Copy'}
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#9CA3AF' }}>
+                                                {language === 'ar' 
+                                                    ? 'يجب عليك توظيف موظف ذكي واحد على الأقل ليظهر كود التضمين الخاص به.' 
+                                                    : 'You need to hire at least one AI agent to see the embedding code.'}
+                                            </p>
+                                        )}
                                         <div style={{ marginTop: '1rem', display: 'flex', gap: '10px' }}>
-                                            <a href={`/test-widget.html?agentId=${agentId}&name=${encodeURIComponent(formData.businessName)}&welcome=${encodeURIComponent(integrationKeys.welcome_message || 'Hello!')}`} target="_blank" rel="noreferrer" style={{
+                                            <a href={`/test-widget.html?agentId=${agentId || ''}&name=${encodeURIComponent(formData.businessName || 'Elite Agent')}&welcome=${encodeURIComponent(integrationKeys.welcome_message || 'Hello!')}`} target="_blank" rel="noreferrer" style={{
                                                 fontSize: '0.8rem', color: '#818CF8', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px'
                                             }}>
                                                 <Globe size={14} /> {language === 'ar' ? 'تجربة المحادثة الآن' : 'Test Widget Now'}
