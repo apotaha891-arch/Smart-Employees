@@ -63,6 +63,7 @@ const EntitySetup = () => {
         website: '',
         workingHours: { start: '09:00', end: '22:00' },
         workingDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
+        knowledge_base: '',
     });
 
     // Services State
@@ -129,6 +130,7 @@ const EntitySetup = () => {
                 website: result.data.website || '',
                 services: result.data.services || '',
                 workingHours: result.data.working_hours || '',
+                knowledgeBase: result.data.knowledge_base || '',
             });
         } else {
             alert(language === 'ar' ? 'حدث خطأ أثناء التحليل: ' + result.error : 'Analysis error: ' + result.error);
@@ -145,6 +147,7 @@ const EntitySetup = () => {
             phone: extractedProfile.phone || prev.phone,
             address: extractedProfile.address || prev.address,
             website: extractedProfile.website || prev.website,
+            knowledge_base: extractedProfile.knowledgeBase || prev.knowledge_base,
         }));
         // Auto-save immediately
         setLoading(true);
@@ -159,6 +162,7 @@ const EntitySetup = () => {
                 phone: extractedProfile.phone,
                 address: extractedProfile.address,
                 website: extractedProfile.website,
+                knowledge_base: extractedProfile.knowledgeBase,
                 is_active: false,
             });
             if (!configResult.success) throw new Error(configResult.error);
@@ -710,6 +714,7 @@ const EntitySetup = () => {
                                                     { key: 'workingHours', labelAr: 'ساعات العمل', labelEn: 'Working Hours', multiline: false },
                                                     { key: 'description', labelAr: 'وصف المنشأة', labelEn: 'Description', multiline: true },
                                                     { key: 'services', labelAr: 'الخدمات', labelEn: 'Services', multiline: true },
+                                                    { key: 'knowledgeBase', labelAr: 'قاعدة المعرفة (تفاصيل موسعة)', labelEn: 'Knowledge Library', multiline: true },
                                                 ].map((row, idx) => (
                                                     <tr key={row.key} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
                                                         <td style={{ padding: '10px 14px', color: '#9CA3AF', fontWeight: 600, verticalAlign: 'top', whiteSpace: 'nowrap' }}>
