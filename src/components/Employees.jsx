@@ -87,21 +87,24 @@ const Employees = () => {
                 const userAgents = data || [];
                 setAgents(userAgents);
 
-                // Fetch templates
+                // Fetch templates (Safe fetch to avoid 400 errors if table is missing)
                 if (userAgents.length === 0) {
                     setFetchingTemplates(true);
-                    let query = supabase.from('agent_templates').select('*');
-                    
-                    // We'll try to filter by is_public if possible, otherwise just get active ones
-                    const { data: tmpls, error: tmplError } = await query;
-                    
-                    if (tmpls) {
-                        const currentSector = profile?.business_type || config?.business_type || 'beauty';
-                        const sectorTmpls = tmpls.filter(t => 
-                            (t.is_public !== false) && // Handle both true and null/undefined as public
-                            (t.business_type === currentSector || t.business_type === 'general')
-                        );
-                        setTemplates(sectorTmpls);
+                    try {
+                        const { data: tmpls, error: tmplError } = await supabase.from('agent_templates').select('*');
+                        
+                        if (!tmplError && tmpls) {
+                            const currentSector = profile?.business_type || config?.business_type || 'beauty';
+                            const sectorTmpls = tmpls.filter(t => 
+                                (t.is_public !== false) && 
+                                (t.business_type === currentSector || t.business_type === 'general')
+                            );
+                            setTemplates(sectorTmpls);
+                        } else {
+                            console.warn("Agent templates table might be missing, using fallback.");
+                        }
+                    } catch (e) {
+                        console.error("Templates fetch failed:", e);
                     }
                     setFetchingTemplates(false);
                 }
@@ -206,6 +209,16 @@ const Employees = () => {
     };
 
     const sector = SECTOR_LABELS[userSector] || SECTOR_LABELS.beauty;
+    
+    // Safety check for specialty labels to avoid "Translation missing" or crashes
+    const getRoleLabel = (specialty) => {
+        if (!specialty) return t('roles.booking');
+        if (ROLE_LABELS[specialty]) return t(`roles.${specialty}`);
+        
+        // If it's a UUID/ID, return a generic label or the specialty string itself
+        return isAr ? 'موظف مخصص' : 'Custom Agent';
+    };
+
     const filtered = agents.filter(a => !filterRole || (a.specialty || 'booking') === filterRole);
 
     return (
@@ -335,11 +348,11 @@ const Employees = () => {
                                             <div style={{ fontWeight: 800, color: '#F3F4F6', fontSize: '1.1rem', marginBottom: '4px' }}>{agent.name}</div>
                                             <div style={{ display: 'flex', gap: '6px' }}>
                                                 <span style={{ fontSize: '0.7rem', background: `${role.color}15`, color: role.color, padding: '2px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                    <RoleIcon size={10} />{t(`roles.${agent.specialty || 'booking'}`)}
+                                                    <RoleIcon size={10} />{getRoleLabel(agent.specialty)}
                                                 </span>
                                                 {isTelegram && (
                                                     <span style={{ fontSize: '0.7rem', background: '#0088cc20', color: '#0088cc', padding: '2px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}>
-                                                        <MessageCircle size={10} /> {t('telegramAddon')}
+                                                        <MessageCircle size={10} /> {isAr ? 'تيليجرام' : 'Telegram'}
                                                     </span>
                                                 )}
                                             </div>
