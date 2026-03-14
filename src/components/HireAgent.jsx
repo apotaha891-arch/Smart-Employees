@@ -86,7 +86,7 @@ const HireAgent = () => {
                     .limit(1)
                     .maybeSingle();
                 if (data?.agent_name) {
-                    setSector(data.business_type || 'beauty');
+                    setSector(data.business_type || 'general');
                     setEntityReady(true);
                 } else {
                     setEntityReady(false);

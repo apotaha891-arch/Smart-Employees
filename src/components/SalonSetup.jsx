@@ -205,21 +205,51 @@ const EntitySetup = () => {
                     else if (type?.includes('مطعم') || type?.includes('restau') || type === 'restaurant') setIndustry('restaurant');
                     else if (type?.includes('رياض') || type?.includes('gym') || type?.includes('club') || type?.includes('fit') || type === 'fitness') setIndustry('fitness');
                     else if (type === 'retail_ecommerce') setIndustry('retail_ecommerce');
-                    else if (type === 'banking') setIndustry('banking');
-                    else if (type === 'call_center') setIndustry('call_center');
-                    else if (type === 'telecom_it') setIndustry('telecom_it');
+                    else if (type === 'banking' || type?.includes('بنك') || type?.includes('مالي')) setIndustry('banking');
+                    else if (type === 'call_center' || type?.includes('اتصال') || type?.includes('خدمة')) setIndustry('call_center');
+                    else if (type === 'telecom_it' || type?.includes('تكنو') || type?.includes('برمج') || type?.includes('it')) setIndustry('telecom_it');
                 }
 
-                // Fetch the salon_config for this user
-                const { data: configs } = await supabase
-                    .from('salon_configs')
-                    .select('id, agent_name, specialty, tone, working_hours, phone, address, website, description, telegram_token, whatsapp_number, whatsapp_api_key, google_sheets_id, google_calendar_id, welcome_message, widget_color')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
+                const agentIdFromUrl = queryParams.get('agent');
+                if (agentIdFromUrl) {
+                    console.log("SalonSetup: Operating on agent from URL:", agentIdFromUrl);
+                    setAgentId(agentIdFromUrl);
+                }
+
+                let configs = null;
+
+                // Priority 1: If we have an agent, fetch the config specific to it
+                if (agentIdFromUrl) {
+                    const { data: linkedAgent } = await supabase
+                        .from('agents')
+                        .select('salon_config_id')
+                        .eq('id', agentIdFromUrl)
+                        .maybeSingle();
+                    
+                    if (linkedAgent?.salon_config_id) {
+                        const { data } = await supabase
+                            .from('salon_configs')
+                            .select('*')
+                            .eq('id', linkedAgent.salon_config_id)
+                            .maybeSingle();
+                        configs = data;
+                    }
+                }
+
+                // Priority 2: Fallback to any config owned by the user if no agent-specific one found
+                if (!configs) {
+                    const { data } = await supabase
+                        .from('salon_configs')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+                    configs = data;
+                }
 
                 if (configs) {
+                    console.log("SalonSetup: Found existing config:", configs.id);
                     setSalonConfigId(configs.id);
                     setFormData(prev => ({
                         ...prev,
@@ -242,26 +272,25 @@ const EntitySetup = () => {
                         widget_color: configs.widget_color || '#8B5CF6',
                     });
 
-                    // Fetch the agent for this salon to get the ID for the widget
-                    const { data: agentData } = await supabase
-                        .from('agents')
-                        .select('id')
-                        .eq('salon_config_id', configs.id)
-                        .limit(1)
-                        .maybeSingle();
-                    
-                    if (agentData) {
-                        setAgentId(agentData.id);
-                    } else {
-                        // If not specifically linked to salon_config_id, try user_id
-                        const { data: userAgent } = await supabase
+                    // If we don't have an agentId from URL, try to find the one linked to this config
+                    if (!agentIdFromUrl) {
+                        const { data: agentData } = await supabase
                             .from('agents')
                             .select('id')
-                            .eq('user_id', user.id)
-                            .limit(1)
+                            .eq('salon_config_id', configs.id)
                             .maybeSingle();
-                        if (userAgent) setAgentId(userAgent.id);
+                        
+                        if (agentData) setAgentId(agentData.id);
                     }
+                } else if (!agentIdFromUrl) {
+                     // Last fallback: find any agent for this user
+                     const { data: userAgent } = await supabase
+                        .from('agents')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .limit(1)
+                        .maybeSingle();
+                    if (userAgent) setAgentId(userAgent.id);
                 }
             }
         };
@@ -872,11 +901,13 @@ const EntitySetup = () => {
                                         <option value="">{language === 'ar' ? '-- اختر --' : '-- Select --'}</option>
                                         <option value="beauty">{language === 'ar' ? '💄 تجميل وعناية' : '💄 Beauty & Wellness'}</option>
                                         <option value="medical">{language === 'ar' ? '🏥 طبي وصحي' : '🏥 Medical & Health'}</option>
+                                        <option value="telecom_it">{language === 'ar' ? '📡 اتصالات وتقنية' : '📡 Telecom & IT'}</option>
+                                        <option value="banking">{language === 'ar' ? '🏦 بنوك ومالية' : '🏦 Banking & Finance'}</option>
                                         <option value="realestate">{language === 'ar' ? '🏢 عقارات' : '🏢 Real Estate'}</option>
                                         <option value="restaurant">{language === 'ar' ? '🍽️ مطاعم' : '🍽️ Restaurant'}</option>
                                         <option value="fitness">{language === 'ar' ? '💪 لياقة ورياضة' : '💪 Fitness & Sports'}</option>
-                                        <option value="retail">{language === 'ar' ? '🛍️ تجزئة' : '🛍️ Retail'}</option>
-                                        <option value="education">{language === 'ar' ? '📚 تعليم' : '📚 Education'}</option>
+                                        <option value="retail_ecommerce">{language === 'ar' ? '🛍️ تجزئة ومتاجر' : '🛍️ Retail & E-commerce'}</option>
+                                        <option value="call_center">{language === 'ar' ? '🎧 خدمة عملاء' : '🎧 Customer Support'}</option>
                                         <option value="general">{language === 'ar' ? '🏬 أخرى / عام' : '🏬 General / Other'}</option>
                                     </select>
                                 </div>

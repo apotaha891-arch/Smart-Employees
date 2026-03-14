@@ -15,6 +15,7 @@ const SECTOR_LABELS = {
     banking: { emoji: '🏦', color: '#8B5CF6' },
     call_center: { emoji: '🎧', color: '#06B6D4' },
     telecom_it: { emoji: '📡', color: '#EF4444' },
+    retail: { emoji: '🛍', color: '#10B981' },
     general: { emoji: '🏢', color: '#6B7280' },
 };
 
@@ -367,7 +368,7 @@ const Employees = () => {
                                 )}
 
                                 <div style={{ padding: '1.25rem 1.5rem', fontSize: '0.9rem', color: '#9CA3AF', lineHeight: 1.6, minHeight: '80px' }}>
-                                    {agent.description || `${t('empDescPrefix')} ${t(`roles.${agent.specialty || 'booking'}`)} ${t('empDescInSector')} ${t(`sectors.${userSector}`)}`}
+                                    {agent.description || (isAr ? `موظف ذكي مخصص لدعم قطاع ${t(`sectors.${userSector}`)}` : `AI Agent specialized in ${t(`sectors.${userSector}`)}`)}
                                 </div>
 
                                 {/* Footer Actions */}
