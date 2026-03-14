@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
     User, FileText, Calendar, CheckCircle2, Smartphone,
     MessageCircle, Settings, Upload, Clock, Briefcase, Sparkles,
-    CreditCard, Activity, Users, Send, Plus, Edit2, Trash2, Save, X, Puzzle, Star,
+    CreditCard, Activity, Users, Send, Plus, Edit2, Trash2, Save, X, Puzzle, Star, Target, Zap,
     Link as LinkIcon, Loader, Globe, Linkedin, Facebook, Instagram, Mail, HardDrive, BookOpen
 } from 'lucide-react';
 import ServicesTable from './ServicesTable';
