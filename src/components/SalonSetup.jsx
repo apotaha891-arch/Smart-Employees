@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, getProfile, getWalletBalance, saveSalonConfig, activateSalonAgent, getServices, addService, updateService, deleteService, linkGoogleAccount, saveIntegrationCredentials, getIntegrations, updateAgent, supabase, invokeMultiFileWorkflow } from '../services/supabaseService';
+import { 
+    getCurrentUser, getProfile, getWalletBalance, saveSalonConfig, 
+    activateSalonAgent, getServices, addService, updateService, 
+    deleteService, linkGoogleAccount, saveIntegrationCredentials, 
+    getIntegrations, updateAgent, invokeMultiFileWorkflow,
+    supabase 
+} from '../services/supabaseService';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     User, FileText, Calendar, CheckCircle2, Smartphone,
@@ -50,6 +56,7 @@ const EntitySetup = () => {
     const [requestToolName, setRequestToolName] = useState('');
     const [requestReason, setRequestReason] = useState('');
     const [requestSuccess, setRequestSuccess] = useState(false);
+    const [agentId, setAgentId] = useState(null);
 
 
     const handleOAuthConnect = async (platformId) => {
@@ -181,8 +188,18 @@ const EntitySetup = () => {
             setExtractedProfile(null);
             setAiFiles([]);
             setAiUrlsList([]);
+            
+            // If we have an agentId, sync it immediately to avoid losing the reference
+            if (agentId) {
+                await updateAgent(agentId, {
+                    name: extractedProfile.businessName,
+                    specialty: extractedProfile.businessType,
+                    salon_config_id: configResult.data.id
+                });
+            }
+
             setActiveTab('identity');
-            alert(language === 'ar' ? '✅ تم حفظ بيانات المنشأة بنجاح!' : '✅ Entity profile saved successfully!');
+            alert(language === 'ar' ? '✅ تم حفظ بيانات المنشأة ومزامنة الموظف بنجاح!' : '✅ Entity profile saved and agent synced successfully!');
         } catch (err) {
             alert('Error: ' + err.message);
         }
@@ -192,6 +209,7 @@ const EntitySetup = () => {
 
     useEffect(() => {
         const checkUser = async () => {
+            let configs = null;
             const { user } = await getCurrentUser();
             if (user) {
                 const profileResult = await getProfile(user.id);
@@ -229,8 +247,6 @@ const EntitySetup = () => {
                     console.log("SalonSetup: Operating on agent from URL:", agentIdFromUrl);
                     setAgentId(agentIdFromUrl);
                 }
-
-                let configs = null;
 
                 // Priority 1: If we have an agent, fetch the config specific to it
                 if (agentIdFromUrl) {
@@ -308,8 +324,11 @@ const EntitySetup = () => {
                 }
             }
         };
-        checkUser();
-    }, []);
+        checkUser().catch(err => {
+            console.error("SalonSetup: Initialization error:", err);
+            // Fallback for missing supabase globally if needed
+        });
+    }, [queryParams]);
 
     // Load Integrations and Handle OAuth Redirect
     useEffect(() => {
@@ -432,11 +451,11 @@ const EntitySetup = () => {
         setLoading(true);
         try {
             const { user } = await getCurrentUser();
-            if (!user) throw new Error('Auth required');
+            if (!user) throw new Error('Authentication required. Please refresh.');
 
             // 1. Update Salon Config
             const configResult = await saveSalonConfig({
-                id: salonConfigId, // Pass existing ID if available to update instead of insert
+                id: salonConfigId,
                 user_id: user.id,
                 agent_name: formData.businessName,
                 specialty: formData.businessType,
@@ -448,6 +467,8 @@ const EntitySetup = () => {
                 is_active: false,
             });
 
+            if (!configResult.success) throw new Error(configResult.error);
+
             // 2. Sync to Agent Identity (Fix personality context)
             if (agentId && configResult.data?.id) {
                 await updateAgent(agentId, {
@@ -458,21 +479,23 @@ const EntitySetup = () => {
             }
 
             // 3. Update Profile Extended Fields
-            await supabase.from('profiles').update({
+            // Use supabase from the service import explicitly
+            const { error: profileError } = await supabase.from('profiles').update({
                 position: formData.position || null,
                 business_type: formData.businessType || null,
                 phone: formData.phone || null
             }).eq('id', user.id);
 
-            setLoading(false);
-            alert(language === 'ar' ? '✅ تم حفظ معلومات المنشأة وتحديث بروفايلك بنجاح!' : '✅ Business details saved and profile updated successfully!');
+            if (profileError) {
+                console.warn("Profile update warning (safe if columns just added):", profileError);
+            }
 
-            alert(language === 'ar' ? '✅ تم تحديث بروفايل المنشأة ومزامنة الموظف!' : '✅ Business profile updated and agent synced!');
-            setLoading(false);
+            alert(language === 'ar' ? '✅ تم تحديث بيانات المنشأة ومزامنة الموظف بنجاح!' : '✅ Business profile updated and agent synced successfully!');
         } catch (error) {
             console.error("Profile save error:", error);
+            alert((language === 'ar' ? 'حدث خطأ أثناء الحفظ: ' : 'Error during save: ') + error.message);
+        } finally {
             setLoading(false);
-            alert((language === 'ar' ? 'حدث خطأ: ' : 'Error: ') + error.message);
         }
     };
 

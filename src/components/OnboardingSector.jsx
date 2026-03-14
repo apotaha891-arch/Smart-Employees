@@ -21,7 +21,20 @@ const OnboardingSector = () => {
     const [hovering, setHovering] = useState(null);
 
     useEffect(() => {
-        const fetchSectors = async () => {
+        const checkExistingAndFetchSectors = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // Check if user already has a business type set or a config
+                const { data: profile } = await supabase.from('profiles').select('business_type').eq('id', user.id).maybeSingle();
+                const { data: config } = await supabase.from('salon_configs').select('id').eq('user_id', user.id).maybeSingle();
+                
+                if (profile?.business_type || config) {
+                    console.log("Existing user detected, redirecting to dashboard...");
+                    navigate('/dashboard');
+                    return;
+                }
+            }
+
             const { data, error } = await supabase.from('platform_settings').select('value').eq('key', 'system_sectors').maybeSingle();
             if (data?.value) {
                 const list = Object.entries(data.value)
@@ -36,8 +49,8 @@ const OnboardingSector = () => {
                 if (list.length) setSectors(list);
             }
         };
-        fetchSectors();
-    }, []);
+        checkExistingAndFetchSectors();
+    }, [navigate]);
 
     const handleContinue = async () => {
         if (!selected) return;

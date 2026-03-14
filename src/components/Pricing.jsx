@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Zap, Shield, Star, Crown, Loader } from 'lucide-react';
-import { supabase } from '../services/supabaseService';
+import { supabase, getProfile } from '../services/supabaseService';
 import { useLanguage } from '../LanguageContext';
 import ManusHero from './ManusHero';
 
@@ -35,8 +35,6 @@ const Pricing = () => {
     const [loadingPlan, setLoadingPlan] = useState(null);
 
     const handleSelectPlan = async (plan) => {
-        vibrate();
-
         if (!currentUserId) {
             navigate('/login');
             return;
