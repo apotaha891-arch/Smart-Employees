@@ -52,7 +52,7 @@ export const industryData = {
                     title: "تنسيق المواعيد الطبية",
                     desc: "تجنب تضارب المواعيد وضمن امتلاء جدول الطبيب عبر نظام حجز ذكي وودود.",
                     iconName: "CalendarCheck",
-                    animationPath: "/animations/medical-calendar.json"
+                    animationPath: "/animations/medical-heart.json"
                 },
                 {
                     title: "متابعة ما بعد العلاج",
@@ -93,7 +93,7 @@ export const industryData = {
                     title: "عرض الفلل والشقق",
                     desc: "تقديم تفاصيل المساحات والأسعار والمواقع لعملائك بمجرد طلبهم، وبأسلوب لبق.",
                     iconName: "Building2",
-                    animationPath: "/animations/realestate-building.json"
+                    animationPath: "/animations/realestate-client.json"
                 },
                 {
                     title: "تصنيف المشترين الجادين",
@@ -134,13 +134,13 @@ export const industryData = {
                     title: "إدارة حجوزات الخدمات",
                     desc: "تنسيق دقيق بين خدمات الشعر، المكياج، والسبا لمنع أي انتظار مزعج للعميلات.",
                     iconName: "Scissors",
-                    animationPath: "/animations/beauty-scissors.json"
+                    animationPath: "/animations/medical-heart.json"
                 },
                 {
                     title: "عروض الدلال والجمال",
                     desc: "إرسال عروض ترويجية مخصصة للعميلات الأوفياء لزيادة عدد الزيارات الشهرية.",
                     iconName: "Sparkles",
-                    animationPath: "/animations/beauty-sparkles.json"
+                    animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
@@ -175,13 +175,13 @@ export const industryData = {
                     title: "تنظيم الطاولات والانتظار",
                     desc: "توزيع ذكي للضيوف على الطاولات المتاحة وتقليل الضغط على طاقم الخدمة الأرضي.",
                     iconName: "Utensils",
-                    animationPath: "/animations/restaurant-table.json"
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "تأكيد الطلبات المسبقة",
                     desc: "إمكانية تنسيق طلبات المناسبات الخاصة وتأكيد الحجوزات الكبيرة تلقائياً.",
                     iconName: "Clock",
-                    animationPath: "/animations/restaurant-clock.json"
+                    animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
@@ -216,7 +216,7 @@ export const industryData = {
                     title: "جدولة حصص التدريب",
                     desc: "نظام سلس لحجز حصص اليوغا، الكروسفيت، أو التدريب الشخصي دون تدخل يدوي.",
                     iconName: "Dumbbell",
-                    animationPath: "/animations/fitness-dumbbell.json"
+                    animationPath: "/animations/growth.json"
                 },
                 {
                     title: "تحفيز المشتركين",
@@ -257,13 +257,13 @@ export const industryData = {
                     title: "إتمام عمليات البيع",
                     desc: "مساعدة العملاء في اختيار المنتجات المناسبة وإتمام عملية الدفع بأسلوب مقنع وسلس.",
                     iconName: "Zap",
-                    animationPath: "/animations/retail-sales.json"
+                    animationPath: "/animations/growth.json"
                 },
                 {
                     title: "استعادة السلال المتروكة",
                     desc: "آلية ذكية للتواصل مع العملاء الذين لم يكملوا شراءهم وتحفيزهم بخصومات مخصصة.",
                     iconName: "Target",
-                    animationPath: "/animations/retail-cart.json"
+                    animationPath: "/animations/support.json"
                 }
             ],
             stats: [
@@ -298,13 +298,13 @@ export const industryData = {
                     title: "دعم الاستفسارات المالية",
                     desc: "شرح تفصيلي للمنتجات البنكية والقروض والبطاقات الائتمانية بأسلوب احترافي.",
                     iconName: "ShieldCheck",
-                    animationPath: "/animations/banking-security.json"
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "تسهيل الإجراءات الرقمية",
                     desc: "مساعدة العملاء في تفعيل الخدمات أو تحديث البيانات عبر توجيهات ذكية وبسيطة.",
                     iconName: "UserCheck",
-                    animationPath: "/animations/banking-user.json"
+                    animationPath: "/animations/realestate-client.json"
                 }
             ],
             stats: [
@@ -339,13 +339,13 @@ export const industryData = {
                     title: "إدارة الحشود والمكالمات",
                     desc: "استقبال كافة طلبات العملاء في أوقات الذروة دون الحاجة لزيادة عدد الموظفين.",
                     iconName: "Users",
-                    animationPath: "/animations/callcenter-users.json"
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "حل المشكلات الفوري",
                     desc: "القدرة على حل الاستفسارات الشائعة (FAQ) بنسبة 100% دون تدخل بشري.",
                     iconName: "Zap",
-                    animationPath: "/animations/callcenter-zap.json"
+                    animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
@@ -380,13 +380,13 @@ export const industryData = {
                     title: "دعم فني مؤتمت",
                     desc: "حل مشاكل الاتصال والإعدادات عبر توجيهات تفاعلية وذكية للعملاء.",
                     iconName: "Zap",
-                    animationPath: "/animations/telecom-zap.json"
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "تنسيق الصيانة الميدانية",
                     desc: "حجز مواعيد الفنيين وربطها بالموقع الجغرافي للعميل تلقائياً بأسلوب منظم.",
                     iconName: "Target",
-                    animationPath: "/animations/telecom-target.json"
+                    animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
@@ -464,7 +464,7 @@ export const industryData = {
                     title: "Medical Appointment Scheduling",
                     desc: "Avoid scheduling conflicts and ensure your doctor's schedule is fully booked with an intelligent and friendly booking system.",
                     iconName: "CalendarCheck",
-                    animationPath: "/animations/medical-calendar.json"
+                    animationPath: "/animations/medical-heart.json"
                 },
                 {
                     title: "Post-Treatment Follow-up",
@@ -505,7 +505,7 @@ export const industryData = {
                     title: "Property Showcase",
                     desc: "Present property details, prices, and locations to clients on demand in a professional manner.",
                     iconName: "Building2",
-                    animationPath: "/animations/realestate-building.json"
+                    animationPath: "/animations/realestate-client.json"
                 },
                 {
                     title: "Identify Serious Buyers",
@@ -546,13 +546,13 @@ export const industryData = {
                     title: "Service Booking Management",
                     desc: "Seamless coordination between hair, makeup, and spa services to prevent client wait times.",
                     iconName: "Scissors",
-                    animationPath: "/animations/beauty-scissors.json"
+                    animationPath: "/animations/medical-heart.json"
                 },
                 {
                     title: "Beauty Promotions",
                     desc: "Send personalized promotional offers to loyal clients to increase monthly visits.",
                     iconName: "Sparkles",
-                    animationPath: "/animations/beauty-sparkles.json"
+                    animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
@@ -587,13 +587,13 @@ export const industryData = {
                     title: "Table & Waitlist Management",
                     desc: "Smart distribution of guests across available tables while reducing pressure on your service team.",
                     iconName: "Utensils",
-                    animationPath: "/animations/restaurant-table.json"
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "Pre-Order Confirmations",
                     desc: "Coordinate special event orders and automatically confirm large reservations.",
                     iconName: "Clock",
-                    animationPath: "/animations/restaurant-clock.json"
+                    animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
@@ -628,7 +628,7 @@ export const industryData = {
                     title: "Training Session Scheduling",
                     desc: "Seamless system to book yoga, CrossFit, or personal training sessions without manual intervention.",
                     iconName: "Dumbbell",
-                    animationPath: "/animations/fitness-dumbbell.json"
+                    animationPath: "/animations/growth.json"
                 },
                 {
                     title: "Member Motivation",
@@ -669,13 +669,13 @@ export const industryData = {
                     title: "Sales Conversion",
                     desc: "Help customers choose the right products and complete payments in a persuasive, seamless manner.",
                     iconName: "Zap",
-                    animationPath: "/animations/retail-sales.json"
+                    animationPath: "/animations/growth.json"
                 },
                 {
                     title: "Abandoned Cart Recovery",
                     desc: "Smart mechanism to contact customers who haven't completed their purchase with custom discounts.",
                     iconName: "Target",
-                    animationPath: "/animations/retail-cart.json"
+                    animationPath: "/animations/support.json"
                 }
             ],
             stats: [
@@ -710,13 +710,13 @@ export const industryData = {
                     title: "Financial Inquiry Support",
                     desc: "Detailed explanation of banking products, loans, and credit cards in a professional manner.",
                     iconName: "ShieldCheck",
-                    animationPath: "/animations/banking-security.json"
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "Digital Procedure Support",
                     desc: "Help customers activate services or update data through smart and simple guidance.",
                     iconName: "UserCheck",
-                    animationPath: "/animations/banking-user.json"
+                    animationPath: "/animations/realestate-client.json"
                 }
             ],
             stats: [
@@ -751,13 +751,13 @@ export const industryData = {
                     title: "Crowd & Call Management",
                     desc: "Receive all customer requests during peak times without needing to increase staffing.",
                     iconName: "Users",
-                    animationPath: "/animations/callcenter-users.json"
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "Instant Problem Resolution",
                     desc: "Capacity to solve 100% of common inquiries (FAQ) without human intervention.",
                     iconName: "Zap",
-                    animationPath: "/animations/callcenter-zap.json"
+                    animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
@@ -792,13 +792,13 @@ export const industryData = {
                     title: "Automated Tech Support",
                     desc: "Resolve connection issues and settings through interactive, smart guidance for customers.",
                     iconName: "Zap",
-                    animationPath: "/animations/telecom-zap.json"
+                    animationPath: "/animations/support.json"
                 },
                 {
                     title: "Field Maintenance Coordination",
                     desc: "Book technician appointments and link them to the client's geographic location automatically.",
                     iconName: "Target",
-                    animationPath: "/animations/telecom-target.json"
+                    animationPath: "/animations/growth.json"
                 }
             ],
             stats: [
