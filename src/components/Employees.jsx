@@ -52,29 +52,26 @@ const Employees = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data: config } = await supabase
-                    .from('salon_configs')
+                // Fetch Sector and Config
+                const [configRes, profileRes] = await Promise.all([
+                    supabase.from('salon_configs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+                    supabase.from('profiles').select('business_type').eq('id', user.id).maybeSingle()
+                ]);
+
+                const config = configRes.data;
+                const profile = profileRes.data;
+
+                if (config) setSalonConfig(config);
+                
+                const detectedSector = config?.business_type || profile?.business_type || 'general';
+                setUserSector(detectedSector);
+
+                // Fetch Agents
+                const { data, error } = await supabase
+                    .from('agents')
                     .select('*')
                     .eq('user_id', user.id)
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-
-                if (config) {
-                    setSalonConfig(config);
-                    if (config.business_type) setUserSector(config.business_type);
-                }
-
-                // Also fetch profile to get business_type as fallback
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('business_type')
-                    .eq('id', user.id)
-                    .maybeSingle();
-
-                if (profile?.business_type && (!config || !config.business_type)) {
-                    setUserSector(profile.business_type);
-                }
+                    .order('created_at', { ascending: false });
 
                 // IMPORTANT: Filter by user_id to avoid seeing other customers' agents
                 const { data, error } = await supabase
@@ -210,13 +207,17 @@ const Employees = () => {
 
     const sector = SECTOR_LABELS[userSector] || SECTOR_LABELS.beauty;
     
-    // Safety check for specialty labels to avoid "Translation missing" or crashes
+    // Safety check for specialty labels to avoid "Translation missing" or UUIDs
     const getRoleLabel = (specialty) => {
-        if (!specialty) return t('roles.booking');
+        if (!specialty) return isAr ? 'موظف' : 'Agent';
         if (ROLE_LABELS[specialty]) return t(`roles.${specialty}`);
         
-        // If it's a UUID/ID, return a generic label or the specialty string itself
-        return isAr ? 'موظف مخصص' : 'Custom Agent';
+        // If it contains a dash or is very long, it's likely a UUID from a custom request
+        if (specialty.includes('-') || specialty.length > 20) {
+            return isAr ? 'موظف مخصص' : 'Custom Agent';
+        }
+        
+        return specialty;
     };
 
     const filtered = agents.filter(a => !filterRole || (a.specialty || 'booking') === filterRole);

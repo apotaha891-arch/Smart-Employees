@@ -113,17 +113,23 @@ const HireAgent = () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error(isAr ? 'يجب تسجيل الدخول أولاً' : 'Auth required');
 
-            const { error } = await supabase.from('agents').insert([{
+            const agentData = {
                 name: form.name,
-                description: form.description,
                 business_type: sector,
                 specialty: selected,           
                 platform: form.platforms.join(','), 
-                status: 'active', // Set to active so they show up immediately
+                status: 'active', 
                 plan: 'basic',
                 avatar: ROLE_META[selected]?.emoji || '🤖',
                 user_id: user.id,
-            }]);
+            };
+
+            // Only add description if it's not empty to be safe
+            if (form.description) {
+                agentData.description = form.description;
+            }
+
+            const { error } = await supabase.from('agents').insert([agentData]);
 
             if (error) throw error;
 
