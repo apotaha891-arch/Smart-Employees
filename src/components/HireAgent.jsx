@@ -109,21 +109,32 @@ const HireAgent = () => {
     const handleSave = async () => {
         if (!form.name || !selected || form.platforms.length === 0) return;
         setSaving(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        await supabase.from('agents').insert([{
-            name: form.name,
-            description: form.description,
-            business_type: sector,
-            specialty: selected,           // matches agent-handler keywords
-            platform: form.platforms.join(','), // Store as comma-separated string
-            status: 'inactive',
-            plan: 'basic',
-            avatar: ROLE_META[selected]?.emoji || '🤖',
-            user_id: user?.id ?? null,
-        }]);
-        setSaving(false);
-        setDone(true);
-        setTimeout(() => navigate('/agents'), 1800);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error(isAr ? 'يجب تسجيل الدخول أولاً' : 'Auth required');
+
+            const { error } = await supabase.from('agents').insert([{
+                name: form.name,
+                description: form.description,
+                business_type: sector,
+                specialty: selected,           
+                platform: form.platforms.join(','), 
+                status: 'active', // Set to active so they show up immediately
+                plan: 'basic',
+                avatar: ROLE_META[selected]?.emoji || '🤖',
+                user_id: user.id,
+            }]);
+
+            if (error) throw error;
+
+            setSaving(false);
+            setDone(true);
+            setTimeout(() => navigate('/agents'), 1800);
+        } catch (error) {
+            console.error('Error hiring agent:', error);
+            alert(isAr ? 'حدث خطأ أثناء التوظيف: ' + error.message : 'Error hiring agent: ' + error.message);
+            setSaving(false);
+        }
     };
 
     // ── Styles ──────────────────────────────────────────────────────────────
