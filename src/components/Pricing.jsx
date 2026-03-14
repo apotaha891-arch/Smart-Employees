@@ -6,19 +6,47 @@ import { useLanguage } from '../LanguageContext';
 import ManusHero from './ManusHero';
 
 const Pricing = () => {
-    const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Check if we are in the middle of the 7-step hiring flow
     const isHiringFlow = location.state?.fromInterview;
     const businessRules = location.state?.businessRules || null;
     const template = location.state?.template || null;
+
+    const [billingCycle, setBillingCycle] = useState('monthly');
+    const [userPlan, setUserPlan] = useState('free');
+    const [currentUserId, setCurrentUserId] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setCurrentUserId(user.id);
+                const profileResult = await getProfile(user.id);
+                if (profileResult.success && profileResult.data) {
+                    const plan = profileResult.data.subscription_tier || profileResult.data.subscription_plan || 'free';
+                    setUserPlan(plan.toLowerCase());
+                }
+            }
+        };
+        fetchUserData();
+    }, []);
 
     const [loadingPlan, setLoadingPlan] = useState(null);
 
     const handleSelectPlan = async (plan) => {
         vibrate();
+
+        if (!currentUserId) {
+            navigate('/login');
+            return;
+        }
+
+        // If it's the current plan and we're not in the hiring flow, just go to dashboard
+        if (plan.id === userPlan && !isHiringFlow) {
+            navigate('/dashboard');
+            return;
+        }
 
         // Skip checkout for Enterprise (Contact Sales)
         if (plan.id === 'enterprise') {
@@ -498,17 +526,18 @@ const Pricing = () => {
                                     width: '100%',
                                     padding: '1.25rem',
                                     borderRadius: '16px',
-                                    background: plan.popular ? plan.color : '#27272A',
-                                    color: plan.popular ? '#FFF' : '#E4E4E7',
+                                    background: plan.id === userPlan ? 'rgba(16, 185, 129, 0.1)' : (plan.popular ? plan.color : '#27272A'),
+                                    color: plan.id === userPlan ? '#10B981' : (plan.popular ? '#FFF' : '#E4E4E7'),
                                     textAlign: 'center',
                                     fontWeight: 900,
                                     fontSize: '1.1rem',
-                                    border: plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                                    border: plan.id === userPlan ? '1px solid rgba(16, 185, 129, 0.3)' : (plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)'),
                                     cursor: 'pointer',
                                     transition: 'all 0.3s',
-                                    boxShadow: plan.popular ? `0 10px 25px rgba(${hexToRgb(plan.color)}, 0.3)` : 'none'
+                                    boxShadow: plan.popular && plan.id !== userPlan ? `0 10px 25px rgba(${hexToRgb(plan.color)}, 0.3)` : 'none'
                                 }}
                                 onMouseOver={(e) => {
+                                    if (plan.id === userPlan) return;
                                     if (!plan.popular) {
                                         e.currentTarget.style.background = '#3F3F46';
                                     } else {
@@ -516,6 +545,7 @@ const Pricing = () => {
                                     }
                                 }}
                                 onMouseOut={(e) => {
+                                    if (plan.id === userPlan) return;
                                     if (!plan.popular) {
                                         e.currentTarget.style.background = '#27272A';
                                     } else {
@@ -523,7 +553,7 @@ const Pricing = () => {
                                     }
                                 }}
                             >
-                                {isHiringFlow ? t('approvePlanContract') : plan.cta}
+                                {plan.id === userPlan ? (language === 'ar' ? 'خطتك الحالية' : 'Current Plan') : (isHiringFlow ? t('approvePlanContract') : plan.cta)}
                             </button>
                         </div>
                     );

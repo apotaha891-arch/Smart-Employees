@@ -151,9 +151,9 @@ const Dashboard = () => {
 
             {/* Header Area */}
             <div style={{ marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: '1 1 500px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                             <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0 }}>
                                 {profile?.business_name || (profile?.business_type ? t(`sectors.${profile.business_type}`) : t('nav.dashboard'))}
                             </h1>
@@ -162,13 +162,37 @@ const Dashboard = () => {
                                 {agentStatus === 'active' ? t('agentStatusActive') : t('agentStatusPaused')}
                             </div>
                         </div>
+
+                        {/* Customer Info Bar */}
+                        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
+                                <Users size={16} color="#8B5CF6" />
+                                <span style={{ color: '#E5E7EB', fontWeight: 600 }}>{profile?.full_name || (language === 'ar' ? 'ضيف' : 'Guest')}</span>
+                                {profile?.position && <span style={{ color: '#9CA3AF', fontSize: '0.8rem', background: 'rgba(139,92,246,0.1)', padding: '2px 8px', borderRadius: '4px' }}>{profile.position}</span>}
+                            </div>
+                            {profile?.email && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#9CA3AF' }}>
+                                    <BookOpen size={16} />
+                                    <span>{profile.email}</span>
+                                </div>
+                            )}
+                            {profile?.phone && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#9CA3AF' }}>
+                                    <Bot size={16} />
+                                    <span>{profile.phone}</span>
+                                </div>
+                            )}
+                        </div>
+
                         <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', margin: 0, fontWeight: 600 }}>
                             {t('dashboardSlogan')}
                         </p>
                     </div>
-                    <button className="btn btn-primary" onClick={exportToExcel} style={{ minWidth: '150px' }}>
-                        {t('exportReports')}
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button className="btn btn-primary" onClick={exportToExcel} style={{ minWidth: '150px' }}>
+                            {t('exportReports')}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Dashboard Smart Cards */}
@@ -202,21 +226,30 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Instruction Guide */}
-                    <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', background: 'linear-gradient(135deg, rgba(59,130,246,0.05), transparent)', border: '1px solid rgba(59,130,246,0.15)' }}>
-                        <div style={{ padding: '12px', background: 'rgba(59,130,246,0.15)', borderRadius: '12px', color: '#3B82F6', flexShrink: 0 }}>
-                            <Target size={24} />
+                    {/* Mission Checklist */}
+                    <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', background: 'rgba(245,158,11,0.03)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                        <div style={{ padding: '12px', background: 'rgba(245,158,11,0.15)', borderRadius: '12px', color: '#F59E0B', flexShrink: 0 }}>
+                            <ChevronRight size={24} />
                         </div>
-                        <div>
-                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '4px', fontWeight: 600 }}>{language === 'ar' ? 'نصيحة للإعداد المثالي' : 'Best Practice Setup'}</div>
-                            <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '4px 0', lineHeight: 1.3 }}>{language === 'ar' ? 'زيادة وعي الموظف' : 'Enhance Agent Knowledge'}</h4>
-                            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5 }}>
-                                {language === 'ar' ? 'تأكد من إدراج كافة خدماتك وأسعارك في "إعداد المنشأة" ليرد على عملائك بذكاء.' : 'Ensure all your services and prices are added in Entity Setup for intelligent AI replies.'}
-                            </p>
-                            <Link to="/setup" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '12px', fontSize: '0.85rem', color: '#3B82F6', textDecoration: 'none', fontWeight: 700 }}>
-                                {language === 'ar' ? 'إعداد المنشأة والخدمات' : 'Go to Setup'}
-                                {language === 'ar' ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
-                            </Link>
+                        <div style={{ width: '100%' }}>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '4px', fontWeight: 600 }}>{language === 'ar' ? 'مهام تفعيل الموظف' : 'Agent Mission Checklist'}</div>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '4px 0', lineHeight: 1.3 }}>{language === 'ar' ? 'متطلبات النجاح' : 'Success Requirements'}</h4>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                                {[
+                                    { label: language === 'ar' ? 'إضافة قائمة الخدمات والأسعار' : 'Add Services & Pricing', checked: true },
+                                    { label: language === 'ar' ? 'تحديد ساعات العمل الرسمية' : 'Set Working Hours', checked: profile?.business_name ? true : false },
+                                    { label: language === 'ar' ? 'ربط التقويم أو الواتساب' : 'Link Calendar or WhatsApp', checked: false },
+                                    { label: language === 'ar' ? 'تدريب الموظف على الأسئلة الشائعة' : 'Train Agent on FAQs', checked: false },
+                                ].map((item, idx) => (
+                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: item.checked ? '#22c59e' : '#9CA3AF' }}>
+                                        <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1px solid ${item.checked ? '#22c59e' : 'rgba(255,255,255,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: item.checked ? 'rgba(34,197,94,0.1)' : 'transparent' }}>
+                                            {item.checked && <Zap size={10} />}
+                                        </div>
+                                        <span>{item.label}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
 

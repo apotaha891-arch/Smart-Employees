@@ -44,7 +44,8 @@ const EntitySetup = () => {
     const [integrationSaving, setIntegrationSaving] = useState(false);
     const [expandedIntegration, setExpandedIntegration] = useState(null);
     const [loadingOAuth, setLoadingOAuth] = useState(null);
-    const [agentId, setAgentId] = useState(null);
+    const [userPlan, setUserPlan] = useState('free');
+    const [currentUserId, setCurrentUserId] = useState(null);
     const [appBaseUrl, setAppBaseUrl] = useState(window.location.origin);
     const [requestToolName, setRequestToolName] = useState('');
     const [requestReason, setRequestReason] = useState('');
@@ -70,6 +71,7 @@ const EntitySetup = () => {
         phone: '',
         address: '',
         website: '',
+        position: '',
         workingHours: { start: '09:00', end: '22:00' },
         workingDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
         knowledge_base: '',
@@ -198,7 +200,7 @@ const EntitySetup = () => {
                     if (balanceResult.success) {
                         setWalletBalance(balanceResult.balance);
                     }
-                    const type = profileResult.data.business_type?.toLowerCase();
+                    const type = (profileResult.data.business_type || configs?.specialty || '').toLowerCase();
                     if (type?.includes('طب') || type?.includes('صحي') || type?.includes('clinic') || type === 'medical') setIndustry('medical');
                     else if (type?.includes('عقار') || type?.includes('estate') || type === 'real_estate') setIndustry('realestate');
                     else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty') || type === 'beauty') setIndustry('beauty');
@@ -208,6 +210,18 @@ const EntitySetup = () => {
                     else if (type === 'banking' || type?.includes('بنك') || type?.includes('مالي')) setIndustry('banking');
                     else if (type === 'call_center' || type?.includes('اتصال') || type?.includes('خدمة')) setIndustry('call_center');
                     else if (type === 'telecom_it' || type?.includes('تكنو') || type?.includes('برمج') || type?.includes('it')) setIndustry('telecom_it');
+
+                    setFormData(prev => ({
+                        ...prev,
+                        businessName: configs?.agent_name || prev.businessName,
+                        businessType: configs?.specialty || profileResult.data.business_type || prev.businessType,
+                        description: configs?.description || prev.description,
+                        phone: configs?.phone || profileResult.data.phone || prev.phone,
+                        address: configs?.address || prev.address,
+                        website: configs?.website || profileResult.data.website || prev.website,
+                        position: profileResult.data.position || prev.position,
+                        knowledge_base: configs?.knowledge_base || prev.knowledge_base,
+                    }));
                 }
 
                 const agentIdFromUrl = queryParams.get('agent');
@@ -434,19 +448,24 @@ const EntitySetup = () => {
                 is_active: false,
             });
 
-            if (!configResult.success) throw new Error(configResult.error);
-            setSalonConfigId(configResult.data.id);
-
-            // 2. Sync to Agent Identity (VERY IMPORTANT to fix "Beauty Salon" personality issues)
+            // 2. Sync to Agent Identity (Fix personality context)
             if (agentId && configResult.data?.id) {
-                console.log("Syncing business identity to agent:", agentId, "with config:", configResult.data.id);
-                const syncResult = await updateAgent(agentId, {
+                await updateAgent(agentId, {
                     name: formData.businessName,
                     specialty: formData.businessType,
-                    salon_config_id: configResult.data.id // HARD LINK to prevent context bleeding
+                    salon_config_id: configResult.data.id
                 });
-                if (syncResult.success) console.log("Agent identity synced successfully ✅");
             }
+
+            // 3. Update Profile Extended Fields
+            await supabase.from('profiles').update({
+                position: formData.position || null,
+                business_type: formData.businessType || null,
+                phone: formData.phone || null
+            }).eq('id', user.id);
+
+            setLoading(false);
+            alert(language === 'ar' ? '✅ تم حفظ معلومات المنشأة وتحديث بروفايلك بنجاح!' : '✅ Business details saved and profile updated successfully!');
 
             alert(language === 'ar' ? '✅ تم تحديث بروفايل المنشأة ومزامنة الموظف!' : '✅ Business profile updated and agent synced!');
             setLoading(false);
@@ -876,6 +895,43 @@ const EntitySetup = () => {
                     {activeTab === 'identity' && (
                         <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
+                            {/* Mission Checklist Panel */}
+                            <div style={{ padding: '1.25rem', background: 'rgba(245,158,11,0.05)', borderRadius: 12, border: '1px solid rgba(245,158,11,0.2)', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                    <Target size={20} color="#F59E0B" />
+                                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>
+                                        {language === 'ar' ? 'خارطة طريق نجاح الموظف الذكي' : 'Success Roadmap for your AI Agent'}
+                                    </h4>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                                    {[
+                                        { 
+                                            label: language === 'ar' ? 'وصف المنشأة' : 'Entity Description', 
+                                            desc: language === 'ar' ? 'ليعرف من هو' : 'Identity info',
+                                            done: !!formData.businessName 
+                                        },
+                                        { 
+                                            label: language === 'ar' ? 'الخدمات والمنتجات' : 'Services & Products', 
+                                            desc: language === 'ar' ? 'ليعرف ماذا يبيع' : 'Catalog info',
+                                            done: services.length > 0 
+                                        },
+                                        { 
+                                            label: language === 'ar' ? 'قنوات التواصل' : 'Communication Channels', 
+                                            desc: language === 'ar' ? 'ليعرف أين يرد' : 'WhatsApp/Web',
+                                            done: !!integrationKeys.telegram_token || !!integrationKeys.whatsapp_number 
+                                        }
+                                    ].map((step, i) => (
+                                        <div key={i} style={{ padding: '10px', borderRadius: 8, background: step.done ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${step.done ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.05)'}` }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, color: step.done ? '#10B981' : 'white' }}>
+                                                {step.done ? <Zap size={14} /> : <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B' }} />}
+                                                {step.label}
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: 4 }}>{step.desc}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Info banner */}
                             <div style={{ padding: '0.9rem 1.1rem', background: 'rgba(139,92,246,0.08)', borderRadius: 10, border: '1px solid rgba(139,92,246,0.2)', color: '#A78BFA', fontSize: '0.83rem', lineHeight: 1.6 }}>
                                 {language === 'ar'
@@ -944,13 +1000,23 @@ const EntitySetup = () => {
                                 </div>
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
-                                    {language === 'ar' ? 'الموقع الإلكتروني (اختياري)' : 'Website (optional)'}
-                                </label>
-                                <input style={inp} value={formData.website} type="url"
-                                    onChange={e => setFormData({ ...formData, website: e.target.value })}
-                                    placeholder="https://" />
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                        {language === 'ar' ? 'الموقع الإلكتروني (اختياري)' : 'Website (optional)'}
+                                    </label>
+                                    <input style={inp} value={formData.website} type="url"
+                                        onChange={e => setFormData({ ...formData, website: e.target.value })}
+                                        placeholder="https://" />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                        {language === 'ar' ? 'منصبك الوظيفي' : 'Your Position'}
+                                    </label>
+                                    <input style={inp} value={formData.position} 
+                                        onChange={e => setFormData({...formData, position: e.target.value})}
+                                        placeholder={language === 'ar' ? 'مثال: المدير التنفيذي' : 'e.g. CEO, Manager'} />
+                                </div>
                             </div>
 
                             <button onClick={handleSave} disabled={loading || !formData.businessName}
