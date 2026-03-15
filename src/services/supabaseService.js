@@ -205,6 +205,9 @@ export const updateBusinessProfile = async (userId, profileData) => {
 };
 
 export const invokeMultiFileWorkflow = async (files, urls) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second safety timeout
+
     try {
         const formData = new FormData();
 
@@ -218,15 +221,18 @@ export const invokeMultiFileWorkflow = async (files, urls) => {
             formData.append('urls', JSON.stringify(urls));
         }
 
+        console.log("SupabaseService: Invoking multi-file-workflow...");
         const { data, error } = await supabase.functions.invoke('multi-file-workflow', {
             body: formData,
+            // signal: controller.signal // Signal is not directly supported in invoke options, but we can catch the hang
         });
+
+        clearTimeout(timeoutId);
 
         if (error) {
             console.error("Edge function returned error object:", error);
             let contextMsg = error.message;
             if (error.context) {
-                // Sometimes Supabase returns the raw HTTP response as blob/text in context
                 try {
                     const ctxText = await error.context.text();
                     contextMsg = `${error.message} - Details: ${ctxText}`;
@@ -235,10 +241,17 @@ export const invokeMultiFileWorkflow = async (files, urls) => {
             throw new Error(contextMsg);
         }
 
+        if (!data) throw new Error("Empty response from extraction engine");
+
         return { success: true, data };
     } catch (error) {
+        clearTimeout(timeoutId);
         console.error('Error invoking multi-file-workflow:', error);
-        return { success: false, error: error.message };
+        const isTimeout = error.name === 'AbortError' || error.message.includes('timeout');
+        return { 
+            success: false, 
+            error: isTimeout ? "The analysis engine timed out. Please try with fewer links or smaller files." : error.message 
+        };
     }
 };
 

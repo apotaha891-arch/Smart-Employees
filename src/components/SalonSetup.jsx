@@ -140,32 +140,44 @@ const EntitySetup = () => {
             alert(language === 'ar' ? 'يرجى إضافة ملف أو رابط واحد على الأقل.' : 'Please add at least one file or URL.');
             return;
         }
+        
         setExtractedProfile(null);
         setAiLoading(true);
         console.log("SalonSetup: Initiating AI Extraction", { files: aiFiles.length, urls: aiUrlsList });
-        const result = await invokeMultiFileWorkflow(aiFiles, aiUrlsList);
-        console.log("SalonSetup: Extraction Result:", result);
-        setAiLoading(false);
-        if (result.success && result.data) {
-            // Store for preview — user reviews then confirms
-            setExtractedProfile({
-                businessName: result.data.business_name || '',
-                businessType: result.data.business_type || '',
-                description: result.data.description || '',
-                phone: result.data.phone || '',
-                address: result.data.address || '',
-                website: result.data.website || '',
-                services: result.data.services || '',
-                workingHours: result.data.working_hours || '',
-                knowledgeBase: result.data.knowledge_base || '',
-                // Mission fields
-                mission_statement: result.data.mission_statement || '',
-                target_audience: result.data.target_audience || '',
-                brand_voice: result.data.brand_voice || '',
-                procedures: result.data.procedures || '',
-            });
-        } else {
-            alert(language === 'ar' ? 'حدث خطأ أثناء التحليل: ' + result.error : 'Analysis error: ' + result.error);
+        
+        try {
+            const result = await invokeMultiFileWorkflow(aiFiles, aiUrlsList);
+            console.log("SalonSetup: Extraction Result:", result);
+            
+            if (result.success && result.data) {
+                // Store for preview — user reviews then confirms
+                setExtractedProfile({
+                    businessName: result.data.business_name || '',
+                    businessType: result.data.business_type || '',
+                    description: result.data.description || '',
+                    phone: result.data.phone || '',
+                    address: result.data.address || '',
+                    website: result.data.website || '',
+                    services: result.data.services || '',
+                    workingHours: result.data.working_hours || '',
+                    knowledgeBase: result.data.knowledge_base || '',
+                    // Mission fields
+                    mission_statement: result.data.mission_statement || '',
+                    target_audience: result.data.target_audience || '',
+                    brand_voice: result.data.brand_voice || '',
+                    procedures: result.data.procedures || '',
+                });
+                console.log("SalonSetup: Profile extracted and set for preview ✅");
+            } else {
+                console.error("SalonSetup: Extraction failed:", result.error);
+                alert(language === 'ar' ? 'حدث خطأ أثناء التحليل: ' + result.error : 'Analysis error: ' + result.error);
+            }
+        } catch (error) {
+            console.error("SalonSetup: Unexpected error during AI generate:", error);
+            alert(language === 'ar' ? 'خطأ غير متوقع: ' + error.message : 'Unexpected error: ' + error.message);
+        } finally {
+            setAiLoading(false);
+            console.log("SalonSetup: AI Extraction process finished.");
         }
     };
 
@@ -516,7 +528,8 @@ const EntitySetup = () => {
             const { error: profileError } = await supabase.from('profiles').update({
                 position: formData.position || null,
                 business_type: formData.businessType || null,
-                phone: formData.phone || null
+                phone: formData.phone || null,
+                business_name: formData.businessName || null
             }).eq('id', user.id);
 
             if (profileError) {
@@ -526,7 +539,15 @@ const EntitySetup = () => {
             alert(language === 'ar' ? '✅ تم تحديث بيانات المنشأة ومزامنة الموظف بنجاح!' : '✅ Business profile updated and agent synced successfully!');
         } catch (error) {
             console.error("Profile save error:", error);
-            alert((language === 'ar' ? 'حدث خطأ أثناء الحفظ: ' : 'Error during save: ') + error.message);
+            const msg = error.message || "";
+            const col = msg.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
+            let hint = "";
+            if (col) {
+                hint = language === 'ar'
+                    ? `\n\nℹ️ يبدو أن هناك عموداً مفقوداً في قاعدة البيانات. يرجى تشغيل:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
+                    : `\n\nℹ️ Missing column detected. Run this in Supabase SQL Editor:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`;
+            }
+            alert((language === 'ar' ? 'حدث خطأ أثناء الحفظ: ' : 'Error during save: ') + error.message + hint);
         } finally {
             setLoading(false);
         }
