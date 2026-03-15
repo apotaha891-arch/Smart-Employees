@@ -28,7 +28,7 @@ const ModernDashboardLayout = ({ children }) => {
                 // Fetch latest salon_config and profile
                 const [configRes, profileRes] = await Promise.all([
                     supabase.from('salon_configs').select('business_type').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-                    supabase.from('profiles').select('business_name, business_type').eq('id', user.id).maybeSingle()
+                    getProfile(user.id)
                 ]);
 
                 const config = configRes.data;

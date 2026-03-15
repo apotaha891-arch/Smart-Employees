@@ -640,7 +640,7 @@ export const getProfile = async (userId) => {
         // Try to get all extended fields
         const { data, error } = await supabase
             .from('profiles')
-            .select('role, total_credits, credits_used, subscription_tier, message_limit, subscription_plan, business_type, phone, email, position')
+            .select('role, total_credits, credits_used, subscription_tier, message_limit, subscription_plan, business_type, business_name, phone, email, position')
             .eq('id', userId)
             .maybeSingle();
 

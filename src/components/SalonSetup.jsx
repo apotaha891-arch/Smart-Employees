@@ -82,6 +82,12 @@ const EntitySetup = () => {
         workingHours: { start: '09:00', end: '22:00' },
         workingDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
         knowledge_base: '',
+        // Mission-Ready fields
+        mission_statement: '',
+        target_audience: '',
+        brand_voice_details: '',
+        faq_data: [],
+        sop_instructions: '',
     });
 
     // Services State
@@ -96,6 +102,7 @@ const EntitySetup = () => {
     const [aiLoading, setAiLoading] = useState(false);
     const [aiLoadingMsg, setAiLoadingMsg] = useState(0);
     const [extractedProfile, setExtractedProfile] = useState(null); // holds AI result for preview table
+    const [newFaq, setNewFaq] = useState({ q: '', a: '' });
 
     const aiLoadingMessages = language === 'ar' ? [
         'جاري رفع الملفات وقراءتها...',
@@ -135,7 +142,9 @@ const EntitySetup = () => {
         }
         setExtractedProfile(null);
         setAiLoading(true);
+        console.log("SalonSetup: Initiating AI Extraction", { files: aiFiles.length, urls: aiUrlsList });
         const result = await invokeMultiFileWorkflow(aiFiles, aiUrlsList);
+        console.log("SalonSetup: Extraction Result:", result);
         setAiLoading(false);
         if (result.success && result.data) {
             // Store for preview — user reviews then confirms
@@ -149,6 +158,11 @@ const EntitySetup = () => {
                 services: result.data.services || '',
                 workingHours: result.data.working_hours || '',
                 knowledgeBase: result.data.knowledge_base || '',
+                // Mission fields
+                mission_statement: result.data.mission_statement || '',
+                target_audience: result.data.target_audience || '',
+                brand_voice: result.data.brand_voice || '',
+                procedures: result.data.procedures || '',
             });
         } else {
             alert(language === 'ar' ? 'حدث خطأ أثناء التحليل: ' + result.error : 'Analysis error: ' + result.error);
@@ -166,6 +180,10 @@ const EntitySetup = () => {
             address: extractedProfile.address || prev.address,
             website: extractedProfile.website || prev.website,
             knowledge_base: extractedProfile.knowledgeBase || prev.knowledge_base,
+            mission_statement: extractedProfile.mission_statement || prev.mission_statement,
+            target_audience: extractedProfile.target_audience || prev.target_audience,
+            brand_voice_details: extractedProfile.brand_voice || prev.brand_voice_details,
+            sop_instructions: extractedProfile.procedures || prev.sop_instructions,
         }));
         // Auto-save immediately
         setLoading(true);
@@ -181,6 +199,10 @@ const EntitySetup = () => {
                 address: extractedProfile.address,
                 website: extractedProfile.website,
                 knowledge_base: extractedProfile.knowledgeBase,
+                mission_statement: extractedProfile.mission_statement,
+                target_audience: extractedProfile.target_audience,
+                brand_voice_details: extractedProfile.brand_voice,
+                sop_instructions: extractedProfile.procedures,
                 is_active: false,
             });
             if (!configResult.success) throw new Error(configResult.error);
@@ -290,6 +312,12 @@ const EntitySetup = () => {
                         address: configs.address || '',
                         website: configs.website || '',
                         workingHours: configs.working_hours || { start: '09:00', end: '22:00' },
+                        mission_statement: configs.mission_statement || '',
+                        target_audience: configs.target_audience || '',
+                        brand_voice_details: configs.brand_voice_details || '',
+                        faq_data: Array.isArray(configs.faq_data) ? configs.faq_data : [],
+                        sop_instructions: configs.sop_instructions || '',
+                        knowledge_base: configs.knowledge_base || '',
                     }));
                     setIntegrationKeys({
                         website: configs.website || '',
@@ -463,6 +491,12 @@ const EntitySetup = () => {
                 address: formData.address || null,
                 website: formData.website || null,
                 working_hours: formData.workingHours || null,
+                mission_statement: formData.mission_statement || null,
+                target_audience: formData.target_audience || null,
+                brand_voice_details: formData.brand_voice_details || null,
+                faq_data: formData.faq_data || [],
+                sop_instructions: formData.sop_instructions || null,
+                knowledge_base: formData.knowledge_base || null,
                 is_active: false,
             });
 
@@ -851,10 +885,12 @@ const EntitySetup = () => {
                                                     { key: 'phone', labelAr: 'رقم التواصل', labelEn: 'Contact Number', multiline: false },
                                                     { key: 'address', labelAr: 'الموقع / العنوان', labelEn: 'Location', multiline: false },
                                                     { key: 'website', labelAr: 'الموقع الإلكتروني', labelEn: 'Website', multiline: false },
-                                                    { key: 'workingHours', labelAr: 'ساعات العمل', labelEn: 'Working Hours', multiline: false },
-                                                    { key: 'description', labelAr: 'وصف المنشأة', labelEn: 'Description', multiline: true },
-                                                    { key: 'services', labelAr: 'الخدمات', labelEn: 'Services', multiline: true },
-                                                    { key: 'knowledgeBase', labelAr: 'قاعدة المعرفة (تفاصيل موسعة)', labelEn: 'Knowledge Library', multiline: true },
+                                                    { key: 'mission_statement', labelAr: 'مهمة المنشأة (Mission)', labelEn: 'Mission Statement', multiline: true },
+                                                    { key: 'target_audience', labelAr: 'الجمهور المستهدف', labelEn: 'Target Audience', multiline: false },
+                                                    { key: 'brand_voice', labelAr: 'نبرة الصوت (Tone)', labelEn: 'Brand Voice', multiline: false },
+                                                    { key: 'procedures', labelAr: 'إجراءات العمل (SOPs)', labelEn: 'Standard Procedures', multiline: true },
+                                                    { key: 'description', labelAr: 'وصف عام', labelEn: 'General Description', multiline: true },
+                                                    { key: 'services', labelAr: 'الخدمات المستخرجة', labelEn: 'Extracted Services', multiline: true },
                                                 ].map((row, idx) => (
                                                     <tr key={row.key} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
                                                         <td style={{ padding: '10px 14px', color: '#9CA3AF', fontWeight: 600, verticalAlign: 'top', whiteSpace: 'nowrap' }}>
@@ -1057,28 +1093,132 @@ const EntitySetup = () => {
                     )}
 
                     {activeTab === 'knowledge' && (
-                        <div className="animate-fade-in">
-                            <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>{t('servicesCatalog') || (language === 'ar' ? 'قائمة الخدمات' : 'Services Catalog')}</h3>
-
-                            <ServicesTable
-                                services={services}
-                                editingService={editingService}
-                                setEditingService={setEditingService}
-                                newService={newService}
-                                setNewService={setNewService}
-                                onAdd={handleAddService}
-                                onUpdate={handleUpdateService}
-                                onDelete={handleDeleteService}
-                            />
-
-                            <div className="grid grid-2 gap-lg" style={{ marginTop: '1.5rem' }}>
-                                <div>
-                                    <label className="text-sm text-dim mb-sm block">{t('startTimeLabel') || (language === 'ar' ? 'وقت البدء' : 'Start Time')}</label>
-                                    <input type="time" className="input-field" value={formData.workingHours.start} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, start: e.target.value } })} />
+                        <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                            {/* 1. Services Section */}
+                            <section>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
+                                    <Briefcase size={20} color="#8B5CF6" />
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{t('servicesCatalog') || (language === 'ar' ? 'قائمة الخدمات والأسعار' : 'Services & Pricing')}</h3>
                                 </div>
-                                <div>
-                                    <label className="text-sm text-dim mb-sm block">{t('endTimeLabel') || (language === 'ar' ? 'وقت الانتهاء' : 'End Time')}</label>
-                                    <input type="time" className="input-field" value={formData.workingHours.end} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, end: e.target.value } })} />
+                                <ServicesTable
+                                    services={services}
+                                    editingService={editingService}
+                                    setEditingService={setEditingService}
+                                    newService={newService}
+                                    setNewService={setNewService}
+                                    onAdd={handleAddService}
+                                    onUpdate={handleUpdateService}
+                                    onDelete={handleDeleteService}
+                                />
+                            </section>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 300px', gap: '2rem' }}>
+                                {/* 2. Business Knowledge Section */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
+                                            <Target size={18} color="#8B5CF6" />
+                                            <h4 style={{ margin: 0 }}>{language === 'ar' ? 'مهمة المنشأة والجمهور المستهدف' : 'Mission & Audience'}</h4>
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            <div>
+                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'رسالة المنشأة (لماذا نحن هنا؟)' : 'Business Mission'}</label>
+                                                <textarea style={{ ...inp, minHeight: 60 }} placeholder={language === 'ar' ? 'مثال: تقديم أفضل خدمات العناية بالبشرة بأحدث التقنيات...' : 'e.g. Provide best skincare using latest tech...'} 
+                                                    value={formData.mission_statement} onChange={e => setFormData({...formData, mission_statement: e.target.value})} />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'الجمهور المستهدف' : 'Target Audience'}</label>
+                                                <input style={inp} placeholder={language === 'ar' ? 'مثال: سيدات الأعمال، المهتمين بالجمال...' : 'e.g. Business women, beauty enthusiasts...'} 
+                                                    value={formData.target_audience} onChange={e => setFormData({...formData, target_audience: e.target.value})} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
+                                            <BookOpen size={18} color="#8B5CF6" />
+                                            <h4 style={{ margin: 0 }}>{language === 'ar' ? 'دليل إجراءات العمل (SOPs)' : 'Operating Procedures (SOPs)'}</h4>
+                                        </div>
+                                        <p style={{ fontSize: '0.8rem', color: '#9CA3AF', marginBottom: '1rem' }}>
+                                            {language === 'ar' ? 'أعطِ تعليمات واضحة للموظف حول كيفية التصرف في حالات معينة (مثل الخصومات، الإرجاع، المواعيد المستعجلة).' : 'Give clear instructions on how to handle specific cases (e.g. discounts, cancellations, urgent cues).'}
+                                        </p>
+                                        <textarea style={{ ...inp, minHeight: 180, border: '1px solid rgba(139, 92, 246, 0.2)', background: 'rgba(17, 24, 39, 0.4)' }} 
+                                            placeholder={language === 'ar' ? 'مثال: إذا طلب العميل خصماً، قم بإبلاغه بوجود باقات التوفير...' : 'e.g. If client asks for discount, tell them about saving bundles...'} 
+                                            value={formData.sop_instructions} onChange={e => setFormData({...formData, sop_instructions: e.target.value})} />
+                                    </div>
+
+                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
+                                            <Sparkles size={18} color="#8B5CF6" />
+                                            <h4 style={{ margin: 0 }}>{language === 'ar' ? 'الأسئلة الشائعة (FAQ)' : 'Frequently Asked Questions'}</h4>
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            {(formData.faq_data || []).map((faq, idx) => (
+                                                <div key={idx} style={{ padding: 10, background: '#111827', borderRadius: 8, borderLeft: '3px solid #8B5CF6' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <strong style={{ fontSize: '0.85rem' }}>{faq.q}</strong>
+                                                        <Trash2 size={14} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => setFormData({...formData, faq_data: formData.faq_data.filter((_, i) => i !== idx)})} />
+                                                    </div>
+                                                    <p style={{ fontSize: '0.82rem', color: '#9CA3AF', margin: '4px 0 0' }}>{faq.a}</p>
+                                                </div>
+                                            ))}
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                                                <input style={inp} placeholder={language === 'ar' ? 'السؤال...' : 'Question...'} 
+                                                    value={newFaq.q} onChange={e => setNewFaq({...newFaq, q: e.target.value})} />
+                                                <textarea style={inp} placeholder={language === 'ar' ? 'الإجابة...' : 'Answer...'} 
+                                                    value={newFaq.a} onChange={e => setNewFaq({...newFaq, a: e.target.value})} />
+                                                <button onClick={() => {
+                                                    if (newFaq.q && newFaq.a) {
+                                                        setFormData({...formData, faq_data: [...(formData.faq_data || []), newFaq]});
+                                                        setNewFaq({ q: '', a: '' });
+                                                    }
+                                                }} style={{ padding: 8, background: '#374151', border: 'none', borderRadius: 8, color: 'white', cursor: 'pointer', fontSize: '0.85rem' }}>
+                                                    {language === 'ar' ? '+ إضافة سؤال' : '+ Add Question'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 3. Side Panel (Hours & Brand Voice) */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
+                                            <Clock size={18} color="#8B5CF6" />
+                                            <h4 style={{ margin: 0 }}>{language === 'ar' ? 'أوقات العمل' : 'Working Hours'}</h4>
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            <div>
+                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'وقت البدء' : 'Start Time'}</label>
+                                                <input type="time" style={inp} value={formData.workingHours.start} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, start: e.target.value } })} />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'وقت الانتهاء' : 'End Time'}</label>
+                                                <input type="time" style={inp} value={formData.workingHours.end} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, end: e.target.value } })} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
+                                            <MessageCircle size={18} color="#8B5CF6" />
+                                            <h4 style={{ margin: 0 }}>{language === 'ar' ? 'نبرة الصوت (Tone)' : 'Brand Voice'}</h4>
+                                        </div>
+                                        <textarea style={{ ...inp, minHeight: 100 }} 
+                                            placeholder={language === 'ar' ? 'مثال: احترافي، ودود، يتجنب الاختصارات...' : 'e.g. Professional, friendly, avoids slang...'} 
+                                            value={formData.brand_voice_details} onChange={e => setFormData({...formData, brand_voice_details: e.target.value})} />
+                                    </div>
+
+                                    <button onClick={handleSave} disabled={loading}
+                                        style={{
+                                            padding: '14px', borderRadius: 12, border: 'none',
+                                            background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)',
+                                            color: 'white', fontWeight: 700, cursor: 'pointer',
+                                            boxShadow: '0 4px 12px rgba(139,92,246,0.3)',
+                                            marginTop: '1rem'
+                                        }}>
+                                        {loading ? '...' : (language === 'ar' ? '✅ حفظ كل التعليمات' : '✅ Save All Instructions')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
