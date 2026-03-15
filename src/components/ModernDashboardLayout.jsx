@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { signOut, supabase } from '../services/supabaseService';
+import { signOut, supabase, getProfile } from '../services/supabaseService';
 
 const ModernDashboardLayout = ({ children }) => {
     const { t, language } = useLanguage();
