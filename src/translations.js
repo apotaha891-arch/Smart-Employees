@@ -16,7 +16,15 @@ export const translations = {
             sales: "مبيعات",
             hr: "موارد بشرية",
             email: "منسق بريد",
-            followup: "متابعة"
+            followup: "متابعة",
+            'support-agent': "موظف دعم شامل",
+            'sales-lead-gen': "أخصائي مبيعات",
+            'dental-receptionist': "موظف استقبال أسنان",
+            'medical-clinic': "منسق عيادة طبية",
+            'beauty-salon': "منسقة صالون تجميل",
+            'real-estate-marketing': "مسوق عقاري ذكي",
+            'restaurant-reservations': "مسؤول حجوزات طاولات",
+            'gym-coordinator': "منسق اشتراكات رياضية"
         },
         sectors: {
             telecom_it: "اتصالات وتقنية",
@@ -649,7 +657,15 @@ export const translations = {
             sales: "Sales Specialist",
             hr: "Human Resources",
             email: "Email Coordinator",
-            followup: "Customer Follow-up"
+            followup: "Customer Follow-up",
+            'support-agent': "Multi-Support Agent",
+            'sales-lead-gen': "Sales Specialist",
+            'dental-receptionist': "Dental Receptionist",
+            'medical-clinic': "Medical Clinic Agent",
+            'beauty-salon': "Beauty Salon Agent",
+            'real-estate-marketing': "Real Estate Marketer",
+            'restaurant-reservations': "Restaurant Coordinator",
+            'gym-coordinator': "Fitness Coordinator"
         },
         sectors: {
             telecom_it: "Telecom & IT",

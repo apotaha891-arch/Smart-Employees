@@ -92,12 +92,12 @@ const InterviewRoom = () => {
 
     // Map of agentType -> which sector(s) it belongs to
     const agentSectorMap = {
-        'support-agent': ['general', 'medical', 'beauty', 'restaurant', 'fitness', 'realestate'],
-        'sales-lead-gen': ['general', 'realestate', 'fitness'],
+        'support-agent': ['general', 'medical', 'beauty', 'restaurant', 'fitness', 'real_estate'],
+        'sales-lead-gen': ['general', 'real_estate', 'fitness'],
         'dental-receptionist': ['medical'],
         'medical-clinic': ['medical'],
         'beauty-salon': ['beauty'],
-        'real-estate-marketing': ['realestate'],
+        'real-estate-marketing': ['real_estate'],
         'restaurant-reservations': ['restaurant'],
         'gym-coordinator': ['fitness'],
     };
@@ -355,7 +355,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                     const type = (p.data.business_type || '').toLowerCase();
                     let industry = 'general';
                     if (type.includes('طب') || type.includes('صحي') || type.includes('clinic') || type.includes('dental')) industry = 'medical';
-                    else if (type.includes('عقار') || type.includes('estate')) industry = 'realestate';
+                    else if (type.includes('عقار') || type.includes('estate')) industry = 'real_estate';
                     else if (type.includes('تجميل') || type.includes('salon') || type.includes('beauty')) industry = 'beauty';
                     else if (type.includes('مطعم') || type.includes('restau')) industry = 'restaurant';
                     else if (type.includes('رياض') || type.includes('gym') || type.includes('fit')) industry = 'fitness';
@@ -663,7 +663,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                     >
                                         <option value="general">{t('indGeneral')}</option>
                                         <option value="medical">{t('indMedical')}</option>
-                                        <option value="realestate">{t('indRealestate')}</option>
+                                        <option value="real_estate">{t('indRealestate')}</option>
                                         <option value="beauty">{t('indBeauty')}</option>
                                         <option value="restaurant">{t('indRestaurant')}</option>
                                         <option value="fitness">{t('indFitness')}</option>

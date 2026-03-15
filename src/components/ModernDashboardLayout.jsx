@@ -25,18 +25,22 @@ const ModernDashboardLayout = ({ children }) => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                // Fetch salon_config and profile
+                // Fetch latest salon_config and profile
                 const [configRes, profileRes] = await Promise.all([
-                    supabase.from('salon_configs').select('business_type').eq('user_id', user.id).maybeSingle(),
-                    supabase.from('profiles').select('business_type').eq('id', user.id).maybeSingle()
+                    supabase.from('salon_configs').select('business_type').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+                    supabase.from('profiles').select('business_name, business_type').eq('id', user.id).maybeSingle()
                 ]);
 
-                const businessType = profileRes.data?.business_type || configRes.data?.business_type || '';
+                const config = configRes.data;
+                const profile = profileRes.data;
+                const bizType = config?.business_type || profile?.business_type || '';
+                const bizName = profile?.business_name || (language === 'ar' ? 'منشأتي' : 'My Business');
 
                 setUserData({
                     name: user.user_metadata?.full_name || user.email.split('@')[0],
                     email: user.email,
-                    business_name: businessType
+                    business_name: bizName,
+                    business_type: bizType
                 });
             }
         } catch (error) {

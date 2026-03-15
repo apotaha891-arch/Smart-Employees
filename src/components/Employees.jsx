@@ -25,6 +25,15 @@ const ROLE_LABELS = {
     support: { icon: MessageCircle, color: '#10B981' },
     hr: { icon: Users, color: '#3B82F6' },
     email: { icon: Mail, color: '#EC4899' },
+    // Template IDs mapping
+    'beauty-salon': { icon: Calendar, color: '#EC4899' },
+    'medical-clinic': { icon: Calendar, color: '#3B82F6' },
+    'dental-receptionist': { icon: Calendar, color: '#10B981' },
+    'sales-lead-gen': { icon: TrendingUp, color: '#F59E0B' },
+    'real-estate-marketing': { icon: Calendar, color: '#8B5CF6' },
+    'restaurant-reservations': { icon: Calendar, color: '#F59E0B' },
+    'gym-coordinator': { icon: Calendar, color: '#10B981' },
+    'support-agent': { icon: MessageCircle, color: '#10B981' },
 };
 
 const Employees = () => {
@@ -63,25 +72,25 @@ const Employees = () => {
 
                 if (config) setSalonConfig(config);
                 
-                const detectedSector = config?.business_type || profile?.business_type || 'general';
-                setUserSector(detectedSector);
+                // Robust sector detection: handle case sensitivity and Arabic values
+                let rawSector = (config?.business_type || profile?.business_type || 'general').toLowerCase();
+                if (rawSector.includes('طبي') || rawSector.includes('medical')) rawSector = 'medical';
+                else if (rawSector.includes('عقار') || rawSector.includes('real')) rawSector = 'real_estate';
+                else if (rawSector.includes('تجميل') || rawSector.includes('beauty')) rawSector = 'beauty';
+                else if (rawSector.includes('مطعم') || rawSector.includes('restau')) rawSector = 'restaurant';
+                else if (rawSector.includes('رياض') || rawSector.includes('gym') || rawSector.includes('fit')) rawSector = 'fitness';
+                
+                setUserSector(SECTOR_LABELS[rawSector] ? rawSector : 'general');
 
                 // Fetch Agents
-                const { data, error } = await supabase
+                const { data: userAgentsData, error: agentsError } = await supabase
                     .from('agents')
                     .select('*')
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false });
 
-                // IMPORTANT: Filter by user_id to avoid seeing other customers' agents
-                const { data, error } = await supabase
-                    .from('agents')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                const userAgents = data || [];
+                if (agentsError) throw agentsError;
+                const userAgents = userAgentsData || [];
                 setAgents(userAgents);
 
                 // Fetch templates (Safe fetch to avoid 400 errors if table is missing)
@@ -91,14 +100,12 @@ const Employees = () => {
                         const { data: tmpls, error: tmplError } = await supabase.from('agent_templates').select('*');
                         
                         if (!tmplError && tmpls) {
-                            const currentSector = profile?.business_type || config?.business_type || 'beauty';
+                            const currentSector = rawSector;
                             const sectorTmpls = tmpls.filter(t => 
                                 (t.is_public !== false) && 
                                 (t.business_type === currentSector || t.business_type === 'general')
                             );
                             setTemplates(sectorTmpls);
-                        } else {
-                            console.warn("Agent templates table might be missing, using fallback.");
                         }
                     } catch (e) {
                         console.error("Templates fetch failed:", e);
@@ -210,10 +217,14 @@ const Employees = () => {
     // Safety check for specialty labels to avoid "Translation missing" or UUIDs
     const getRoleLabel = (specialty) => {
         if (!specialty) return isAr ? 'موظف' : 'Agent';
-        if (ROLE_LABELS[specialty]) return t(`roles.${specialty}`);
         
-        // If it contains a dash or is very long, it's likely a UUID from a custom request
-        if (specialty.includes('-') || specialty.length > 20) {
+        // Technical names or translation keys leaking
+        let key = specialty.toLowerCase().replace('roles.', '');
+        
+        if (ROLE_LABELS[key]) return t(`roles.${key}`);
+        
+        // If it contains a dash or UUID-like patterns
+        if (key.includes('-') || key.length > 20) {
             return isAr ? 'موظف مخصص' : 'Custom Agent';
         }
         

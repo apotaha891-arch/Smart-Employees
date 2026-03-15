@@ -326,9 +326,8 @@ const EntitySetup = () => {
         };
         checkUser().catch(err => {
             console.error("SalonSetup: Initialization error:", err);
-            // Fallback for missing supabase globally if needed
         });
-    }, [queryParams]);
+    }, [location.search]);
 
     // Load Integrations and Handle OAuth Redirect
     useEffect(() => {
@@ -982,7 +981,7 @@ const EntitySetup = () => {
                                         <option value="medical">{language === 'ar' ? '🏥 طبي وصحي' : '🏥 Medical & Health'}</option>
                                         <option value="telecom_it">{language === 'ar' ? '📡 اتصالات وتقنية' : '📡 Telecom & IT'}</option>
                                         <option value="banking">{language === 'ar' ? '🏦 بنوك ومالية' : '🏦 Banking & Finance'}</option>
-                                        <option value="realestate">{language === 'ar' ? '🏢 عقارات' : '🏢 Real Estate'}</option>
+                                        <option value="real_estate">{language === 'ar' ? '🏢 عقارات' : '🏢 Real Estate'}</option>
                                         <option value="restaurant">{language === 'ar' ? '🍽️ مطاعم' : '🍽️ Restaurant'}</option>
                                         <option value="fitness">{language === 'ar' ? '💪 لياقة ورياضة' : '💪 Fitness & Sports'}</option>
                                         <option value="retail_ecommerce">{language === 'ar' ? '🛍️ تجزئة ومتاجر' : '🛍️ Retail & E-commerce'}</option>
