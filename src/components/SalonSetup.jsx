@@ -300,18 +300,6 @@ const EntitySetup = () => {
                     }
                 }
 
-                // Priority 2: Fallback to any config owned by the user if no agent-specific one found
-                if (!configs) {
-                    const { data } = await supabase
-                        .from('salon_configs')
-                        .select('*')
-                        .eq('user_id', user.id)
-                        .order('created_at', { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
-                    configs = data;
-                }
-
                 if (configs) {
                     console.log("SalonSetup: Found existing config:", configs.id);
                     setSalonConfigId(configs.id);
