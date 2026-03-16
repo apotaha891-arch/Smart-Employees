@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Zap, Shield, Star, Crown, Loader } from 'lucide-react';
+import { CheckCircle2, Zap, Shield, Star, Crown, Loader, ShieldCheck } from 'lucide-react';
 import { supabase, getProfile } from '../services/supabaseService';
 import { useLanguage } from '../LanguageContext';
 import ManusHero from './ManusHero';
