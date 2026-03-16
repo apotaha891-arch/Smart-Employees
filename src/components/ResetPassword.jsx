@@ -16,16 +16,27 @@ const ResetPassword = () => {
 
     // Verification of recovery session
     useEffect(() => {
-        supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event !== "PASSWORD_RECOVERY") {
-                // If not in password recovery mode, we might want to stay or redirect
-                // but usually the link from email sets this event.
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session && !window.location.hash) {
+                setError(language === 'ar' ? 'انتهت صلاحية الجلسة أو الرابط غير صحيح' : 'Session expired or invalid link');
+            }
+        };
+        checkSession();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log("Auth Event:", event);
+            if (event === "PASSWORD_RECOVERY") {
+                console.log("Password recovery session detected");
             }
         });
-    }, []);
+
+        return () => subscription.unsubscribe();
+    }, [language]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
         if (password !== confirmPassword) {
             setError(language === 'ar' ? 'كلمات السر غير متطابقة' : 'Passwords do not match');
             return;
@@ -38,17 +49,25 @@ const ResetPassword = () => {
         setLoading(true);
         setError(null);
 
-        const result = await updatePassword(password);
+        try {
+            console.log("Attempting to update password...");
+            const result = await updatePassword(password);
+            console.log("Update result:", result);
 
-        if (result.success) {
-            setSuccess(true);
-            setTimeout(() => {
-                navigate('/login');
-            }, 3000);
-        } else {
-            setError(result.error);
+            if (result.success) {
+                setSuccess(true);
+                setTimeout(() => {
+                    navigate('/login');
+                }, 3000);
+            } else {
+                setError(result.error || (language === 'ar' ? 'حدث خطأ أثناء التحديث' : 'Error updating password'));
+            }
+        } catch (err) {
+            console.error("Reset Password Error:", err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (

@@ -24,7 +24,13 @@ export const translations = {
             'beauty-salon': "منسقة صالون تجميل",
             'real-estate-marketing': "مسوق عقاري ذكي",
             'restaurant-reservations': "مسؤول حجوزات طاولات",
-            'gym-coordinator': "منسق اشتراكات رياضية"
+            'gym-coordinator': "منسق اشتراكات رياضية",
+            "مركز رياضي / نادي لياقة بدنية": "مركز رياضي / نادي لياقة بدنية",
+            "إدارة صالون التجميل": "إدارة صالون التجميل",
+            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "منصة خدمات موظفين افتراضيين / مساعد ذكي",
+            "صالون تجميل": "صالون تجميل",
+            "مبيعات وتسويق": "مبيعات وتسويق",
+            "Restaurant": "مطعم"
         },
         sectors: {
             telecom_it: "اتصالات وتقنية",
@@ -37,7 +43,12 @@ export const translations = {
             restaurant: "مطاعم وضيافة",
             real_estate: "عقارات",
             general: "خدمات عامة",
-            fitness: "لياقة بدنية"
+            fitness: "لياقة بدنية",
+            "مركز رياضي / نادي لياقة بدنية": "مركز رياضي / نادي لياقة بدنية",
+            "إدارة صالون التجميل": "إدارة صالون التجميل",
+            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "منصة خدمات موظفين افتراضيين / مساعد ذكي",
+            "صالون تجميل": "صالون تجميل",
+            "مبيعات وتسويق": "مبيعات وتسويق"
         },
         // Branding
         brand: {
@@ -294,42 +305,11 @@ export const translations = {
         deployAgentLabel: "تفعيل الموظف",
         loadingFallback: "جاري التحميل...",
 
-        // Sectors (used in Employees)
-        sectors: {
-            beauty: "تجميل وعناية",
-            medical: "طبي / عيادات",
-            restaurant: "مطاعم وضيافة",
-            fitness: "رياضة وصحة",
-            real_estate: "عقارات",
-            retail_ecommerce: "تجزئة ومتاجر إلكترونية",
-            banking: "بنوك وقطاع مالي",
-            call_center: "مراكز اتصال وخدمة عملاء",
-            telecom_it: "اتصالات وتقنية معلومات",
-            general: "عام",
-            "مركز رياضي / نادي لياقة بدنية": "مركز رياضي / نادي لياقة بدنية",
-            "إدارة صالون التجميل": "إدارة صالون التجميل",
-            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "منصة خدمات موظفين افتراضيين / مساعد ذكي",
-            "صالون تجميل": "صالون تجميل",
-            "مبيعات وتسويق": "مبيعات وتسويق",
-            "Restaurant": "مطعم"
-        },
+        // Sectors
 
-        // Roles (used in Employees)
-        roles: {
-            booking: "منسقة حجوزات",
-            support: "خدمة عملاء",
-            sales: "متابعة مبيعات",
-            followup: "متابعة",
-            hr: "موارد بشرية",
-            email: "منسق بريد",
-            "مركز رياضي / نادي لياقة بدنية": "مركز رياضي / نادي لياقة بدنية",
-            "إدارة صالون التجميل": "إدارة صالون التجميل",
-            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "منصة خدمات موظفين افتراضيين / مساعد ذكي",
-            "صالون تجميل": "صالون تجميل",
-            "مبيعات وتسويق": "مبيعات وتسويق",
-            "Restaurant": "مطعم",
-            "خدمة عملاء": "خدمة عملاء"
-        },
+
+        // Roles
+
 
         // Employees Component
         employeesTitle: "الموظفات الذكيات",
@@ -665,7 +645,14 @@ export const translations = {
             'beauty-salon': "Beauty Salon Agent",
             'real-estate-marketing': "Real Estate Marketer",
             'restaurant-reservations': "Restaurant Coordinator",
-            'gym-coordinator': "Fitness Coordinator"
+            'gym-coordinator': "Fitness Coordinator",
+            "مركز رياضي / نادي لياقة بدنية": "Sports Center / Fitness Club",
+            "إدارة صالون التجميل": "Beauty Salon Management",
+            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "Virtual Employee Platform / Smart Assistant",
+            "صالون تجميل": "Beauty Salon",
+            "مبيعات وتسويق": "Sales & Marketing",
+            "Restaurant": "Restaurant",
+            "خدمة عملاء": "Customer Support"
         },
         sectors: {
             telecom_it: "Telecom & IT",
@@ -677,7 +664,12 @@ export const translations = {
             restaurant: "Restaurant & Hospitality",
             real_estate: "Real Estate",
             general: "General Services",
-            fitness: "Fitness & Gym"
+            fitness: "Fitness & Gym",
+            "مركز رياضي / نادي لياقة بدنية": "Sports Center / Fitness Club",
+            "إدارة صالون التجميل": "Beauty Salon Management",
+            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "Virtual Employee Platform / Smart Assistant",
+            "صالون تجميل": "Beauty Salon",
+            "مبيعات وتسويق": "Sales & Marketing"
         },
         // Navigation
         nav: {
@@ -932,42 +924,11 @@ export const translations = {
         deployAgentLabel: "Deploy Agent",
         loadingFallback: "Loading...",
 
-        // Sectors (used in Employees)
-        sectors: {
-            beauty: "Beauty & Care",
-            medical: "Medical / Clinics",
-            restaurant: "Restaurants & Hospitality",
-            fitness: "Fitness & Health",
-            real_estate: "Real Estate",
-            retail_ecommerce: "Retail & E-commerce",
-            banking: "Banking & Finance",
-            call_center: "Call Centers & Customer Service",
-            telecom_it: "Telecom & IT",
-            general: "General",
-            "مركز رياضي / نادي لياقة بدنية": "Sports Center / Fitness Club",
-            "إدارة صالون التجميل": "Beauty Salon Management",
-            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "Virtual Employee Platform / Smart Assistant",
-            "صالون تجميل": "Beauty Salon",
-            "مبيعات وتسويق": "Sales & Marketing",
-            "Restaurant": "Restaurant"
-        },
+        // Sectors
 
-        // Roles (used in Employees)
-        roles: {
-            booking: "Booking Coordinator",
-            support: "Customer Support",
-            sales: "Sales Follow-up",
-            followup: "Follow-up",
-            hr: "HR Specialist",
-            email: "Email Coordinator",
-            "مركز رياضي / نادي لياقة بدنية": "Sports Center / Fitness Club",
-            "إدارة صالون التجميل": "Beauty Salon Management",
-            "منصة خدمات موظفين افتراضيين / مساعد ذكي": "Virtual Employee Platform / Smart Assistant",
-            "صالون تجميل": "Beauty Salon",
-            "مبيعات وتسويق": "Sales & Marketing",
-            "Restaurant": "Restaurant",
-            "خدمة عملاء": "Customer Support"
-        },
+
+        // Roles
+
 
         // Employees Component
         employeesTitle: "Smart Employees",

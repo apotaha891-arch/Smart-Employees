@@ -119,12 +119,26 @@ export const sendPasswordResetEmail = async (email) => {
 
 export const updatePassword = async (newPassword) => {
     try {
-        const { error } = await supabase.auth.updateUser({
+        console.log("SupabaseService: Updating password...");
+        // Add a timeout to prevent indefinite hanging
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Password update timed out (30s). Check your connection.')), 30000)
+        );
+
+        const updatePromise = supabase.auth.updateUser({
             password: newPassword
         });
-        if (error) throw error;
-        return { success: true };
+
+        const { data, error } = await Promise.race([updatePromise, timeoutPromise]);
+        
+        if (error) {
+            console.error("SupabaseService: Update password error:", error);
+            throw error;
+        }
+        console.log("SupabaseService: Password updated successfully");
+        return { success: true, data };
     } catch (error) {
+        console.error("SupabaseService: Update password exception:", error);
         return { success: false, error: error.message };
     }
 };
@@ -799,11 +813,13 @@ export const saveSalonConfig = async (config) => {
         
         let query;
         if (config.id) {
-            // Explicit UPDATE - safer for RLS and locks
+            // Separate ID from data to avoid updating PK
+            const { id, ...updateData } = config;
+            console.log(`SupabaseService: Updating config ${id}`);
             query = supabase
                 .from('salon_configs')
-                .update(config)
-                .eq('id', config.id);
+                .update(updateData)
+                .eq('id', id);
         } else {
             // Explicit INSERT
             query = supabase
@@ -811,13 +827,20 @@ export const saveSalonConfig = async (config) => {
                 .insert([config]);
         }
 
-        const { data, error } = await query.select().maybeSingle();
+        // Add a timeout to prevent indefinite hanging
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Database operation timed out (30s). Check network or RLS.')), 30000)
+        );
 
-        if (error) {
-            console.error('Database Operation Error:', error);
-            throw error;
-        }
+        const executeQuery = async () => {
+            const { data, error } = await query.select().maybeSingle();
+            if (error) throw error;
+            return data;
+        };
+
+        const data = await Promise.race([executeQuery(), timeoutPromise]);
         
+        console.log("SupabaseService: Save successful ✅");
         return { success: true, data };
     } catch (error) {
         console.error('Save Salon Config Exception:', error);
