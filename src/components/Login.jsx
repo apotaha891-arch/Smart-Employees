@@ -4,7 +4,7 @@ import { signIn, signUp, signInWithGoogle, supabase } from '../services/supabase
 import { useAuth } from '../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
 import { useLanguage } from '../LanguageContext';
-import { Sparkles, Mail, CheckCircle } from 'lucide-react';
+import { Sparkles, Mail, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 // Helper: get role and sector from DB
 const getUserDestination = async (userId) => {
@@ -22,6 +22,7 @@ const Login = () => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [fullName, setFullName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -237,13 +238,35 @@ const Login = () => {
                             </div>
                             <div className="mb-2xl">
                                 <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('password')}</label>
-                                <input
-                                    type="password"
-                                    className="input-field"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        className="input-field"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        style={{ paddingLeft: language === 'ar' ? '3rem' : '1rem', paddingRight: language === 'ar' ? '1rem' : '3rem' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            [language === 'ar' ? 'left' : 'right']: '1rem',
+                                            transform: 'translateY(-50%)',
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--text-secondary)',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            padding: 0
+                                        }}
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
+                                </div>
                             </div>
 
                             <button
