@@ -48,8 +48,8 @@ const Pricing = () => {
 
         // Skip checkout for Enterprise (Contact Sales)
         if (plan.id === 'enterprise') {
-            alert(t('contactSalesAlert'));
-            window.location.href = "mailto:sales@24shift.com";
+            // Open Noura Chat with special 'elite' context
+            window.dispatchEvent(new CustomEvent('open-concierge', { detail: { type: 'elite' } }));
             return;
         }
 
@@ -213,9 +213,9 @@ const Pricing = () => {
             id: 'starter',
             name: pricingPlans?.starter?.name || '',
             icon: <Zap size={28} color="#06B6D4" />,
-            monthlyPrice: 80,
-            yearlyPrice: 80 * 0.8,
-            trialPrice: 49,
+            monthlyPrice: 39,
+            yearlyPrice: Math.round(39 * 0.8),
+            trialPrice: 20,
             description: pricingPlans?.starter?.description || '',
             features: pricingPlans?.starter?.features || [],
             cta: pricingPlans?.starter?.cta || '',
@@ -228,9 +228,9 @@ const Pricing = () => {
             id: 'pro',
             name: pricingPlans?.pro?.name || '',
             icon: <Star size={28} color="#8B5CF6" />,
-            monthlyPrice: 120,
-            yearlyPrice: 120 * 0.8,
-            trialPrice: 80,
+            monthlyPrice: 69,
+            yearlyPrice: Math.round(69 * 0.8),
+            trialPrice: 45,
             description: pricingPlans?.pro?.description || '',
             features: pricingPlans?.pro?.features || [],
             cta: pricingPlans?.pro?.cta || '',
@@ -556,6 +556,144 @@ const Pricing = () => {
                         </div>
                     );
                 })}
+            </div>
+
+            {/* Quick Add-ons Section */}
+            <div className="container" style={{ marginTop: '6rem' }}>
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                    <h3 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '1rem', color: '#FFF' }}>
+                        {language === 'ar' ? '🚀 شحن نقاط إضافية' : '🚀 Quick Points Refill'}
+                    </h3>
+                    <p style={{ color: '#A1A1AA', fontSize: '1.1rem' }}>
+                        {language === 'ar' ? 'هل استنفدت نقاط باقتك؟ اشحن رصيدك الآن لضمان استمرار عمل موظفيك الذكيين.' : 'Out of credits? Top up your wallet now to keep your smart agents working.'}
+                    </p>
+                </div>
+
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gap: '2rem',
+                    maxWidth: '900px',
+                    margin: '0 auto'
+                }}>
+                    {/* Add-on 1000 Points */}
+                    <div style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '24px',
+                        padding: '2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s'
+                    }}
+                        onMouseOver={e => e.currentTarget.style.borderColor = '#8B5CF6'}
+                        onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
+                    >
+                        <div>
+                            <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>1,000 {t('points')}</div>
+                            <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'رصيد محادثات إضافي' : 'Extra conversation credits'}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFF' }}>$10</div>
+                            <button 
+                                onClick={() => handleSelectPlan({ id: 'addon_1k', name: '1000 Points' })}
+                                style={{
+                                    background: '#8B5CF6',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.5rem 1.25rem',
+                                    borderRadius: '10px',
+                                    fontWeight: 700,
+                                    marginTop: '0.5rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {language === 'ar' ? 'اشحن الآن' : 'Buy Now'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Add-on 5000 Points */}
+                    <div style={{
+                        background: 'rgba(139, 92, 246, 0.05)',
+                        border: '1px solid rgba(139, 92, 246, 0.2)',
+                        borderRadius: '24px',
+                        padding: '2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#EF4444', color: 'white', padding: '2px 40px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900 }}>
+                            SAVE 30%
+                        </div>
+                        <div>
+                            <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>5,000 {t('points')}</div>
+                            <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'باقة شحن كبيرة' : 'Bulk refill pack'}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFF' }}>$35</div>
+                            <button 
+                                onClick={() => handleSelectPlan({ id: 'addon_5k', name: '5000 Points' })}
+                                style={{
+                                    background: '#FFF',
+                                    color: '#8B5CF6',
+                                    border: 'none',
+                                    padding: '0.5rem 1.25rem',
+                                    borderRadius: '10px',
+                                    fontWeight: 800,
+                                    marginTop: '0.5rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {language === 'ar' ? 'اشحن الآن' : 'Buy Now'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Comparison Table Section */}
+            <div className="container" style={{ marginTop: '8rem', paddingBottom: '4rem' }}>
+                <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                    <h3 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#FFF' }}>
+                        {language === 'ar' ? '📊 قارن بين الباقات' : '📊 Compare Plans'}
+                    </h3>
+                    <p style={{ color: '#A1A1AA', fontSize: '1.2rem' }}>
+                        {language === 'ar' ? 'اختر القوة التي تناسب طموح منشأتك' : 'Choose the power that fits your facility\'s ambition'}
+                    </p>
+                </div>
+
+                <div style={{ overflowX: 'auto', background: '#18181B', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: language === 'ar' ? 'right' : 'left' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <th style={{ padding: '2rem', color: '#71717A', fontWeight: 600 }}>{language === 'ar' ? 'الميزة' : 'Feature'}</th>
+                                <th style={{ padding: '2rem', color: '#06B6D4', fontWeight: 900, fontSize: '1.2rem' }}>{language === 'ar' ? 'الباقة الأساسية' : 'Starter'}</th>
+                                <th style={{ padding: '2rem', color: '#8B5CF6', fontWeight: 900, fontSize: '1.2rem', background: 'rgba(139, 92, 246, 0.05)' }}>{language === 'ar' ? 'الباقة المتقدمة' : 'Pro'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[
+                                { name: language === 'ar' ? 'عدد النقاط (المحادثات)' : 'Credits (Messages)', starter: '2,000', pro: '5,000' },
+                                { name: language === 'ar' ? 'عدد الموظفين الرقميين' : 'Number of Agents', starter: '1', pro: '2' },
+                                { name: language === 'ar' ? 'أدوات الربط لكل موظف' : 'Connections per Agent', starter: '2', pro: '3' },
+                                { name: language === 'ar' ? 'تكلفة الموظف الإضافي' : 'Extra Agent Cost', starter: '$25', pro: '$19' },
+                                { name: language === 'ar' ? 'سرعة الاستجابة' : 'Response Priority', starter: language === 'ar' ? 'عادية' : 'Standard', pro: language === 'ar' ? 'عالية جداً' : 'High Priority' },
+                                { name: language === 'ar' ? 'تدريب مخصص' : 'Custom Training', starter: '❌', pro: '✅' },
+                                { name: language === 'ar' ? 'تقارير متقدمة' : 'Advanced Analytics', starter: '❌', pro: '✅' },
+                            ].map((row, i) => (
+                                <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                                    <td style={{ padding: '1.5rem 2rem', color: '#E4E4E7', fontWeight: 600 }}>{row.name}</td>
+                                    <td style={{ padding: '1.5rem 2rem', color: '#A1A1AA' }}>{row.starter}</td>
+                                    <td style={{ padding: '1.5rem 2rem', color: '#FFF', fontWeight: 700, background: 'rgba(139, 92, 246, 0.05)' }}>{row.pro}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

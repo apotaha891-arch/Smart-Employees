@@ -745,25 +745,102 @@ export default function AdminDashboard() {
                 </div>}
 
                 {/* ── PRICING ── */}
-                {
-                    tab === 'pricing' && <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                            <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>الباقات والأسعار</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>تعديل أسعار اشتراكات المنصة</p></div>
-                            <Btn onClick={async () => { setSaving(true); await adminService.updatePlatformSettings('pricing_plans', pricing); setSaving(false); flash('✅ تم الحفظ'); }} disabled={saving}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ'}</Btn>
+                {tab === 'pricing' && <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                        <div>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>الباقات والأسعار</h1>
+                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>تعديل استراتيجية التسعير والمميزات التقنية لكل فئة</p>
                         </div>
-                        <div style={{ display: 'grid', gap: '0.9rem' }}>
-                            {pricing.map((plan, idx) => <Card key={plan.id} c={<>
-                                <h3 style={{ color: '#A78BFA', fontWeight: 800, marginBottom: '0.9rem', fontSize: '0.9rem' }}>{plan.name}</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-                                    {[['monthlyPrice', 'السعر الشهري (ريال)'], ['yearlyPrice', 'السعر السنوي/شهر (ريال)']].map(([f, l]) => <div key={f}>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{l}</label>
-                                        <input type="number" value={plan[f]} onChange={e => { const u = [...pricing]; u[idx][f] = e.target.value; setPricing(u); }} style={{ width: '100%', padding: '8px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', boxSizing: 'border-box' }} />
-                                    </div>)}
+                        <Btn onClick={async () => { 
+                            setSaving(true); 
+                            await adminService.updatePlatformSettings('pricing_plans', pricing); 
+                            setSaving(false); 
+                            flash('✅ تم حفظ كافة إعدادات التسعير'); 
+                        }} disabled={saving}>
+                            <Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ الكل'}
+                        </Btn>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+                        {pricing.map((plan, idx) => (
+                            <Card key={plan.id} s={{ border: '1px solid rgba(139, 92, 246, 0.2)', position: 'relative' }} c={<>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.25rem' }}>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#8B5CF620', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Zap size={16} color="#8B5CF6" />
+                                    </div>
+                                    <h3 style={{ color: 'white', fontWeight: 800, margin: 0, fontSize: '1rem' }}>{plan.name}</h3>
                                 </div>
-                            </>} />)}
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>السعر الشهري ($)</label>
+                                        <input type="number" value={plan.monthlyPrice} onChange={e => { const u = [...pricing]; u[idx].monthlyPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>السعر السنوي ($/شهر)</label>
+                                        <input type="number" value={plan.yearlyPrice} onChange={e => { const u = [...pricing]; u[idx].yearlyPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.75rem', marginBottom: '5px' }}>سعر التجربة (3 شهور)</label>
+                                        <input type="number" value={plan.trialPrice || 0} onChange={e => { const u = [...pricing]; u[idx].trialPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '10px', color: '#A78BFA', fontWeight: 'bold' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#10B981', fontSize: '0.75rem', marginBottom: '5px' }}>عدد النقاط (شهرياً)</label>
+                                        <input type="number" value={plan.credits || 0} onChange={e => { const u = [...pricing]; u[idx].credits = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10B981' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>أقصى عدد موظفين</label>
+                                        <input type="number" value={plan.agentsLimit || 0} onChange={e => { const u = [...pricing]; u[idx].agentsLimit = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>أدوات/قنوات لكل موظف</label>
+                                        <input type="number" value={plan.toolsLimit || 0} onChange={e => { const u = [...pricing]; u[idx].toolsLimit = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white' }} />
+                                    </div>
+                                </div>
+                            </>} />
+                        ))}
+                    </div>
+
+                    {/* Add-ons Section */}
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <h3 style={{ color: 'white', fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.5rem' }}>باقات الشحن السريع (Add-ons)</h3>
+                        <p style={{ color: '#6B7280', fontSize: '0.8rem', marginBottom: '1rem' }}>تحكم في أسعار "Refill" التي تظهر للعملاء في لوحة التحكم</p>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+                            {['addon_1k', 'addon_5k'].map(addonId => {
+                                const addon = pricing.find(p => p.id === addonId) || { id: addonId, name: addonId === 'addon_1k' ? '1,000 Credits' : '5,000 Credits', monthlyPrice: addonId === 'addon_1k' ? 10 : 35, credits: addonId === 'addon_1k' ? 1000 : 5000 };
+                                const idx = pricing.findIndex(p => p.id === addonId);
+                                
+                                return (
+                                    <Card key={addonId} s={{ background: '#1F293760' }} c={<>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                            <div style={{ fontWeight: 700, color: '#A78BFA' }}>{addon.name}</div>
+                                            <div style={{ fontSize: '0.7rem', background: '#A78BFA20', color: '#A78BFA', padding: '2px 8px', borderRadius: '20px' }}>شحن رصيد</div>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                            <div>
+                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.7rem', marginBottom: '3px' }}>السعر ($)</label>
+                                                <input type="number" value={addon.monthlyPrice} onChange={e => {
+                                                    const val = Number(e.target.value);
+                                                    if (idx === -1) setPricing(p => [...p, { ...addon, monthlyPrice: val }]);
+                                                    else { const u = [...pricing]; u[idx].monthlyPrice = val; setPricing(u); }
+                                                }} style={{ width: '100%', padding: '8px', background: '#0D1117', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', color: 'white' }} />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.7rem', marginBottom: '3px' }}>النقاط</label>
+                                                <input type="number" value={addon.credits} onChange={e => {
+                                                    const val = Number(e.target.value);
+                                                    if (idx === -1) setPricing(p => [...p, { ...addon, credits: val }]);
+                                                    else { const u = [...pricing]; u[idx].credits = val; setPricing(u); }
+                                                }} style={{ width: '100%', padding: '8px', background: '#0D1117', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', color: 'white' }} />
+                                            </div>
+                                        </div>
+                                    </>} />
+                                );
+                            })}
                         </div>
                     </div>
-                }
+                </div>}
 
                 {/* ── INTEGRATIONS ── */}
                 {

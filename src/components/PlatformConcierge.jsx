@@ -65,10 +65,23 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
 
     // Listen for custom event to open the concierge window
     useEffect(() => {
-        const handleOpenConcierge = () => setIsOpen(true);
+        const handleOpenConcierge = (e) => {
+            setIsOpen(true);
+            
+            // If it's a special request (like Elite/Enterprise from Pricing)
+            if (e.detail?.type === 'elite') {
+                const eliteGreetingAr = `سعيدة جداً باهتمامكم بالانضمام لنخبة شركائنا المتميزين. بصفتي مستشارة المنصة، سأكون معكِ خطوة بخطوة لتصميم حلول تقنية ذكية مفصلة خصيصاً لتناسب تطلعات منشأتكِ الفاخرة. ما هي المتطلبات الخاصة أو التخصصات التي تودين البدء بها؟ ✨`;
+                const eliteGreetingEn = `I am absolutely delighted by your interest in joining our elite circle of partners. As your platform consultant, I will be with you step-by-step to design smart technical solutions tailored specifically to your luxury facility's ambitions. What specific requirements or specialties would you like to start with? ✨`;
+                
+                setMessages([{
+                    role: 'agent',
+                    content: language === 'ar' ? eliteGreetingAr : eliteGreetingEn
+                }]);
+            }
+        };
         window.addEventListener('open-concierge', handleOpenConcierge);
         return () => window.removeEventListener('open-concierge', handleOpenConcierge);
-    }, []);
+    }, [language]);
 
     const handleSend = async (e) => {
         e.preventDefault();

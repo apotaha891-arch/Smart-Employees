@@ -203,8 +203,15 @@ const Dashboard = () => {
                         <div style={{ padding: '12px', background: 'rgba(34,197,94,0.15)', borderRadius: '12px', color: '#22c59e', flexShrink: 0 }}>
                             <Wallet size={24} />
                         </div>
-                        <div>
-                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 600 }}>{language === 'ar' ? 'رصيد الذكاء الاصطناعي' : 'AI Credit Balance'}</div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>{language === 'ar' ? 'رصيد الذكاء الاصطناعي' : 'AI Credit Balance'}</div>
+                                <Link to="/pricing" style={{ textDecoration: 'none' }}>
+                                    <button style={{ background: 'rgba(34,197,94,0.1)', color: '#22c59e', border: '1px solid rgba(34,197,94,0.2)', padding: '4px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer' }}>
+                                        {language === 'ar' ? 'شحن رصيد' : 'Refill'}
+                                    </button>
+                                </Link>
+                            </div>
                             <div style={{ fontSize: '2rem', fontWeight: 900, color: 'white', lineHeight: 1 }}>{profile?.wallet_balance?.toLocaleString() || 0}</div>
                             <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5 }}>
                                 {language === 'ar' ? 'يُستخدم للمحادثات والردود التلقائية ورسائل الواتساب الواردة.' : 'Used for chats, automated replies and WhatsApp messages.'}
@@ -253,6 +260,41 @@ const Dashboard = () => {
                         </div>
                     </div>
 
+                </div>
+
+                {/* Promotional / Comparison Section */}
+                <div style={{ marginTop: '2.5rem' }}>
+                    <div className="card" style={{ padding: '2rem', background: 'linear-gradient(135deg, #1E1B4B 0%, #0B0F19 100%)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '24px', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)', zIndex: 0 }}></div>
+                        
+                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center' }}>
+                            <div style={{ flex: '1 1 300px' }}>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>
+                                    {language === 'ar' ? '🚀 ضاعف إنتاجيتك مع الباقة المتقدمة' : '🚀 Maximize Productivity with Pro Plan'}
+                                </h2>
+                                <p style={{ color: '#A1A1AA', fontSize: '1rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                                    {language === 'ar' ? 'انتقل إلى عالم الاحتراف واحصل على سعة محادثات أكبر، موظفين إثنين، ودعم فني متقدم بأفضل قيمة مقابل سعر.' : 'Go professional and get higher credit limits, two agents, and advanced support at the best value.'}
+                                </p>
+                                <Link to="/pricing" className="btn btn-primary" style={{ padding: '0.75rem 1.75rem', borderRadius: '12px' }}>
+                                    {language === 'ar' ? 'ترقية حسابي الآن' : 'Upgrade My Account Now'}
+                                </Link>
+                            </div>
+                            
+                            <div style={{ flex: '1 1 400px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ color: '#06B6D4', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '8px' }}>{language === 'ar' ? 'الأساسية' : 'Starter'}</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'white' }}>2,000 pts</div>
+                                    <div style={{ fontSize: '0.8rem', color: '#6B7280', marginTop: '4px' }}>1 {language === 'ar' ? 'موظف' : 'Agent'} | 2 {language === 'ar' ? 'أدوات' : 'Tools'}</div>
+                                </div>
+                                <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '1.5rem', borderRadius: '18px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                                    <div style={{ color: '#A78BFA', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '8px' }}>{language === 'ar' ? 'المتقدمة' : 'Pro'}</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'white' }}>5,000 pts</div>
+                                    <div style={{ fontSize: '0.8rem', color: '#A78BFA', marginTop: '4px', fontWeight: 600 }}>2 {language === 'ar' ? 'موظف' : 'Agents'} | 3 {language === 'ar' ? 'أدوات' : 'Tools'}</div>
+                                    <div style={{ fontSize: '0.7rem', color: '#10B981', marginTop: '4px', fontWeight: 800 }}>+ {language === 'ar' ? 'تدريب مخصص' : 'Custom Training'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* CRM Operations Hub */}

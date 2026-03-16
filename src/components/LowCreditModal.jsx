@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Zap, AlertTriangle, X } from 'lucide-react';
+import { useLanguage } from '../LanguageContext';
 
 const LowCreditModal = ({ remaining, onClose }) => {
+    const { language } = useLanguage();
+
     return (
         <div style={{
             position: 'fixed',
@@ -9,56 +13,110 @@ const LowCreditModal = ({ remaining, onClose }) => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 1000,
-            backdropFilter: 'blur(4px)',
-            padding: '1rem'
+            zIndex: 3000,
+            backdropFilter: 'blur(8px)',
+            padding: '1rem',
+            direction: language === 'ar' ? 'rtl' : 'ltr'
         }} className="animate-fade-in">
-            <div className="card card-solid p-2xl text-center" style={{ maxWidth: '450px', position: 'relative' }}>
+            <div className="card" style={{ 
+                maxWidth: '480px', 
+                width: '100%',
+                position: 'relative', 
+                background: '#18181B',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                padding: '2.5rem',
+                borderRadius: '32px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}>
                 <button
                     onClick={onClose}
                     style={{
                         position: 'absolute',
-                        top: '1rem',
-                        left: '1rem',
-                        background: 'none',
+                        top: '1.5rem',
+                        right: language === 'ar' ? 'auto' : '1.5rem',
+                        left: language === 'ar' ? '1.5rem' : 'auto',
+                        background: 'rgba(255,255,255,0.05)',
                         border: 'none',
-                        fontSize: '1.5rem',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         cursor: 'pointer',
-                        color: 'var(--text-secondary)'
+                        color: '#9CA3AF'
                     }}
                 >
-                    &times;
+                    <X size={18} />
                 </button>
 
                 <div style={{
-                    fontSize: '4rem',
-                    marginBottom: '1.5rem',
+                    width: '80px',
+                    height: '80px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    borderRadius: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 2rem',
+                    color: '#EF4444',
                     animation: 'pulse 2s infinite'
-                }}>🪫</div>
+                }}>
+                    <AlertTriangle size={40} />
+                </div>
 
-                <h3 className="mb-md">موظفك الذكي يشعر بالإرهاق الرقمي!</h3>
-                <p className="text-secondary mb-xl" style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
-                    طاقته الحالية تكفي لـ <span className="text-primary font-bold">{remaining}</span> عملاء فقط.
-                    هل تريد تجديد عقده الآن لضمان استمرارية الردود المذهلة لعملائك؟
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '1rem', color: '#FFF', textAlign: 'center' }}>
+                    {language === 'ar' ? 'تنبيه: رصيد الموظف الرقمي منخفض!' : 'Warning: Digital Agent Credits Low!'}
+                </h3>
+                
+                <p style={{ color: '#A1A1AA', fontSize: '1.1rem', lineHeight: '1.7', textAlign: 'center', marginBottom: '2.5rem' }}>
+                    {language === 'ar' 
+                        ? `يتبقى للموظف الذكي طاقة تكفي لـ ${remaining} محادثات فقط. يرجى شحن الرصيد لضمان استمرارية الردود الفورية لعملائك.`
+                        : `Your smart agent has energy for only ${remaining} conversations left. Please top up your balance to ensure continuous instant replies for your customers.`
+                    }
                 </p>
 
-                <div className="flex gap-md">
+                <div style={{ display: 'flex', gap: '1rem' }}>
                     <Link
                         to="/pricing"
-                        className="btn btn-primary w-full"
+                        style={{
+                            flex: 1,
+                            background: '#8B5CF6',
+                            color: 'white',
+                            padding: '1rem',
+                            borderRadius: '16px',
+                            fontWeight: 800,
+                            textDecoration: 'none',
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            boxShadow: '0 10px 20px rgba(139, 92, 246, 0.2)'
+                        }}
                         onClick={onClose}
                     >
-                        تجديد العقد الآن 🚀
+                        <Zap size={18} fill="currentColor" />
+                        {language === 'ar' ? 'شحن الرصيد الآن 🚀' : 'Refill Balance Now 🚀'}
                     </Link>
                     <button
-                        className="btn btn-secondary w-full"
+                        style={{
+                            flex: 1,
+                            background: 'rgba(255,255,255,0.05)',
+                            color: '#E4E4E7',
+                            padding: '1rem',
+                            borderRadius: '16px',
+                            fontWeight: 700,
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            cursor: 'pointer'
+                        }}
                         onClick={onClose}
                     >
-                        لاحقاً
+                        {language === 'ar' ? 'لاحقاً' : 'Later'}
                     </button>
                 </div>
             </div>
