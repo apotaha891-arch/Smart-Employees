@@ -602,21 +602,43 @@ const EntitySetup = () => {
         
         setIntegrationSaving(true);
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { user } = await getCurrentUser();
             console.log("Saving integration via Service:", integrationDraft, "for ID:", salonConfigId);
             
-            // Use the main save service which has proven reliable for the first tab
+            // 1. Update Salon Config
             const result = await saveSalonConfig({
                 id: salonConfigId,
-                user_id: user?.id, // include user_id to satisfy RLS/indexes
+                user_id: user?.id,
                 ...integrationDraft
             });
             
-            if (!result.success) {
-                throw new Error(result.error || "Failed to save integration settings");
+            if (!result.success) throw new Error(result.error);
+
+            // 2. IMPORTANT: Sync Token to the specific Agent if active
+            const currentAgentId = agentId || localStorage.getItem('currentAgentId');
+            if (currentAgentId && result.success) {
+                console.log("Syncing token to agent:", currentAgentId);
+                const agentUpdate = {};
+                if (integrationDraft.telegram_token) agentUpdate.telegram_token = integrationDraft.telegram_token;
+                if (integrationDraft.whatsapp_number) agentUpdate.whatsapp_token = integrationDraft.whatsapp_number; // Syncing number as token reference if needed
+                
+                if (Object.keys(agentUpdate).length > 0) {
+                    await updateAgent(currentAgentId, agentUpdate);
+                }
+            }
+
+            // 3. Auto-Setup Telegram Webhook if token provided
+            if (integrationDraft.telegram_token) {
+                const token = integrationDraft.telegram_token;
+                const webhookUrl = `${window.location.origin.includes('localhost') ? 'https://24shift.solutions' : window.location.origin}/functions/v1/telegram-webhook?agent_id=${currentAgentId}`;
+                console.log("Setting up Telegram Webhook...");
+                fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`)
+                    .then(r => r.json())
+                    .then(res => console.log("Telegram Webhook Sync:", res))
+                    .catch(e => console.warn("Webhook Sync Error:", e));
             }
             
-            console.log("Integration saved successfully ✅");
+            console.log("Integration saved and synced successfully ✅");
             
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
             
