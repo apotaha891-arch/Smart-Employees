@@ -629,13 +629,14 @@ const Pricing = () => {
                         onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
                     >
                         <div>
-                            <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>1,000 {t('points')}</div>
+                            <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>{addons[0].credits.toLocaleString()} {t('points')}</div>
                             <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'رصيد محادثات إضافي' : 'Extra conversation credits'}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFF' }}>$10</div>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFF' }}>${addons[0].price}</div>
                             <button 
-                                onClick={() => handleSelectPlan({ id: 'addon_1k', name: '1000 Points' })}
+                                onClick={() => { vibrate(); handleSelectPlan(addons[0]); }}
+                                disabled={loadingPlan === addons[0].id}
                                 style={{
                                     background: '#8B5CF6',
                                     color: 'white',
@@ -644,10 +645,15 @@ const Pricing = () => {
                                     borderRadius: '10px',
                                     fontWeight: 700,
                                     marginTop: '0.5rem',
-                                    cursor: 'pointer'
+                                    cursor: loadingPlan === addons[0].id ? 'not-allowed' : 'pointer',
+                                    opacity: loadingPlan === addons[0].id ? 0.7 : 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
                                 }}
                             >
-                                {language === 'ar' ? 'اشحن الآن' : 'Buy Now'}
+                                {loadingPlan === addons[0].id ? <Loader size={16} className="animate-spin" /> : null}
+                                {loadingPlan === addons[0].id ? (language === 'ar' ? 'جاري التحضير...' : 'Processing...') : (language === 'ar' ? 'اشحن الآن' : 'Buy Now')}
                             </button>
                         </div>
                     </div>
@@ -668,13 +674,14 @@ const Pricing = () => {
                             SAVE 30%
                         </div>
                         <div>
-                            <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>5,000 {t('points')}</div>
+                            <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>{addons[1].credits.toLocaleString()} {t('points')}</div>
                             <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'باقة شحن كبيرة' : 'Bulk refill pack'}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFF' }}>$35</div>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFF' }}>${addons[1].price}</div>
                             <button 
-                                onClick={() => handleSelectPlan({ id: 'addon_5k', name: '5000 Points' })}
+                                onClick={() => { vibrate(); handleSelectPlan(addons[1]); }}
+                                disabled={loadingPlan === addons[1].id}
                                 style={{
                                     background: '#FFF',
                                     color: '#8B5CF6',
@@ -683,10 +690,15 @@ const Pricing = () => {
                                     borderRadius: '10px',
                                     fontWeight: 800,
                                     marginTop: '0.5rem',
-                                    cursor: 'pointer'
+                                    cursor: loadingPlan === addons[1].id ? 'not-allowed' : 'pointer',
+                                    opacity: loadingPlan === addons[1].id ? 0.8 : 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
                                 }}
                             >
-                                {language === 'ar' ? 'اشحن الآن' : 'Buy Now'}
+                                {loadingPlan === addons[1].id ? <Loader size={16} className="animate-spin" /> : null}
+                                {loadingPlan === addons[1].id ? (language === 'ar' ? 'جاري التحضير...' : 'Processing...') : (language === 'ar' ? 'اشحن الآن' : 'Buy Now')}
                             </button>
                         </div>
                     </div>

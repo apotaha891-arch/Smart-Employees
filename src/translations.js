@@ -63,6 +63,7 @@ export const translations = {
             name: "24Shift",
             platformName: "منصة 24Shift"
         },
+        points: "نقطة",
 
         // Navigation
         nav: {
@@ -1025,6 +1026,7 @@ export const translations = {
         instaAddon: "Instagram DMs",
         liveAssess: "Live Evaluation for Sector: ",
         errorSend: "Error sending message.",
+        points: "points",
 
         // Login Page
         joinElite: "Join the Elite",
