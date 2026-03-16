@@ -12,8 +12,8 @@ const PlatformConcierge = () => {
     const messagesEndRef = useRef(null);
     const { t, language } = useLanguage();
 
-    useEffect(() => {
-        const loadConfig = async () => {
+    const loadConfig = async (isRefreshing = false) => {
+        try {
             const managerConfig = await getPlatformSettings('manager_ai_config');
             setConfig(managerConfig);
 
@@ -45,19 +45,35 @@ Your mission:
 
 Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
 
-                const initialGreetingAr = `أهلاً بك. أنا نورة، مستشارتكِ في المنصة. كيف يمكنني مساعدتكِ اليوم في تطوير أعمالكِ وتخفيف أعباءكِ الإدارية؟ ✨`;
-                const initialGreetingEn = `Welcome. I am Noura, your platform consultant. How can I assist you today in developing your business and easing your administrative burdens? ✨`;
-
                 initializeChat(language === 'ar' ? systemPromptAr : systemPromptEn, 'concierge');
-                setMessages([{
-                    role: 'agent',
-                    content: language === 'ar' ? initialGreetingAr : initialGreetingEn
-                }]);
-            }
-        };
+                
+                // Only set default greeting if we're not middle-conversation
+                if (messages.length === 0 || isRefreshing) {
+                    const initialGreetingAr = `أهلاً بك. أنا نورة، مستشارتكِ في المنصة. كيف يمكنني مساعدتكِ اليوم في تطوير أعمالكِ وتخفيف أعباءكِ الإدارية؟ ✨`;
+                    const initialGreetingEn = `Welcome. I am Noura, your platform consultant. How can I assist you today in developing your business and easing your administrative burdens? ✨`;
 
+                    setMessages([{
+                        role: 'agent',
+                        content: language === 'ar' ? initialGreetingAr : initialGreetingEn
+                    }]);
+                }
+            }
+        } catch (err) {
+            console.error('Error loading concierge config:', err);
+        }
+    };
+
+    // Initial load
+    useEffect(() => {
         loadConfig();
     }, [language]);
+
+    // Re-sync whenever the window is opened to ensure latest admin settings
+    useEffect(() => {
+        if (isOpen) {
+            loadConfig(messages.length === 0);
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

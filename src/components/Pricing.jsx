@@ -205,47 +205,85 @@ const Pricing = () => {
         };
     }, []);
 
+    const [dbPlans, setDbPlans] = useState([]);
+    const [loadingPlans, setLoadingPlans] = useState(true);
+
+    useEffect(() => {
+        const loadPricing = async () => {
+            try {
+                const { getPlatformSettings } = await import('../services/adminService');
+                const data = await getPlatformSettings('pricing_plans');
+                if (data) setDbPlans(data);
+            } catch (err) {
+                console.error('Failed to load pricing from DB:', err);
+            } finally {
+                setLoadingPlans(false);
+            }
+        };
+        loadPricing();
+    }, []);
+
+    const getPlanValue = (id, field, fallback) => {
+        const dbPlan = dbPlans.find(p => p.id === id);
+        return dbPlan && dbPlan[field] !== undefined ? dbPlan[field] : fallback;
+    };
+
+    const addons = [
+        { id: 'addon_1k', credits: getPlanValue('addon_1k', 'credits', 1000), price: getPlanValue('addon_1k', 'monthlyPrice', 10) },
+        { id: 'addon_5k', credits: getPlanValue('addon_5k', 'credits', 5000), price: getPlanValue('addon_5k', 'monthlyPrice', 35) }
+    ];
+
     const { t, language } = useLanguage();
     const pricingPlans = t('pricingPlans');
 
     const plans = [
         {
             id: 'starter',
-            name: pricingPlans?.starter?.name || '',
-            icon: <Zap size={28} color="#06B6D4" />,
-            monthlyPrice: 39,
-            yearlyPrice: Math.round(39 * 0.8),
-            trialPrice: 20,
+            name: pricingPlans?.starter?.name || 'Starter',
+            icon: <Zap size={28} color="#10B981" />,
+            monthlyPrice: getPlanValue('starter', 'monthlyPrice', 39),
+            yearlyPrice: getPlanValue('starter', 'yearlyPrice', 31),
+            trialPrice: getPlanValue('starter', 'trialPrice', 20),
             description: pricingPlans?.starter?.description || '',
-            features: pricingPlans?.starter?.features || [],
+            features: [
+                `${getPlanValue('starter', 'credits', 2000)} ${language === 'ar' ? 'نقطة (محادثة) شهرياً' : 'conversations/month'}`,
+                `${getPlanValue('starter', 'agentsLimit', 1)} ${language === 'ar' ? 'موظف ذكي مخصص' : 'dedicated smart employee'}`,
+                `${getPlanValue('starter', 'toolsLimit', 2)} ${language === 'ar' ? 'قنوات ربط' : 'integrations'}`,
+                ...(pricingPlans?.starter?.features?.slice(3) || [])
+            ],
             cta: pricingPlans?.starter?.cta || '',
-            trialText: pricingPlans?.starter?.trialText || '',
+            trialText: pricingPlans?.starter?.trialText?.replace(/\d+\$/, `${getPlanValue('starter', 'trialPrice', 20)}$`) || '',
             periodStr: pricingPlans?.starter?.periodStr || '',
             popular: false,
-            color: '#06B6D4'
+            color: '#10B981'
         },
         {
             id: 'pro',
-            name: pricingPlans?.pro?.name || '',
+            name: pricingPlans?.pro?.name || 'Pro',
             icon: <Star size={28} color="#8B5CF6" />,
-            monthlyPrice: 69,
-            yearlyPrice: Math.round(69 * 0.8),
-            trialPrice: 45,
+            monthlyPrice: getPlanValue('pro', 'monthlyPrice', 69),
+            yearlyPrice: getPlanValue('pro', 'yearlyPrice', 55),
+            trialPrice: getPlanValue('pro', 'trialPrice', 45),
             description: pricingPlans?.pro?.description || '',
-            features: pricingPlans?.pro?.features || [],
+            features: [
+                `${getPlanValue('pro', 'credits', 5000)} ${language === 'ar' ? 'نقطة (محادثة) شهرياً' : 'conversations/month'}`,
+                `${getPlanValue('pro', 'agentsLimit', 2)} ${language === 'ar' ? 'موظفين مخصصين' : 'dedicated employees'}`,
+                `${getPlanValue('pro', 'toolsLimit', 3)} ${language === 'ar' ? 'قنوات ربط لكل موظف' : 'integrations per employee'}`,
+                ...(pricingPlans?.pro?.features?.slice(3) || [])
+            ],
             cta: pricingPlans?.pro?.cta || '',
-            trialText: pricingPlans?.pro?.trialText || '',
+            trialText: pricingPlans?.pro?.trialText?.replace(/\d+\$/, `${getPlanValue('pro', 'trialPrice', 45)}$`) || '',
             periodStr: pricingPlans?.pro?.periodStr || '',
             popular: true,
             color: '#8B5CF6'
         },
         {
             id: 'enterprise',
-            name: pricingPlans?.enterprise?.name || '',
-            icon: <Crown size={28} color="#F59E0B" />,
-            monthlyPrice: t('customPrice'),
-            yearlyPrice: t('customPrice'),
-            trialPrice: null,
+            name: pricingPlans?.enterprise?.name || 'Elite',
+            icon: <ShieldCheck size={28} color="#F59E0B" />,
+            monthlyPrice: getPlanValue('enterprise', 'monthlyPrice', 199),
+            yearlyPrice: getPlanValue('enterprise', 'yearlyPrice', 159),
+            trialPrice: getPlanValue('enterprise', 'trialPrice', null),
             description: pricingPlans?.enterprise?.description || '',
             features: pricingPlans?.enterprise?.features || [],
             cta: pricingPlans?.enterprise?.cta || '',

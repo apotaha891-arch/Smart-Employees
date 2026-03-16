@@ -139,7 +139,13 @@ export default function AdminDashboard() {
                 adminService.getPlatformSettings('system_agent_apps'),
                 adminService.getPlatformSettings('manager_ai_config'),
             ]);
-            setPricing(plans || [{ id: 'starter', name: 'باقة الانطلاق', monthlyPrice: 199, yearlyPrice: 159 }, { id: 'pro', name: 'باقة الاحتراف', monthlyPrice: 399, yearlyPrice: 319 }, { id: 'enterprise', name: 'باقة النخبة', monthlyPrice: 899, yearlyPrice: 719 }]);
+            setPricing(plans || [
+                { id: 'starter', name: 'الباقة الأساسية', monthlyPrice: 39, yearlyPrice: 31, trialPrice: 20, credits: 2000, agentsLimit: 1, toolsLimit: 2 },
+                { id: 'pro', name: 'الباقة المتقدمة', monthlyPrice: 69, yearlyPrice: 55, trialPrice: 45, credits: 5000, agentsLimit: 2, toolsLimit: 3 },
+                { id: 'enterprise', name: 'باقة النخبة', monthlyPrice: 199, yearlyPrice: 159, trialPrice: 0, credits: 99999, agentsLimit: 10, toolsLimit: 10 },
+                { id: 'addon_1k', name: 'شحن 1000 نقطة', monthlyPrice: 10, credits: 1000 },
+                { id: 'addon_5k', name: 'شحن 5000 نقطة', monthlyPrice: 35, credits: 5000 }
+            ]);
             setIntegrations(integ || [{ id: 'n8n', name: 'n8n Webhook', url: '', key: '', status: 'Disconnected' }, { id: 'openai', name: 'OpenAI API', url: '', key: '', status: 'Disconnected' }, { id: 'telegram', name: 'Telegram Platform Bot', url: '', key: '', status: 'Disconnected' }]);
 
             if (dbSectors) setSectors(dbSectors);
