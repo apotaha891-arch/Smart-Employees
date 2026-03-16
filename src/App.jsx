@@ -14,6 +14,7 @@ import CustomRequest from './components/CustomRequest';
 import Login from './components/Login';
 import BusinessSetup from './components/BusinessSetup';
 import AdminDashboard from './components/AdminDashboard';
+import ResetPassword from './components/ResetPassword';
 import PlatformConcierge from './components/PlatformConcierge';
 import SalonSetup from './components/SalonSetup';
 import ModernDashboardLayout from './components/ModernDashboardLayout';
@@ -60,6 +61,7 @@ function AppContent() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/custom-request" element={<CustomRequest />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/interview" element={isDashboard ? <ModernDashboardLayout><InterviewRoom /></ModernDashboardLayout> : <InterviewRoom />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/templates" element={isDashboard ? <ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout> : <AgentTemplates />} />

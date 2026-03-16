@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { signIn, signUp, signInWithGoogle, supabase } from '../services/supabaseService';
+import { signIn, signUp, signInWithGoogle, sendPasswordResetEmail, supabase } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
 import { useLanguage } from '../LanguageContext';
-import { Sparkles, Mail, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, Mail, CheckCircle, Eye, EyeOff, Key } from 'lucide-react';
 
 // Helper: get role and sector from DB
 const getUserDestination = async (userId) => {
@@ -23,6 +23,9 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isRecovery, setIsRecovery] = useState(false);
+    const [recoveryEmail, setRecoveryEmail] = useState('');
+    const [recoverySuccess, setRecoverySuccess] = useState(false);
     const [fullName, setFullName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -101,6 +104,19 @@ const Login = () => {
         }
     };
 
+    const handleRecovery = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        const result = await sendPasswordResetEmail(recoveryEmail);
+        if (result.success) {
+            setRecoverySuccess(true);
+        } else {
+            setError(result.error);
+        }
+        setLoading(false);
+    };
+
     return (
         <div className="container py-xl flex-center" style={{ minHeight: '80vh', maxWidth: '480px', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
             <div className="card shadow-premium animate-fade-in" style={{ width: '100%', border: '1px solid var(--accent-border)' }}>
@@ -132,7 +148,45 @@ const Login = () => {
                     </div>
                 )}
 
-                {signUpSuccess ? (
+                {isRecovery ? (
+                    <div className="animate-fade-in">
+                        <div className="text-center mb-xl">
+                            <Key size={40} style={{ color: 'var(--accent)', marginBottom: '1rem' }} />
+                            <h3 style={{ fontWeight: 800 }}>{language === 'ar' ? 'استعادة كلمة السر' : 'Recover Password'}</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#9CA3AF' }}>
+                                {language === 'ar' ? 'أدخل بريدك الإلكتروني لإرسال رابط الاستعادة' : 'Enter your email to receive a reset link'}
+                            </p>
+                        </div>
+
+                        {recoverySuccess ? (
+                            <div style={{ textAlign: 'center', padding: '1.5rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '16px' }}>
+                                <CheckCircle size={32} style={{ color: '#10B981', marginBottom: '0.5rem' }} />
+                                <p style={{ color: '#E4E4E7' }}>{language === 'ar' ? 'تم إرسال الرابط! تفقد بريدك الإلكتروني.' : 'Reset link sent! Please check your email.'}</p>
+                                <button onClick={() => setIsRecovery(false)} className="btn btn-secondary btn-sm mt-md">{t('backToLogin')}</button>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleRecovery}>
+                                <div className="mb-lg">
+                                    <label className="label">{t('workEmail')}</label>
+                                    <input
+                                        type="email"
+                                        className="input-field"
+                                        value={recoveryEmail}
+                                        onChange={(e) => setRecoveryEmail(e.target.value)}
+                                        required
+                                        placeholder="email@example.com"
+                                    />
+                                </div>
+                                <button type="submit" className={`btn btn-primary btn-block ${loading ? 'loading' : ''}`} disabled={loading}>
+                                    {language === 'ar' ? 'إرسال رابط الاستعادة' : 'Send Reset Link'}
+                                </button>
+                                <button type="button" onClick={() => setIsRecovery(false)} className="btn btn-link btn-block mt-md" style={{ color: '#9CA3AF' }}>
+                                    {language === 'ar' ? 'العودة للخلف' : 'Go Back'}
+                                </button>
+                            </form>
+                        )}
+                    </div>
+                ) : signUpSuccess ? (
                     <div className="animate-fade-in" style={{ 
                         background: 'rgba(16, 185, 129, 0.1)', 
                         color: '#10B981', 
@@ -253,20 +307,45 @@ const Login = () => {
                                         style={{
                                             position: 'absolute',
                                             top: '50%',
-                                            [language === 'ar' ? 'left' : 'right']: '1rem',
+                                            [language === 'ar' ? 'left' : 'right']: '0.75rem',
                                             transform: 'translateY(-50%)',
-                                            background: 'none',
-                                            border: 'none',
-                                            color: 'var(--text-secondary)',
+                                            background: 'rgba(255, 255, 255, 0.05)',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            borderRadius: '8px',
+                                            color: 'white',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            padding: 0
+                                            justifyContent: 'center',
+                                            padding: '6px',
+                                            zIndex: 10,
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+                                            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.4)';
+                                            e.currentTarget.style.color = 'var(--accent)';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                            e.currentTarget.style.color = 'white';
                                         }}
                                     >
-                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
+                                {!isSignUp && (
+                                    <div style={{ textAlign: language === 'ar' ? 'left' : 'right', marginTop: '0.5rem' }}>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setIsRecovery(true)}
+                                            style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}
+                                        >
+                                            {language === 'ar' ? 'نسيت كلمة السر؟' : 'Forgot Password?'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             <button

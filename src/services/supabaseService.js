@@ -103,6 +103,32 @@ export const getCurrentUser = async () => {
     }
 };
 
+// ==================== PASSWORD RECOVERY ====================
+
+export const sendPasswordResetEmail = async (email) => {
+    try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+export const updatePassword = async (newPassword) => {
+    try {
+        const { error } = await supabase.auth.updateUser({
+            password: newPassword
+        });
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
 // ==================== INTEGRATIONS (OAUTH) ====================
 
 export const linkGoogleAccount = async () => {
