@@ -74,13 +74,22 @@ const Employees = () => {
                 
                 // Robust sector detection: handle case sensitivity and Arabic values
                 let rawSector = (config?.business_type || profile?.business_type || 'general').toLowerCase();
-                if (rawSector.includes('طبي') || rawSector.includes('medical')) rawSector = 'medical';
-                else if (rawSector.includes('عقار') || rawSector.includes('real')) rawSector = 'real_estate';
-                else if (rawSector.includes('تجميل') || rawSector.includes('beauty')) rawSector = 'beauty';
-                else if (rawSector.includes('مطعم') || rawSector.includes('restau')) rawSector = 'restaurant';
-                else if (rawSector.includes('رياض') || rawSector.includes('gym') || rawSector.includes('fit')) rawSector = 'fitness';
                 
-                setUserSector(SECTOR_LABELS[rawSector] ? rawSector : 'general');
+                // Prioritize exact matches if they exist
+                if (SECTOR_LABELS[rawSector]) {
+                    setUserSector(rawSector);
+                } else {
+                    // Fuzzy matching for Arabic or partial English strings
+                    if (rawSector.includes('طبي') || rawSector.includes('medical') || rawSector.includes('عيادة')) rawSector = 'medical';
+                    else if (rawSector.includes('عقار') || rawSector.includes('real')) rawSector = 'real_estate';
+                    else if (rawSector.includes('تجميل') || rawSector.includes('beauty') || rawSector.includes('صالون')) rawSector = 'beauty';
+                    else if (rawSector.includes('مطعم') || rawSector.includes('restau')) rawSector = 'restaurant';
+                    else if (rawSector.includes('رياض') || rawSector.includes('gym') || rawSector.includes('fit')) rawSector = 'fitness';
+                    else if (rawSector.includes('اتصال') || rawSector.includes('telecom') || rawSector.includes('it') || rawSector.includes('تقني')) rawSector = 'telecom_it';
+                    else if (rawSector.includes('تجارة') || rawSector.includes('retail') || rawSector.includes('shop')) rawSector = 'retail_ecommerce';
+                    
+                    setUserSector(SECTOR_LABELS[rawSector] ? rawSector : 'general');
+                }
 
                 // Fetch Agents
                 const { data: userAgentsData, error: agentsError } = await supabase
@@ -212,7 +221,7 @@ const Employees = () => {
         }
     };
 
-    const sector = SECTOR_LABELS[userSector] || SECTOR_LABELS.beauty;
+    const sector = SECTOR_LABELS[userSector] || SECTOR_LABELS.general;
     
     // Safety check for specialty labels to avoid "Translation missing" or UUIDs
     const getRoleLabel = (specialty) => {
@@ -362,9 +371,14 @@ const Employees = () => {
                                                 <span style={{ fontSize: '0.7rem', background: `${role.color}15`, color: role.color, padding: '2px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                                     <RoleIcon size={10} />{getRoleLabel(agent.specialty)}
                                                 </span>
-                                                {isTelegram && (
+                                                {isTelegram && hasToken && (
                                                     <span style={{ fontSize: '0.7rem', background: '#0088cc20', color: '#0088cc', padding: '2px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}>
                                                         <MessageCircle size={10} /> {isAr ? 'تيليجرام' : 'Telegram'}
+                                                    </span>
+                                                )}
+                                                {(agent.whatsapp_token || agent.whatsapp_api_key) && (
+                                                    <span style={{ fontSize: '0.7rem', background: '#25D36620', color: '#25D366', padding: '2px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}>
+                                                        <MessageCircle size={10} /> {isAr ? 'واتساب' : 'WhatsApp'}
                                                     </span>
                                                 )}
                                             </div>

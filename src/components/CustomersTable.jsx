@@ -67,7 +67,7 @@ const CustomersTable = ({ customers, onUpdateCustomer, onDeleteCustomer }) => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                     <thead>
                         <tr style={{ background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                            <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>العميلة</th>
+                            <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>العميل</th>
                             <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>معرفات المنصات</th>
                             <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>آخر زيارة</th>
                             <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>ملاحظات</th>

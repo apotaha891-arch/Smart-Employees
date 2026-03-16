@@ -110,6 +110,7 @@ serve(async (req) => {
         // 2b. Fetch business info and services for this agent's salon
         let businessContext = '';
         let servicesText = '';
+        let resolvedBusinessName = agent.name || 'الموظف الذكي';
 
         // Add Agent's OWN defined context first
         if (agent.description) businessContext += `\nAgent Primary Role: ${agent.description}`;
@@ -124,22 +125,48 @@ serve(async (req) => {
                 console.log("No specific salon_config_id, falling back to latest for user:", agent.user_id);
                 const { data: sc } = await supabaseClient
                     .from('salon_configs')
-                    .select('id, description, knowledge_base')
+                    .select('*')
                     .eq('user_id', agent.user_id)
                     .order('created_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
-                salonConfigId = sc?.id;
-                if (sc?.description) businessContext += `\nCompany Profile: ${sc.description}`;
-                if (sc?.knowledge_base) businessContext += `\nCompany General Policies: ${sc.knowledge_base}`;
+                
+                if (sc) {
+                    salonConfigId = sc.id;
+                    if (sc.business_name) resolvedBusinessName = sc.business_name;
+                    if (sc.description) businessContext += `\nBusiness Description: ${sc.description}`;
+                    if (sc.knowledge_base) businessContext += `\nBusiness Knowledge Base/FAQ: ${sc.knowledge_base}`;
+                    if (sc.phone) businessContext += `\nBusiness Contact Phone: ${sc.phone}`;
+                    if (sc.address) businessContext += `\nBusiness Physical Address: ${sc.address}`;
+                    if (sc.website) businessContext += `\nBusiness Official Website: ${sc.website}`;
+                    if (sc.working_hours) businessContext += `\nWorking Hours: ${typeof sc.working_hours === 'string' ? sc.working_hours : JSON.stringify(sc.working_hours)}`;
+                    if (sc.working_days) businessContext += `\nWorking Days: ${typeof sc.working_days === 'string' ? sc.working_days : JSON.stringify(sc.working_days)}`;
+                    if (sc.mission_statement) businessContext += `\nBusiness Mission: ${sc.mission_statement}`;
+                    if (sc.target_audience) businessContext += `\nTarget Audience: ${sc.target_audience}`;
+                    if (sc.brand_voice_details) businessContext += `\nBrand Voice/Tone: ${sc.brand_voice_details}`;
+                    if (sc.sop_instructions) businessContext += `\nStandard Operating Procedures (SOP): ${sc.sop_instructions}`;
+                }
             } else if (salonConfigId) {
                  const { data: sc } = await supabaseClient
                     .from('salon_configs')
-                    .select('description, knowledge_base')
+                    .select('*')
                     .eq('id', salonConfigId)
                     .maybeSingle();
-                if (sc?.description) businessContext += `\nCompany Profile: ${sc.description}`;
-                if (sc?.knowledge_base) businessContext += `\nCompany General Policies: ${sc.knowledge_base}`;
+
+                if (sc) {
+                    if (sc.business_name) resolvedBusinessName = sc.business_name;
+                    if (sc.description) businessContext += `\nBusiness Description: ${sc.description}`;
+                    if (sc.knowledge_base) businessContext += `\nBusiness Knowledge Base/FAQ: ${sc.knowledge_base}`;
+                    if (sc.phone) businessContext += `\nBusiness Contact Phone: ${sc.phone}`;
+                    if (sc.address) businessContext += `\nBusiness Physical Address: ${sc.address}`;
+                    if (sc.website) businessContext += `\nBusiness Official Website: ${sc.website}`;
+                    if (sc.working_hours) businessContext += `\nWorking Hours: ${typeof sc.working_hours === 'string' ? sc.working_hours : JSON.stringify(sc.working_hours)}`;
+                    if (sc.working_days) businessContext += `\nWorking Days: ${typeof sc.working_days === 'string' ? sc.working_days : JSON.stringify(sc.working_days)}`;
+                    if (sc.mission_statement) businessContext += `\nBusiness Mission: ${sc.mission_statement}`;
+                    if (sc.target_audience) businessContext += `\nTarget Audience: ${sc.target_audience}`;
+                    if (sc.brand_voice_details) businessContext += `\nBrand Voice/Tone: ${sc.brand_voice_details}`;
+                    if (sc.sop_instructions) businessContext += `\nStandard Operating Procedures (SOP): ${sc.sop_instructions}`;
+                }
             }
 
             if (salonConfigId) {
@@ -189,6 +216,19 @@ serve(async (req) => {
                         original_time_text: { type: SchemaType.STRING, description: "النص العفوي للوقت الذي قالته الزبونة" }
                     },
                     required: ["customer_name", "customer_phone", "service_requested", "booking_date", "booking_time"]
+                },
+            },
+            {
+                name: "update_customer_notes",
+                description: "استخدمي هذه الأداة لتحديث سجل الزبونة بملاحظات جديدة أو لتسجيل مشكلة دعم فني/استفسار دون الحاجة لحجز موعد.",
+                parameters: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                        customer_name: { type: SchemaType.STRING, description: "اسم الزبونة" },
+                        customer_phone: { type: SchemaType.STRING, description: "رقم جوال الزبونة (مطلوب للتعريف)" },
+                        notes: { type: SchemaType.STRING, description: "الملاحظات الجديدة المراد تسجيلها (مثل: مشكلة تقنية، استفسار عن سعر، إلخ)" }
+                    },
+                    required: ["customer_phone", "notes"]
                 }
             }]
         }];
@@ -196,7 +236,7 @@ serve(async (req) => {
         // ── Dynamic System Prompt per Agent Type ────────────────────────────────
         const specialty = (agent.specialty || '').toLowerCase();
         const agentName = agent.name || 'الموظف الذكي';
-        const businessName = agent.business_name || agentName;
+        const businessName = resolvedBusinessName || agentName;
 
         // Helper: detect specialty bucket
         const isBooking = ['حجز', 'استقبال', 'مواعيد', 'صالون', 'عيادة', 'مطعم', 'نادي', 'مركز', 'beauty', 'salon', 'clinic', 'medical', 'restaurant', 'fitness', 'booking', 'receptionist', 'coordinator', 'spa'].some(k => specialty.includes(k));
@@ -216,8 +256,9 @@ ${businessContext}${servicesText}
 
 STRICT IDENTITY & KNOWLEDGE:
 1. You represent ${businessName}. You are the face of this business.
-2. USE THE BUSINESS DESCRIPTION: Study the "Business Description" and "Knowledge Base" provided above. You must know EVERYTHING about our system and services.
-3. NEVER say "I don't know" or "I am an AI". If information is missing, use reasonable professional judgment based on the business type, or ask the user for specific details.
+2. USE THE BUSINESS DETAILS: Study the "Business Description", "Phone", "Website", and "Knowledge Base" provided above. You must use THESE specific details in your answers.
+3. NEVER use placeholders like "[Company Phone Number]" or invent emails like "info@company.com" unless they are explicitly provided in the context above. If a customer asks for contact info and it's missing from your context, ask them to wait while you check or provide the details you DO have.
+4. NEVER say "I don't know" or "I am an AI". If information is missing, be professional and supportive.
 
 YOUR MISSION:
 - Act as a high-level consultant. Don't just answer; guide.
@@ -251,7 +292,8 @@ YOUR ROLE:
 1. You are a master of our system. Use the "Knowledge Base" and "Business Description" above to provide detailed, accurate guidance.
 2. Show empathy first. Understand the frustration, then provide a clear, step-by-step solution.
 3. If a service is mentioned, use the "OFFICIAL SERVICE MENU" above for pricing and details.
-4. Ensure the customer feels supported and valued throughout the interaction.
+4. RECORD ISSUES: Always use the (update_customer_notes) tool to save the customer's technical issue or inquiry in their file so the team can follow up.
+5. Ensure the customer feels supported and valued throughout the interaction.
             `;
         } else if (isEmail) {
             systemInstruction = `
@@ -284,8 +326,9 @@ ${businessContext}${servicesText}
 
 YOUR GUIDELINES:
 1. IDENTITY: You are a key part of ${businessName}. Match their professional brand personality perfectly.
-2. KNOWLEDGE BASE: Use the "Business Description" and "Knowledge Base" sections provided above as your primary sources of truth.
-3. SERVICES & PRICING: If a "SERVICE MENU" is provided, use only those prices. If not, act as a general expert in ${agent.specialty || 'this industry'}.
+2. KNOWLEDGE BASE: Use the "Business Description", "Contact Phone", "Website", "Working Hours" and "Knowledge Base" sections provided above as your ONLY sources of truth.
+3. NO HALLUCINATIONS: Do not invent phone numbers, emails, or prices. Use the "OFFICIAL SERVICE MENU" above if provided.
+4. SERVICES & PRICING: If a "SERVICE MENU" is provided, use only those prices. If not, act as a general expert in ${agent.specialty || 'this industry'}.
 4. GOAL: Be helpful, answer questions accurately, and build trust with the visitor. 
 5. LANGUAGE: Seamlessly match the user's language (Arabic vs English).
 6. IF BOOKING IS NEEDED: Collect Service, Time, Name, and Phone, then use (book_appointment).
@@ -488,6 +531,15 @@ YOUR GUIDELINES:
                     notes: `توقيت الزبونة الأصلي: ${callArgs.original_time_text ?? 'غير محدد'}`,
                     status: 'pending'
                 }]);
+                
+                if (!insertError && finalSalonId) {
+                    // Update Customer's Last Visit and potentially Notes
+                    await supabaseClient.from('customers').update({
+                        last_service_date: callArgs.booking_date || todayIsoDate,
+                        notes: `آخر حجز: ${callArgs.service_requested} (${callArgs.original_time_text ?? ''})`
+                    }).eq('customer_phone', callArgs.customer_phone).eq('salon_config_id', finalSalonId);
+                }
+
                 if (insertError) console.error("DB INSERT FAILED:", JSON.stringify(insertError));
                 else console.log("DB INSERT BOOKING SUCCESS ✅");
 
@@ -606,6 +658,64 @@ YOUR GUIDELINES:
 
             return new Response(
                 JSON.stringify({ success: true, text: secondResult.response.text() }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        // --- Handle update_customer_notes ---
+        if (callName === 'update_customer_notes') {
+            console.log("📝 Executing update_customer_notes for:", callArgs.customer_phone);
+            try {
+                // Determine salon_config_id (same logic as above)
+                const { data: agnt } = await supabaseClient.from('agents').select('user_id, salon_config_id').eq('id', agentId).single();
+                let finalSalonId = agnt?.salon_config_id;
+                if (!finalSalonId && agnt?.user_id) {
+                    const { data: sc } = await supabaseClient.from('salon_configs').select('id').eq('user_id', agnt.user_id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+                    finalSalonId = sc?.id;
+                }
+
+                if (finalSalonId) {
+                    const phone = callArgs.customer_phone;
+                    const { data: existingCust } = await supabaseClient.from('customers')
+                        .select('id').eq('customer_phone', phone).eq('salon_config_id', finalSalonId).maybeSingle();
+
+                    if (!existingCust) {
+                        await supabaseClient.from('customers').insert([{
+                            salon_config_id: finalSalonId,
+                            customer_name: callArgs.customer_name ?? 'زبونة',
+                            customer_phone: phone,
+                            notes: callArgs.notes,
+                            is_active: true
+                        }]);
+                    } else {
+                        await supabaseClient.from('customers').update({
+                            notes: callArgs.notes,
+                            customer_name: callArgs.customer_name ?? undefined // update name if provided
+                        }).eq('id', existingCust.id);
+                    }
+                }
+            } catch (err: any) {
+                console.error("Notes Update Error:", err.message);
+            }
+
+            const noteResult = await chat.sendMessage([{
+                functionResponse: {
+                    name: "update_customer_notes",
+                    response: { status: "تم تحديث سجل الزبونة بالملاحظات بنجاح." }
+                }
+            }]);
+
+            // Save history
+            try {
+                const newHistory = await chat.getHistory();
+                await supabaseClient.from('chat_sessions').upsert({
+                    session_id: sessionId, agent_id: agentId,
+                    history: newHistory, updated_at: new Date().toISOString()
+                }, { onConflict: 'session_id' });
+            } catch (_) { }
+
+            return new Response(
+                JSON.stringify({ success: true, text: noteResult.response.text() }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
