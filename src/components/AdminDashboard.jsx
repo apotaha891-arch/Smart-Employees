@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabaseService';
 import * as adminService from '../services/adminService';
 import {
@@ -33,6 +33,7 @@ const StatCard = ({ icon: Icon, label, value, color, sub }) => (
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
+    console.log('AdminDashboard Rendered - roles:', !!roles);
     const navigate = useNavigate();
     const { isEnglish, t } = useLanguage();
     const [tab, setTab] = useState('overview');
@@ -76,7 +77,7 @@ export default function AdminDashboard() {
     const [integrations, setIntegrations] = useState([]);
 
     // Generate dynamic PLANS mapping from pricing state
-    const PLANS = React.useMemo(() => {
+    const PLANS = useMemo(() => {
         const pMap = {
             free: { bg: '#37415120', t: '#9CA3AF', l: 'تجريبي' },
             basic: { bg: '#37415120', t: '#9CA3AF', l: 'تجريبي' }
@@ -462,7 +463,7 @@ export default function AdminDashboard() {
                     {/* Client panel */}
                     {selClient && <div style={{ width: '300px', flexShrink: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
-                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.95rem' }}>تفاصيل العميل</div>
+                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.95rem' }}>🔍 تفاصيل العميل</div>
                             <button onClick={() => setSelClient(null)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }}><X size={16} /></button>
                         </div>
                         <Card s={{ marginBottom: '0.75rem' }} c={<>
@@ -470,10 +471,13 @@ export default function AdminDashboard() {
                             <div style={{ color: '#6B7280', fontSize: '0.75rem' }}>{selClient.email}</div>
                         </>} />
                         <div style={{ color: '#9CA3AF', fontSize: '0.73rem', fontWeight: 600, marginBottom: '5px' }}>الموظفات ({cl(selClient.id).length})</div>
-                        {cl(selClient.id).slice(0, 4).map(a => <Card key={a.id} s={{ marginBottom: '5px', padding: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} c={<>
-                            <div><div style={{ color: 'white', fontSize: '0.8rem', fontWeight: 600 }}>{a.name}</div><div style={{ color: '#6B7280', fontSize: '0.7rem' }}>{ROLES[a.specialty]?.l || a.specialty}</div></div>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: a.status === 'active' ? '#10B981' : '#374151' }} />
-                        </>} />)}
+                        {cl(selClient.id).slice(0, 4).map(a => {
+                            const roleLabel = roles[a.specialty]?.l || a.specialty;
+                            return <Card key={a.id} s={{ marginBottom: '5px', padding: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} c={<>
+                                <div><div style={{ color: 'white', fontSize: '0.8rem', fontWeight: 600 }}>{a.name}</div><div style={{ color: '#6B7280', fontSize: '0.7rem' }}>{roleLabel}</div></div>
+                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: a.status === 'active' ? '#10B981' : '#374151' }} />
+                            </>} />;
+                        })}
                         <div style={{ color: '#9CA3AF', fontSize: '0.73rem', fontWeight: 600, marginTop: '0.7rem', marginBottom: '5px' }}>آخر الحجوزات ({bl(selClient.id).length})</div>
                         {bl(selClient.id).slice(0, 3).map(b => {
                             const sc = STATUSES[b.status] || STATUSES.pending; return <Card key={b.id} s={{ marginBottom: '5px', padding: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} c={<>
@@ -694,7 +698,7 @@ export default function AdminDashboard() {
                             ))}
                         </div>
 
-                        {/* ROLES SECTION */}
+                        {/* roles SECTION */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>2. الأدوار الوظيفية (Roles)</h3>
                             <button onClick={() => {
