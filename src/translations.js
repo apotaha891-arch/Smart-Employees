@@ -18,13 +18,21 @@ export const translations = {
             email: "منسق بريد",
             followup: "متابعة",
             'support-agent': "موظف دعم شامل",
+            'support_agent': "موظف دعم شامل",
             'sales-lead-gen': "أخصائي مبيعات",
+            'sales_lead_gen': "أخصائي مبيعات",
             'dental-receptionist': "موظف استقبال أسنان",
+            'dental_receptionist': "موظف استقبال أسنان",
             'medical-clinic': "منسق عيادة طبية",
+            'medical_clinic': "منسق عيادة طبية",
             'beauty-salon': "منسقة صالون تجميل",
+            'beauty_salon': "منسقة صالون تجميل",
             'real-estate-marketing': "مسوق عقاري ذكي",
+            'real_estate_marketing': "مسوق عقاري ذكي",
             'restaurant-reservations': "مسؤول حجوزات طاولات",
+            'restaurant_reservations': "مسؤول حجوزات طاولات",
             'gym-coordinator': "منسق اشتراكات رياضية",
+            'gym_coordinator': "منسق اشتراكات رياضية",
             "مركز رياضي / نادي لياقة بدنية": "مركز رياضي / نادي لياقة بدنية",
             "إدارة صالون التجميل": "إدارة صالون التجميل",
             "منصة خدمات موظفين افتراضيين / مساعد ذكي": "منصة خدمات موظفين افتراضيين / مساعد ذكي",
@@ -639,13 +647,21 @@ export const translations = {
             email: "Email Coordinator",
             followup: "Customer Follow-up",
             'support-agent': "Multi-Support Agent",
+            'support_agent': "Multi-Support Agent",
             'sales-lead-gen': "Sales Specialist",
+            'sales_lead_gen': "Sales Specialist",
             'dental-receptionist': "Dental Receptionist",
+            'dental_receptionist': "Dental Receptionist",
             'medical-clinic': "Medical Clinic Agent",
+            'medical_clinic': "Medical Clinic Agent",
             'beauty-salon': "Beauty Salon Agent",
+            'beauty_salon': "Beauty Salon Agent",
             'real-estate-marketing': "Real Estate Marketer",
+            'real_estate_marketing': "Real Estate Marketer",
             'restaurant-reservations': "Restaurant Coordinator",
+            'restaurant_reservations': "Restaurant Coordinator",
             'gym-coordinator': "Fitness Coordinator",
+            'gym_coordinator': "Fitness Coordinator",
             "مركز رياضي / نادي لياقة بدنية": "Sports Center / Fitness Club",
             "إدارة صالون التجميل": "Beauty Salon Management",
             "منصة خدمات موظفين افتراضيين / مساعد ذكي": "Virtual Employee Platform / Smart Assistant",
@@ -925,8 +941,6 @@ export const translations = {
         loadingFallback: "Loading...",
 
         // Sectors
-
-
         // Roles
 
 
