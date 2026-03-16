@@ -645,8 +645,11 @@ export default function AdminDashboard() {
                     </div>
 
                     {intTab === 'cfg' && <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>القطاعات المتاحة</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <div>
+                                <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 800 }}>تخصيص المنصة</h3>
+                                <p style={{ color: '#6B7280', fontSize: '0.8rem', margin: 0 }}>تحكم في القطاعات والأدوار الوظيفية المتاحة عبر المنصة</p>
+                            </div>
                             <Btn onClick={async () => {
                                 setSaving(true);
                                 await Promise.all([
@@ -654,13 +657,21 @@ export default function AdminDashboard() {
                                     adminService.updatePlatformSettings('system_roles', roles)
                                 ]);
                                 setSaving(false);
-                                flash('✅ تم حفظ إعدادات البنية التحتية');
-                            }} disabled={saving}><Save size={14} />حفظ التغييرات</Btn>
+                                flash('✅ تم حفظ كافة إعدادات البنية التحتية');
+                            }} disabled={saving}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ التغييرات الشاملة'}</Btn>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                            {Object.entries(sectors).map(([sk, sec]) => {
-                                return <Card key={sk} s={{ border: `1px solid ${sec.on ? sec.c + '30' : 'rgba(255,255,255,0.05)'}` }} c={<>
+                        {/* SECTORS SECTION */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>1. القطاعات المتاحة (Sectors)</h3>
+                            <button onClick={() => {
+                                const newId = `sec_${Date.now()}`;
+                                setSectors(p => ({ ...p, [newId]: { l: 'قطاع جديد', e: '📁', c: '#10B981', on: true } }));
+                            }} style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>+ إضافة قطاع</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+                            {Object.entries(sectors).map(([sk, sec]) => (
+                                <Card key={sk} s={{ border: `1px solid ${sec.on ? sec.c + '30' : 'rgba(255,255,255,0.05)'}` }} c={<>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <input value={sec.e} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, e: e.target.value } }))} style={{ width: '30px', background: 'transparent', border: 'none', fontSize: '1.3rem', color: 'white', textAlign: 'center' }} />
@@ -669,12 +680,51 @@ export default function AdminDashboard() {
                                                 <input type="color" value={sec.c} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, c: e.target.value } }))} style={{ width: '30px', height: '15px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'block' }} />
                                             </div>
                                         </div>
-                                        <button onClick={() => setSectors(p => ({ ...p, [sk]: { ...sec, on: !sec.on } }))} style={{ background: sec.on ? '#10B98120' : 'rgba(255,255,255,0.05)', color: sec.on ? '#10B981' : '#6B7280', border: 'none', borderRadius: '99px', padding: '3px 11px', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem' }}>
-                                            {sec.on ? '✅ نشط' : '⏸ موقوف'}
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                            <button onClick={() => setSectors(p => ({ ...p, [sk]: { ...sec, on: !sec.on } }))} style={{ background: sec.on ? '#10B98120' : 'rgba(255,255,255,0.05)', color: sec.on ? '#10B981' : '#6B7280', border: 'none', borderRadius: '99px', padding: '3px 11px', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem' }}>
+                                                {sec.on ? '✅ نشط' : '⏸ موقوف'}
+                                            </button>
+                                            <button onClick={() => {
+                                                const { [sk]: _, ...rest } = sectors;
+                                                setSectors(rest);
+                                            }} style={{ color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={13} /></button>
+                                        </div>
                                     </div>
-                                </>} />;
-                            })}
+                                </>} />
+                            ))}
+                        </div>
+
+                        {/* ROLES SECTION */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>2. الأدوار الوظيفية (Roles)</h3>
+                            <button onClick={() => {
+                                const newId = `role_${Date.now()}`;
+                                setRoles(p => ({ ...p, [newId]: { l: 'دور جديد', c: '#8B5CF6', on: true } }));
+                            }} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>+ إضافة دور</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                            {Object.entries(roles).map(([rk, rol]) => (
+                                <Card key={rk} s={{ border: `1px solid ${rol.on !== false ? rol.c + '30' : 'rgba(255,255,255,0.05)'}` }} c={<>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: rol.c }} />
+                                            <div>
+                                                <input value={rol.l} onChange={e => setRoles(p => ({ ...p, [rk]: { ...rol, l: e.target.value } }))} style={{ fontWeight: 700, color: 'white', fontSize: '0.87rem', background: 'transparent', border: 'none' }} />
+                                                <input type="color" value={rol.c} onChange={e => setRoles(p => ({ ...p, [rk]: { ...rol, c: e.target.value } }))} style={{ width: '30px', height: '15px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'block' }} />
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                            <button onClick={() => setRoles(p => ({ ...p, [rk]: { ...rol, on: rol.on === false ? true : false } }))} style={{ background: rol.on !== false ? '#10B98120' : 'rgba(255,255,255,0.05)', color: rol.on !== false ? '#10B981' : '#6B7280', border: 'none', borderRadius: '99px', padding: '3px 11px', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem' }}>
+                                                {rol.on !== false ? '✅ نشط' : '⏸ موقوف'}
+                                            </button>
+                                            <button onClick={() => {
+                                                const { [rk]: _, ...rest } = roles;
+                                                setRoles(rest);
+                                            }} style={{ color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={13} /></button>
+                                        </div>
+                                    </div>
+                                </>} />
+                            ))}
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
