@@ -68,13 +68,20 @@ export default function AdminDashboard() {
     ]);
     const STATUSES = { pending: { bg: '#F59E0B20', t: '#F59E0B', l: 'معلق' }, confirmed: { bg: '#10B98120', t: '#10B981', l: 'مؤكد' }, completed: { bg: '#3B82F620', t: '#3B82F6', l: 'مكتمل' }, cancelled: { bg: '#EF444420', t: '#EF4444', l: 'ملغي' } };
     
+    // Data
+    const [clients, setClients] = useState([]);
+    const [agents, setAgents] = useState([]);
+    const [bookings, setBookings] = useState([]);
+    const [pricing, setPricing] = useState([]);
+    const [integrations, setIntegrations] = useState([]);
+
     // Generate dynamic PLANS mapping from pricing state
-    const getDynamicPlans = () => {
+    const PLANS = React.useMemo(() => {
         const pMap = {
             free: { bg: '#37415120', t: '#9CA3AF', l: 'تجريبي' },
             basic: { bg: '#37415120', t: '#9CA3AF', l: 'تجريبي' }
         };
-        pricing.forEach(p => {
+        (pricing || []).forEach(p => {
             const color = p.id === 'pro' ? '#A78BFA' : (p.id === 'starter' ? '#10B981' : (p.id === 'enterprise' ? '#F59E0B' : '#6B7280'));
             pMap[p.id] = {
                 bg: `${color}20`,
@@ -83,15 +90,7 @@ export default function AdminDashboard() {
             };
         });
         return pMap;
-    };
-    const PLANS = getDynamicPlans();
-
-    // Data
-    const [clients, setClients] = useState([]);
-    const [agents, setAgents] = useState([]);
-    const [bookings, setBookings] = useState([]);
-    const [pricing, setPricing] = useState([]);
-    const [integrations, setIntegrations] = useState([]);
+    }, [pricing]);
     const [clientKeys, setClientKeys] = useState({});
     const [logs, setLogs] = useState([]);
     const [logParams, setLogParams] = useState({ category: '', level: '', limit: 50 });
