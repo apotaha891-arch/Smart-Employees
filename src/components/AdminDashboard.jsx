@@ -67,7 +67,24 @@ export default function AdminDashboard() {
         { id: 'followup', icon: 'Zap', label: 'متابعة بعد الخدمة', desc: 'رسالة متابعة بعد 24 ساعة من الموعد' },
     ]);
     const STATUSES = { pending: { bg: '#F59E0B20', t: '#F59E0B', l: 'معلق' }, confirmed: { bg: '#10B98120', t: '#10B981', l: 'مؤكد' }, completed: { bg: '#3B82F620', t: '#3B82F6', l: 'مكتمل' }, cancelled: { bg: '#EF444420', t: '#EF4444', l: 'ملغي' } };
-    const PLANS = { basic: { bg: '#6B728020', t: '#9CA3AF', l: 'مجاني' }, starter: { bg: '#10B98120', t: '#10B981', l: 'انطلاق' }, pro: { bg: '#8B5CF620', t: '#A78BFA', l: 'احتراف' }, enterprise: { bg: '#F59E0B20', t: '#F59E0B', l: 'نخبة' } };
+    
+    // Generate dynamic PLANS mapping from pricing state
+    const getDynamicPlans = () => {
+        const pMap = {
+            free: { bg: '#37415120', t: '#9CA3AF', l: 'تجريبي' },
+            basic: { bg: '#37415120', t: '#9CA3AF', l: 'تجريبي' }
+        };
+        pricing.forEach(p => {
+            const color = p.id === 'pro' ? '#A78BFA' : (p.id === 'starter' ? '#10B981' : (p.id === 'enterprise' ? '#F59E0B' : '#6B7280'));
+            pMap[p.id] = {
+                bg: `${color}20`,
+                t: color,
+                l: p.name
+            };
+        });
+        return pMap;
+    };
+    const PLANS = getDynamicPlans();
 
     // Data
     const [clients, setClients] = useState([]);
@@ -391,10 +408,14 @@ export default function AdminDashboard() {
                     <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>لوحة القيادة</h1>
                     <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.85rem' }}>نظرة شاملة على أداء منصة 24Shift</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(175px,1fr))', gap: '0.9rem', marginBottom: '1.75rem' }}>
-                        <StatCard icon={Users} label="إجمالي العملاء" value={clients.length} color="#10B981" sub={`+${Math.max(0, Math.round(clients.length * 0.12))} هذا الشهر`} />
+                        <StatCard icon={Users} label="إجمالي العملاء" value={clients.length} color="#10B981" sub={`+${clients.filter(c => new Date(c.created_at) > new Date(Date.now() - 30 * 24 * 3600 * 1000)).length} عملاء جدد`} />
                         <StatCard icon={Bot} label="موظفات نشطة" value={agents.filter(a => a.status === 'active').length} color="#8B5CF6" />
                         <StatCard icon={Calendar} label="حجوزات معلقة" value={bookings.filter(b => b.status === 'pending').length} color="#F59E0B" sub="تحتاج مراجعة" />
-                        <StatCard icon={TrendingUp} label="إيراد متوقع" value={`${(clients.length * 399).toLocaleString()} ر`} color="#3B82F6" sub="شهري تقديري" />
+                        {(() => {
+                            const avgPrice = pricing.find(p => p.id === 'pro')?.monthlyPrice || 69;
+                            const estRev = clients.length * avgPrice;
+                            return <StatCard icon={TrendingUp} label="إيراد متوقع" value={`${estRev.toLocaleString()} $`} color="#3B82F6" sub="شهري تقديري" />;
+                        })()}
                     </div>
                     <h3 style={{ color: 'white', marginBottom: '0.9rem', fontSize: '0.9rem', fontWeight: 700 }}>توزيع العملاء بالقطاعات</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: '0.75rem' }}>
@@ -638,7 +659,7 @@ export default function AdminDashboard() {
                             }} disabled={saving}><Save size={14} />حفظ التغييرات</Btn>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: '1rem', marginBottom: '2rem' }}>
                             {Object.entries(sectors).map(([sk, sec]) => {
                                 return <Card key={sk} s={{ border: `1px solid ${sec.on ? sec.c + '30' : 'rgba(255,255,255,0.05)'}` }} c={<>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
@@ -653,11 +674,31 @@ export default function AdminDashboard() {
                                             {sec.on ? '✅ نشط' : '⏸ موقوف'}
                                         </button>
                                     </div>
-                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.7rem' }}>
-                                        <div style={{ fontSize: '0.7rem', color: '#6B7280', marginBottom: '5px' }}>الأدوار المفعلة لهذا القطاع (Coming Soon)</div>
-                                    </div>
                                 </>} />;
                             })}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>إدارة تطبيقات الموظفات</h3>
+                            <Btn onClick={async () => {
+                                setSaving(true);
+                                await adminService.updatePlatformSettings('system_agent_apps', agentAppsConfig);
+                                setSaving(false);
+                                flash('✅ تم حفظ إعدادات التطبيقات');
+                            }} disabled={saving}><Save size={14} />حفظ التطبيقات</Btn>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                            {agentAppsConfig.map((app, idx) => (
+                                <Card key={app.id} c={<div>
+                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                        <select value={app.icon} onChange={e => { const u = [...agentAppsConfig]; u[idx].icon = e.target.value; setAgentAppsConfig(u); }} style={{ background: '#1F2937', color: 'white', border: '1px solid #374151', borderRadius: '5px' }}>
+                                            {Object.keys(ICON_MAP).map(i => <option key={i} value={i}>{i}</option>)}
+                                        </select>
+                                        <Input value={app.label} onChange={e => { const u = [...agentAppsConfig]; u[idx].label = e.target.value; setAgentAppsConfig(u); }} />
+                                    </div>
+                                    <Input value={app.desc} onChange={e => { const u = [...agentAppsConfig]; u[idx].desc = e.target.value; setAgentAppsConfig(u); }} />
+                                </div>} />
+                            ))}
                         </div>
                     </div>}
 
