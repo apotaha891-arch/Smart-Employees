@@ -120,33 +120,10 @@ serve(async (req) => {
             // Resolve salon_config_id
             let salonConfigId = agent.salon_config_id;
             
-            // SECURITY FIX: Only fallback to user_id if we have a valid user_id
-            if (!salonConfigId && agent.user_id) {
-                console.log("No specific salon_config_id, falling back to latest for user:", agent.user_id);
-                const { data: sc } = await supabaseClient
-                    .from('salon_configs')
-                    .select('*')
-                    .eq('user_id', agent.user_id)
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-                
-                if (sc) {
-                    salonConfigId = sc.id;
-                    if (sc.business_name) resolvedBusinessName = sc.business_name;
-                    if (sc.description) businessContext += `\nBusiness Description: ${sc.description}`;
-                    if (sc.knowledge_base) businessContext += `\nBusiness Knowledge Base/FAQ: ${sc.knowledge_base}`;
-                    if (sc.phone) businessContext += `\nBusiness Contact Phone: ${sc.phone}`;
-                    if (sc.address) businessContext += `\nBusiness Physical Address: ${sc.address}`;
-                    if (sc.website) businessContext += `\nBusiness Official Website: ${sc.website}`;
-                    if (sc.working_hours) businessContext += `\nWorking Hours: ${typeof sc.working_hours === 'string' ? sc.working_hours : JSON.stringify(sc.working_hours)}`;
-                    if (sc.working_days) businessContext += `\nWorking Days: ${typeof sc.working_days === 'string' ? sc.working_days : JSON.stringify(sc.working_days)}`;
-                    if (sc.mission_statement) businessContext += `\nBusiness Mission: ${sc.mission_statement}`;
-                    if (sc.target_audience) businessContext += `\nTarget Audience: ${sc.target_audience}`;
-                    if (sc.brand_voice_details) businessContext += `\nBrand Voice/Tone: ${sc.brand_voice_details}`;
-                    if (sc.sop_instructions) businessContext += `\nStandard Operating Procedures (SOP): ${sc.sop_instructions}`;
-                }
-            } else if (salonConfigId) {
+            // STRICT ISOLATION: 
+            // We no longer fallback to 'latest' config by user_id. 
+            // An agent must be explicitly linked to a salon_config_id.
+            if (salonConfigId) {
                  const { data: sc } = await supabaseClient
                     .from('salon_configs')
                     .select('*')

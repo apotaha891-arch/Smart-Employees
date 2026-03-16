@@ -55,13 +55,23 @@ serve(async (req) => {
                 .eq('id', targetAgentId)
                 .single();
 
-            const dynamicBotToken = agent?.telegram_token || Deno.env.get('TELEGRAM_BOT_TOKEN');
+            if (agentError || !agent) {
+                console.error("Agent not found:", agentError?.message, "ID:", targetAgentId);
+                return;
+            }
+
+            // CRITICAL: Strict token isolation. 
+            // We MUST NOT fallback to global TELEGRAM_BOT_TOKEN in a multi-tenant environment.
+            const dynamicBotToken = agent.telegram_token;
+
+            if (!dynamicBotToken) {
+                console.error("No telegram token configured specifically for agent", targetAgentId);
+                return;
+            }
 
             // Helper: send Telegram message
-            async function sendTelegram(msg: string, tokenOverride?: string) {
-                const activeToken = tokenOverride || dynamicBotToken;
-                if (!activeToken) return;
-                const apiStr = `https://api.telegram.org/bot${activeToken}/sendMessage`;
+            async function sendTelegram(msg: string) {
+                const apiStr = `https://api.telegram.org/bot${dynamicBotToken}/sendMessage`;
                 try {
                     await fetch(apiStr, {
                         method: 'POST',
@@ -71,15 +81,6 @@ serve(async (req) => {
                 } catch (e: any) {
                     console.error("Telegram send error:", e.message);
                 }
-            }
-
-            if (agentError || !agent) {
-                console.error("Agent not found:", agentError?.message, "ID:", targetAgentId);
-                // Try to notify the user if we have a token at all
-                if (dynamicBotToken) {
-                    await sendTelegram("⚠️ خطأ في التهيئة: لم يتم العثور على بيانات الموظف الذكي المرتبطة بهذا البوت في قاعدة البيانات.");
-                }
-                return;
             }
 
             // --- QUOTA LOGIC ---
