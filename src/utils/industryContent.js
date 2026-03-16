@@ -825,7 +825,32 @@ export const industryData = {
     }
 };
 
-export const getIndustryContent = (industryType = 'general', language = 'ar') => {
-    const langData = industryData[language] || industryData.ar;
-    return langData[industryType] || langData.general;
+// ── Dynamic Resolver ──────────────────────────────────────────────────────────
+export const getIndustryContent = (industryKey, lang = 'ar', dynamicSectors = {}) => {
+    // 1. Try hardcoded static data first
+    const staticData = industryData[lang]?.[industryKey];
+    if (staticData) return staticData;
+
+    // 2. Try dynamic sectors from DB metadata
+    const dynamicSector = dynamicSectors[industryKey];
+    const defaultData = industryData[lang]?.general || industryData.ar.general;
+
+    if (dynamicSector) {
+        return {
+            ...defaultData,
+            heroTitle: lang === 'ar' 
+                ? `حلول ذكية متكاملة لقطاع ${dynamicSector.l}` 
+                : `Smart integrated solutions for the ${dynamicSector.l} sector`,
+            heroDescription: lang === 'ar'
+                ? `ارتقِ بأعمالك في قطاع ${dynamicSector.l} مع موظفينا الرقميين النخبة. حلول مخصصة تضمن الكفاءة والاحترافية على مدار الساعة.`
+                : `Elevate your ${dynamicSector.l} business with our elite digital agents. Custom solutions ensuring efficiency and professionalism 24/7.`,
+            quote: lang === 'ar'
+                ? `${dynamicSector.l}: حيث يلتقي التميز بالذكاء الاصطناعي.`
+                : `${dynamicSector.l}: Where excellence meets AI.`,
+            // Use sector color for gradients if possible
+            stats: defaultData.stats.map(s => ({...s, gradient: `linear-gradient(135deg, ${dynamicSector.c || '#8B5CF6'} 0%, #06B6D4 100%)`}))
+        };
+    }
+
+    return defaultData;
 };

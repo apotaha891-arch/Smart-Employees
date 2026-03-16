@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabaseService';
 import * as adminService from '../services/adminService';
 import {
+    LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
+    Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
     LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
     Search, Download
 } from 'lucide-react';
@@ -99,7 +101,9 @@ export default function AdminDashboard() {
     const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '👩' });
     const [showAddTemplate, setShowAddTemplate] = useState(false);
     const [cSearch, setCSearch] = useState('');
+    const [cFilter, setCFilter] = useState('');
     const [aSearch, setASearch] = useState('');
+    const [aFilter, setAFilter] = useState('');
     const [bSearch, setBSearch] = useState('');
 
     const handleExport = (data, fileName) => {
@@ -371,16 +375,20 @@ export default function AdminDashboard() {
     const bl = (uid) => bookings.filter(b => b.user_id === uid || b.salon_config_id === clients.find(c => c.id === uid)?.salonConfigId);
     
     // Filtering Logic
-    const filteredClients = (clients || []).filter(c => 
-        (c.full_name || '').toLowerCase().includes(cSearch.toLowerCase()) || 
-        (c.email || '').toLowerCase().includes(cSearch.toLowerCase())
-    );
+    const filteredClients = (clients || []).filter(c => {
+        const matchesSearch = (c.full_name || '').toLowerCase().includes(cSearch.toLowerCase()) || 
+                             (c.email || '').toLowerCase().includes(cSearch.toLowerCase());
+        const matchesFilter = !cFilter || c.id === cFilter;
+        return matchesSearch && matchesFilter;
+    });
 
     const filteredAgents = (agents || []).filter(a => {
         const client = clients.find(c => c.id === a.user_id);
         const ownerName = client?.full_name || client?.email || '';
-        return (a.name || '').toLowerCase().includes(aSearch.toLowerCase()) || 
-               ownerName.toLowerCase().includes(aSearch.toLowerCase());
+        const matchesSearch = (a.name || '').toLowerCase().includes(aSearch.toLowerCase()) || 
+                               ownerName.toLowerCase().includes(aSearch.toLowerCase());
+        const matchesFilter = !aFilter || a.user_id === aFilter;
+        return matchesSearch && matchesFilter;
     });
 
     const baseBookings = bFilter ? bookings.filter(b => b.user_id === bFilter || b.salon_id === bFilter || b.salon_config_id === bFilter) : bookings;
@@ -465,12 +473,16 @@ export default function AdminDashboard() {
                 {tab === 'clients' && <div style={{ display: 'flex', gap: '1.25rem' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>العملاء</h1>
-                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{filteredClients.length} عميل مطابق في البحث</p>
+                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{filteredClients.length} عميل مطابق</p>
                         
-                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
-                            <div style={{ position: 'relative', flex: 1 }}>
+                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                            <select value={cFilter} onChange={e => setCFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                                <option value="">كل العملاء</option>
+                                {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
+                            </select>
+                            <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
                                 <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
-                                <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="بحث باسم العميل أو الإيميل..." style={{ width: '100%', padding: '8px 30px 8px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '0.82rem' }} />
+                                <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="بحث بالاسم أو الإيميل..." style={{ width: '100%', padding: '8px 30px 8px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '0.82rem' }} />
                             </div>
                             <Btn onClick={() => handleExport(filteredClients, 'clients')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />تصدير Excel</Btn>
                         </div>
@@ -539,16 +551,22 @@ export default function AdminDashboard() {
                 {tab === 'agents' && <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                         <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>الموظفات</h1>
-                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>{filteredAgents.length} موظفة مطابقة — {filteredAgents.filter(a => a.status === 'active').length} نشطة</p></div>
+                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>{filteredAgents.length} موظفة مطابقة</p></div>
                         <div style={{ display: 'flex', gap: '8px' }}>
                             <Btn onClick={() => handleExport(filteredAgents, 'agents')} color="#10B981"><Download size={14} />تصدير</Btn>
                             <Btn onClick={() => setShowAddAgent(!showAddAgent)}><Plus size={15} />إضافة موظفة</Btn>
                         </div>
                     </div>
 
-                    <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
-                        <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
-                        <input value={aSearch} onChange={e => setASearch(e.target.value)} placeholder="بحث باسم الموظفة أو المالك..." style={{ width: '100%', padding: '9px 30px 9px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', fontSize: '0.85rem' }} />
+                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+                        <select value={aFilter} onChange={e => setAFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', padding: '9px 11px', fontSize: '0.85rem', minWidth: '200px' }}>
+                            <option value="">كل العملاء ({agents.length})</option>
+                            {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email} ({cl(c.id).length})</option>)}
+                        </select>
+                        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                            <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                            <input value={aSearch} onChange={e => setASearch(e.target.value)} placeholder="بحث باسم الموظفة أو المالك..." style={{ width: '100%', padding: '9px 30px 9px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', fontSize: '0.85rem' }} />
+                        </div>
                     </div>
 
                     {/* Add agent form */}

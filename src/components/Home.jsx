@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { getCurrentUser, getProfile } from '../services/supabaseService';
+import * as adminService from '../services/adminService';
 import { getIndustryContent } from '../utils/industryContent';
 import { Stethoscope, CalendarCheck, ShieldCheck, HeartPulse, Sparkles, Building2, UserCheck, Scissors, Utensils, Clock, Dumbbell, Trophy, CheckCircle2, Zap, Target, Star, Smile, TrendingUp, Users } from 'lucide-react';
 import Lottie from 'lottie-react';
@@ -104,6 +105,7 @@ const Home = () => {
     const [profile, setProfile] = useState(null);
     const [imgLoaded, setImgLoaded] = useState(false);
     const [industry, setIndustry] = useState('telecom_it');
+    const [dynamicSectors, setDynamicSectors] = useState({});
 
     useEffect(() => {
         const checkUser = async () => {
@@ -128,10 +130,22 @@ const Home = () => {
                 }
             }
         };
+
+        const fetchDynamicSectors = async () => {
+            const sectors = await adminService.getPlatformSettings('system_sectors');
+            if (sectors) setDynamicSectors(sectors);
+        };
+
         checkUser();
+        fetchDynamicSectors();
     }, []);
 
-    const content = getIndustryContent(industry, language);
+    const content = getIndustryContent(industry, language, dynamicSectors);
+    const allSectorKeys = useMemo(() => {
+        const hardcoded = ['general', 'medical', 'real_estate', 'beauty', 'restaurant', 'fitness', 'retail_ecommerce', 'banking', 'call_center', 'telecom_it'];
+        const dynamic = Object.keys(dynamicSectors).filter(k => !hardcoded.includes(k) && dynamicSectors[k].on !== false);
+        return [...hardcoded, ...dynamic];
+    }, [dynamicSectors]);
 
     return (
         <div className="animate-fade-in">
@@ -160,12 +174,11 @@ const Home = () => {
                             margin: '0 auto',
                             padding: '0.5rem'
                         }}>
-                            {[
-                                'general', 'medical', 'real_estate', 'beauty', 'restaurant',
-                                'fitness', 'retail_ecommerce', 'banking', 'call_center', 'telecom_it'
-                            ].map(type => {
+                            {allSectorKeys.map(type => {
                                 const isActive = industry === type;
-                                const label = t(`home.${type}`);
+                                const isDyn = dynamicSectors[type];
+                                const label = isDyn ? isDyn.l : t(`home.${type}`);
+                                const emoji = isDyn ? isDyn.e : '';
 
                                 return (
                                     <button
@@ -199,8 +212,7 @@ const Home = () => {
                                             background: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
                                             boxShadow: isActive ? '0 0 10px var(--accent)' : 'none'
                                         }} />
-                                        {label && label !== `home.${type}` ? label : (
-                                            // Fallback to stylized name if translation fails
+                                        {emoji} {label && label !== `home.${type}` ? label : (
                                             type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
                                         )}
                                     </button>
