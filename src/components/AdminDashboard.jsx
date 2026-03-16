@@ -2,11 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabaseService';
 import * as adminService from '../services/adminService';
 import {
-    LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
-    Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
-    LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw
+    LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
+    Search, Download
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { signOut } from '../services/supabaseService';
 import { useLanguage } from '../LanguageContext';
 
@@ -33,7 +33,6 @@ const StatCard = ({ icon: Icon, label, value, color, sub }) => (
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
-    console.log('AdminDashboard Rendered - roles:', !!roles);
     const navigate = useNavigate();
     const { isEnglish, t } = useLanguage();
     const [tab, setTab] = useState('overview');
@@ -61,6 +60,7 @@ export default function AdminDashboard() {
         email: { l: 'منسق بريد', c: '#EC4899' },
         followup: { l: 'متابعة', c: '#06B6D4' }
     });
+    console.log('✨ AdminDashboard initialized with roles state');
     const [agentAppsConfig, setAgentAppsConfig] = useState([
         { id: 'email_notify', icon: 'Mail', label: 'إشعار بريد إلكتروني', desc: 'رسالة للمدير عند كل حجز جديد' },
         { id: 'sms_notify', icon: 'MessageSquare', label: 'إشعار SMS', desc: 'رسالة نصية للعميل بتأكيد حجزه' },
@@ -98,6 +98,18 @@ export default function AdminDashboard() {
     const [templates, setTemplates] = useState([]);
     const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '👩' });
     const [showAddTemplate, setShowAddTemplate] = useState(false);
+    const [cSearch, setCSearch] = useState('');
+    const [aSearch, setASearch] = useState('');
+    const [bSearch, setBSearch] = useState('');
+
+    const handleExport = (data, fileName) => {
+        if (!data || data.length === 0) return flash('⚠️ لا يوجد بيانات للتصدير');
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+        XLSX.writeFile(wb, `24shift_${fileName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        flash(`✅ تم تصدير ${data.length} سجلات بنجاح`);
+    };
     const [aiConfig, setAiConfig] = useState({ knowledge: '', prompt_ar: '', prompt_en: '', max_length: 150 });
 
     // UI
@@ -357,7 +369,26 @@ export default function AdminDashboard() {
 
     const cl = (uid) => agents.filter(a => a.user_id === uid || a.salon_config_id === clients.find(c => c.id === uid)?.salonConfigId);
     const bl = (uid) => bookings.filter(b => b.user_id === uid || b.salon_config_id === clients.find(c => c.id === uid)?.salonConfigId);
-    const filtBk = bFilter ? bookings.filter(b => b.user_id === bFilter || b.salon_id === bFilter || b.salon_config_id === bFilter) : bookings;
+    
+    // Filtering Logic
+    const filteredClients = (clients || []).filter(c => 
+        (c.full_name || '').toLowerCase().includes(cSearch.toLowerCase()) || 
+        (c.email || '').toLowerCase().includes(cSearch.toLowerCase())
+    );
+
+    const filteredAgents = (agents || []).filter(a => {
+        const client = clients.find(c => c.id === a.user_id);
+        const ownerName = client?.full_name || client?.email || '';
+        return (a.name || '').toLowerCase().includes(aSearch.toLowerCase()) || 
+               ownerName.toLowerCase().includes(aSearch.toLowerCase());
+    });
+
+    const baseBookings = bFilter ? bookings.filter(b => b.user_id === bFilter || b.salon_id === bFilter || b.salon_config_id === bFilter) : bookings;
+    const filtBk = baseBookings.filter(b => 
+        (b.customer_name || '').toLowerCase().includes(bSearch.toLowerCase()) || 
+        (b.customer_phone || '').toLowerCase().includes(bSearch.toLowerCase()) ||
+        (b.service_requested || '').toLowerCase().includes(bSearch.toLowerCase())
+    );
 
     const NAV = [
         { id: 'overview', i: LayoutDashboard, l: 'نظرة عامة' },
@@ -434,14 +465,22 @@ export default function AdminDashboard() {
                 {tab === 'clients' && <div style={{ display: 'flex', gap: '1.25rem' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>العملاء</h1>
-                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{clients.length} عميل مسجل</p>
+                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{filteredClients.length} عميل مطابق في البحث</p>
+                        
+                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                                <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                                <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="بحث باسم العميل أو الإيميل..." style={{ width: '100%', padding: '8px 30px 8px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '0.82rem' }} />
+                            </div>
+                            <Btn onClick={() => handleExport(filteredClients, 'clients')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />تصدير Excel</Btn>
+                        </div>
                         <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                             <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                 {['العميل', 'القطاع', 'الموظفات', 'الاشتراك', 'تفاصيل'].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
                             </tr></thead>
                             <tbody>
-                                {clients.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد عملاء — تحقق من صلاحيات RLS في Supabase</td></tr>
-                                    : clients.map(c => {
+                                {filteredClients.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد عملاء مطابقين للبحث</td></tr>
+                                    : filteredClients.map(c => {
                                         const sec = sectors[c.business_type] || { l: '—', e: '🏢' };
                                         const plan = PLANS[c.subscription_tier || 'basic'] || PLANS.basic;
                                         return <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: selClient?.id === c.id ? 'rgba(139,92,246,0.06)' : 'transparent' }}>
@@ -500,8 +539,16 @@ export default function AdminDashboard() {
                 {tab === 'agents' && <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                         <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>الموظفات</h1>
-                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>{agents.length} موظفة — {agents.filter(a => a.status === 'active').length} نشطة</p></div>
-                        <Btn onClick={() => setShowAddAgent(!showAddAgent)}><Plus size={15} />إضافة موظفة</Btn>
+                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>{filteredAgents.length} موظفة مطابقة — {filteredAgents.filter(a => a.status === 'active').length} نشطة</p></div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <Btn onClick={() => handleExport(filteredAgents, 'agents')} color="#10B981"><Download size={14} />تصدير</Btn>
+                            <Btn onClick={() => setShowAddAgent(!showAddAgent)}><Plus size={15} />إضافة موظفة</Btn>
+                        </div>
+                    </div>
+
+                    <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
+                        <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                        <input value={aSearch} onChange={e => setASearch(e.target.value)} placeholder="بحث باسم الموظفة أو المالك..." style={{ width: '100%', padding: '9px 30px 9px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', fontSize: '0.85rem' }} />
                     </div>
 
                     {/* Add agent form */}
@@ -531,7 +578,8 @@ export default function AdminDashboard() {
                     </div>} />}
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
-                        {agents.map(agent => {
+                        {filteredAgents.length === 0 ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: '#6B7280', background: 'rgba(255,255,255,0.02)', borderRadius: '15px' }}>لا توجد موظفات مطابقة لهذا البحث</div>
+                            : filteredAgents.map(agent => {
                             const role = roles[agent.specialty || 'booking'] || roles.booking || { l: '—', c: '#6B7280' };
                             const isActive = agent.status === 'active';
                             const isEd = editAgent?.id === agent.id;
@@ -608,13 +656,18 @@ export default function AdminDashboard() {
                 {/* ── BOOKINGS ── */}
                 {tab === 'bookings' && <div>
                     <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>الحجوزات</h1>
-                    <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.83rem' }}>{bookings.length} حجز إجمالي</p>
-                    <div style={{ marginBottom: '0.9rem', display: 'flex', gap: '0.75rem' }}>
-                        <select value={bFilter} onChange={e => setBFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '7px 11px', fontSize: '0.82rem', minWidth: '220px' }}>
+                    <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.83rem' }}>{filtBk.length} حجز مطابق</p>
+                    <div style={{ marginBottom: '0.9rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <select value={bFilter} onChange={e => setBFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '7px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
                             <option value="">كل العملاء ({bookings.length})</option>
                             {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email} ({bl(c.id).length})</option>)}
                         </select>
-                        {bFilter && <button onClick={() => setBFilter('')} style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', border: 'none', borderRadius: '7px', padding: '6px 11px', cursor: 'pointer', fontSize: '0.8rem' }}>إلغاء الفلتر</button>}
+                        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                            <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                            <input value={bSearch} onChange={e => setBSearch(e.target.value)} placeholder="بحث باسم الزبونة أو الجوال..." style={{ width: '100%', padding: '7px 30px 7px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '0.82rem' }} />
+                        </div>
+                        <Btn onClick={() => handleExport(filtBk, 'bookings')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />تصدير Excel</Btn>
+                        {bFilter && <button onClick={() => setBFilter('')} style={{ background: 'rgba(255,255,255,0.05)', color: '#EF4444', border: 'none', borderRadius: '7px', padding: '6px 11px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>إلغاء فلفر العميل</button>}
                     </div>
                     <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                         <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
