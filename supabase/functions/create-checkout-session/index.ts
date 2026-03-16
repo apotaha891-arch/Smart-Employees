@@ -66,34 +66,46 @@ serve(async (req) => {
       await supabaseAdmin.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
     }
 
-    // 4. Determine Price and optional Coupon ID based on planId
-    // ** YOU WILL NEED TO REPLACE THESE WITH YOUR ACTUAL STRIPE PRICE IDs (e.g., price_1N...) **
+    // 4. Determine Price and Payment Mode based on planId
     let priceId = '';
     let couponId = '';
+    let mode: 'subscription' | 'payment' = 'subscription';
+
     if (planId === 'starter') {
-      priceId = Deno.env.get('STRIPE_PRICE_STARTER') || 'price_STARTER_MOCK';
+      priceId = Deno.env.get('STRIPE_PRICE_STARTER') || '';
       couponId = Deno.env.get('STRIPE_COUPON_STARTER') || '';
     } else if (planId === 'pro') {
-      priceId = Deno.env.get('STRIPE_PRICE_PRO') || 'price_PRO_MOCK';
+      priceId = Deno.env.get('STRIPE_PRICE_PRO') || '';
       couponId = Deno.env.get('STRIPE_COUPON_PRO') || '';
+    } else if (planId === 'addon_1k') {
+      priceId = Deno.env.get('STRIPE_PRICE_ADDON_1K') || '';
+      mode = 'payment';
+    } else if (planId === 'addon_5k') {
+      priceId = Deno.env.get('STRIPE_PRICE_ADDON_5K') || '';
+      mode = 'payment';
     } else {
       throw new Error("Invalid Plan Selection");
     }
 
+    if (!priceId) {
+        throw new Error(`Stripe Price ID not configured for plan: ${planId}`);
+    }
+
     // 5. Create Checkout Session
-    const sessionConfig = {
+    const sessionConfig: any = {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: 'subscription',
-      success_url: successUrl || `${req.headers.get('origin')}/deploy-agent?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      mode: mode,
+      success_url: successUrl || `${req.headers.get('origin')}/dashboard?refill=success`,
       cancel_url: cancelUrl || `${req.headers.get('origin')}/pricing?canceled=true`,
       metadata: {
         supabase_user_id: user.id,
-        plan_id: planId
+        plan_id: planId,
+        payment_type: mode === 'payment' ? 'refill' : 'subscription'
       }
     };
 
-    if (couponId) {
+    if (couponId && mode === 'subscription') {
       sessionConfig.discounts = [{ coupon: couponId }];
     }
 

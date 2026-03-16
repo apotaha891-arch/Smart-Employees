@@ -34,22 +34,30 @@ serve(async (req) => {
 
         // Get user and plan metadata from checkout session
         const userId = session.metadata?.supabase_user_id;
-        const planId = session.metadata?.plan_id; // e.g., 'starter' or 'pro'
+        const planId = session.metadata?.plan_id;
+        const paymentType = session.metadata?.payment_type;
 
         if (userId && planId) {
-          // Update User Profile with limits
-          const limit = planId === 'starter' ? 2000 : 5000;
+          if (paymentType === 'refill') {
+            const refillAmount = planId === 'addon_1k' ? 1000 : 5000;
+            const { data: profile } = await supabase.from('profiles').select('message_limit').eq('id', userId).single();
+            const newLimit = (profile?.message_limit || 0) + refillAmount;
+            
+            await supabase.from('profiles').update({ message_limit: newLimit }).eq('id', userId);
+            console.log(`Refill successful: Added ${refillAmount} to user ${userId}`);
+          } else {
+            const limit = planId === 'starter' ? 2000 : 5000;
+            const { error } = await supabase
+              .from('profiles')
+              .update({
+                subscription_plan: planId,
+                message_limit: limit,
+                stripe_subscription_id: session.subscription
+              })
+              .eq('id', userId);
 
-          const { error } = await supabase
-            .from('profiles')
-            .update({
-              subscription_plan: planId,
-              message_limit: limit,
-              stripe_subscription_id: session.subscription
-            })
-            .eq('id', userId);
-
-          if (error) console.error("Error updating profile: ", error);
+            if (error) console.error("Error updating profile: ", error);
+          }
         }
         break;
       }
