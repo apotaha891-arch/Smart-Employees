@@ -630,23 +630,15 @@ const EntitySetup = () => {
             // 3. Auto-Setup Telegram Webhook if token provided
             if (integrationDraft.telegram_token) {
                 const token = integrationDraft.telegram_token;
-                // Use the precise Supabase Function URL if available via environment, or fallback to current origin properly
                 const projectUrl = import.meta.env.VITE_SUPABASE_URL || '';
-                const baseUrl = projectUrl ? (projectUrl.replace('.supabase.co', '') + '.functions.supabase.co') : 'https://24shift.solutions';
                 
-                const webhookUrl = `${baseUrl}/functions/v1/telegram-webhook?agent_id=${currentAgentId}`;
+                // Use the standard Supabase API gateway URL for functions
+                const webhookUrl = `${projectUrl}/functions/v1/telegram-webhook?agent_id=${currentAgentId}`;
                 
                 console.log("Setting up Telegram Webhook with URL:", webhookUrl);
                 fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`)
                     .then(r => r.json())
-                    .then(res => {
-                        console.log("Telegram Webhook Sync Result:", res);
-                        // If it fails with direct URL, try the proxy URL as fallback
-                        if (!res.ok) {
-                            const fallbackUrl = `${window.location.origin}/functions/v1/telegram-webhook?agent_id=${currentAgentId}`;
-                            fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(fallbackUrl)}`);
-                        }
-                    })
+                    .then(res => console.log("Telegram Webhook Sync Result:", res))
                     .catch(e => console.warn("Webhook Sync Error:", e));
             }
             
