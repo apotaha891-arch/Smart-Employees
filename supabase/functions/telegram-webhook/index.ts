@@ -48,35 +48,20 @@ serve(async (req) => {
                 return;
             }
 
-            // Find the matching Agent — fetch first active agent
+            // Find the matching Agent
             const { data: agent, error: agentError } = await supabase
                 .from('agents')
                 .select('id, user_id, telegram_token')
                 .eq('id', targetAgentId)
                 .single();
 
-            if (agentError || !agent) {
-                console.error("Agent not found:", agentError?.message, "ID:", targetAgentId);
-                return;
-            }
-
-            // --- QUOTA LOGIC: Check owner's message_limit ---
-            const { data: owner } = await supabase
-                .from('profiles')
-                .select('id, message_limit')
-                .eq('id', agent.user_id)
-                .single();
-
-            const dynamicBotToken = agent.telegram_token || Deno.env.get('TELEGRAM_BOT_TOKEN');
-
-            if (!dynamicBotToken) {
-                console.error("No telegram token configured for agent", targetAgentId);
-                return;
-            }
+            const dynamicBotToken = agent?.telegram_token || Deno.env.get('TELEGRAM_BOT_TOKEN');
 
             // Helper: send Telegram message
-            async function sendTelegram(msg: string) {
-                const apiStr = `https://api.telegram.org/bot${dynamicBotToken}/sendMessage`;
+            async function sendTelegram(msg: string, tokenOverride?: string) {
+                const activeToken = tokenOverride || dynamicBotToken;
+                if (!activeToken) return;
+                const apiStr = `https://api.telegram.org/bot${activeToken}/sendMessage`;
                 try {
                     await fetch(apiStr, {
                         method: 'POST',
@@ -88,7 +73,23 @@ serve(async (req) => {
                 }
             }
 
-            if (!owner || owner.message_limit <= 0) {
+            if (agentError || !agent) {
+                console.error("Agent not found:", agentError?.message, "ID:", targetAgentId);
+                // Try to notify the user if we have a token at all
+                if (dynamicBotToken) {
+                    await sendTelegram("⚠️ خطأ في التهيئة: لم يتم العثور على بيانات الموظف الذكي المرتبطة بهذا البوت في قاعدة البيانات.");
+                }
+                return;
+            }
+
+            // --- QUOTA LOGIC ---
+            const { data: owner } = await supabase
+                .from('profiles')
+                .select('id, message_limit')
+                .eq('id', agent.user_id)
+                .single();
+
+            if (!owner || (owner.message_limit !== null && owner.message_limit <= 0)) {
                 await sendTelegram("عذراً، لقد استنفد هذا الموظف رصيد المحادثات الخاص به. يرجى من صاحب المنشأة ترقية الباقة لضمان استمرار الخدمة.");
                 return;
             }
