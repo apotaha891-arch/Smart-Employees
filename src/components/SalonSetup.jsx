@@ -792,7 +792,6 @@ const EntitySetup = () => {
                     {activeTab === 'sources' && (
                         <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-                            {/* Header */}
                             <div style={{ padding: '1rem 1.2rem', background: 'linear-gradient(135deg,rgba(139,92,246,0.1),rgba(109,40,217,0.05))', borderRadius: 12, border: '1px solid rgba(139,92,246,0.25)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                                     <Sparkles size={18} color="#A78BFA" />
@@ -802,8 +801,8 @@ const EntitySetup = () => {
                                 </div>
                                 <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.83rem', lineHeight: 1.6 }}>
                                     {language === 'ar'
-                                        ? 'ارفع ملفات منشأتك (PDF, Word, Excel) أو أضف روابط موقعك وسوشيال ميديا — وكيلنا الذكي سيقرأها ويُنشئ لك ملف تعريفي متكامل تلقائياً.'
-                                        : 'Upload your business files (PDF, Word, Excel) or add your website / social links — our AI agent will read them and auto-generate a complete business profile for you.'}
+                                        ? 'ارفع ملفات منشأتك (PDF, Word, Excel) للحصول على أفضل دقة. وكيلنا الذكي سيقرأها ويُنشئ لك ملف تعريفي متكامل تلقائياً.'
+                                        : 'Upload your business files (PDF, Word, Excel) for best accuracy. Our AI agent will read them and auto-generate a complete profile.'}
                                 </p>
                             </div>
 
@@ -844,11 +843,17 @@ const EntitySetup = () => {
                                 )}
                             </div>
 
-                            {/* URL Input */}
-                            <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 8, fontWeight: 600 }}>
-                                    🔗 {language === 'ar' ? 'روابط المنشأة (موقع، سوشيال، كتالوج)' : 'Business Links (website, social, catalog)'}
-                                </label>
+                            {/* URL Input - Secondary & Experimental Section */}
+                            <div style={{ marginTop: '0.5rem', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, background: 'rgba(255,255,255,0.01)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', fontWeight: 600 }}>
+                                        🔗 {language === 'ar' ? 'أضف روابط (اختياري - ميزة تجريبية)' : 'Add Links (Optional - Experimental)'}
+                                    </label>
+                                    <span style={{ fontSize: '0.7rem', color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '2px 8px', borderRadius: 8 }}>
+                                        {language === 'ar' ? '⚠️ استخراج الروابط قد يكون غير دقيق' : '⚠️ Extraction may be inaccurate'}
+                                    </span>
+                                </div>
+                                
                                 <div style={{ display: 'flex', gap: 8 }}>
                                     <div style={{ position: 'relative', flex: 1 }}>
                                         <LinkIcon size={16} style={{ position: 'absolute', [language === 'ar' ? 'right' : 'left']: 12, top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
@@ -858,10 +863,11 @@ const EntitySetup = () => {
                                             style={{ ...inp, [language === 'ar' ? 'paddingRight' : 'paddingLeft']: 38 }} />
                                     </div>
                                     <button onClick={handleAddUrl}
-                                        style={{ padding: '0 16px', borderRadius: 10, border: 'none', background: 'rgba(139,92,246,0.15)', color: '#A78BFA', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                        style={{ padding: '0 16px', borderRadius: 10, border: 'none', background: 'rgba(255,255,255,0.1)', color: '#A78BFA', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
                                         {language === 'ar' ? '+ إضافة' : '+ Add'}
                                     </button>
                                 </div>
+                                
                                 {aiUrlsList.length > 0 && (
                                     <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
                                         {aiUrlsList.map((url, i) => (
@@ -872,6 +878,12 @@ const EntitySetup = () => {
                                         ))}
                                     </div>
                                 )}
+                                
+                                <p style={{ margin: '10px 0 0', color: '#6B7280', fontSize: '0.75rem', lineHeight: 1.4 }}>
+                                    {language === 'ar' 
+                                        ? '💡 نوصي برفع ملفات PDF أو Word بدلاً من الروابط للحصول على نتائج أدق وأسرع.' 
+                                        : '💡 We recommend uploading PDF/Word files instead of links for faster and more accurate results.'}
+                                </p>
                             </div>
 
                             {/* AI Generate Button */}
@@ -883,9 +895,16 @@ const EntitySetup = () => {
                                     color: 'white', cursor: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'not-allowed' : 'pointer',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'all 0.2s'
                                 }}>
-                                {aiLoading
                                     ? (<><Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> {aiLoadingMessages[aiLoadingMsg]}</>)
-                                    : (<><Sparkles size={18} /> {language === 'ar' ? 'تحليل وإنشاء الملف التعريفي ✨' : 'Analyze & Generate Profile ✨'}</>)}
+                                    : (<>
+                                        <Sparkles size={18} /> 
+                                        {aiFiles.length > 0 && aiUrlsList.length > 0 
+                                            ? (language === 'ar' ? 'تحليل الملفات والروابط ✨' : 'Analyze Files & Links ✨')
+                                            : aiFiles.length > 0 
+                                            ? (language === 'ar' ? 'بدء تحليل الملفات ✨' : 'Start Analyzing Files ✨')
+                                            : (language === 'ar' ? 'بدء استخراج البيانات ✨' : 'Start Data Extraction ✨')
+                                        }
+                                       </>)}
                             </button>
 
                             {/* ── Extracted Profile Preview Table ── */}
