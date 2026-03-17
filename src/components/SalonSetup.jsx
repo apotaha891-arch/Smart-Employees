@@ -533,14 +533,15 @@ const EntitySetup = () => {
         } catch (error) {
             console.error("Profile save error:", error);
             const msg = error.message || "";
-            const col = msg.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
-            let hint = "";
-            if (col) {
-                hint = language === 'ar'
-                    ? `\n\nℹ️ يبدو أن هناك عموداً مفقوداً في قاعدة البيانات. يرجى تشغيل:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
-                    : `\n\nℹ️ Missing column detected. Run this in Supabase SQL Editor:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`;
+            let hint = language === 'ar' 
+                ? 'حدث خطأ غير متوقع أثناء الحفظ. يرجى المحاولة مرة أخرى أو التحقق من اتصالك بالإنترنت.' 
+                : 'An unexpected error occurred while saving. Please try again or check your internet connection.';
+            
+            if (msg.includes('duplicate key') || msg.includes('unique constraint')) {
+                hint = language === 'ar' ? 'هذه البيانات موجودة مسبقاً.' : 'This data already exists.';
             }
-            alert((language === 'ar' ? 'حدث خطأ أثناء الحفظ: ' : 'Error during save: ') + error.message + hint);
+            
+            alert(hint);
         } finally {
             setLoading(false);
         }
@@ -648,22 +649,20 @@ const EntitySetup = () => {
         } catch (err) {
             console.error("Save integration error detail:", err);
             const msg = err.message || "Unknown error";
-            const col = msg.match(/column[\s'"]+([\w]+)/i)?.[1] || '';
             const isCors = msg.includes('CORS') || msg.includes('fetch');
             const isTimeout = msg.includes('timeout') || msg.includes('30 seconds');
 
-            let hint = "";
-            if (col) {
-                hint = language === 'ar'
-                    ? `\n\nℹ️ أضف عمود مفقود في Supabase:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`
-                    : `\n\nℹ️ Missing column. Run this in Supabase SQL Editor:\nALTER TABLE salon_configs ADD COLUMN IF NOT EXISTS ${col} TEXT;`;
-            } else if (isCors || isTimeout) {
-                hint = language === 'ar'
-                    ? `\n\n⚠️ تأكد من:\n1. إضافة ${window.location.origin} في Allow Origins في Supabase.\n2. عدم وجود Webhooks معطلة في Supabase -> Database -> Webhooks.\n3. جودة اتصال الإنترنت.`
-                    : `\n\n⚠️ Please check:\n1. Domain ${window.location.origin} is in Supabase -> API -> Allow Origins.\n2. No hanging Webhooks in Supabase -> Database -> Webhooks.\n3. Your internet connection.`;
+            let userMsg = language === 'ar' 
+                ? '⚠️ حدث خطأ أثناء الحفظ. يرجى المحاولة مرة أخرى.' 
+                : '⚠️ Error saving settings. Please try again.';
+                
+            if (isCors || isTimeout) {
+                userMsg = language === 'ar'
+                    ? '⚠️ يرجى التأكد من جودة اتصال الإنترنت والمحاولة مرة أخرى.'
+                    : '⚠️ Please check your internet connection and try again.';
             }
             
-            alert((language === 'ar' ? '⚠️ فشل الاتصال بقاعدة البيانات: ' : '⚠️ Database connection failed: ') + msg + hint);
+            alert(userMsg);
         } finally {
             setIntegrationSaving(false);
         }

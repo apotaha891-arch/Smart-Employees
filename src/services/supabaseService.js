@@ -822,9 +822,10 @@ export const saveSalonConfig = async (config) => {
                 .eq('id', id);
         } else {
             // Explicit INSERT
+            const { id, ...insertData } = config;
             query = supabase
                 .from('salon_configs')
-                .insert([config]);
+                .insert([insertData]);
         }
 
         // Add a timeout to prevent indefinite hanging
