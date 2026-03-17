@@ -305,19 +305,19 @@ const EntitySetup = () => {
                     setSalonConfigId(configs.id);
                     setFormData(prev => ({
                         ...prev,
-                        businessName: configs.agent_name || '',
-                        businessType: configs.specialty || '',
-                        description: configs.description || '',
-                        phone: configs.phone || '',
-                        address: configs.address || '',
-                        website: configs.website || '',
-                        workingHours: configs.working_hours || { start: '09:00', end: '22:00' },
-                        mission_statement: configs.mission_statement || '',
-                        target_audience: configs.target_audience || '',
-                        brand_voice_details: configs.brand_voice_details || '',
-                        faq_data: Array.isArray(configs.faq_data) ? configs.faq_data : [],
-                        sop_instructions: configs.sop_instructions || '',
-                        knowledge_base: configs.knowledge_base || '',
+                        businessName: configs.agent_name || prev.businessName || '',
+                        businessType: configs.specialty || prev.businessType || '',
+                        description: configs.description || prev.description || '',
+                        phone: configs.phone || prev.phone || '',
+                        address: configs.address || prev.address || '',
+                        website: configs.website || prev.website || '',
+                        workingHours: configs.working_hours || prev.workingHours || { start: '09:00', end: '22:00' },
+                        mission_statement: configs.mission_statement || prev.mission_statement || '',
+                        target_audience: configs.target_audience || prev.target_audience || '',
+                        brand_voice_details: configs.brand_voice_details || prev.brand_voice_details || '',
+                        faq_data: (Array.isArray(configs.faq_data) && configs.faq_data.length > 0) ? configs.faq_data : (prev.faq_data || []),
+                        sop_instructions: configs.sop_instructions || prev.sop_instructions || '',
+                        knowledge_base: configs.knowledge_base || prev.knowledge_base || '',
                     }));
                     setIntegrationKeys({
                         website: configs.website || '',
@@ -1285,25 +1285,28 @@ const EntitySetup = () => {
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                 {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => {
                                                     const daysAr = { Sunday: 'الأحد', Monday: 'الإثنين', Tuesday: 'الثلاثاء', Wednesday: 'الأربعاء', Thursday: 'الخميس', Friday: 'الجمعة', Saturday: 'السبت' };
-                                                    const dayData = formData.workingHours.days[day] || { active: true, start: '09:00', end: '22:00' };
+                                                    const dayData = formData.workingHours?.days?.[day] || { active: true, start: '09:00', end: '22:00' };
                                                     return (
-                                                        <div key={day} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '8px', opacity: dayData.active ? 1 : 0.5 }}>
+                                                        <div key={day} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.03)', padding: '8px 5px', borderRadius: '8px', opacity: dayData.active ? 1 : 0.6 }}>
                                                             <input type="checkbox" checked={dayData.active} 
                                                                 onChange={e => {
                                                                     const wh = { ...formData.workingHours };
+                                                                    if(!wh.days) wh.days = {};
                                                                     wh.days[day] = { ...dayData, active: e.target.checked };
                                                                     setFormData({ ...formData, workingHours: wh });
                                                                 }} 
-                                                                style={{ accentColor: '#8B5CF6', width: 16, height: 16, cursor: 'pointer' }} />
-                                                            <span style={{ fontSize: '0.85rem', width: language === 'ar' ? '60px' : '75px', fontWeight: 600 }}>{language === 'ar' ? daysAr[day] : day}</span>
-                                                            <input type="time" style={{ ...inp, padding: '4px 8px', flex: 1, opacity: dayData.active ? 1 : 0.5 }} disabled={!dayData.active}
+                                                                style={{ accentColor: '#8B5CF6', width: 14, height: 14, cursor: 'pointer', flexShrink: 0 }} />
+                                                            <span style={{ fontSize: '0.75rem', width: language === 'ar' ? '50px' : '55px', fontWeight: 600, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                {language === 'ar' ? daysAr[day] : day.substring(0, 3)}
+                                                            </span>
+                                                            <input type="time" style={{ ...inp, padding: '4px', flex: 1, minWidth: 0, fontSize: '0.75rem', opacity: dayData.active ? 1 : 0.5 }} disabled={!dayData.active}
                                                                 value={dayData.start} onChange={e => {
                                                                     const wh = { ...formData.workingHours };
                                                                     wh.days[day] = { ...dayData, start: e.target.value };
                                                                     setFormData({ ...formData, workingHours: wh });
                                                                 }} />
-                                                            <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>-</span>
-                                                            <input type="time" style={{ ...inp, padding: '4px 8px', flex: 1, opacity: dayData.active ? 1 : 0.5 }} disabled={!dayData.active}
+                                                            <span style={{ color: '#9CA3AF', fontSize: '0.75rem', flexShrink: 0 }}>-</span>
+                                                            <input type="time" style={{ ...inp, padding: '4px', flex: 1, minWidth: 0, fontSize: '0.75rem', opacity: dayData.active ? 1 : 0.5 }} disabled={!dayData.active}
                                                                 value={dayData.end} onChange={e => {
                                                                     const wh = { ...formData.workingHours };
                                                                     wh.days[day] = { ...dayData, end: e.target.value };
