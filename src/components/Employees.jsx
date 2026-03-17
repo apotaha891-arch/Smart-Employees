@@ -227,12 +227,9 @@ const Employees = () => {
     const getRoleLabel = (specialty) => {
         if (!specialty) return isAr ? 'موظف' : 'Agent';
         
-        // Technical names or translation keys leaking
         let key = specialty.toLowerCase().replace('roles.', '');
-        
         if (ROLE_LABELS[key]) return t(`roles.${key}`);
         
-        // If it contains a dash or UUID-like patterns
         if (key.includes('-') || key.length > 20) {
             return isAr ? 'موظف مخصص' : 'Custom Agent';
         }
@@ -240,6 +237,7 @@ const Employees = () => {
         return specialty;
     };
 
+    const uniqueRoles = [...new Set(agents.map(a => a.specialty || 'booking'))];
     const filtered = agents.filter(a => !filterRole || (a.specialty || 'booking') === filterRole);
 
     return (
@@ -281,14 +279,18 @@ const Employees = () => {
                 ))}
             </div>
 
-            {/* Filters */}
-            <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
-                <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
-                    style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white', padding: '10px 16px', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
-                    <option value="">{t('allRolesFilter')}</option>
-                    {Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{t(`roles.${k}`)}</option>)}
-                </select>
-            </div>
+            {/* Filters - Only show if there are agents and multiple roles */}
+            {agents.length > 0 && uniqueRoles.length > 1 && (
+                <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
+                    <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
+                        style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white', padding: '10px 16px', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                        <option value="">{t('allRolesFilter')}</option>
+                        {uniqueRoles.map(roleKey => (
+                            <option key={roleKey} value={roleKey}>{getRoleLabel(roleKey)}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             {/* Agents Grid */}
             {loading ? (
