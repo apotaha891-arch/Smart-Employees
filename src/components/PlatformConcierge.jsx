@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
 import { sendMessage, initializeChat } from '../services/geminiService';
 import { getPlatformSettings } from '../services/adminService';
 import { useLanguage } from '../LanguageContext';
+import { supabase, getCurrentUser } from '../services/supabaseService';
+import { saveConciergeConversation, getUserConversation } from '../services/conciergeService';
 
 const PlatformConcierge = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -9,6 +10,7 @@ const PlatformConcierge = () => {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [config, setConfig] = useState(null);
+    const [user, setUser] = useState(null);
     const messagesEndRef = useRef(null);
     const { t, language } = useLanguage();
 
@@ -65,7 +67,22 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
 
     // Initial load
     useEffect(() => {
-        loadConfig();
+        const init = async () => {
+            const { user: currUser } = await getCurrentUser();
+            setUser(currUser);
+            
+            if (currUser) {
+                const { data: history } = await getUserConversation(currUser.id);
+                if (history?.messages?.length > 0) {
+                    setMessages(history.messages);
+                } else {
+                    loadConfig();
+                }
+            } else {
+                loadConfig();
+            }
+        };
+        init();
     }, [language]);
 
     // Re-sync whenever the window is opened to ensure latest admin settings
@@ -104,13 +121,21 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
         if (!input.trim() || isLoading) return;
 
         const userMsg = { role: 'user', content: input };
-        setMessages(prev => [...prev, userMsg]);
+        const newMessages = [...messages, userMsg];
+        setMessages(newMessages);
         setInput('');
         setIsLoading(true);
 
         const response = await sendMessage(input, 'concierge');
         if (response.success) {
-            setMessages(prev => [...prev, { role: 'agent', content: response.text }]);
+            const agentMsg = { role: 'agent', content: response.text };
+            const updatedMessages = [...newMessages, agentMsg];
+            setMessages(updatedMessages);
+            
+            // Save to database
+            if (user) {
+                await saveConciergeConversation(user.id, updatedMessages);
+            }
         }
         setIsLoading(false);
     };

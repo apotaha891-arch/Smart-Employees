@@ -77,6 +77,8 @@ export default function AdminDashboard() {
     const [bookings, setBookings] = useState([]);
     const [pricing, setPricing] = useState([]);
     const [integrations, setIntegrations] = useState([]);
+    const [conciergeChats, setConciergeChats] = useState([]);
+    const [selChat, setSelChat] = useState(null);
 
     // Generate dynamic PLANS mapping from pricing state
     const PLANS = useMemo(() => {
@@ -132,11 +134,12 @@ export default function AdminDashboard() {
         setLoading(true);
         try {
             // Load data via RPC-backed adminService (bypasses RLS)
-            const [profiles, ag, bk, keyData] = await Promise.all([
+            const [profiles, ag, bk, keyData, chats] = await Promise.all([
                 adminService.getAllCustomers(),
                 adminService.getAllAgents(),
                 adminService.getAllBookings(),
-                adminService.getAllSalonConfigs()
+                adminService.getAllSalonConfigs(),
+                adminService.getAllConciergeConversations()
             ]);
 
             // Merge Profile + SalonConfig data
@@ -162,6 +165,7 @@ export default function AdminDashboard() {
             setClients(mergedClients);
             setAgents(ag || []);
             setBookings(bk || []);
+            setConciergeChats(chats || []);
 
             // Platform settings & Dynamic Configs
             const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.all([
@@ -406,6 +410,7 @@ export default function AdminDashboard() {
         { id: 'pricing', i: CreditCard, l: 'الباقات والأسعار' },
         { id: 'infrastructure', i: Globe, l: 'البنية التحتية' },
         { id: 'integrations', i: LinkIcon, l: 'الربط التقني' },
+        { id: 'concierge-chats', i: MessageSquare, l: 'محادثات نورة' },
         { id: 'ai-settings', i: Bot, l: 'المستشارة الذكية' },
     ];
 
@@ -1069,6 +1074,69 @@ export default function AdminDashboard() {
 
                     </div>
                 }
+
+                {/* ── CONCIERGE CHATS ── */}
+                {tab === 'concierge-chats' && <div style={{ display: 'flex', gap: '1.5rem' }}>
+                    <div style={{ flex: 1 }}>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>محادثات نورة</h1>
+                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>سجل المحادثات بين العمال والمنصة والمستشارة الذكية</p>
+                        
+                        <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                {['العميل', 'آخر رسالة', 'التحديث', 'الإجراء'].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                            </tr></thead>
+                            <tbody>
+                                {conciergeChats.length === 0 ? <tr><td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد سجل محادثات حالياً</td></tr>
+                                    : conciergeChats.map(chat => (
+                                        <tr key={chat.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: selChat?.id === chat.id ? 'rgba(139,92,246,0.06)' : 'transparent' }}>
+                                            <td style={{ padding: '0.75rem 0.9rem' }}>
+                                                <div style={{ fontWeight: 700, color: 'white', fontSize: '0.84rem' }}>{chat.user_name || '—'}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{chat.user_email}</div>
+                                            </td>
+                                            <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF', fontSize: '0.8rem', maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {chat.last_message || '—'}
+                                            </td>
+                                            <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>
+                                                {new Date(chat.updated_at).toLocaleString('ar-EG')}
+                                            </td>
+                                            <td style={{ padding: '0.75rem 0.9rem' }}>
+                                                <button onClick={() => setSelChat(chat)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>فتح المحادثة</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>} />
+                    </div>
+
+                    {selChat && <div style={{ width: '400px', flexShrink: 0, height: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
+                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.9rem' }}>💬 تفاصيل المحادثة</div>
+                            <button onClick={() => setSelChat(null)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }}><X size={16} /></button>
+                        </div>
+                        <Card s={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '1rem' }} c={
+                            selChat.messages?.map((m, i) => (
+                                <div key={i} style={{ 
+                                    alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                                    background: m.role === 'user' ? '#1E293B' : '#8B5CF620',
+                                    color: m.role === 'user' ? '#E2E8F0' : '#A78BFA',
+                                    padding: '8px 12px',
+                                    borderRadius: '12px',
+                                    maxWidth: '85%',
+                                    fontSize: '0.8rem',
+                                    border: `1px solid ${m.role === 'user' ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.2)'}`
+                                }}>
+                                    <div style={{ fontWeight: 800, fontSize: '0.65rem', marginBottom: '3px', opacity: 0.6 }}>{m.role === 'user' ? selChat.user_name : 'نورة (المستشارة)'}</div>
+                                    {m.content}
+                                </div>
+                            ))
+                        } />
+                        {selChat.ticket_id && (
+                            <div style={{ marginTop: '0.8rem', padding: '0.8rem', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', fontSize: '0.75rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Check size={14} /> مرتبطة تذكرة دعم #{selChat.ticket_id.slice(0, 8)}
+                            </div>
+                        )}
+                    </div>}
+                </div>}
 
                 {/* ── AI SETTINGS ── */}
                 {

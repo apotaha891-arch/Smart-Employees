@@ -148,5 +148,23 @@ export const deleteSetting = async (key) => {
     return true;
 };
 
+// ─── Support & Concierge ───────────────────────────────────────────────────
+export const getAllTickets = async () => {
+    const { data, error } = await supabase.rpc('get_admin_tickets');
+    if (!error && data) return data;
+    console.warn('get_admin_tickets RPC failed:', error?.message);
+    // Fallback: limited query
+    const { data: fallback } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+    return fallback || [];
+};
+
+export const getAllConciergeConversations = async () => {
+    const { data, error } = await supabase.rpc('get_admin_concierge_conversations');
+    if (!error && data) return data;
+    console.warn('get_admin_concierge_conversations RPC failed:', error?.message);
+    const { data: fallback } = await supabase.from('concierge_conversations').select('*').order('updated_at', { ascending: false });
+    return fallback || [];
+};
+
 // Legacy export for backward compat
 export const getAllCustomers_legacy = getAllCustomers;

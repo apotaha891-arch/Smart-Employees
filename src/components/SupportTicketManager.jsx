@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { supabase } from '../services/supabaseService';
 import { MessageSquare, Plus, Search, Filter, AlertCircle, CheckCircle2, Clock, Inbox, Reply, ExternalLink, Bot, MessageCircle } from 'lucide-react';
+import * as adminService from '../services/adminService';
+import { getCurrentUser } from '../services/supabaseService';
 
 const SupportTicketManager = () => {
     const { t, language } = useLanguage();
@@ -9,6 +11,8 @@ const SupportTicketManager = () => {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState('open'); // open, closed, all
+    const [showCreate, setShowCreate] = useState(false);
+    const [newTicket, setNewTicket] = useState({ title: '', description: '', priority: 'medium', category: 'General' });
 
     useEffect(() => {
         fetchTickets();
@@ -16,23 +20,40 @@ const SupportTicketManager = () => {
 
     const fetchTickets = async () => {
         setLoading(true);
-        // Placeholder data to simulate a ticketing system
-        // In a real app, this would query a 'tickets' table
-        setTimeout(() => {
-            const mockTickets = [
-                { id: 1, title: isAr ? 'مشكلة في تفعيل الحساب' : 'Account Activation Issue', customer: 'Ahmed Khalid', status: 'open', priority: 'high', date: '2026-03-08T10:00:00Z', category: 'Technical' },
-                { id: 2, title: isAr ? 'استفسار عن الفوترة' : 'Billing Inquiry', customer: 'Sarah Johnson', status: 'open', priority: 'medium', date: '2026-03-09T14:30:00Z', category: 'Billing' },
-                { id: 3, title: isAr ? 'طلب تحديث بيانات' : 'Info Update Request', customer: 'Mohamed Ali', status: 'closed', priority: 'low', date: '2026-03-05T09:15:00Z', category: 'General' },
-                { id: 4, title: isAr ? 'عطل في البوابة الإلكترونية' : 'Portal Downtime', customer: 'Elite Corp', status: 'open', priority: 'urgent', date: '2026-03-09T22:10:00Z', category: 'Bug' },
-            ];
-
-            let filtered = mockTickets;
-            if (tab === 'open') filtered = mockTickets.filter(t => t.status === 'open');
-            else if (tab === 'closed') filtered = mockTickets.filter(t => t.status === 'closed');
+        try {
+            const data = await adminService.getAllTickets();
+            
+            let filtered = data || [];
+            if (tab === 'open') filtered = filtered.filter(t => t.status === 'open');
+            else if (tab === 'closed') filtered = filtered.filter(t => t.status === 'closed');
 
             setTickets(filtered);
+        } catch (error) {
+            console.error('Error fetching tickets:', error);
+        } finally {
             setLoading(false);
-        }, 800);
+        }
+    };
+
+    const handleCreate = async (e) => {
+        e.preventDefault();
+        try {
+            const { user } = await getCurrentUser();
+            if (!user) return alert('يجب تسجيل الدخول');
+
+            const { error } = await supabase.from('support_tickets').insert([{
+                ...newTicket,
+                user_id: user.id,
+                status: 'open'
+            }]);
+
+            if (error) throw error;
+            setShowCreate(false);
+            setNewTicket({ title: '', description: '', priority: 'medium', category: 'General' });
+            fetchTickets();
+        } catch (error) {
+            alert('خطأ في إنشاء التذكرة: ' + error.message);
+        }
     };
 
     const getPriorityStyle = (priority) => {
@@ -59,7 +80,7 @@ const SupportTicketManager = () => {
                     <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Inbox size={18} /> {isAr ? 'أرشفة' : 'Archive'}
                     </button>
-                    <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button onClick={() => setShowCreate(true)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Plus size={18} /> {isAr ? 'تذكرة جديدة' : 'New Ticket'}
                     </button>
                 </div>
@@ -130,7 +151,7 @@ const SupportTicketManager = () => {
                                             <span style={{ fontSize: '0.7rem', color: '#6B7280', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '4px' }}>#{ticket.id}</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.8rem', color: '#9CA3AF' }}>
-                                            <span>{ticket.customer}</span>
+                                            <span>{ticket.user_name || ticket.user_email || '—'}</span>
                                             <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#374151' }}></span>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {new Date(ticket.date).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
                                             <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#374151' }}></span>
@@ -205,6 +226,37 @@ const SupportTicketManager = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Create Ticket Modal */}
+            {showCreate && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+                    <div style={{ background: '#111827', padding: '2rem', borderRadius: '20px', width: '100%', maxWidth: '500px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <h2 style={{ color: 'white', marginBottom: '1.5rem' }}>{isAr ? 'إنشاء تذكرة دعم جديدة' : 'Create New Ticket'}</h2>
+                        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '5px' }}>{isAr ? 'الموضوع' : 'Subject'}</label>
+                                <input required value={newTicket.title} onChange={e => setNewTicket({...newTicket, title: e.target.value})} className="input-field" style={{ background: '#1F2937', border: '1px solid #374151' }} />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '5px' }}>{isAr ? 'التصنيف' : 'Category'}</label>
+                                <select value={newTicket.category} onChange={e => setNewTicket({...newTicket, category: e.target.value})} className="input-field" style={{ background: '#1F2937', border: '1px solid #374151', color: 'white' }}>
+                                    <option value="General">عام</option>
+                                    <option value="Technical">تقني</option>
+                                    <option value="Billing">حسابات</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '5px' }}>{isAr ? 'الوصف' : 'Description'}</label>
+                                <textarea required value={newTicket.description} onChange={e => setNewTicket({...newTicket, description: e.target.value})} className="input-field" style={{ background: '#1F2937', border: '1px solid #374151', minHeight: '100px' }} />
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{isAr ? 'إرسال التذكرة' : 'Submit Ticket'}</button>
+                                <button type="button" onClick={() => setShowCreate(false)} className="btn btn-outline" style={{ flex: 1 }}>{isAr ? 'إلغاء' : 'Cancel'}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
