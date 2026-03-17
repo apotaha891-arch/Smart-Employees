@@ -475,6 +475,11 @@ const EntitySetup = () => {
     };
 
     const handleSave = async () => {
+        if (!formData.businessName) {
+            alert(language === 'ar' ? '❌ يرجى إدخال "اسم المنشأة" أولاً في قسم معلومات المنشأة.' : '❌ Please enter the Business Name in the Entity Info section first.');
+            return;
+        }
+        
         setLoading(true);
         try {
             const { user } = await getCurrentUser();
@@ -895,6 +900,7 @@ const EntitySetup = () => {
                                     color: 'white', cursor: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'not-allowed' : 'pointer',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'all 0.2s'
                                 }}>
+                                {aiLoading
                                     ? (<><Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> {aiLoadingMessages[aiLoadingMsg]}</>)
                                     : (<>
                                         <Sparkles size={18} /> 
@@ -1237,20 +1243,78 @@ const EntitySetup = () => {
                                 {/* 3. Side Panel (Hours & Brand Voice) */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                     <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
-                                            <Clock size={18} color="#8B5CF6" />
-                                            <h4 style={{ margin: 0 }}>{language === 'ar' ? 'أوقات العمل' : 'Working Hours'}</h4>
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                            <div>
-                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'وقت البدء' : 'Start Time'}</label>
-                                                <input type="time" style={inp} value={formData.workingHours.start} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, start: e.target.value } })} />
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.2rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <Clock size={18} color="#8B5CF6" />
+                                                <h4 style={{ margin: 0 }}>{language === 'ar' ? 'أوقات العمل' : 'Working Hours'}</h4>
                                             </div>
-                                            <div>
-                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'وقت الانتهاء' : 'End Time'}</label>
-                                                <input type="time" style={inp} value={formData.workingHours.end} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, end: e.target.value } })} />
-                                            </div>
+                                            <button 
+                                                onClick={() => {
+                                                    const wh = formData.workingHours || { start: '09:00', end: '22:00' };
+                                                    if (!wh.days) {
+                                                        wh.days = {
+                                                            Sunday: { active: true, start: wh.start, end: wh.end },
+                                                            Monday: { active: true, start: wh.start, end: wh.end },
+                                                            Tuesday: { active: true, start: wh.start, end: wh.end },
+                                                            Wednesday: { active: true, start: wh.start, end: wh.end },
+                                                            Thursday: { active: true, start: wh.start, end: wh.end },
+                                                            Friday: { active: false, start: '16:00', end: '22:00' },
+                                                            Saturday: { active: false, start: '14:00', end: '22:00' }
+                                                        };
+                                                    }
+                                                    setFormData({...formData, workingHours: {...wh, isCustom: !wh.isCustom}});
+                                                }}
+                                                style={{ background: 'none', border: 'none', color: '#8B5CF6', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}>
+                                                {formData.workingHours?.isCustom 
+                                                    ? (language === 'ar' ? 'أوقات موحدة' : 'Fixed Hours') 
+                                                    : (language === 'ar' ? 'تخصيص بالأيام' : 'Custom by Day')}
+                                            </button>
                                         </div>
+                                        
+                                        {!formData.workingHours?.isCustom ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                <div>
+                                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'وقت البدء' : 'Start Time'}</label>
+                                                    <input type="time" style={inp} value={formData.workingHours?.start || '09:00'} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, start: e.target.value } })} />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'وقت الانتهاء' : 'End Time'}</label>
+                                                    <input type="time" style={inp} value={formData.workingHours?.end || '22:00'} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, end: e.target.value } })} />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => {
+                                                    const daysAr = { Sunday: 'الأحد', Monday: 'الإثنين', Tuesday: 'الثلاثاء', Wednesday: 'الأربعاء', Thursday: 'الخميس', Friday: 'الجمعة', Saturday: 'السبت' };
+                                                    const dayData = formData.workingHours.days[day] || { active: true, start: '09:00', end: '22:00' };
+                                                    return (
+                                                        <div key={day} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '8px', opacity: dayData.active ? 1 : 0.5 }}>
+                                                            <input type="checkbox" checked={dayData.active} 
+                                                                onChange={e => {
+                                                                    const wh = { ...formData.workingHours };
+                                                                    wh.days[day] = { ...dayData, active: e.target.checked };
+                                                                    setFormData({ ...formData, workingHours: wh });
+                                                                }} 
+                                                                style={{ accentColor: '#8B5CF6', width: 16, height: 16, cursor: 'pointer' }} />
+                                                            <span style={{ fontSize: '0.85rem', width: language === 'ar' ? '60px' : '75px', fontWeight: 600 }}>{language === 'ar' ? daysAr[day] : day}</span>
+                                                            <input type="time" style={{ ...inp, padding: '4px 8px', flex: 1, opacity: dayData.active ? 1 : 0.5 }} disabled={!dayData.active}
+                                                                value={dayData.start} onChange={e => {
+                                                                    const wh = { ...formData.workingHours };
+                                                                    wh.days[day] = { ...dayData, start: e.target.value };
+                                                                    setFormData({ ...formData, workingHours: wh });
+                                                                }} />
+                                                            <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>-</span>
+                                                            <input type="time" style={{ ...inp, padding: '4px 8px', flex: 1, opacity: dayData.active ? 1 : 0.5 }} disabled={!dayData.active}
+                                                                value={dayData.end} onChange={e => {
+                                                                    const wh = { ...formData.workingHours };
+                                                                    wh.days[day] = { ...dayData, end: e.target.value };
+                                                                    setFormData({ ...formData, workingHours: wh });
+                                                                }} />
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
