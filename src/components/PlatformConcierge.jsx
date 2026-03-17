@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { sendMessage, initializeChat } from '../services/geminiService';
 import { getPlatformSettings } from '../services/adminService';
 import { useLanguage } from '../LanguageContext';
