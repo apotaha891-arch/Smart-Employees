@@ -429,6 +429,7 @@ entrypoint = "./functions/multi-file-workflow/index.ts"
 [functions.agent-handler]
 enabled = true
 verify_jwt = false
+import_map = "./functions/import_map.json"
 entrypoint = "./functions/agent-handler/index.ts"
 
 [functions.create-checkout-session]

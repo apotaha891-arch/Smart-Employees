@@ -9,7 +9,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 
 const endpointSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
-serve(async (req) => {
+serve(async (req: any) => {
   // 1. Validate signature
   const signature = req.headers.get("stripe-signature");
 
@@ -95,7 +95,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200, headers: { "Content-Type": "application/json" } });
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Webhook Error: ${err.message}`);
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }

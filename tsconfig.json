@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "strict": false
+  },
+  "include": [
+    "src",
+    "public",
+    "vite.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "supabase/functions"
+  ]
+}

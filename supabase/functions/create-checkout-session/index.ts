@@ -12,7 +12,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+serve(async (req: any) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -116,7 +116,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (err) {
+  } catch (err: any) {
     console.error("CATCH BLOCK ERROR:", err.message, err.stack);
     return new Response(
       JSON.stringify({ error: err.message, stack: err.stack }),
