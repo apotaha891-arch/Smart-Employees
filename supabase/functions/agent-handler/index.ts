@@ -210,7 +210,6 @@ serve(async (req: any) => {
             }]
         }];
 
-        // ── Dynamic System Prompt per Agent Type ────────────────────────────────
         const specialty = (agent.specialty || '').toLowerCase();
         const agentName = agent.name || 'الموظف الذكي';
         const businessName = resolvedBusinessName || agentName;
@@ -222,7 +221,7 @@ serve(async (req: any) => {
         const isSupport = ['دعم', 'صيانة', 'خدمة عملاء', 'technical', 'support', 'customer service', 'help', 'repair'].some(k => specialty.includes(k));
         const isEmail = ['بريد', 'ايميل', 'email', 'mail', 'correspondence'].some(k => specialty.includes(k));
         const isRealEstate = ['عقار', 'real estate', 'property', 'leasing', 'realty', 'villa', 'apartment'].some(k => specialty.includes(k));
-
+        
         let systemInstruction: string;
 
         if (isSales) {
