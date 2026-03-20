@@ -166,5 +166,27 @@ export const getAllConciergeConversations = async () => {
     return fallback || [];
 };
 
+export const getAllNotifications = async () => {
+    const { data, error } = await supabase
+        .from('platform_notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+    if (error) {
+        console.error('Error fetching notifications:', error.message);
+        return [];
+    }
+    return data || [];
+};
+
+export const markNotificationAsRead = async (id) => {
+    const { error } = await supabase
+        .from('platform_notifications')
+        .update({ is_read: true })
+        .eq('id', id);
+    if (error) console.error('Error marking notification as read:', error.message);
+    return !error;
+};
+
 // Legacy export for backward compat
 export const getAllCustomers_legacy = getAllCustomers;

@@ -226,6 +226,35 @@ ${userMessage}
     }
 };
 
+export const extractConciergeInsights = async (messages) => {
+    try {
+        const prompt = `
+أنت خبير في تحليل محادثات خدمة العملاء واستخراج رؤى العمل (Customer Insights).
+قم بتحليل المحادثة التالية واستخرج البيانات بصيغة JSON حصراً.
+المطلوب في الـ JSON:
+- interest_level: (low, medium, high)
+- business_type: نوع نشاط العميل إذا ذكر
+- primary_need: الحاجة الأساسية أو السؤال الأهم
+- requested_features: الميزات التي اهتم بها (مثل واتساب، تليجرام، منسقة مواعيد)
+- lead_status: (inquiring, potential_customer, needs_manual_followup)
+
+المحادثة:
+${JSON.stringify(messages.slice(-15), null, 2)}
+
+أعد فقط كائن JSON واحد يبدأ بـ { وينتهي بـ }. لا تضف أي نص قبله أو بعده.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim();
+        const insights = parseSafeJSON(text);
+
+        return { success: true, data: insights };
+    } catch (error) {
+        console.error("Insight Extraction Error:", error);
+        return { success: false, error: error.message };
+    }
+};
+
 export const resetChat = (sessionId = 'default') => {
     delete chatSessions[sessionId];
 };

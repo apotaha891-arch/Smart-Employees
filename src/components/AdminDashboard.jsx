@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     });
     console.log('✨ AdminDashboard initialized with roles state');
     const [agentAppsConfig, setAgentAppsConfig] = useState([
-        { id: 'email_notify', icon: 'Mail', label: 'إشعار بريد إلكتروني', desc: 'رسالة للمدير عند كل حجز جديد' },
+        { id: 'email_notify', icon: 'Mail', label: 'إشعار بريد إلكتروني', desc: 'تنبيه للمدير عند الحجوزات أو المحادثات الجديدة' },
         { id: 'sms_notify', icon: 'MessageSquare', label: 'إشعار SMS', desc: 'رسالة نصية للعميل بتأكيد حجزه' },
         { id: 'reminder', icon: 'Bell', label: 'تذكير قبل الموعد', desc: 'تذكير آلي قبل الموعد بساعة' },
         { id: 'followup', icon: 'Zap', label: 'متابعة بعد الخدمة', desc: 'رسالة متابعة بعد 24 ساعة من الموعد' },
@@ -79,6 +79,7 @@ export default function AdminDashboard() {
     const [integrations, setIntegrations] = useState([]);
     const [conciergeChats, setConciergeChats] = useState([]);
     const [selChat, setSelChat] = useState(null);
+    const [notifications, setNotifications] = useState([]);
 
     // Generate dynamic PLANS mapping from pricing state
     const PLANS = useMemo(() => {
@@ -134,38 +135,40 @@ export default function AdminDashboard() {
         setLoading(true);
         try {
             // Load data via RPC-backed adminService (bypasses RLS)
-            const [profiles, ag, bk, keyData, chats] = await Promise.all([
+            const [profiles, ag, bk, keyData, chats, notifs] = await Promise.all([
                 adminService.getAllCustomers(),
                 adminService.getAllAgents(),
                 adminService.getAllBookings(),
                 adminService.getAllSalonConfigs(),
-                adminService.getAllConciergeConversations()
+                adminService.getAllConciergeConversations(),
+                adminService.getAllNotifications()
             ]);
 
             // Merge Profile + SalonConfig data
             const clientMap = {};
-            (keyData || []).forEach(k => {
-                clientMap[k.user_id] = {
-                    ...k,
-                    id: k.user_id,
-                    salonConfigId: k.id,
-                    full_name: k.agent_name || '—',
-                    email: '—'
-                };
-            });
             (profiles || []).forEach(p => {
-                if (clientMap[p.id]) {
-                    clientMap[p.id] = { ...clientMap[p.id], ...p };
-                } else {
-                    clientMap[p.id] = { ...p };
+                clientMap[p.id] = { ...p, full_name: p.full_name || '—', email: p.email || '—' };
+            });
+            (keyData || []).forEach(k => {
+                if (clientMap[k.user_id]) {
+                    clientMap[k.user_id] = { ...clientMap[k.user_id], salonConfigId: k.id };
                 }
             });
+            setClients(Object.values(clientMap));
 
-            const mergedClients = Object.values(clientMap);
-            setClients(mergedClients);
             setAgents(ag || []);
             setBookings(bk || []);
             setConciergeChats(chats || []);
+            setNotifications(notifs || []);
+
+            // Setup Realtime subscription for notifications
+            const channel = supabase.channel('platform_notifications')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'platform_notifications' }, (payload) => {
+                    setNotifications(prev => [payload.new, ...prev].slice(0, 50));
+                })
+                .subscribe();
+
+            return () => { supabase.removeChannel(channel); };
 
             // Platform settings & Dynamic Configs
             const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.all([
@@ -402,6 +405,8 @@ export default function AdminDashboard() {
         (b.service_requested || '').toLowerCase().includes(bSearch.toLowerCase())
     );
 
+    const unreadChats = notifications.filter(n => !n.is_read && n.type === 'new_chat').length;
+
     const NAV = [
         { id: 'overview', i: LayoutDashboard, l: 'نظرة عامة' },
         { id: 'clients', i: Users, l: 'العملاء' },
@@ -410,7 +415,7 @@ export default function AdminDashboard() {
         { id: 'pricing', i: CreditCard, l: 'الباقات والأسعار' },
         { id: 'infrastructure', i: Globe, l: 'البنية التحتية' },
         { id: 'integrations', i: LinkIcon, l: 'الربط التقني' },
-        { id: 'concierge-chats', i: MessageSquare, l: 'محادثات نورة' },
+        { id: 'concierge-chats', i: MessageSquare, l: 'محادثات نورة', badge: unreadChats },
         { id: 'ai-settings', i: Bot, l: 'المستشارة الذكية' },
     ];
 
@@ -429,10 +434,12 @@ export default function AdminDashboard() {
                         <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 700 }}>⚡ ADMIN</div></div>
                 </div>
                 <nav style={{ flex: 1, padding: '0.6rem', overflowY: 'auto' }}>
-                    {NAV.map(({ id, i: Icon, l }) => {
+                    {NAV.map(({ id, i: Icon, l, badge }) => {
                         const a = tab === id; return (
-                            <button key={id} onClick={() => setTab(id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '9px', padding: '9px 11px', borderRadius: '8px', background: a ? 'rgba(139,92,246,0.12)' : 'transparent', color: a ? '#A78BFA' : '#6B7280', border: 'none', cursor: 'pointer', fontWeight: a ? 700 : 400, fontSize: '0.84rem', marginBottom: '2px', borderRight: a ? '3px solid #8B5CF6' : '3px solid transparent', transition: 'all 0.15s' }}>
-                                <Icon size={16} /><span>{l}</span>
+                            <button key={id} onClick={() => { setTab(id); if (id === 'concierge-chats') notifications.filter(n => !n.is_read && n.type === 'new_chat').forEach(n => adminService.markNotificationAsRead(n.id)); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '9px', padding: '9px 11px', borderRadius: '8px', background: a ? 'rgba(139,92,246,0.12)' : 'transparent', color: a ? '#A78BFA' : '#6B7280', border: 'none', cursor: 'pointer', fontWeight: a ? 700 : 400, fontSize: '0.84rem', marginBottom: '2px', borderRight: a ? '3px solid #8B5CF6' : '3px solid transparent', transition: 'all 0.15s', position: 'relative' }}>
+                                <Icon size={16} />
+                                <span>{l}</span>
+                                {badge > 0 && <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', background: '#EF4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>{badge}</span>}
                             </button>
                         );
                     })}
@@ -1108,11 +1115,40 @@ export default function AdminDashboard() {
                         </table>} />
                     </div>
 
-                    {selChat && <div style={{ width: '400px', flexShrink: 0, height: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
-                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.9rem' }}>💬 تفاصيل المحادثة</div>
+                    {selChat && <div style={{ width: '400px', flexShrink: 0, height: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.9rem' }}>💬 تفاصيل المحادثة وتحليل العميل</div>
                             <button onClick={() => setSelChat(null)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }}><X size={16} /></button>
                         </div>
+
+                        {/* AI Insights Card */}
+                        {selChat.metadata?.insights && (
+                            <Card s={{ background: 'rgba(139,92,246,0.05)', border: '1px solid rgba(139,92,246,0.2)', padding: '1rem' }} c={
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#A78BFA', fontWeight: 800 }}>⚡ تحليل نورة للعميل</div>
+                                        <div style={{ 
+                                            fontSize: '0.65rem', 
+                                            background: selChat.metadata.insights.interest_level === 'high' ? '#10B981' : '#F59E0B',
+                                            color: 'white',
+                                            padding: '2px 8px',
+                                            borderRadius: '10px',
+                                            fontWeight: 800
+                                        }}>
+                                            {selChat.metadata.insights.interest_level === 'high' ? 'اهتمام عالي' : 'اهتمام متوسط'}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.75rem' }}>
+                                        <div style={{ color: '#9CA3AF' }}>النشاط: <span style={{ color: 'white' }}>{selChat.metadata.insights.business_type || 'غير محدد'}</span></div>
+                                        <div style={{ color: '#9CA3AF' }}>الحالة: <span style={{ color: 'white' }}>{selChat.metadata.insights.lead_status || 'استفسار'}</span></div>
+                                    </div>
+                                    <div style={{ marginTop: '0.5rem', color: '#A78BFA', fontSize: '0.75rem', fontWeight: 600 }}>
+                                        💡 {selChat.metadata.insights.primary_need}
+                                    </div>
+                                </div>
+                            } />
+                        )}
+
                         <Card s={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '1rem' }} c={
                             selChat.messages?.map((m, i) => (
                                 <div key={i} style={{ 

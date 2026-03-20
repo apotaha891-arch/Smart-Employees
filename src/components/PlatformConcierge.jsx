@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { sendMessage, initializeChat } from '../services/geminiService';
+import { sendMessage, initializeChat, extractConciergeInsights } from '../services/geminiService';
 import { getPlatformSettings } from '../services/adminService';
 import { useLanguage } from '../LanguageContext';
 import { supabase, getCurrentUser } from '../services/supabaseService';
 import { saveConciergeConversation, getUserConversation } from '../services/conciergeService';
 
 const PlatformConcierge = () => {
+    // ... (rest of component state)
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -135,7 +136,17 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
             
             // Save to database
             if (user) {
+                // Initial save
                 await saveConciergeConversation(user.id, updatedMessages);
+                
+                // Background insights extraction (every 2 full cycles or at key moments)
+                if (updatedMessages.length >= 4 && updatedMessages.length % 2 === 0) {
+                    extractConciergeInsights(updatedMessages).then(res => {
+                        if (res.success) {
+                            saveConciergeConversation(user.id, updatedMessages, null, { insights: res.data });
+                        }
+                    });
+                }
             }
         }
         setIsLoading(false);
