@@ -137,7 +137,26 @@ serve(async (req: any) => {
                     if (sc.phone) businessContext += `\nBusiness Contact Phone: ${sc.phone}`;
                     if (sc.address) businessContext += `\nBusiness Physical Address: ${sc.address}`;
                     if (sc.website) businessContext += `\nBusiness Official Website: ${sc.website}`;
-                    if (sc.working_hours) businessContext += `\nWorking Hours: ${typeof sc.working_hours === 'string' ? sc.working_hours : JSON.stringify(sc.working_hours)}`;
+                    const formatWorkingHours = (wh: any) => {
+                        if (!wh) return 'Not specified';
+                        if (typeof wh === 'string') return wh;
+                        
+                        if (wh.isCustom && wh.days) {
+                            return Object.entries(wh.days)
+                                .map(([day, data]: [string, any]) => {
+                                    if (!data.active) return `${day}: Closed`;
+                                    const shifts = data.shifts || [{ start: data.start, end: data.end }];
+                                    const shiftsStr = shifts.map((s: any) => `${s.start}-${s.end}`).join(', ');
+                                    return `${day}: ${shiftsStr}`;
+                                })
+                                .join(' | ');
+                        } else {
+                            const shifts = wh.shifts || [{ start: wh.start, end: wh.end }];
+                            const shiftsStr = shifts.map((s: any) => `${s.start}-${s.end}`).join(', ');
+                            return `Standard: ${shiftsStr}`;
+                        }
+                    };
+                    if (sc.working_hours) businessContext += `\nWorking Hours: ${formatWorkingHours(sc.working_hours)}`;
                     if (sc.working_days) businessContext += `\nWorking Days: ${typeof sc.working_days === 'string' ? sc.working_days : JSON.stringify(sc.working_days)}`;
                     if (sc.mission_statement) businessContext += `\nBusiness Mission: ${sc.mission_statement}`;
                     if (sc.target_audience) businessContext += `\nTarget Audience: ${sc.target_audience}`;

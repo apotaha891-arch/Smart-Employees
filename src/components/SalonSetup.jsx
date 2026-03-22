@@ -79,7 +79,7 @@ const EntitySetup = () => {
         address: '',
         website: '',
         position: '',
-        workingHours: { start: '09:00', end: '22:00' },
+        workingHours: { shifts: [{ start: '09:00', end: '22:00' }], isCustom: false },
         workingDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
         knowledge_base: '',
         // Mission-Ready fields
@@ -303,6 +303,31 @@ const EntitySetup = () => {
                 if (configs) {
                     console.log("SalonSetup: Found existing config:", configs.id);
                     setSalonConfigId(configs.id);
+
+                    // Migration logic for multiple shifts
+                    const migrateWorkingHours = (wh) => {
+                        if (!wh) return { shifts: [{ start: '09:00', end: '22:00' }] };
+                        // If already in new format, return as is
+                        if (wh.shifts || (wh.isCustom && wh.days && Object.values(wh.days).some(d => d.shifts))) return wh;
+
+                        if (wh.isCustom && wh.days) {
+                            const newDays = {};
+                            ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].forEach(day => {
+                                const dayData = wh.days[day] || { active: true, start: '09:00', end: '22:00' };
+                                newDays[day] = {
+                                    active: dayData.active,
+                                    shifts: dayData.shifts || [{ start: dayData.start || '09:00', end: dayData.end || '22:00' }]
+                                };
+                            });
+                            return { ...wh, days: newDays };
+                        } else {
+                            return {
+                                ...wh,
+                                shifts: wh.shifts || [{ start: wh.start || '09:00', end: wh.end || '22:00' }]
+                            };
+                        }
+                    };
+
                     setFormData(prev => ({
                         ...prev,
                         businessName: configs.agent_name || prev.businessName || '',
@@ -311,7 +336,7 @@ const EntitySetup = () => {
                         phone: configs.phone || prev.phone || '',
                         address: configs.address || prev.address || '',
                         website: configs.website || prev.website || '',
-                        workingHours: configs.working_hours || prev.workingHours || { start: '09:00', end: '22:00' },
+                        workingHours: migrateWorkingHours(configs.working_hours || prev.workingHours),
                         mission_statement: configs.mission_statement || prev.mission_statement || '',
                         target_audience: configs.target_audience || prev.target_audience || '',
                         brand_voice_details: configs.brand_voice_details || prev.brand_voice_details || '',
@@ -419,6 +444,11 @@ const EntitySetup = () => {
     const handleAddService = async () => {
         if (!newService.service_name) {
             alert(language === 'ar' ? 'الرجاء إدخال اسم الخدمة' : 'Please enter a service name');
+            return;
+        }
+
+        if (!salonConfigId) {
+            alert(language === 'ar' ? '⚠️ يرجى حفظ بيانات المنشأة (Entity Info) أولاً قبل إضافة الخدمات.' : '⚠️ Please save the Entity Info first before adding services.');
             return;
         }
 
@@ -1249,16 +1279,17 @@ const EntitySetup = () => {
                                             </div>
                                             <button 
                                                 onClick={() => {
-                                                    const wh = formData.workingHours || { start: '09:00', end: '22:00' };
+                                                    const wh = { ...formData.workingHours };
                                                     if (!wh.days) {
+                                                        const baseShifts = wh.shifts || [{ start: wh.start || '09:00', end: wh.end || '22:00' }];
                                                         wh.days = {
-                                                            Sunday: { active: true, start: wh.start, end: wh.end },
-                                                            Monday: { active: true, start: wh.start, end: wh.end },
-                                                            Tuesday: { active: true, start: wh.start, end: wh.end },
-                                                            Wednesday: { active: true, start: wh.start, end: wh.end },
-                                                            Thursday: { active: true, start: wh.start, end: wh.end },
-                                                            Friday: { active: false, start: '16:00', end: '22:00' },
-                                                            Saturday: { active: false, start: '14:00', end: '22:00' }
+                                                            Sunday: { active: true, shifts: JSON.parse(JSON.stringify(baseShifts)) },
+                                                            Monday: { active: true, shifts: JSON.parse(JSON.stringify(baseShifts)) },
+                                                            Tuesday: { active: true, shifts: JSON.parse(JSON.stringify(baseShifts)) },
+                                                            Wednesday: { active: true, shifts: JSON.parse(JSON.stringify(baseShifts)) },
+                                                            Thursday: { active: true, shifts: JSON.parse(JSON.stringify(baseShifts)) },
+                                                            Friday: { active: false, shifts: [{ start: '16:00', end: '22:00' }] },
+                                                            Saturday: { active: false, shifts: [{ start: '14:00', end: '22:00' }] }
                                                         };
                                                     }
                                                     setFormData({...formData, workingHours: {...wh, isCustom: !wh.isCustom}});
@@ -1272,46 +1303,103 @@ const EntitySetup = () => {
                                         
                                         {!formData.workingHours?.isCustom ? (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                                <div>
-                                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'وقت البدء' : 'Start Time'}</label>
-                                                    <input type="time" style={inp} value={formData.workingHours?.start || '09:00'} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, start: e.target.value } })} />
-                                                </div>
-                                                <div>
-                                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'وقت الانتهاء' : 'End Time'}</label>
-                                                    <input type="time" style={inp} value={formData.workingHours?.end || '22:00'} onChange={e => setFormData({ ...formData, workingHours: { ...formData.workingHours, end: e.target.value } })} />
-                                                </div>
+                                                {(formData.workingHours?.shifts || [{ start: '09:00', end: '22:00' }]).map((shift, sIdx) => (
+                                                    <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <div style={{ flex: 1 }}>
+                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: 4 }}>{language === 'ar' ? `وقت البدء (${sIdx + 1})` : `Start Time (${sIdx + 1})`}</label>
+                                                            <input type="time" style={inp} value={shift.start} onChange={e => {
+                                                                const newShifts = [...(formData.workingHours.shifts || [])];
+                                                                newShifts[sIdx] = { ...shift, start: e.target.value };
+                                                                setFormData({ ...formData, workingHours: { ...formData.workingHours, shifts: newShifts } });
+                                                            }} />
+                                                        </div>
+                                                        <div style={{ flex: 1 }}>
+                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: 4 }}>{language === 'ar' ? `وقت الانتهاء (${sIdx + 1})` : `End Time (${sIdx + 1})`}</label>
+                                                            <input type="time" style={inp} value={shift.end} onChange={e => {
+                                                                const newShifts = [...(formData.workingHours.shifts || [])];
+                                                                newShifts[sIdx] = { ...shift, end: e.target.value };
+                                                                setFormData({ ...formData, workingHours: { ...formData.workingHours, shifts: newShifts } });
+                                                            }} />
+                                                        </div>
+                                                        {sIdx > 0 && (
+                                                            <Trash2 size={16} color="#EF4444" style={{ cursor: 'pointer', marginTop: 18 }} onClick={() => {
+                                                                const newShifts = formData.workingHours.shifts.filter((_, i) => i !== sIdx);
+                                                                setFormData({ ...formData, workingHours: { ...formData.workingHours, shifts: newShifts } });
+                                                            }} />
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                <button onClick={() => {
+                                                    const shifts = formData.workingHours.shifts || [{ start: '09:00', end: '22:00' }];
+                                                    setFormData({ ...formData, workingHours: { ...formData.workingHours, shifts: [...shifts, { start: '17:00', end: '22:00' }] } });
+                                                }} style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px dashed #8B5CF6', color: '#8B5CF6', padding: '8px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                                                    {language === 'ar' ? '+ إضافة فترة عمل' : '+ Add Shift'}
+                                                </button>
                                             </div>
                                         ) : (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                 {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => {
                                                     const daysAr = { Sunday: 'الأحد', Monday: 'الإثنين', Tuesday: 'الثلاثاء', Wednesday: 'الأربعاء', Thursday: 'الخميس', Friday: 'الجمعة', Saturday: 'السبت' };
-                                                    const dayData = formData.workingHours?.days?.[day] || { active: true, start: '09:00', end: '22:00' };
+                                                    const dayData = formData.workingHours?.days?.[day] || { active: true, shifts: [{ start: '09:00', end: '22:00' }] };
+                                                    const shifts = dayData.shifts || [{ start: '09:00', end: '22:00' }];
+                                                    
                                                     return (
-                                                        <div key={day} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.03)', padding: '8px 5px', borderRadius: '8px', opacity: dayData.active ? 1 : 0.6 }}>
-                                                            <input type="checkbox" checked={dayData.active} 
-                                                                onChange={e => {
-                                                                    const wh = { ...formData.workingHours };
-                                                                    if(!wh.days) wh.days = {};
-                                                                    wh.days[day] = { ...dayData, active: e.target.checked };
-                                                                    setFormData({ ...formData, workingHours: wh });
-                                                                }} 
-                                                                style={{ accentColor: '#8B5CF6', width: 14, height: 14, cursor: 'pointer', flexShrink: 0 }} />
-                                                            <span style={{ fontSize: '0.75rem', width: language === 'ar' ? '50px' : '55px', fontWeight: 600, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                {language === 'ar' ? daysAr[day] : day.substring(0, 3)}
-                                                            </span>
-                                                            <input type="time" style={{ ...inp, padding: '4px', flex: 1, minWidth: 0, fontSize: '0.75rem', opacity: dayData.active ? 1 : 0.5 }} disabled={!dayData.active}
-                                                                value={dayData.start} onChange={e => {
-                                                                    const wh = { ...formData.workingHours };
-                                                                    wh.days[day] = { ...dayData, start: e.target.value };
-                                                                    setFormData({ ...formData, workingHours: wh });
-                                                                }} />
-                                                            <span style={{ color: '#9CA3AF', fontSize: '0.75rem', flexShrink: 0 }}>-</span>
-                                                            <input type="time" style={{ ...inp, padding: '4px', flex: 1, minWidth: 0, fontSize: '0.75rem', opacity: dayData.active ? 1 : 0.5 }} disabled={!dayData.active}
-                                                                value={dayData.end} onChange={e => {
-                                                                    const wh = { ...formData.workingHours };
-                                                                    wh.days[day] = { ...dayData, end: e.target.value };
-                                                                    setFormData({ ...formData, workingHours: wh });
-                                                                }} />
+                                                        <div key={day} style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', opacity: dayData.active ? 1 : 0.6 }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: shifts.length > 0 && dayData.active ? '10px' : 0 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <input type="checkbox" checked={dayData.active} 
+                                                                        onChange={e => {
+                                                                            const wh = { ...formData.workingHours };
+                                                                            if(!wh.days) wh.days = {};
+                                                                            wh.days[day] = { ...dayData, active: e.target.checked };
+                                                                            setFormData({ ...formData, workingHours: wh });
+                                                                        }} 
+                                                                        style={{ accentColor: '#8B5CF6', width: 14, height: 14, cursor: 'pointer' }} />
+                                                                    <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                                                        {language === 'ar' ? daysAr[day] : day}
+                                                                    </span>
+                                                                </div>
+                                                                {dayData.active && (
+                                                                    <button onClick={() => {
+                                                                        const wh = { ...formData.workingHours };
+                                                                        const dData = wh.days[day] || { active: true, shifts: [] };
+                                                                        dData.shifts = [...(dData.shifts || []), { start: '17:00', end: '22:00' }];
+                                                                        wh.days[day] = dData;
+                                                                        setFormData({ ...formData, workingHours: wh });
+                                                                    }} style={{ background: 'none', border: 'none', color: '#8B5CF6', fontSize: '0.75rem', cursor: 'pointer' }}>
+                                                                        {language === 'ar' ? '+ فترة' : '+ Shift'}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+
+                                                            {dayData.active && shifts.map((shift, sIdx) => (
+                                                                <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: sIdx > 0 ? '8px' : 0 }}>
+                                                                    <input type="time" style={{ ...inp, padding: '4px', flex: 1, minWidth: 0, fontSize: '0.75rem' }}
+                                                                        value={shift.start} onChange={e => {
+                                                                            const wh = { ...formData.workingHours };
+                                                                            const dShifts = [...wh.days[day].shifts];
+                                                                            dShifts[sIdx] = { ...shift, start: e.target.value };
+                                                                            wh.days[day] = { ...wh.days[day], shifts: dShifts };
+                                                                            setFormData({ ...formData, workingHours: wh });
+                                                                        }} />
+                                                                    <span style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>-</span>
+                                                                    <input type="time" style={{ ...inp, padding: '4px', flex: 1, minWidth: 0, fontSize: '0.75rem' }}
+                                                                        value={shift.end} onChange={e => {
+                                                                            const wh = { ...formData.workingHours };
+                                                                            const dShifts = [...wh.days[day].shifts];
+                                                                            dShifts[sIdx] = { ...shift, end: e.target.value };
+                                                                            wh.days[day] = { ...wh.days[day], shifts: dShifts };
+                                                                            setFormData({ ...formData, workingHours: wh });
+                                                                        }} />
+                                                                    {sIdx > 0 && (
+                                                                        <Trash2 size={12} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => {
+                                                                            const wh = { ...formData.workingHours };
+                                                                            wh.days[day] = { ...wh.days[day], shifts: wh.days[day].shifts.filter((_, i) => i !== sIdx) };
+                                                                            setFormData({ ...formData, workingHours: wh });
+                                                                        }} />
+                                                                    )}
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     );
                                                 })}
