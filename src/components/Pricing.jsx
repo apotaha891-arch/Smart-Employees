@@ -68,8 +68,10 @@ const Pricing = () => {
             let successUrl = `${origin}/salon-setup?tab=integrations&session_id={CHECKOUT_SESSION_ID}&success=true`;
             let cancelUrl = `${origin}/pricing?canceled=true`;
 
-            if (isHiringFlow) {
-                // If in flow, we might want to redirect back to contract or directly to deploy
+            // For add-ons, redirect to dashboard on success
+            if (plan.id?.startsWith('addon_')) {
+                successUrl = `${origin}/dashboard?refill=success&plan=${plan.id}`;
+            } else if (isHiringFlow) {
                 successUrl = `${origin}/contract?session_id={CHECKOUT_SESSION_ID}&success=true&plan=${plan.id}`;
             }
 
@@ -92,18 +94,14 @@ const Pricing = () => {
                 }
 
                 try {
-                    // Sometimes context contains the real text
                     if (error.context) {
                         const ctxText = await error.context.text();
                         detailedError += " | Context: " + ctxText;
                     }
                 } catch (e) { }
 
-                // --- GRACEFUL FALLBACK FOR MOCK FLOW / TESTING ---
-                // If the Edge function is not deployed yet (404 NOT_FOUND), simulate a successful payment to continue the journey
+                // Graceful fallback for 404 (function not deployed)
                 if (detailedError.includes('NOT_FOUND') || detailedError.includes('404')) {
-                    console.log("Stripe Edge Function not found. Simulating successful checkout for flow progression.");
-                    // Fallback using React Router's navigate instead of hard page reload if possible
                     if (isHiringFlow) {
                         navigate(`/contract?session_id=mock_session_404&success=true&plan=${plan.id}`, {
                             state: { businessRules, template, fromInterview: true }
@@ -116,22 +114,35 @@ const Pricing = () => {
                     return;
                 }
 
-                alert(`حدث خطأ أثناء تحضير صفحة الدفع: ${detailedError}`);
-                setLoadingPlan(null);
+                alert(`حدث خطأ أثناء تحضير صفحة الدفع:\n${detailedError}`);
+                return;
+            }
+
+            // Check if the function returned an error payload (e.g. missing Stripe price ID)
+            if (data?.error) {
+                const errMsg = data.error;
+                if (errMsg.includes('not configured') || errMsg.includes('Price ID')) {
+                    alert(
+                        language === 'ar'
+                            ? `⚙️ لم يتم ضبط سعر Stripe لهذه الباقة بعد.\n\nيرجى إضافة المتغير التالي في إعدادات Supabase:\nSTRIPE_PRICE_${plan.id.toUpperCase()}\n\nأو تواصل مع المسؤول.`
+                            : `⚙️ Stripe price is not configured for this plan yet.\nPlease add the environment variable:\nSTRIPE_PRICE_${plan.id.toUpperCase()}`
+                    );
+                } else {
+                    alert(`حدث خطأ: ${errMsg}`);
+                }
                 return;
             }
 
             if (data?.url) {
-                // Redirect user to Stripe Checkout
                 window.location.href = data.url;
             } else {
-                alert("حدث خطأ أثناء تحضير صفحة الدفع: " + (data.error || "رجاءً المحاولة لاحقاً."));
-                setLoadingPlan(null);
+                alert("حدث خطأ أثناء تحضير صفحة الدفع. رجاءً المحاولة لاحقاً.");
             }
 
         } catch (error) {
             console.error("Checkout error:", error);
             alert("حدث خطأ في الاتصال بخادم الدفع.");
+        } finally {
             setLoadingPlan(null);
         }
     };

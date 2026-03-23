@@ -19,57 +19,52 @@ serve(async (req: any) => {
 
   try {
     const { planId, successUrl, cancelUrl } = await req.json();
+    console.log(`[checkout] Request received — planId: ${planId}`);
 
     // 1. Get User ID from Auth Header
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error("Missing Authorization header");
-    }
+    if (!authHeader) throw new Error("Missing Authorization header");
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    // Service role key needed to bypass RLS to read/write stripe_customer_id on profiles table
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
-    // Extract the JWT from the Bearer string
     const jwt = authHeader.replace('Bearer ', '').trim();
-
-    // Client for verifying user JWT token
     const supabaseAuthClient = createClient(supabaseUrl, supabaseAnonKey);
 
     const { data: { user }, error: userError } = await supabaseAuthClient.auth.getUser(jwt);
-    if (userError || !user) {
-      console.error("Auth Error:", userError);
-      throw new Error(`Unauthorized. JWT issue: ${userError?.message || 'No user found'}.`);
-    }
+    if (userError || !user) throw new Error(`Unauthorized: ${userError?.message || 'No user found'}`);
 
-    // Client for DB operations (bypass RLS)
+    console.log(`[checkout] Authenticated user: ${user.id}`);
+
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 2. Fetch User Profile to get Customer ID
-    const { data: profile, error: profileError } = await supabaseAdmin.from('profiles').select('stripe_customer_id, email').eq('id', user.id).single();
-
-    if (profileError) {
-      console.error("Profile Error:", profileError);
-    }
+    // 2. Fetch User Profile
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('stripe_customer_id, email')
+      .eq('id', user.id)
+      .maybeSingle();
 
     let customerId = profile?.stripe_customer_id;
+    const userEmail = profile?.email || user.email || '';
 
-    // 3. Create Stripe Customer if it doesn't exist
+    // 3. Create Stripe Customer if missing (only needed for subscriptions)
     if (!customerId) {
       const customer = await stripe.customers.create({
-        email: profile?.email || user.email,
+        email: userEmail,
         metadata: { supabase_user_id: user.id }
       });
       customerId = customer.id;
-      // Save to DB
       await supabaseAdmin.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
+      console.log(`[checkout] Created new Stripe customer: ${customerId}`);
     }
 
-    // 4. Determine Price and Payment Mode based on planId
+    // 4. Determine Price and Payment Mode
     let priceId = '';
     let couponId = '';
     let mode: 'subscription' | 'payment' = 'subscription';
+    const isAddon = planId.startsWith('addon_');
 
     if (planId === 'starter') {
       priceId = Deno.env.get('STRIPE_PRICE_STARTER') || '';
@@ -84,32 +79,40 @@ serve(async (req: any) => {
       priceId = Deno.env.get('STRIPE_PRICE_ADDON_5K') || '';
       mode = 'payment';
     } else {
-      throw new Error("Invalid Plan Selection");
+      throw new Error(`Invalid Plan: ${planId}`);
     }
 
-    if (!priceId) {
-        throw new Error(`Stripe Price ID not configured for plan: ${planId}`);
-    }
+    console.log(`[checkout] priceId: ${priceId}, mode: ${mode}`);
 
-    // 5. Create Checkout Session
+    if (!priceId) throw new Error(`Stripe Price ID not configured for plan: ${planId}`);
+
+    // 5. Build Session Config
+    // For one-time payments (addons), use customer_email instead of customer
+    // to avoid conflicts with subscription-mode customers
     const sessionConfig: any = {
-      customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: mode,
+      mode,
       success_url: successUrl || `${req.headers.get('origin')}/dashboard?refill=success`,
       cancel_url: cancelUrl || `${req.headers.get('origin')}/pricing?canceled=true`,
       metadata: {
         supabase_user_id: user.id,
         plan_id: planId,
-        payment_type: mode === 'payment' ? 'refill' : 'subscription'
+        payment_type: isAddon ? 'refill' : 'subscription'
       }
     };
 
-    if (couponId && mode === 'subscription') {
-      sessionConfig.discounts = [{ coupon: couponId }];
+    if (isAddon) {
+      // One-time payment: attach customer by email to avoid mode conflicts
+      sessionConfig.customer_email = userEmail;
+    } else {
+      // Subscription: use the stored customer object
+      sessionConfig.customer = customerId;
+      if (couponId) sessionConfig.discounts = [{ coupon: couponId }];
     }
 
+    console.log(`[checkout] Creating Stripe session...`);
     const session = await stripe.checkout.sessions.create(sessionConfig);
+    console.log(`[checkout] Session created: ${session.id}, url: ${session.url?.slice(0, 60)}...`);
 
     return new Response(
       JSON.stringify({ url: session.url }),
@@ -117,9 +120,21 @@ serve(async (req: any) => {
     );
 
   } catch (err: any) {
-    console.error("CATCH BLOCK ERROR:", err.message, err.stack);
+    // Log the full Stripe error details
+    const stripeCode = err?.raw?.code || err?.code || '';
+    const stripeType = err?.raw?.type || err?.type || '';
+    const stripeMsg  = err?.raw?.message || err?.message || 'Unknown error';
+
+    console.error(`[checkout] ERROR — type: ${stripeType}, code: ${stripeCode}, message: ${stripeMsg}`);
+    console.error(`[checkout] Stack:`, err.stack);
+
+    // Return a user-friendly + debuggable error
     return new Response(
-      JSON.stringify({ error: err.message, stack: err.stack }),
+      JSON.stringify({
+        error: stripeMsg,
+        stripe_code: stripeCode,
+        stripe_type: stripeType,
+      }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

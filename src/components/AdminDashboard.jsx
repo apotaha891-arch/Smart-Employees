@@ -103,6 +103,37 @@ export default function AdminDashboard() {
     const [templates, setTemplates] = useState([]);
     const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '👩' });
     const [showAddTemplate, setShowAddTemplate] = useState(false);
+    
+    // ── Interview Room Agents Config ─────────────────────────────────────────
+    const DEFAULT_INTERVIEW_AGENTS = [
+        { id: 'support-agent',          nameAr: 'عبدالرحمن', nameEn: 'Adam',          gender: 'male',   avatar: '🧑‍💼', tone: 'friendly',     titleAr: 'ممثل خدمة العملاء',  titleEn: 'Customer Support Agent' },
+        { id: 'sales-lead-gen',         nameAr: 'أستاذ فهد',  nameEn: 'Mr. James',    gender: 'male',   avatar: '🤵',    tone: 'professional', titleAr: 'أخصائي مبيعات',        titleEn: 'Sales Specialist' },
+        { id: 'dental-receptionist',    nameAr: 'د. سارة',   nameEn: 'Dr. Sarah',    gender: 'female', avatar: '👩‍⚕️', tone: 'professional', titleAr: 'موظفة استقبال',        titleEn: 'Receptionist' },
+        { id: 'medical-clinic',         nameAr: 'د. هند',    nameEn: 'Dr. Emily',    gender: 'female', avatar: '👩‍⚕️', tone: 'professional', titleAr: 'مستقبِلة عيادة',       titleEn: 'Clinic Receptionist' },
+        { id: 'beauty-salon',           nameAr: 'نورة',      nameEn: 'Emma',         gender: 'female', avatar: '💅',    tone: 'luxury',       titleAr: 'منسقة مواعيد',         titleEn: 'Appointment Coordinator' },
+        { id: 'real-estate-marketing',  nameAr: 'أستاذ طارق', nameEn: 'Mr. Robert',  gender: 'male',   avatar: '🏢',    tone: 'professional', titleAr: 'مسوّق عقاري',          titleEn: 'Real Estate Marketer' },
+        { id: 'restaurant-reservations',nameAr: 'أحمد',      nameEn: 'Alex',         gender: 'male',   avatar: '🍽️',   tone: 'friendly',     titleAr: 'مسؤول حجوزات',         titleEn: 'Reservations Officer' },
+        { id: 'gym-coordinator',        nameAr: 'كابتن خالد',nameEn: 'Coach Chris',  gender: 'male',   avatar: '💪',    tone: 'enthusiastic', titleAr: 'منسق اشتراكات',        titleEn: 'Memberships Coordinator' },
+    ];
+    const [interviewAgents, setInterviewAgents] = useState(() => {
+        try {
+            const stored = localStorage.getItem('admin_interview_agents');
+            return stored ? JSON.parse(stored) : DEFAULT_INTERVIEW_AGENTS;
+        } catch { return DEFAULT_INTERVIEW_AGENTS; }
+    });
+    const [savingInterview, setSavingInterview] = useState(false);
+    const saveInterviewAgents = () => {
+        setSavingInterview(true);
+        localStorage.setItem('admin_interview_agents', JSON.stringify(interviewAgents));
+        setTimeout(() => { setSavingInterview(false); flash('✅ تم حفظ إعدادات موظفي المقابلة'); }, 600);
+    };
+    const resetInterviewAgents = () => {
+        if (!confirm('إعادة ضبط جميع موظفي المقابلة للإعدادات الافتراضية؟')) return;
+        setInterviewAgents(DEFAULT_INTERVIEW_AGENTS);
+        localStorage.removeItem('admin_interview_agents');
+        flash('↩️ تم الإعادة للإعدادات الافتراضية');
+    };
+    // ────────────────────────────────────────────────────────────────────────
     const [cSearch, setCSearch] = useState('');
     const [cFilter, setCFilter] = useState('');
     const [aSearch, setASearch] = useState('');
@@ -411,6 +442,7 @@ export default function AdminDashboard() {
         { id: 'overview', i: LayoutDashboard, l: 'نظرة عامة' },
         { id: 'clients', i: Users, l: 'العملاء' },
         { id: 'agents', i: Bot, l: 'الموظفات' },
+        { id: 'interview-agents', i: Users, l: 'موظفو المقابلة' },
         { id: 'bookings', i: Calendar, l: 'الحجوزات' },
         { id: 'pricing', i: CreditCard, l: 'الباقات والأسعار' },
         { id: 'infrastructure', i: Globe, l: 'البنية التحتية' },
@@ -1172,6 +1204,108 @@ export default function AdminDashboard() {
                             </div>
                         )}
                     </div>}
+                </div>}
+
+                {/* ── INTERVIEW AGENTS ── */}
+                {tab === 'interview-agents' && <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                        <div>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>🎙️ موظفو غرفة المقابلة</h1>
+                            <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>خصّص اسم وشخصية كل موظف يظهر في جلسات المقابلة للعملاء</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.6rem' }}>
+                            <button onClick={resetInterviewAgents} style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>↩️ إعادة الضبط</button>
+                            <Btn onClick={saveInterviewAgents} disabled={savingInterview}><Save size={14} />{savingInterview ? 'جاري الحفظ...' : 'حفظ جميع التغييرات'}</Btn>
+                        </div>
+                    </div>
+
+                    <div style={{ marginBottom: '1rem', padding: '0.85rem 1rem', background: 'rgba(139,92,246,0.07)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '10px', fontSize: '0.8rem', color: '#A78BFA' }}>
+                        💡 التغييرات تؤثر فوراً على غرفة المقابلة. الاسم والجنس يحددان لغة الترحيب والمسمى الوظيفي تلقائياً.
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1rem' }}>
+                        {interviewAgents.map((agent, idx) => (
+                            <Card key={agent.id} c={
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                                    {/* Header */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                        <div style={{ fontSize: '2rem', width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(139,92,246,0.1)', borderRadius: '12px' }}>{agent.avatar}</div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'white' }}>{agent.nameAr}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{agent.titleAr}</div>
+                                        </div>
+                                        <span style={{ fontSize: '0.65rem', padding: '3px 8px', borderRadius: '20px', fontWeight: 700, background: agent.gender === 'female' ? 'rgba(236,72,153,0.15)' : 'rgba(59,130,246,0.15)', color: agent.gender === 'female' ? '#EC4899' : '#60A5FA' }}>
+                                            {agent.gender === 'female' ? '♀ أنثى' : '♂ ذكر'}
+                                        </span>
+                                    </div>
+
+                                    {/* Avatar + Gender Row */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                                        <div>
+                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>الإيموجي / الأفاتار</label>
+                                            <input value={agent.avatar} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, avatar: e.target.value } : a))}
+                                                style={{ width: '100%', padding: '7px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '1.1rem', textAlign: 'center', boxSizing: 'border-box' }} />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>الجنس</label>
+                                            <select value={agent.gender} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, gender: e.target.value } : a))}
+                                                style={{ width: '100%', padding: '7px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem', boxSizing: 'border-box' }}>
+                                                <option value="male">♂ ذكر</option>
+                                                <option value="female">♀ أنثى</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Name Row */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                                        <div>
+                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>الاسم بالعربية</label>
+                                            <Input value={agent.nameAr} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, nameAr: e.target.value } : a))} placeholder="مثال: سارة" />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>الاسم بالإنجليزية</label>
+                                            <Input value={agent.nameEn} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, nameEn: e.target.value } : a))} placeholder="e.g. Sarah" />
+                                        </div>
+                                    </div>
+
+                                    {/* Title Row */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                                        <div>
+                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>المسمى الوظيفي (عربي)</label>
+                                            <Input value={agent.titleAr} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, titleAr: e.target.value } : a))} placeholder="مثال: منسقة مواعيد" />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>Job Title (English)</label>
+                                            <Input value={agent.titleEn} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, titleEn: e.target.value } : a))} placeholder="e.g. Coordinator" />
+                                        </div>
+                                    </div>
+
+                                    {/* Tone */}
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>النبرة الشخصية</label>
+                                        <select value={agent.tone} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, tone: e.target.value } : a))}
+                                            style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem' }}>
+                                            <option value="professional">🎩 مهني واحترافي</option>
+                                            <option value="friendly">😊 ودود ودافئ</option>
+                                            <option value="enthusiastic">⚡ نشيط وحيوي</option>
+                                            <option value="luxury">✨ فاخر وراقي</option>
+                                            <option value="casual">💬 بسيط وغير رسمي</option>
+                                            <option value="fast">🚀 سريع ومباشر</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Role ID tag */}
+                                    <div style={{ fontSize: '0.65rem', color: '#374151', background: '#1F2937', padding: '3px 8px', borderRadius: '4px', fontFamily: 'monospace', alignSelf: 'flex-start' }}>ID: {agent.id}</div>
+                                </div>
+                            } />
+                        ))}
+                    </div>
+
+                    <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                        <Btn onClick={saveInterviewAgents} disabled={savingInterview} style={{ margin: '0 auto', padding: '12px 32px', fontSize: '0.95rem' }}>
+                            <Save size={16} />{savingInterview ? 'جاري الحفظ...' : '💾 حفظ جميع إعدادات الموظفين'}
+                        </Btn>
+                    </div>
                 </div>}
 
                 {/* ── AI SETTINGS ── */}
