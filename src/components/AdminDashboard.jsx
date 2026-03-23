@@ -165,8 +165,8 @@ export default function AdminDashboard() {
     const load = async () => {
         setLoading(true);
         try {
-            // Load data via RPC-backed adminService (bypasses RLS)
-            const [profiles, ag, bk, keyData, chats, notifs] = await Promise.all([
+            // Use allSettled so one failing RPC doesn't crash the whole load
+            const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes] = await Promise.allSettled([
                 adminService.getAllCustomers(),
                 adminService.getAllAgents(),
                 adminService.getAllBookings(),
@@ -174,6 +174,13 @@ export default function AdminDashboard() {
                 adminService.getAllConciergeConversations(),
                 adminService.getAllNotifications()
             ]);
+
+            const profiles = profilesRes.status === 'fulfilled' ? profilesRes.value : [];
+            const ag       = agRes.status === 'fulfilled'       ? agRes.value       : [];
+            const bk       = bkRes.status === 'fulfilled'       ? bkRes.value       : [];
+            const keyData  = keyRes.status === 'fulfilled'      ? keyRes.value      : [];
+            const chats    = chatsRes.status === 'fulfilled'    ? chatsRes.value    : [];
+            const notifs   = notifsRes.status === 'fulfilled'   ? notifsRes.value   : [];
 
             // Merge Profile + SalonConfig data
             const clientMap = {};
@@ -186,22 +193,12 @@ export default function AdminDashboard() {
                 }
             });
             setClients(Object.values(clientMap));
-
             setAgents(ag || []);
             setBookings(bk || []);
             setConciergeChats(chats || []);
             setNotifications(notifs || []);
 
-            // Setup Realtime subscription for notifications
-            const channel = supabase.channel('platform_notifications')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'platform_notifications' }, (payload) => {
-                    setNotifications(prev => [payload.new, ...prev].slice(0, 50));
-                })
-                .subscribe();
-
-            return () => { supabase.removeChannel(channel); };
-
-            // Platform settings & Dynamic Configs
+            // Platform settings & Dynamic Configs (runs regardless of above)
             const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.all([
                 adminService.getPlatformSettings('pricing_plans'),
                 adminService.getPlatformSettings('external_integrations'),
@@ -217,15 +214,20 @@ export default function AdminDashboard() {
                 { id: 'addon_1k', name: 'شحن 1000 نقطة', monthlyPrice: 10, credits: 1000 },
                 { id: 'addon_5k', name: 'شحن 5000 نقطة', monthlyPrice: 35, credits: 5000 }
             ]);
-            setIntegrations(integ || [{ id: 'n8n', name: 'n8n Webhook', url: '', key: '', status: 'Disconnected' }, { id: 'openai', name: 'OpenAI API', url: '', key: '', status: 'Disconnected' }, { id: 'telegram', name: 'Telegram Platform Bot', url: '', key: '', status: 'Disconnected' }]);
+            setIntegrations(integ || [
+                { id: 'n8n', name: 'n8n Webhook', url: '', key: '', status: 'Disconnected' },
+                { id: 'openai', name: 'OpenAI API', url: '', key: '', status: 'Disconnected' },
+                { id: 'telegram', name: 'Telegram Platform Bot', url: '', key: '', status: 'Disconnected' }
+            ]);
 
             if (dbSectors) setSectors(dbSectors);
             if (dbRoles) setRoles(dbRoles);
             if (dbApps) setAgentAppsConfig(dbApps);
             if (dbAiConfig) setAiConfig(dbAiConfig);
 
-            // Per-client keys (already fetched in keyData at line 83)
-            const kmap = {}; (keyData || []).forEach(k => { kmap[k.user_id] = { telegram_token: k.telegram_token || '', whatsapp_number: k.whatsapp_number || '', whatsapp_api_key: k.whatsapp_api_key || '' }; });
+            // Per-client keys
+            const kmap = {};
+            (keyData || []).forEach(k => { kmap[k.user_id] = { telegram_token: k.telegram_token || '', whatsapp_number: k.whatsapp_number || '', whatsapp_api_key: k.whatsapp_api_key || '' }; });
             setClientKeys(kmap);
 
             // Agent apps (stored in agents.metadata jsonb)
@@ -233,8 +235,20 @@ export default function AdminDashboard() {
             (ag || []).forEach(a => { if (a.metadata?.apps) appMap[a.id] = a.metadata.apps; });
             setAgentApps(appMap);
 
-            fetchTemplates();
+            // Setup Realtime subscription for notifications
+            try {
+                const channel = supabase.channel('platform_notifications')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'platform_notifications' }, (payload) => {
+                        setNotifications(prev => [payload.new, ...prev].slice(0, 50));
+                    })
+                    .subscribe();
+                // Cleanup registered via useEffect return
+                window.__adminDashboardChannel = channel;
+            } catch (realtimeErr) {
+                console.warn('Realtime subscription failed (non-critical):', realtimeErr.message);
+            }
 
+            fetchTemplates();
             adminService.logSystemEvent('info', 'system', 'Admin dashboard loaded successfully');
         } catch (e) {
             console.error('Admin load error:', e);

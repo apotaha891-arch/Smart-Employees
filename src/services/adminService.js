@@ -159,24 +159,41 @@ export const getAllTickets = async () => {
 };
 
 export const getAllConciergeConversations = async () => {
-    const { data, error } = await supabase.rpc('get_admin_concierge_conversations');
-    if (!error && data) return data;
-    console.warn('get_admin_concierge_conversations RPC failed:', error?.message);
-    const { data: fallback } = await supabase.from('concierge_conversations').select('*').order('updated_at', { ascending: false });
-    return fallback || [];
+    try {
+        const { data, error } = await supabase.rpc('get_admin_concierge_conversations');
+        if (!error && data) return data;
+        console.warn('get_admin_concierge_conversations RPC failed:', error?.message);
+        // Fallback: try direct table query
+        const { data: fallback, error: fbErr } = await supabase
+            .from('concierge_conversations')
+            .select('*')
+            .order('updated_at', { ascending: false })
+            .limit(100);
+        if (!fbErr) return fallback || [];
+        console.warn('concierge_conversations table also unavailable:', fbErr?.message);
+        return [];
+    } catch (e) {
+        console.warn('getAllConciergeConversations error (non-critical):', e.message);
+        return [];
+    }
 };
 
 export const getAllNotifications = async () => {
-    const { data, error } = await supabase
-        .from('platform_notifications')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-    if (error) {
-        console.error('Error fetching notifications:', error.message);
+    try {
+        const { data, error } = await supabase
+            .from('platform_notifications')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+        if (error) {
+            console.warn('platform_notifications unavailable:', error.message);
+            return [];
+        }
+        return data || [];
+    } catch (e) {
+        console.warn('getAllNotifications error (non-critical):', e.message);
         return [];
     }
-    return data || [];
 };
 
 export const markNotificationAsRead = async (id) => {
