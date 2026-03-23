@@ -60,8 +60,22 @@ const EntitySetup = () => {
 
 
     const handleOAuthConnect = async (platformId) => {
+        if (platformId === 'instagram') {
+            setLoadingOAuth(platformId);
+            const { user } = await getCurrentUser();
+            if (!user) {
+                alert(language === 'ar' ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+                setLoadingOAuth(null);
+                return;
+            }
+            // Redirect to our new Edge Function for OAuth handshake
+            const authUrl = `${supabaseUrl}/functions/v1/instagram-auth/authorize?user_id=${user.id}`;
+            window.location.href = authUrl;
+            return;
+        }
+
         setLoadingOAuth(platformId);
-        // Simulate a seamless OAuth redirect/popup experience
+        // Simulate other OAuth redirects
         setTimeout(() => {
             setIntegrationKeys(prev => ({ ...prev, [`oauth_${platformId}`]: true }));
             setLoadingOAuth(null);
@@ -1537,16 +1551,6 @@ const EntitySetup = () => {
                                 ]
                             },
                             {
-                                id: 'instagram', icon: Instagram, color: '#E1306C',
-                                titleAr: 'انستقرام (قريباً)', titleEn: 'Instagram (Beta)',
-                                descAr: 'الرد على الرسائل الخاصة والتعليقات',
-                                descEn: 'Reply to DMs and comments automatically',
-                                badge: 'Beta', badgeColor: '#F59E0B',
-                                fields: [
-                                    { key: 'instagram_id', labelAr: 'معرف الحساب', labelEn: 'Account ID', placeholder: '12345...', password: false, hintAr: 'اختياري في المرحلة التجريبية', hintEn: 'Optional in beta', guide: null }
-                                ]
-                            },
-                            {
                                 id: 'sheets', icon: FileText, color: '#0F9D58',
                                 titleAr: 'جداول جوجل', titleEn: 'Google Sheets',
                                 descAr: 'تصدير الحجوزات والعملاء تلقائياً لجدولك',
@@ -1595,7 +1599,7 @@ const EntitySetup = () => {
                                 titleAr: 'إنستغرام', titleEn: 'Instagram',
                                 descAr: 'إدارة حساب إنستغرام للأعمال أو منشئ المحتوى.',
                                 descEn: 'Manage your Instagram Business or Creator account.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
+                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: false, fields: []
                             },
                             {
                                 id: 'gmail', icon: Mail, color: '#EA4335',
