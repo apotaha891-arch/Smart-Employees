@@ -17,6 +17,7 @@ import {
 import ServicesTable from './ServicesTable';
 
 const EntitySetup = () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const { t, language } = useLanguage();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
