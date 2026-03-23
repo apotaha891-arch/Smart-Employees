@@ -369,6 +369,25 @@ const Login = () => {
                         {isSignUp ? t('haveAccountLogin') : t('newAccountJoin')}
                     </button>
                 </div>
+
+                {/* Compliance Links for Meta Review */}
+                <div style={{
+                    marginTop: '2rem',
+                    paddingTop: '1rem',
+                    borderTop: '1px solid rgba(255,255,255,0.05)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '1.5rem',
+                    fontSize: '0.75rem',
+                    color: '#6B7280'
+                }}>
+                    <button onClick={() => navigate('/privacy')} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'underline' }}>
+                        {language === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy'}
+                    </button>
+                    <button onClick={() => navigate('/terms')} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'underline' }}>
+                        {language === 'ar' ? 'شروط الخدمة' : 'Terms of Service'}
+                    </button>
+                </div>
             </div>
         </div>
     );

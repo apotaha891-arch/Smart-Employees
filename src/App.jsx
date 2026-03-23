@@ -31,6 +31,7 @@ import SupportTicketManager from './components/SupportTicketManager';
 import HRRecruitmentManager from './components/HRRecruitmentManager';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
+import Footer from './components/Footer';
 
 // Create AuthProvider
 const AuthProvider = createAuthProvider();
@@ -195,6 +196,7 @@ function AppContent() {
                 />
             </Routes>
 
+            {!isDashboard && <Footer />}
             <PlatformConcierge />
         </div>
     );
