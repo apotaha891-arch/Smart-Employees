@@ -517,7 +517,22 @@ export default function AdminDashboard() {
                     <h3 style={{ color: 'white', marginBottom: '0.9rem', fontSize: '0.9rem', fontWeight: 700 }}>توزيع العملاء بالقطاعات</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: '0.75rem' }}>
                         {Object.entries(sectors).map(([k, v]) => {
-                            const cnt = clients.filter(c => c.business_type === k).length;
+                            // Normalize business_type to sector key
+                            const normalizeSector = (bt) => {
+                                if (!bt) return 'general';
+                                const map = {
+                                    'beauty-salon': 'beauty', 'beauty': 'beauty',
+                                    'medical-clinic': 'medical', 'dental-receptionist': 'medical', 'medical': 'medical',
+                                    'restaurant-reservations': 'restaurant', 'restaurant': 'restaurant',
+                                    'real-estate-marketing': 'real_estate', 'real_estate': 'real_estate',
+                                    'gym-coordinator': 'call_center', 'gym': 'call_center',
+                                    'support-agent': 'call_center', 'call_center': 'call_center',
+                                    'sales-lead-gen': 'retail_ecommerce', 'retail_ecommerce': 'retail_ecommerce',
+                                    'telecom_it': 'telecom_it', 'banking': 'banking', 'general': 'general'
+                                };
+                                return map[bt] || map[bt.toLowerCase()] || 'general';
+                            };
+                            const cnt = clients.filter(c => normalizeSector(c.business_type) === k).length;
                             return <Card key={k} s={{ padding: '0.9rem', border: `1px solid ${v.c}25`, opacity: v.on ? 1 : 0.5 }} c={<>
                                 <div style={{ fontSize: '1.3rem', marginBottom: '4px' }}>{v.e}</div>
                                 <div style={{ color: v.c, fontWeight: 700, fontSize: '0.77rem' }}>{v.l}</div>
@@ -551,7 +566,12 @@ export default function AdminDashboard() {
                             <tbody>
                                 {filteredClients.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد عملاء مطابقين للبحث</td></tr>
                                     : filteredClients.map(c => {
-                                        const sec = sectors[c.business_type] || { l: '—', e: '🏢' };
+                                        const normalizeSectorKey = (bt) => {
+                                            if (!bt) return 'general';
+                                            const map = { 'beauty-salon': 'beauty', 'medical-clinic': 'medical', 'dental-receptionist': 'medical', 'restaurant-reservations': 'restaurant', 'real-estate-marketing': 'real_estate', 'gym-coordinator': 'call_center', 'support-agent': 'call_center', 'sales-lead-gen': 'retail_ecommerce' };
+                                            return map[bt] || bt;
+                                        };
+                                        const sec = sectors[normalizeSectorKey(c.business_type)] || { l: c.business_type || '—', e: '🏢' };
                                         const plan = PLANS[c.subscription_tier || 'basic'] || PLANS.basic;
                                         return <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: selClient?.id === c.id ? 'rgba(139,92,246,0.06)' : 'transparent' }}>
                                             <td style={{ padding: '0.75rem 0.9rem' }}><div style={{ fontWeight: 700, color: 'white', fontSize: '0.84rem' }}>{c.full_name || '—'}</div><div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{c.email}</div></td>

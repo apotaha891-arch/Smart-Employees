@@ -440,10 +440,67 @@ YOUR GUIDELINES:
                 }
                 console.log("salon_config_id resolved:", finalSalonId);
 
-                // --- Availability Check: is this slot already booked? ---
+                // --- Availability Check: is this slot already booked or outside working hours? ---
                 const slotStart = new Date(`${bookingDate}T${bookingTime}`);
                 const slotEnd = new Date(slotStart.getTime() + 60 * 60000); // +1 hour
 
+                // 1. Check Working Hours
+                if (sc && sc.working_hours) {
+                    const wh = sc.working_hours;
+                    const daysMap: Record<number, string> = { 0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday' };
+                    const bookingDayName = daysMap[slotStart.getDay()];
+                    
+                    let dayShifts = [];
+                    let isActive = true;
+
+                    if (wh.isCustom && wh.days) {
+                        const dayData = wh.days[bookingDayName];
+                        if (!dayData || !dayData.active) isActive = false;
+                        else dayShifts = dayData.shifts || [{ start: dayData.start, end: dayData.end }];
+                    } else {
+                        isActive = (sc.working_days || []).includes(bookingDayName) || true; // fallback to true if not specified
+                        dayShifts = wh.shifts || [{ start: wh.start, end: wh.end }];
+                    }
+
+                    if (!isActive) {
+                        return new Response(
+                            JSON.stringify({ success: true, text: `عذراً، يوم ${bookingDayName} هو يوم عطلة لدينا. يرجى اقتراح يوم آخر.` }),
+                            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                        );
+                    }
+
+                    const isWithinAnyShift = dayShifts.some((s: any) => {
+                        const [sH, sM] = s.start.split(':').map(Number);
+                        const [eH, eM] = s.end.split(':').map(Number);
+                        const [bH, bM] = bookingTime.split(':').map(Number);
+                        
+                        const startTotal = sH * 60 + sM;
+                        const endTotal = eH * 60 + eM;
+                        const bookingTotal = bH * 60 + bM;
+                        
+                        // Assume 1 hour duration if not specified
+                        return bookingTotal >= startTotal && (bookingTotal + 60) <= endTotal;
+                    });
+
+                    if (!isWithinAnyShift) {
+                        const shiftsText = dayShifts.map((s: any) => `${s.start}-${s.end}`).join(' و ');
+                        const msg = `هذا الوقت خارج ساعات العمل لهذا اليوم. ساعات العمل المتاحة هي: ${shiftsText}. يرجى إبلاغ الزبونة واقتراح وقت بديل.`;
+                        
+                        const outsideResult = await chat.sendMessage([{
+                            functionResponse: {
+                                name: "book_appointment",
+                                response: { status: "outside_hours", message: msg }
+                            }
+                        }]);
+
+                        return new Response(
+                            JSON.stringify({ success: true, text: outsideResult.response.text() }),
+                            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                        );
+                    }
+                }
+
+                // 2. Check for conflicts with other bookings
                 const { data: conflicts } = await supabaseClient
                     .from('bookings')
                     .select('id, booking_date, booking_time, customer_name, service_requested')
