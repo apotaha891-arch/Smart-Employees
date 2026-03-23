@@ -19,13 +19,16 @@ serve(async (req) => {
         const token = url.searchParams.get('hub.verify_token');
         const challenge = url.searchParams.get('hub.challenge');
         
+        console.log(`Webhook Verification Attempt: mode=${mode}, token=${token}`);
+
         // We use a fixed verify token or check it against Env
         const verifyToken = Deno.env.get('FB_VERIFY_TOKEN') || '24shift_instagram_verify';
 
         if (mode === 'subscribe' && token === verifyToken) {
-            console.log('Instagram Webhook Verified');
+            console.log('Instagram Webhook Verified Successfully ✅');
             return new Response(challenge, { status: 200 });
         }
+        console.error(`Verification Failed: Expected ${verifyToken}, got ${token}`);
         return new Response('Forbidden', { status: 403 });
     }
 

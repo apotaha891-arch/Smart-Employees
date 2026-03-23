@@ -29,6 +29,8 @@ import HelpCenter from './components/HelpCenter';
 import SalesLeadsManager from './components/SalesLeadsManager';
 import SupportTicketManager from './components/SupportTicketManager';
 import HRRecruitmentManager from './components/HRRecruitmentManager';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
 
 // Create AuthProvider
 const AuthProvider = createAuthProvider();
@@ -67,6 +69,8 @@ function AppContent() {
                 <Route path="/templates" element={isDashboard ? <ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout> : <AgentTemplates />} />
                 <Route path="/pricing" element={isDashboard ? <ModernDashboardLayout><Pricing /></ModernDashboardLayout> : <Pricing />} />
                 <Route path="/onboarding" element={<ProtectedRoute requiredRole="customer"><OnboardingSector /></ProtectedRoute>} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
 
                 {/* ============ ADMIN PROTECTED ROUTES ============ */}
                 <Route
