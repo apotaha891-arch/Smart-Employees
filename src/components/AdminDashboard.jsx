@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { signOut } from '../services/supabaseService';
 import { useLanguage } from '../LanguageContext';
+import AdminBlogManager from './AdminBlogManager';
 
 // ── Icon Mapping for Dynamic Configs ──────────────────────────────────────────
 const ICON_MAP = { Mail, MessageSquare, Bell, Zap, Globe, Bot, Users, Calendar };
@@ -463,6 +464,7 @@ export default function AdminDashboard() {
         { id: 'integrations', i: LinkIcon, l: 'الربط التقني' },
         { id: 'concierge-chats', i: MessageSquare, l: 'محادثات نورة', badge: unreadChats },
         { id: 'ai-settings', i: Bot, l: 'المستشارة الذكية' },
+        { id: 'blog', i: FileText, l: 'المدونة' },
     ];
 
     if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />جاري تحميل بيانات المنصة...</div>;
@@ -785,6 +787,9 @@ export default function AdminDashboard() {
                         </tbody>
                     </table>} />
                 </div>}
+
+                {/* ── BLOG ── */}
+                {tab === 'blog' && <AdminBlogManager />}
 
                 {/* ── INFRASTRUCTURE ── */}
                 {tab === 'infrastructure' && <div>

@@ -205,5 +205,39 @@ export const markNotificationAsRead = async (id) => {
     return !error;
 };
 
+// ─── Blogs ──────────────────────────────────────────────────────────────────
+export const getBlogPosts = async () => {
+    const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) {
+        console.error('Error fetching blog posts:', error.message);
+        return [];
+    }
+    return data || [];
+};
+
+export const saveBlogPost = async (post) => {
+    const { data, error } = await supabase
+        .from('blog_posts')
+        .upsert(post, { onConflict: 'id' })
+        .select()
+        .single();
+    if (error) throw error;
+    logSystemEvent('audit', 'blog', `Saved blog post: ${post.title_en || post.slug}`);
+    return data;
+};
+
+export const deleteBlogPost = async (id) => {
+    const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', id);
+    if (error) throw error;
+    logSystemEvent('audit', 'blog', `Deleted blog post: ${id}`);
+    return true;
+};
+
 // Legacy export for backward compat
 export const getAllCustomers_legacy = getAllCustomers;

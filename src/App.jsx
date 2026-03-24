@@ -31,6 +31,8 @@ import SupportTicketManager from './components/SupportTicketManager';
 import HRRecruitmentManager from './components/HRRecruitmentManager';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
+import BlogList from './components/BlogList';
+import BlogPost from './components/BlogPost';
 import Footer from './components/Footer';
 
 // Create AuthProvider
@@ -72,6 +74,8 @@ function AppContent() {
                 <Route path="/onboarding" element={<ProtectedRoute requiredRole="customer"><OnboardingSector /></ProtectedRoute>} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/blog" element={<BlogList />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
 
                 {/* ============ ADMIN PROTECTED ROUTES ============ */}
                 <Route

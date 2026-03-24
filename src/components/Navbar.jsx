@@ -73,6 +73,9 @@ const Navbar = () => {
                     <li>
                         <Link to="/pricing" className={`nav-link ${isActive('/pricing') ? 'active' : ''}`}>{t('nav.pricing')}</Link>
                     </li>
+                    <li>
+                        <Link to="/blog" className={`nav-link ${isActive('/blog') ? 'active' : ''}`}>{t('nav.blog')}</Link>
+                    </li>
                     {user && (
                         <li>
                             <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

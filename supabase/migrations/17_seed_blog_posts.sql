@@ -1,0 +1,87 @@
+-- Seed initial blog posts based on keywords_guide.md
+INSERT INTO blog_posts (
+  slug, title_en, title_ar, excerpt_en, excerpt_ar, content_en, content_ar, 
+  featured_image, status, category, meta_keywords, ad_slots
+) VALUES 
+(
+  'ai-medical-appointment-scheduling',
+  'The Future of Medical Appointments: How AI is Transforming Healthcare Scheduling',
+  'مستقبل المواعيد الطبية: كيف يغير الذكاء الاصطناعي جدولة الرعاية الصحية',
+  'Discover how AI agents and automated clinic coordinators are reducing patient wait times and improving healthcare efficiency.',
+  'اكتشف كيف يقلل موظفو الذكاء الاصطناعي ومنسقو العيادات الذكية من أوقات انتظار المرضى ويحسنون كفاءة الرعاية الصحية.',
+  '<h2>The Rise of the Digital Health Assistant</h2><p>In modern healthcare, efficiency is as critical as care. **Medical Appointment Scheduling** is often a bottleneck for clinics. With 24Shift''s **Digital Employees**, clinics can now automate patient inquiries 24/7.</p><ul><li>Instant booking via WhatsApp and Telegram</li><li>Automated reminders to reduce no-shows</li><li>Secure patient inquiry management</li></ul><blockquote>"AI is not replacing doctors; it is freeing them to focus on patients while the Digital Employee handles the logistics."</blockquote><p>Ready to modernize your clinic? <a href="/salon-setup">Hire your Online Clinic Coordinator today</a>.</p>',
+  '<h2>صعود المساعد الرقمي الصحي</h2><p>في الرعاية الصحية الحديثة، الكفاءة لا تقل أهمية عن الرعاية. غالبًا ما تكون **جدولة المواعيد الطبية** عائقًا للعيادات. مع **موظفي 24Shift الرقميين**، يمكن للعيادات الآن أتمتة استفسارات المرضى على مدار الساعة.</p><ul><li>حجز فوري عبر واتساب وتيليجرام</li><li>تذكيرات تلقائية لتقليل عدم الحضور</li><li>إدارة آمنة لاستفسارات المرضى</li></ul><blockquote>"الذكاء الاصطناعي لا يحل محل الأطباء؛ بل يحررهم للتركيز على المرضى بينما يتولى الموظف الرقمي الخدمات اللوجستية."</blockquote><p>هل أنت مستعد لتطوير عيادتك؟ <a href="/salon-setup">وظّف منسق عيادتك عبر الإنترنت اليوم</a>.</p>',
+  'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1000',
+  'published',
+  'Medical',
+  ARRAY['Medical Appointment Scheduling', 'Online Clinic Coordinator', 'Patient Inquiry Automation'],
+  '{"top":true, "sidebar":true, "content":true}'
+),
+(
+  'real-estate-ai-virtual-agent',
+  '24/7 Real Estate: Why Your Agency Needs a Digital Employee',
+  'عقارات على مدار الساعة: لماذا تحتاج وكالتك إلى موظف رقمي',
+  'Boost property inquiries and lead qualification with real estate virtual agents that never sleep.',
+  'عزز استفسارات العقارات وتأهيل العملاء المحتملين مع وكلاء العقارات الافتراضيين الذين لا ينامون أبدًا.',
+  '<h2>Automated Lead Qualification for Real Estate</h2><p>Real estate is a fast-paced industry where missing a call means missing a deal. A **Real Estate Virtual Agent** ensures every inquiry is captured instantly.</p><h3>Key Benefits:</h3><ul><li>**Automated Lead Qualification**: Identify serious buyers before passing them to your human team.</li><li>**Smart Viewing Scheduler**: Let AI handle the visit bookings based on your availability.</li><li>**Property Inquiry Management**: Instant responses to price and location questions.</li></ul><p>Join the elite agencies using **Business Automation** to dominate the market. <a href="/salon-setup">Hire your AI Agent now</a>.</p>',
+  '<h2>تأهيل تلقائي للعملاء في العقارات</h2><p>العقارات صناعة سريعة الخطى حيث تعني المكالمة الفائتة صفقة ضائعة. يضمن **وكيل العقارات الافتراضي** التقاط كل استفسار على الفور.</p><h3>الفوائد الرئيسية:</h3><ul><li>**تأهيل العملاء تلقائيًا**: حدد المشترين الجادين قبل تمريرهم إلى فريقك البشري.</li><li>**جدولة معاينة ذكية**: دع الذكاء الاصطناعي يتولى حجز الزيارات بناءً على توافرك.</li><li>**إدارة استفسارات العقارات**: استجابات فورية للأسئلة المتعلقة بالسعر والموقع.</li></ul><p>انضم إلى وكالات النخبة التي تستخدم **أتمتة الأعمال** للسيطرة على السوق. <a href="/salon-setup">وظّف وكيلك الذكي الآن</a>.</p>',
+  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=1000',
+  'published',
+  'Real Estate',
+  ARRAY['Property Inquiry Management', 'Real Estate Virtual Agent', 'Automated Lead Qualification'],
+  '{"top":true, "sidebar":true, "content":true}'
+),
+(
+  'beauty-salon-booking-ai',
+  'Beyond Bookings: The Rise of AI Concierge in Beauty Salons',
+  'ما وراء الحجوزات: صعود المساعد الرقمي في صالونات التجميل',
+  'How AI concierges are creating a premium experience for salon clients with automated bookings and reminders.',
+  'كيف تخلق المساعدة الرقمية تجربة مميزة لعملاء الصالونات مع الحجوزات والتذكيرات التلقائية.',
+  '<h2>Elevate Your Customer Experience</h2><p>For beauty salons, the quality of service starts before the client walks in. A **Salon Booking AI** acts as a professional concierge for your brand.</p><ul><li>24/7 Service Concierge: Handle bookings even when your shop is closed.</li><li>Automated Appointment Reminders: Reduce no-shows via WhatsApp.</li><li>Menu Inquiry AI: Answer questions about services and pricing instantly.</li></ul><p>Make your salon a smart business. <a href="/salon-setup">Hire your Digital Assistant today</a>.</p>',
+  '<h2>ارتقِ بتجربة عملائك</h2><p>بالنسبة لصالونات التجميل، تبدأ جودة الخدمة قبل دخول العميلة. يعمل **الذكاء الاصطناعي لحجز الصالونات** ككونسيرج محترف لعلامتك التجارية.</p><ul><li>كونسيرج خدمة 24/7: تعامل مع الحجوزات حتى عندما يكون محلك مغلقًا.</li><li>تذكيرات تلقائية بالمواعيد: قلل من عدم الحضور عبر واتساب.</li><li>الرد التلقائي على قائمة الخدمات: أجب على الأسئلة حول الخدمات والأسعار فورًا.</li></ul><p>اجعلي صالونك عملاً ذكياً. <a href="/salon-setup">وظّفي مساعدتك الرقمية اليوم</a>.</p>',
+  'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1000',
+  'published',
+  'Beauty',
+  ARRAY['Salon Booking AI', 'Beauty Service Concierge', 'Spa Management Automation'],
+  '{"top":true, "sidebar":true, "content":true}'
+),
+(
+  'restaurant-table-reservations-ai',
+  'Never Miss a Table: AI-Powered Reservations for Modern Restaurants',
+  'لا تفقد طاولة أبداً: حجوزات مدعومة بالذكاء الاصطناعي للمطاعم الحديثة',
+  'Automate table bookings and menu inquiries to keep your restaurant floor busy and your guests happy.',
+  'أتمتة حجوزات الطاولات واستفسارات قائمة الطعام للحفاظ على انشغال مطعمك وسعادة ضيوفك.',
+  '<h2>Seamless Dining with Conversational AI</h2><p>The best restaurants prioritize guest experience. **Automated Table Reservations** allow your hosts to focus on service while AI handles the phone lines.</p><p>With 24Shift''s **Digital Dining Assistant**, your guests can check menu availability and book tables via social media DMs or WhatsApp.</p><ul><li>Hospitality Customer Support: Professional responses in multiple languages.</li><li>Menu Inquiry AI: Instant answers about dietary options.</li></ul><p>Ready to automate your floor? <a href="/salon-setup">Start now</a>.</p>',
+  '<h2>تجربة طعام سلسة مع ذكاء اصطناعي محادث</h2><p>أفضل المطاعم تعطي الأولوية لتجربة الضيف. تسمح **حجوزات الطاولات المؤتمتة** لمضيفيك بالتركيز على الخدمة بينما يتولى الذكاء الاصطناعي خطوط الهاتف.</p><p>مع **مساعد الطعام الرقمي** من 24Shift، يمكن لضيوفك التحقق من توفر القائمة وحجز الطاولات عبر رسائل وسائل التواصل الاجتماعي أو واتساب.</p><ul><li>دعم عملاء الضيافة: استجابات احترافية بلغات متعددة.</li><li>الرد التلقائي على قائمة الطعام: إجابات فورية حول الخيارات الغذائية.</li></ul><p>هل أنت مستعد لأتمتة مطعمك؟ <a href="/salon-setup">ابدأ الآن</a>.</p>',
+  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1000',
+  'published',
+  'Restaurant',
+  ARRAY['Automated Table Reservations', 'Digital Dining Assistant', 'Menu Inquiry AI'],
+  '{"top":true, "sidebar":true, "content":true}'
+),
+(
+  'future-digital-employees-business-automation',
+  'Digital Employees: The Business Revolution You Can''t Ignore',
+  'الموظفون الرقميون: ثورة الأعمال التي لا يمكنك تجاهلها',
+  'Explore how Digital Employees and AI Agents are redefining business automation and customer service for 2024.',
+  'استكشف كيف يعيد الموظفون الرقميون ووكلاء الذكاء الاصطناعي تعريف أتمتة الأعمال وخدمة العملاء لعام 2024.',
+  '<h2>The New Workforce is Digital</h2><p>We are entering the era of **Business Automation**. **Digital Employees** are no longer a luxury; they are a necessity for staying competitive.</p><p>**AI Agents** from 24Shift provide **Omni-channel Messaging** support, ensuring your brand is present wherever your customers are.</p><ul><li>24/7 Coverage without human fatigue.</li><li>Scalable growth without massive overhead.</li><li>Precise, data-driven responses.</li></ul><p>The revolution is here. Be part of it. <a href="/salon-setup">Deploy your first AI Agent today</a>.</p>',
+  '<h2>القوى العاملة الجديدة رقمية</h2><p>نحن ندخل عصر **أتمتة الأعمال**. لم يعد **الموظفون الرقميون** رفاهية؛ بل هم ضرورة للبقاء في المنافسة.</p><p>يوفر **وكلاء الذكاء الاصطناعي** من 24Shift دعمًا لـ **الرسائل متعددة القنوات**، مما يضمن تواجد علامتك التجارية أينما كان عملاؤك.</p><ul><li>تغطية 24/7 دون تعب بشري.</li><li>نمو قابل للتوسع بدون تكاليف إضافية ضخمة.</li><li>استجابات دقيقة ومدعومة بالبيانات.</li></ul><p>الثورة هنا. كن جزءًا منها. <a href="/salon-setup">فعّل أول موظف ذكاء اصطناعي لك اليوم</a>.</p>',
+  'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=1000',
+  'published',
+  'Technology',
+  ARRAY['Artificial Intelligence (AI)', 'Digital Employees', 'Business Automation'],
+  '{"top":true, "sidebar":true, "content":true}'
+)
+ON CONFLICT (slug) DO UPDATE SET
+  title_en = EXCLUDED.title_en,
+  title_ar = EXCLUDED.title_ar,
+  excerpt_en = EXCLUDED.excerpt_en,
+  excerpt_ar = EXCLUDED.excerpt_ar,
+  content_en = EXCLUDED.content_en,
+  content_ar = EXCLUDED.content_ar,
+  featured_image = EXCLUDED.featured_image,
+  status = EXCLUDED.status,
+  category = EXCLUDED.category,
+  meta_keywords = EXCLUDED.meta_keywords,
+  ad_slots = EXCLUDED.ad_slots;

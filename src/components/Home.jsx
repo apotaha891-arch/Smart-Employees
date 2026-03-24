@@ -237,7 +237,7 @@ const Home = () => {
                     <div style={{ color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '2rem', textTransform: 'uppercase', fontSize: '0.85rem' }}>
                         {industry === 'general' ? t('home.platformName') : t('home.eliteSolutionsFor').replace('{industry}', t(`home.${industry}`))}
                     </div>
-                    <h1 style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '2rem', color: 'var(--primary)', lineHeight: '1.15' }}>
+                    <h1 style={{ fontSize: '2.8rem', fontWeight: '900', marginBottom: '2rem', color: 'var(--primary)', lineHeight: '1.2' }}>
                         {content.heroTitle}
                     </h1>
                     <p className="text-secondary mb-2xl" style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '3.5rem', lineHeight: '1.7' }}>

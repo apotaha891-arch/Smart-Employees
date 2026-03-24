@@ -50,6 +50,7 @@ export const translations = {
             beauty: "تجميل وعناية",
             restaurant: "مطاعم وضيافة",
             real_estate: "عقارات",
+            technology: "تقنية",
             general: "خدمات عامة",
             fitness: "لياقة بدنية",
             "مركز رياضي / نادي لياقة بدنية": "مركز رياضي / نادي لياقة بدنية",
@@ -74,6 +75,7 @@ export const translations = {
             templates: "الموظفون",
             pricing: "الأسعار",
             salonSetup: "إعداد المنشأة",
+            blog: "المدونة",
             logout: "تسجيل الخروج"
         },
         logout: "تسجيل الخروج",
@@ -680,6 +682,7 @@ export const translations = {
             beauty: "Beauty & Care",
             restaurant: "Restaurant & Hospitality",
             real_estate: "Real Estate",
+            technology: "Technology",
             general: "General Services",
             fitness: "Fitness & Gym",
             "مركز رياضي / نادي لياقة بدنية": "Sports Center / Fitness Club",
@@ -697,6 +700,7 @@ export const translations = {
             templates: "Templates",
             pricing: "Pricing",
             salonSetup: "Business Setup",
+            blog: "Blog",
             logout: "Logout"
         },
 
