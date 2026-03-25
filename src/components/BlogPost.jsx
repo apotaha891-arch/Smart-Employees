@@ -85,11 +85,26 @@ const BlogPost = () => {
     return (
         <div style={{ minHeight: '100vh', background: '#070B14', color: 'white', direction: isEnglish ? 'ltr' : 'rtl' }}>
              {/* 1. TOP AD SLOT */}
-             {post.ad_slots?.top && (
+             {post.ad_slots?.top && bannerSettings?.top_is_active && (
                 <div style={{ padding: '2rem 1rem 0', maxWidth: '1200px', margin: '0 auto' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '12px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4B5563', fontSize: '0.8rem' }}>
-                        {isEnglish ? 'ADVERTISEMENT SPACE' : 'مساحة إعلانية'}
-                    </div>
+                    <Link to={bannerSettings.top_banner_link || "/salon-setup"} style={{ textDecoration: 'none' }}>
+                        <div style={{ background: 'linear-gradient(135deg, #1E1B4B, #312E81)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: '300px' }}>
+                                <div style={{ color: '#A78BFA', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                                    {isEnglish ? 'Special Offer' : 'عرض خاص'}
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'white', margin: '0 0 0.5rem' }}>
+                                    {isEnglish ? bannerSettings.top_banner_text_en : bannerSettings.top_banner_text_ar}
+                                </h3>
+                                <p style={{ fontSize: '0.9rem', color: '#9CA3AF', margin: 0 }}>
+                                    {isEnglish ? bannerSettings.top_banner_subtext_en : bannerSettings.top_banner_subtext_ar}
+                                </p>
+                            </div>
+                            <div style={{ background: 'white', color: '#1E1B4B', padding: '10px 20px', borderRadius: '10px', fontWeight: 800, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {isEnglish ? 'Get Started' : 'ابدأ الآن'} <Zap size={16} fill="#1E1B4B" />
+                            </div>
+                        </div>
+                    </Link>
                 </div>
             )}
 
@@ -148,39 +163,33 @@ const BlogPost = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                         
                         {/* 2. SIDEBAR AD SLOT */}
-                        {post.ad_slots?.sidebar && (
-                            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4B5563', fontSize: '0.7rem', textAlign: 'center', padding: '1rem' }}>
-                                {isEnglish ? 'YOUR AD HERE' : 'إعلانك هنا'}
-                            </div>
-                        )}
-
-                        {/* Internal CTA */}
-                        {bannerSettings && (
-                            <div style={{ background: 'linear-gradient(135deg, #4C1D95, #1E1B4B)', borderRadius: '24px', padding: '1.75rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                <Zap size={32} color="#F59E0B" style={{ marginBottom: '1rem' }} />
-                                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: '0.75rem', lineHeight: '1.3' }}>
-                                    {isEnglish ? bannerSettings.banner_text_en : bannerSettings.banner_text_ar}
-                                </h3>
-                                <p style={{ fontSize: '0.85rem', color: '#D1D5DB', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                                    {isEnglish ? bannerSettings.banner_subtext_en : bannerSettings.banner_subtext_ar}
-                                </p>
-                                <Link to={bannerSettings.banner_link || "/salon-setup"} style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center', 
-                                    gap: '8px', 
-                                    width: '100%', 
-                                    padding: '12px', 
-                                    background: 'white', 
-                                    color: '#4C1D95', 
-                                    borderRadius: '10px', 
-                                    fontWeight: 800, 
-                                    textDecoration: 'none', 
-                                    fontSize: '0.9rem' 
-                                }}>
-                                    {isEnglish ? 'Start Now' : 'ابدأ الآن'} <ArrowRight size={16} />
-                                </Link>
-                            </div>
+                        {post.ad_slots?.sidebar && bannerSettings?.sidebar_is_active && (
+                            <Link to={bannerSettings.sidebar_banner_link || "/salon-setup"} style={{ textDecoration: 'none' }}>
+                                <div style={{ background: 'linear-gradient(135deg, #4C1D95, #1E1B4B)', borderRadius: '24px', padding: '1.75rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <Zap size={32} color="#F59E0B" style={{ marginBottom: '1rem' }} />
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: '0.75rem', lineHeight: '1.3', color: 'white' }}>
+                                        {isEnglish ? bannerSettings.sidebar_banner_text_en : bannerSettings.sidebar_banner_text_ar}
+                                    </h3>
+                                    <p style={{ fontSize: '0.85rem', color: '#D1D5DB', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                                        {isEnglish ? bannerSettings.sidebar_banner_subtext_en : bannerSettings.sidebar_banner_subtext_ar}
+                                    </p>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        gap: '8px', 
+                                        width: '100%', 
+                                        padding: '12px', 
+                                        background: 'white', 
+                                        color: '#4C1D95', 
+                                        borderRadius: '10px', 
+                                        fontWeight: 800, 
+                                        fontSize: '0.9rem' 
+                                    }}>
+                                        {isEnglish ? 'Get Started' : 'ابدأ الآن'} <ArrowRight size={16} />
+                                    </div>
+                                </div>
+                            </Link>
                         )}
 
                         {/* Recent Articles Sidebar Widget */}
@@ -270,11 +279,21 @@ const BlogPost = () => {
             </div>
 
             {/* 3. FOOTER AD SLOT (CONTENT) */}
-            {post.ad_slots?.content && (
+            {post.ad_slots?.content && bannerSettings?.content_is_active && (
                 <div style={{ padding: '0 1rem 4rem', maxWidth: '800px', margin: '0 auto' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '16px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4B5563', fontSize: '0.8rem' }}>
-                        {isEnglish ? 'ADVERTISEMENT BANNER' : 'بنر إعلاني'}
-                    </div>
+                    <Link to={bannerSettings.content_banner_link || "/salon-setup"} style={{ textDecoration: 'none' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '2rem', textAlign: 'center' }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', marginBottom: '0.5rem' }}>
+                                {isEnglish ? bannerSettings.content_banner_text_en : bannerSettings.content_banner_text_ar}
+                            </h3>
+                            <p style={{ color: '#9CA3AF', marginBottom: '1.5rem' }}>
+                                {isEnglish ? bannerSettings.content_banner_subtext_en : bannerSettings.content_banner_subtext_ar}
+                            </p>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#8B5CF6', color: 'white', padding: '10px 25px', borderRadius: '10px', fontWeight: 800 }}>
+                                {isEnglish ? 'Explore Now' : 'استكشف الآن'} <ArrowRight size={18} />
+                            </div>
+                        </div>
+                    </Link>
                 </div>
             )}
             

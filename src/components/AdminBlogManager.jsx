@@ -11,12 +11,27 @@ const AdminBlogManager = () => {
     const { language } = useLanguage();
     const [activeTab, setActiveTab] = useState('posts'); // 'posts' or 'promotions'
     const [settings, setSettings] = useState({
-        banner_text_en: 'Ready to hire your first AI Agent?',
-        banner_text_ar: 'هل أنت جاهز لتوظيف أول موظف ذكاء اصطناعي؟',
-        banner_subtext_en: 'Automate your business 24/7 with 24Shift.',
-        banner_subtext_ar: 'أتمتة عملك على مدار الساعة مع 24Shift.',
-        banner_link: '/salon-setup',
-        is_active: true
+        // Top Banner
+        top_banner_text_en: 'Premium AI Solutions for Your Business',
+        top_banner_text_ar: 'حلول الذكاء الاصطناعي المتميزة لعملك',
+        top_banner_subtext_en: 'Hire your 24/7 digital employee today.',
+        top_banner_subtext_ar: 'وظف موظفك الرقمي على مدار الساعة اليوم.',
+        top_banner_link: '/salon-setup',
+        top_is_active: true,
+        // Sidebar Banner
+        sidebar_banner_text_en: 'Ready to Scale?',
+        sidebar_banner_text_ar: 'هل أنت مستعد للتوسع؟',
+        sidebar_banner_subtext_en: 'Our AI agents handle bookings, support and sales.',
+        sidebar_banner_subtext_ar: 'موظفونا الآليون يتعاملون مع الحجوزات والدعم والمبيعات.',
+        sidebar_banner_link: '/salon-setup',
+        sidebar_is_active: true,
+        // Content Banner
+        content_banner_text_en: 'Join the Future of Work',
+        content_banner_text_ar: 'انضم إلى مستقبل العمل',
+        content_banner_subtext_en: 'Streamline your operations with 24Shift AI.',
+        content_banner_subtext_ar: 'قم بتبسيط عملياتك مع ذكاء 24Shift الاصطناعي.',
+        content_banner_link: '/salon-setup',
+        content_is_active: true
     });
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -325,77 +340,89 @@ const AdminBlogManager = () => {
             )}
 
             {activeTab === 'promotions' ? (
-                <div style={{ background: '#111827', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)', padding: '2rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', margin: 0 }}>Global Blog Banners</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', margin: 0 }}>Blog Advertisement Slots</h2>
                         <button onClick={handleSaveSettings} style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Save size={18} /> Save Settings
+                            <Save size={18} /> Save All Settings
                         </button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#A78BFA' }}>English Content</h3>
-                            <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '0.5rem' }}>Banner Title</label>
-                                <input 
-                                    value={settings.banner_text_en}
-                                    onChange={(e) => setSettings(p => ({ ...p, banner_text_en: e.target.value }))}
-                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white' }}
-                                />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '0.5rem' }}>Banner Subtext</label>
-                                <textarea 
-                                    value={settings.banner_subtext_en}
-                                    onChange={(e) => setSettings(p => ({ ...p, banner_subtext_en: e.target.value }))}
-                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white' }}
-                                />
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', direction: 'rtl' }}>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#A78BFA' }}>المحتوى العربي</h3>
-                            <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '0.5rem' }}>عنوان البنر</label>
-                                <input 
-                                    value={settings.banner_text_ar}
-                                    onChange={(e) => setSettings(p => ({ ...p, banner_text_ar: e.target.value }))}
-                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white' }}
-                                />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '0.5rem' }}>النص الفرعي</label>
-                                <textarea 
-                                    value={settings.banner_subtext_ar}
-                                    onChange={(e) => setSettings(p => ({ ...p, banner_subtext_ar: e.target.value }))}
-                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white' }}
-                                />
-                            </div>
-                        </div>
-
-                        <div style={{ gridColumn: '1/-1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '2rem' }}>
-                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '0.5rem' }}>Destination Link (URL)</label>
-                                <input 
-                                    value={settings.banner_link}
-                                    onChange={(e) => setSettings(p => ({ ...p, banner_link: e.target.value }))}
-                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#8B5CF6', fontWeight: 700 }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+                    {[ 
+                        { id: 'top', l: 'Top Horizontal Banner', lAr: 'البنر الأفقي العلوي' },
+                        { id: 'sidebar', l: 'Sidebar Square Banner', lAr: 'بنر القائمة الجانبية' },
+                        { id: 'content', l: 'In-Content Footer Banner', lAr: 'بنر نهاية المحتوى' }
+                    ].map(slot => (
+                        <div key={slot.id} style={{ background: '#111827', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)', padding: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white', margin: 0 }}>{slot.l}</h3>
+                                    <span style={{ fontSize: '0.8rem', color: '#6B7280' }}>{slot.lAr}</span>
+                                </div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>
                                     <input 
                                         type="checkbox"
-                                        checked={settings.is_active}
-                                        onChange={(e) => setSettings(p => ({ ...p, is_active: e.target.checked }))}
-                                        style={{ width: '20px', height: '20px', accentColor: '#8B5CF6' }}
+                                        checked={settings[`${slot.id}_is_active`]}
+                                        onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_is_active`]: e.target.checked }))}
+                                        style={{ width: '18px', height: '18px', accentColor: '#8B5CF6' }}
                                     />
-                                    Enable Global Blog Banners
+                                    Active
                                 </label>
                             </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#A78BFA', margin: 0 }}>English Version</h4>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Main Text</label>
+                                        <input 
+                                            value={settings[`${slot.id}_banner_text_en`]}
+                                            onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_text_en`]: e.target.value }))}
+                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.9rem' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Subtext Description</label>
+                                        <textarea 
+                                            value={settings[`${slot.id}_banner_subtext_en`]}
+                                            onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_subtext_en`]: e.target.value }))}
+                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem', minHeight: '60px' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', direction: 'rtl' }}>
+                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#A78BFA', margin: 0 }}>النسخة العربية</h4>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>النص الرئيسي</label>
+                                        <input 
+                                            value={settings[`${slot.id}_banner_text_ar`]}
+                                            onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_text_ar`]: e.target.value }))}
+                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.9rem' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>الوصف الفرعي</label>
+                                        <textarea 
+                                            value={settings[`${slot.id}_banner_subtext_ar`]}
+                                            onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_subtext_ar`]: e.target.value }))}
+                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem', minHeight: '60px' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ gridColumn: '1/-1', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.2rem' }}>
+                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Destination Link (URL)</label>
+                                    <input 
+                                        value={settings[`${slot.id}_banner_link`]}
+                                        onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_link`]: e.target.value }))}
+                                        style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#8B5CF6', fontWeight: 700 }}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
