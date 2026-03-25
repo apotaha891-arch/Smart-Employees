@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
     Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
     LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
-    Search, Download, FileText, Megaphone
+    Search, Download, Newspaper, Megaphone
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -497,7 +497,7 @@ export default function AdminDashboard() {
         { id: 'integrations', i: LinkIcon, l: 'الربط التقني' },
         { id: 'concierge-chats', i: MessageSquare, l: 'محادثات نورة', badge: unreadChats },
         { id: 'ai-settings', i: Bot, l: 'المستشارة الذكية' },
-        { id: 'blog', i: FileText, l: 'المدونة' },
+        { id: 'blog', i: Newspaper, l: 'المدونة' },
         { id: 'subscribers', i: Mail, l: 'المشتركين' },
     ];
 

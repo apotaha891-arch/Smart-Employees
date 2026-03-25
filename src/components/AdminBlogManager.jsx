@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Plus, Edit2, Trash2, Eye, Save, X, Globe, 
-    LayoutDashboard, Check, FileText, Settings, 
+    LayoutDashboard, Check, Newspaper, Settings, 
     ExternalLink, Search, Image as ImageIcon
 } from 'lucide-react';
 import * as adminService from '../services/adminService';
@@ -401,7 +401,7 @@ const AdminBlogManager = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
                 {posts.length === 0 ? (
                     <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem', background: '#111827', borderRadius: '24px', border: '2px dashed rgba(255,255,255,0.05)' }}>
-                        <FileText size={48} color="#374151" style={{ marginBottom: '1rem' }} />
+                        <Newspaper size={48} color="#374151" style={{ marginBottom: '1rem' }} />
                         <h3 style={{ color: '#9CA3AF' }}>No blog posts yet.</h3>
                         <p style={{ color: '#6B7280', fontSize: '0.9rem' }}>Click the button above to start writing.</p>
                     </div>

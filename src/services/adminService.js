@@ -239,5 +239,18 @@ export const deleteBlogPost = async (id) => {
     return true;
 };
 
+export const getBlogSettings = async () => {
+    const { data, error } = await supabase.from('blog_settings').select('*').eq('id', 1).maybeSingle();
+    if (error) console.error('Error fetching blog settings:', error.message);
+    return data;
+};
+
+export const updateBlogSettings = async (settings) => {
+    const { error } = await supabase.from('blog_settings').upsert({ ...settings, id: 1 }, { onConflict: 'id' });
+    if (error) throw error;
+    logSystemEvent('audit', 'blog', 'Updated blog settings/banners');
+    return true;
+};
+
 // Legacy export for backward compat
 export const getAllCustomers_legacy = getAllCustomers;
