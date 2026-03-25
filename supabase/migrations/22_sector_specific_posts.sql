@@ -21,7 +21,7 @@ INSERT INTO public.blog_posts (
     'fitness',
     'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop',
     'published',
-    NOW()
+    '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- 2. RETAIL & ECOMMERCE
 (
@@ -35,7 +35,7 @@ INSERT INTO public.blog_posts (
     'retail_ecommerce',
     'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop',
     'published',
-    NOW() - INTERVAL '1 day'
+    '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- 3. BANKING & FINANCE
 (
@@ -49,7 +49,7 @@ INSERT INTO public.blog_posts (
     'banking',
     'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?q=80&w=2070&auto=format&fit=crop',
     'published',
-    NOW() - INTERVAL '2 days'
+    '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- 4. CALL CENTER / CUSTOMER SERVICE
 (
@@ -63,7 +63,7 @@ INSERT INTO public.blog_posts (
     'call_center',
     'https://images.unsplash.com/photo-1534536281715-e28d76689b4d?q=80&w=2070&auto=format&fit=crop',
     'published',
-    NOW() - INTERVAL '3 days'
+    '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- 5. TELECOM & IT
 (
@@ -77,7 +77,7 @@ INSERT INTO public.blog_posts (
     'telecom_it',
     'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop',
     'published',
-    NOW() - INTERVAL '4 days'
+    '2025-01-01'::timestamp + random() * (interval '364 days')
 )
 ON CONFLICT (slug) DO UPDATE SET
     title_en = EXCLUDED.title_en,

@@ -1,7 +1,7 @@
 -- Seed initial blog posts based on keywords_guide.md
 INSERT INTO blog_posts (
   slug, title_en, title_ar, excerpt_en, excerpt_ar, content_en, content_ar, 
-  featured_image, status, category, meta_keywords, ad_slots
+  featured_image, status, category, meta_keywords, ad_slots, published_at
 ) VALUES 
 (
   'ai-medical-appointment-scheduling',
@@ -15,7 +15,8 @@ INSERT INTO blog_posts (
   'published',
   'Medical',
   ARRAY['Medical Appointment Scheduling', 'Online Clinic Coordinator', 'Patient Inquiry Automation'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 (
   'real-estate-ai-virtual-agent',
@@ -29,7 +30,8 @@ INSERT INTO blog_posts (
   'published',
   'Real Estate',
   ARRAY['Property Inquiry Management', 'Real Estate Virtual Agent', 'Automated Lead Qualification'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 (
   'beauty-salon-booking-ai',
@@ -43,7 +45,8 @@ INSERT INTO blog_posts (
   'published',
   'Beauty',
   ARRAY['Salon Booking AI', 'Beauty Service Concierge', 'Spa Management Automation'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 (
   'restaurant-table-reservations-ai',
@@ -57,7 +60,8 @@ INSERT INTO blog_posts (
   'published',
   'Restaurant',
   ARRAY['Automated Table Reservations', 'Digital Dining Assistant', 'Menu Inquiry AI'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 (
   'future-digital-employees-business-automation',
@@ -71,7 +75,8 @@ INSERT INTO blog_posts (
   'published',
   'Technology',
   ARRAY['Artificial Intelligence (AI)', 'Digital Employees', 'Business Automation'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 )
 ON CONFLICT (slug) DO UPDATE SET
   title_en = EXCLUDED.title_en,
@@ -84,4 +89,5 @@ ON CONFLICT (slug) DO UPDATE SET
   status = EXCLUDED.status,
   category = EXCLUDED.category,
   meta_keywords = EXCLUDED.meta_keywords,
-  ad_slots = EXCLUDED.ad_slots;
+  ad_slots = EXCLUDED.ad_slots,
+  published_at = EXCLUDED.published_at;

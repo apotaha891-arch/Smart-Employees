@@ -9,7 +9,8 @@ INSERT INTO public.blog_posts (
   featured_image, 
   status, category, 
   meta_keywords, 
-  ad_slots
+  ad_slots,
+  published_at
 ) VALUES 
 -- Article 1: Modern Management
 (
@@ -23,7 +24,8 @@ INSERT INTO public.blog_posts (
   'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1000',
   'published', 'General',
   ARRAY['Management', 'Hybrid Workforce', 'Leadership', 'Future of Work'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 
 -- Article 2: ROI and Cost Saving
@@ -38,7 +40,8 @@ INSERT INTO public.blog_posts (
   'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000',
   'published', 'General',
   ARRAY['ROI', 'Cost Saving', 'Automation Profit', 'Business Growth'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 
 -- Article 3: 5-Star Service
@@ -53,7 +56,8 @@ INSERT INTO public.blog_posts (
   'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=1000',
   'published', 'General',
   ARRAY['Customer Service', 'Satisfaction', 'AI Response', 'Modern CX'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 )
 ON CONFLICT (slug) DO UPDATE SET
   title_en = EXCLUDED.title_en,
@@ -66,4 +70,5 @@ ON CONFLICT (slug) DO UPDATE SET
   status = EXCLUDED.status,
   category = EXCLUDED.category,
   meta_keywords = EXCLUDED.meta_keywords,
-  ad_slots = EXCLUDED.ad_slots;
+  ad_slots = EXCLUDED.ad_slots,
+  published_at = EXCLUDED.published_at;

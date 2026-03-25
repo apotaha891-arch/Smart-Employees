@@ -3,7 +3,7 @@
 
 INSERT INTO blog_posts (
   slug, title_en, title_ar, excerpt_en, excerpt_ar, content_en, content_ar, 
-  featured_image, status, category, meta_keywords, ad_slots
+  featured_image, status, category, meta_keywords, ad_slots, published_at
 ) VALUES 
 -- MEDICAL 1
 (
@@ -18,7 +18,8 @@ INSERT INTO blog_posts (
   'published',
   'Medical',
   ARRAY['Patient Anxiety', 'AI Healthcare', 'Medical Scheduling'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- REAL ESTATE 1
 (
@@ -33,7 +34,8 @@ INSERT INTO blog_posts (
   'published',
   'Real Estate',
   ARRAY['Real Estate Leads', 'AI Property Agent', 'Lead Qualification'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- BEAUTY 1
 (
@@ -48,7 +50,8 @@ INSERT INTO blog_posts (
   'published',
   'Beauty',
   ARRAY['Salon Loyalty', 'AI Beauty', 'Customer Retention'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- RESTAURANT 1
 (
@@ -63,7 +66,8 @@ INSERT INTO blog_posts (
   'published',
   'Restaurant',
   ARRAY['Table Turnover', 'AI Restaurant', 'Efficiency'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- TECH 1
 (
@@ -78,7 +82,8 @@ INSERT INTO blog_posts (
   'published',
   'Technology',
   ARRAY['Hybrid Team', 'Workplace Future', 'Digital Productivity'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- MEDICAL 2
 (
@@ -93,7 +98,8 @@ INSERT INTO blog_posts (
   'published',
   'Medical',
   ARRAY['Out-of-hours Care', 'Night Shift AI', 'Clinic Efficiency'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- REAL ESTATE 2
 (
@@ -108,7 +114,8 @@ INSERT INTO blog_posts (
   'published',
   'Real Estate',
   ARRAY['International Real Estate', 'Multilingual Sales', 'Global Investment'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- BEAUTY 2
 (
@@ -123,7 +130,8 @@ INSERT INTO blog_posts (
   'published',
   'Beauty',
   ARRAY['Salon Receptionist', 'Digital Booking', 'Luxury Experience'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- RESTAURANT 2
 (
@@ -138,7 +146,8 @@ INSERT INTO blog_posts (
   'published',
   'Restaurant',
   ARRAY['Group Bookings', 'Event Management', 'ROI'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 ),
 -- TECH 2
 (
@@ -153,7 +162,8 @@ INSERT INTO blog_posts (
   'published',
   'Technology',
   ARRAY['ROI', 'Business Metrics', 'AI Productivity'],
-  '{"top":true, "sidebar":true, "content":true}'
+  '{"top":true, "sidebar":true, "content":true}',
+  '2025-01-01'::timestamp + random() * (interval '364 days')
 )
 ON CONFLICT (slug) DO UPDATE SET
   title_en = EXCLUDED.title_en,
@@ -166,4 +176,5 @@ ON CONFLICT (slug) DO UPDATE SET
   status = EXCLUDED.status,
   category = EXCLUDED.category,
   meta_keywords = EXCLUDED.meta_keywords,
-  ad_slots = EXCLUDED.ad_slots;
+  ad_slots = EXCLUDED.ad_slots,
+  published_at = EXCLUDED.published_at;
