@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
     Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
     LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
-    Search, Download
+    Search, Download, FileText, Megaphone
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -33,6 +33,39 @@ const StatCard = ({ icon: Icon, label, value, color, sub }) => (
         <div style={{ width: '40px', height: '40px', borderRadius: '9px', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={18} color={color} /></div>
     </div>} />
 );
+const NewsletterSubscribers = () => {
+    const [subs, setSubs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        const loadSubs = async () => {
+            const { data } = await supabase.from('newsletter_subscriptions').select('*').order('created_at', { ascending: false });
+            setSubs(data || []);
+            setLoading(false);
+        };
+        loadSubs();
+    }, []);
+    return (
+        <div>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 1rem' }}>مشتركي النشرة البريدية</h1>
+            <Card s={{ padding: 0, overflow: 'hidden' }} c={
+                loading ? <div style={{ padding: '2rem', textAlign: 'center' }}>جاري التحميل...</div> :
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                    <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontSize: '0.77rem' }}>البريد الإلكتروني</th>
+                        <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontSize: '0.77rem' }}>تاريخ الاشتراك</th>
+                    </tr></thead>
+                    <tbody>
+                        {subs.length === 0 ? <tr><td colSpan={2} style={{ padding: '2rem', textAlign: 'center' }}>لا يوجد مشتركين حالياً</td></tr> :
+                        subs.map(s => <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                            <td style={{ padding: '0.75rem 0.9rem', color: 'white' }}>{s.email}</td>
+                            <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280' }}>{new Date(s.created_at).toLocaleDateString('ar-EG')}</td>
+                        </tr>)}
+                    </tbody>
+                </table>
+            } />
+        </div>
+    );
+};
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
@@ -465,6 +498,7 @@ export default function AdminDashboard() {
         { id: 'concierge-chats', i: MessageSquare, l: 'محادثات نورة', badge: unreadChats },
         { id: 'ai-settings', i: Bot, l: 'المستشارة الذكية' },
         { id: 'blog', i: FileText, l: 'المدونة' },
+        { id: 'subscribers', i: Mail, l: 'المشتركين' },
     ];
 
     if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />جاري تحميل بيانات المنصة...</div>;
@@ -1377,6 +1411,12 @@ export default function AdminDashboard() {
                         </div>} />
                     </div>
                 }
+
+                {/* ── BLOG ── */}
+                {tab === 'blog' && <AdminBlogManager />}
+
+                {/* ── SUBSCRIBERS ── */}
+                {tab === 'subscribers' && <NewsletterSubscribers />}
 
             </main >
         </div >
