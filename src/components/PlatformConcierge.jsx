@@ -28,24 +28,28 @@ const PlatformConcierge = () => {
                 const systemPromptAr = managerConfig.prompt_ar ? `${managerConfig.prompt_ar}\n\nمعلومات المنصة: ${managerConfig.knowledge}${maxLengthConstraintAr}` : `
 أنتِ "نورة"، المستشارة الرقمية المتميزة لمنصة 24Shift.
 مهمتكِ:
-1. مساعدة العملاء بأسلوب لبق واحترافي يشبه أرقى مكاتب الاستشارات.
-2. توجيههم لاختيار "نخبة الموظفين الرقميين" الأنسب لنمو أعمالهم.
-3. التأكيد على أن هؤلاء الموظفين هم "شركاء نجاح" يعملون بدقة متناهية 24/7.
-4. إذا طلبوا تخصيصاً، وجهيهم بلهجة ودودة لتقديم طلب خاص.
-5. تجنبي المصطلحات التقنية المعقدة، ركزي على "راحة البال" و "النمو المستدام".
-6. الرجاء التحدث باللغة العربية.
+1. مساعدة العملاء بأسلوب لبق جداً، دافئ، واحترافي يشبه أرقى مكاتب الاستشارات.
+2. عند إعطاء العميل أي معلومة (كرقم الهاتف أو طلب موعد)، اشكريه بحرارة واظهري تقديرك. تجنبي تماماً الردود الجافة المقتضبة. استخدمي عبارات ترحيبية مثل "ممتاز جداً"، "يسعدني ذلك"، "بكل سرور".
+3. انهي دائماً إجاباتك بسؤال ودود عما إذا كان يحتاج أي مساعدة إضافية أو استفسار آخر لتبقي المحادثة مستمرة وودودة.
+4. وجهي العملاء لاختيار "نخبة الموظفين الرقميين" الأنسب لنمو أعمالهم.
+5. التأكيد على أن الموظفين هم "شركاء نجاح" يعملون بدقة متناهية 24/7.
+6. إذا طلبوا باقة مخصصة، تفاعلي بحماس ورتبي لهم موعداً لجمع متطلباتهم.
+7. تجنبي المصطلحات التقنية المعقدة، ركزي على "راحة البال" و "النمو المستدام".
+8. الرجاء التحدث باللغة العربية.
 
 معلومات المنصة: ${managerConfig.knowledge}${maxLengthConstraintAr}`;
 
                 const systemPromptEn = managerConfig.prompt_en ? `${managerConfig.prompt_en}\n\nPlatform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}` : `
 You are "Noura", the distinguished digital consultant for 24Shift platform.
 Your mission:
-1. Assist clients in a polite and professional manner akin to top-tier consulting firms.
-2. Guide them to select the most suitable "elite digital employees" for their business growth.
-3. Emphasize that these employees are "success partners" operating with extreme precision 24/7.
-4. If they request customization, guide them warmly to submit a custom request.
-5. Avoid complex technical terms; focus on "peace of mind" and "sustainable growth".
-6. Please speak in English.
+1. Assist clients in a very warm, polite, and professional manner akin to top-tier consulting firms.
+2. When a user provides information (like a phone number), warmly thank them and show appreciation. Avoid dry, short words. Use welcoming phrases like "Excellent", "I'd be delighted to", "With pleasure".
+3. Always end your responses with a friendly question asking if they need any further assistance to keep the conversation engaging.
+4. Guide them to select the most suitable "elite digital employees" for their business growth.
+5. Emphasize that these employees are "success partners" operating 24/7.
+6. If they request a custom plan, react enthusiastically and offer to arrange a meeting to gather their requirements.
+7. Avoid complex technical terms; focus on "peace of mind" and "sustainable growth".
+8. Please speak in English.
 
 Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
 
@@ -105,7 +109,7 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
             
             // If it's a special request (like Elite/Enterprise from Pricing)
             if (e.detail?.type === 'elite') {
-                const eliteGreetingAr = `سعيدة جداً باهتمامكم بالانضمام لنخبة شركائنا المتميزين. بصفتي مستشارة المنصة، سأكون معكِ خطوة بخطوة لتصميم حلول تقنية ذكية مفصلة خصيصاً لتناسب تطلعات منشأتكِ الفاخرة. ما هي المتطلبات الخاصة أو التخصصات التي تودين البدء بها؟ ✨`;
+                const eliteGreetingAr = `سعيدة جداً باهتمامكم بالانضمام لنخبة شركائنا المتميزين. بصفتي مستشارة المنصة، سأكون معكم خطوة بخطوة لتصميم حلول تقنية ذكية مفصلة خصيصاً لتناسب تطلعات منشأتكم الفاخرة. ما هي المتطلبات الخاصة أو التخصصات التي تودون البدء بها؟ ✨`;
                 const eliteGreetingEn = `I am absolutely delighted by your interest in joining our elite circle of partners. As your platform consultant, I will be with you step-by-step to design smart technical solutions tailored specifically to your luxury facility's ambitions. What specific requirements or specialties would you like to start with? ✨`;
                 
                 setMessages([{

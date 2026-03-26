@@ -55,11 +55,13 @@ export const LanguageProvider = ({ children }) => {
             html.setAttribute('dir', 'rtl');
             document.body.style.direction = 'rtl';
             document.body.style.textAlign = 'right';
+            document.title = '24Shift - منصة توظيف الموظفين الرقميين';
         } else {
             html.setAttribute('lang', 'en');
             html.setAttribute('dir', 'ltr');
             document.body.style.direction = 'ltr';
             document.body.style.textAlign = 'left';
+            document.title = '24Shift - Smart Digital Employees Hiring & Management';
         }
     }, [language]);
 

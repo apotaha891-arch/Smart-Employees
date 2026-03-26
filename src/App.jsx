@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './LanguageContext';
-import { createAuthProvider } from './context/AuthContext';
+import { createAuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -53,9 +53,15 @@ function App() {
 
 function AppContent() {
     const location = useLocation();
-    // Routes that use the new Dashboard Layout
-    const dashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/templates', '/interview', '/pricing', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
-    const isDashboard = dashboardRoutes.includes(location.pathname);
+    const { isAuthenticated } = useAuth();
+    
+    // Routes that ALWAYS use the Dashboard Layout
+    const alwaysDashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
+    
+    // Routes that use Dashboard Layout ONLY when logged in
+    const hybridRoutes = ['/templates', '/interview', '/pricing'];
+    
+    const isDashboard = alwaysDashboardRoutes.includes(location.pathname) || (hybridRoutes.includes(location.pathname) && isAuthenticated);
 
     return (
         <div className="App">

@@ -35,6 +35,13 @@ const Pricing = () => {
     const [loadingPlan, setLoadingPlan] = useState(null);
 
     const handleSelectPlan = async (plan) => {
+        // Skip checkout for Enterprise (Contact Sales) - Accessible to both Guests and Users
+        if (plan.id === 'enterprise') {
+            // Open Noura Chat with special 'elite' context
+            window.dispatchEvent(new CustomEvent('open-concierge', { detail: { type: 'elite' } }));
+            return;
+        }
+
         if (!currentUserId) {
             navigate('/login');
             return;
@@ -43,13 +50,6 @@ const Pricing = () => {
         // If it's the current plan and we're not in the hiring flow, just go to dashboard
         if (plan.id === userPlan && !isHiringFlow) {
             navigate('/dashboard');
-            return;
-        }
-
-        // Skip checkout for Enterprise (Contact Sales)
-        if (plan.id === 'enterprise') {
-            // Open Noura Chat with special 'elite' context
-            window.dispatchEvent(new CustomEvent('open-concierge', { detail: { type: 'elite' } }));
             return;
         }
 
@@ -260,7 +260,9 @@ const Pricing = () => {
                 `${getPlanValue('starter', 'credits', 2000)} ${language === 'ar' ? 'نقطة (محادثة) شهرياً' : 'conversations/month'}`,
                 `${getPlanValue('starter', 'agentsLimit', 1)} ${language === 'ar' ? 'موظف ذكي مخصص' : 'dedicated smart employee'}`,
                 `${getPlanValue('starter', 'toolsLimit', 2)} ${language === 'ar' ? 'قنوات ربط' : 'integrations'}`,
-                ...(pricingPlans?.starter?.features?.slice(3) || [])
+                language === 'ar' ? 'استجابة سريعة جداً' : 'Lightning fast response',
+                language === 'ar' ? 'تدريب مخصص' : 'Custom AI training',
+                language === 'ar' ? 'تقارير متقدمة' : 'Advanced analytics'
             ],
             cta: pricingPlans?.starter?.cta || '',
             trialText: pricingPlans?.starter?.trialText?.replace(/\d+\$/, `${getPlanValue('starter', 'trialPrice', 20)}$`) || '',
@@ -280,7 +282,9 @@ const Pricing = () => {
                 `${getPlanValue('pro', 'credits', 5000)} ${language === 'ar' ? 'نقطة (محادثة) شهرياً' : 'conversations/month'}`,
                 `${getPlanValue('pro', 'agentsLimit', 2)} ${language === 'ar' ? 'موظفين مخصصين' : 'dedicated employees'}`,
                 `${getPlanValue('pro', 'toolsLimit', 3)} ${language === 'ar' ? 'قنوات ربط لكل موظف' : 'integrations per employee'}`,
-                ...(pricingPlans?.pro?.features?.slice(3) || [])
+                language === 'ar' ? 'استجابة سريعة جداً' : 'Lightning fast response',
+                language === 'ar' ? 'تدريب مخصص' : 'Custom AI training',
+                language === 'ar' ? 'تقارير متقدمة' : 'Advanced analytics'
             ],
             cta: pricingPlans?.pro?.cta || '',
             trialText: pricingPlans?.pro?.trialText?.replace(/\d+\$/, `${getPlanValue('pro', 'trialPrice', 45)}$`) || '',
@@ -531,8 +535,16 @@ const Pricing = () => {
 
                             <div style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
-                                    <span style={{ fontSize: plan.id === 'enterprise' ? '2.5rem' : '3.5rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{price}</span>
-                                    {plan.id !== 'enterprise' && <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>$ / {billingCycle === 'monthly' ? t('month') : t('monthYearly')}</span>}
+                                    {plan.id === 'enterprise' ? (
+                                        <span style={{ fontSize: '2.4rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>
+                                            {language === 'ar' ? 'تواصل معنا' : 'Contact Us'}
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <span style={{ fontSize: '3.5rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{price}</span>
+                                            <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>$ / {billingCycle === 'monthly' ? t('month') : t('monthYearly')}</span>
+                                        </>
+                                    )}
                                 </div>
                                 {plan.trialPrice && (
                                     <div style={{
@@ -742,9 +754,9 @@ const Pricing = () => {
                                 { name: language === 'ar' ? 'عدد الموظفين الرقميين' : 'Number of Agents', starter: '1', pro: '2' },
                                 { name: language === 'ar' ? 'أدوات الربط لكل موظف' : 'Connections per Agent', starter: '2', pro: '3' },
                                 { name: language === 'ar' ? 'تكلفة الموظف الإضافي' : 'Extra Agent Cost', starter: '$25', pro: '$19' },
-                                { name: language === 'ar' ? 'سرعة الاستجابة' : 'Response Priority', starter: language === 'ar' ? 'عادية' : 'Standard', pro: language === 'ar' ? 'عالية جداً' : 'High Priority' },
-                                { name: language === 'ar' ? 'تدريب مخصص' : 'Custom Training', starter: '❌', pro: '✅' },
-                                { name: language === 'ar' ? 'تقارير متقدمة' : 'Advanced Analytics', starter: '❌', pro: '✅' },
+                                { name: language === 'ar' ? 'سرعة الاستجابة' : 'Response priority', starter: '✅', pro: '✅' },
+                                { name: language === 'ar' ? 'تدريب مخصص' : 'Custom Training', starter: '✅', pro: '✅' },
+                                { name: language === 'ar' ? 'تقارير متقدمة' : 'Advanced Analytics', starter: '✅', pro: '✅' },
                             ].map((row, i) => (
                                 <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
                                     <td style={{ padding: '1.5rem 2rem', color: '#E4E4E7', fontWeight: 600 }}>{row.name}</td>

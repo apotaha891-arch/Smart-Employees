@@ -176,8 +176,9 @@ const Home = () => {
                         }}>
                             {allSectorKeys.map(type => {
                                 const isActive = industry === type;
+                                const isHardcoded = ['general', 'medical', 'real_estate', 'beauty', 'restaurant', 'fitness', 'retail_ecommerce', 'banking', 'call_center', 'telecom_it'].includes(type);
                                 const isDyn = dynamicSectors[type];
-                                const label = isDyn ? isDyn.l : t(`home.${type}`);
+                                const label = isHardcoded ? t(`home.${type}`) : (isDyn ? isDyn.l : t(`home.${type}`));
                                 const emoji = isDyn ? isDyn.e : '';
 
                                 return (

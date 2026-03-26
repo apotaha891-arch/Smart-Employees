@@ -36,17 +36,35 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="container nav-content">
                 <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="24Shift Solutions" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
-                    <span style={{
-                        fontFamily: "'Montserrat', 'Inter', sans-serif",
-                        fontWeight: 900,
-                        fontSize: '1.6rem',
-                        textTransform: 'uppercase',
-                        background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        letterSpacing: '1.5px'
-                    }}>24SHIFT</span>
+                    {language === 'ar' ? (
+                        <>
+                            <span style={{
+                                fontFamily: "'Montserrat', 'Inter', sans-serif",
+                                fontWeight: 900,
+                                fontSize: '1.6rem',
+                                textTransform: 'uppercase',
+                                background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                letterSpacing: '1.5px'
+                            }}>24SHIFT</span>
+                            <img src="/logo.png" alt="24Shift Solutions" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
+                        </>
+                    ) : (
+                        <>
+                            <img src="/logo.png" alt="24Shift Solutions" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
+                            <span style={{
+                                fontFamily: "'Montserrat', 'Inter', sans-serif",
+                                fontWeight: 900,
+                                fontSize: '1.6rem',
+                                textTransform: 'uppercase',
+                                background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                letterSpacing: '1.5px'
+                            }}>24SHIFT</span>
+                        </>
+                    )}
                 </Link>
 
                 <ul className="nav-links">
