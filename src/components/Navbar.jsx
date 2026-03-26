@@ -36,34 +36,17 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="container nav-content">
                 <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-                    <div style={{
-                        width: '42px',
-                        height: '42px',
-                        background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '1.4rem',
-                        fontWeight: '900',
-                        boxShadow: '0 0 15px rgba(139, 92, 246, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2)',
-                        border: '2px solid rgba(255, 255, 255, 0.1)',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}>
-                        <span style={{ position: 'relative', zIndex: 2, letterSpacing: '-1px' }}>24</span>
-                        {/* Glow effect inside logo */}
-                        <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 60%)', opacity: 0.5 }}></div>
-                    </div>
+                    <img src="/logo.png" alt="24Shift Solutions" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
                     <span style={{
+                        fontFamily: "'Montserrat', 'Inter', sans-serif",
                         fontWeight: 900,
-                        fontSize: '1.5rem',
+                        fontSize: '1.6rem',
+                        textTransform: 'uppercase',
                         background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        letterSpacing: '0.5px'
-                    }}>24shift</span>
+                        letterSpacing: '1.5px'
+                    }}>24SHIFT</span>
                 </Link>
 
                 <ul className="nav-links">
