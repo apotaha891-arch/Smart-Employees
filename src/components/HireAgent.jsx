@@ -200,7 +200,7 @@ const HireAgent = () => {
                     </h2>
                     <p style={{ color: '#9CA3AF', fontSize: '0.9rem', maxWidth: 380, margin: '0 auto', lineHeight: 1.7 }}>
                         {isAr
-                            ? 'قبل توظيف موظف ذكي، يحتاج وكيلنا أن يعرف منشأتك — ارفع ملفاتك أو أضف بياناتها الأساسية في صفحة إعداد المنشأة.'
+                            ? 'قبل توظيف موظف ذكي، يحتاج موظفنا أن يعرف منشأتك — ارفع ملفاتك أو أضف بياناتها الأساسية في صفحة إعداد المنشأة.'
                             : 'Before hiring an AI agent, they need to know your business. Please complete your entity profile so they can represent you accurately.'}
                     </p>
                 </div>

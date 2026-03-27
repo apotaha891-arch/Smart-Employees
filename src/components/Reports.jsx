@@ -213,7 +213,7 @@ const Reports = () => {
                         marginBottom: 'var(--spacing-md)',
                         borderRight: '4px solid var(--success-green)'
                     }}>
-                        ✅ وكيلك يعمل بكفاءة عالية! متوسط وقت الاستجابة أقل من ثانية واحدة.
+                        ✅ موظفك يعمل بكفاءة عالية! متوسط وقت الاستجابة أقل من ثانية واحدة.
                     </li>
                     <li style={{
                         padding: 'var(--spacing-md)',

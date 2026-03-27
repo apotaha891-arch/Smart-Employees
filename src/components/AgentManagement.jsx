@@ -71,7 +71,7 @@ const AgentManagement = () => {
                 setShowAddModal(false);
             } else {
                 console.error("Failed to hire:", result.error);
-                alert("فشل إنشاء الوكيل: " + result.error);
+                alert("فشل إنشاء الموظف: " + result.error);
             }
         } catch (error) {
             console.error('Error adding agent:', error);

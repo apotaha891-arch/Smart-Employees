@@ -1,5 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+
+// Scroll to top on every route change
+function ScrollToTop() {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }, [pathname]);
+    return null;
+}
 import { LanguageProvider } from './LanguageContext';
 import { createAuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/shared/ProtectedRoute';
@@ -44,6 +53,7 @@ function App() {
         <LanguageProvider>
             <AuthProvider>
                 <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                    <ScrollToTop />
                     <AppContent />
                 </Router>
             </AuthProvider>

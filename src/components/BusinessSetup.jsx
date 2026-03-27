@@ -96,7 +96,8 @@ const BusinessSetup = () => {
         e.preventDefault();
 
         if (!agentId) {
-            alert(language === 'ar' ? 'لم يتم العثور على وكيل نشط، يرجى إعادة خطوات التوظيف.' : 'No active agent found, please restart the hiring process.');
+            alert(language === 'ar' ? 'لم يتم العثور على موظف نشط، يرجى إعادة خطوات التوظيف.' : 'No active employee found, please restart the hiring process.');
+            setLoading(false);
             return;
         }
 

@@ -22,21 +22,17 @@ const Footer = () => {
                     gap: '2rem'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                         <div style={{
-                            width: '32px',
-                            height: '32px',
-                            background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontSize: '1rem',
-                            fontWeight: '900'
-                        }}>
-                            24
-                        </div>
-                        <span style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--primary)' }}>24shift</span>
+                        <img src="/logo.png" alt="24Shift" style={{ height: '40px', objectFit: 'contain', borderRadius: '10px' }} />
+                        <span style={{
+                            fontFamily: "'Montserrat', 'Inter', sans-serif",
+                            fontWeight: 900,
+                            fontSize: '1.3rem',
+                            textTransform: 'uppercase',
+                            background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '1.5px'
+                        }}>SMART EMPLOYEES</span>
                     </div>
 
                     <div style={{
@@ -57,7 +53,7 @@ const Footer = () => {
                     </div>
 
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                        © {year} 24Shift. {language === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
+                        © {year} Smart Employees. {language === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
                     </div>
                 </div>
             </div>

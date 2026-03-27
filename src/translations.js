@@ -152,7 +152,7 @@ export const translations = {
             enthusiastic: "متحمس",
             enthusiasticDesc: "مليء بالطاقة",
             startInterview: "🤝 ابدأ جلسة المقابلة الشخصية",
-            alertSelectAgent: "يرجى اختيار نوع الوكيل أولاً",
+            alertSelectAgent: "يرجى اختيار نوع الموظف أولاً",
             confirmSectorTitle: "تأكيد قطاع الأعمال",
             confirmSectorDesc: "يرجى اختيار القطاع المناسب لمنشأتك لنقوم بعرض أفضل الكوادر المهنية الموصى بها لك.",
             confirmAction: "تأكيد المتابعة",

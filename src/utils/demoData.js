@@ -19,7 +19,7 @@ export const generateDemoData = async () => {
             throw new Error('Failed to create medical agent');
         }
 
-        console.log('✅ تم إنشاء وكيل العيادة الطبية');
+        console.log('✅ تم إنشاء موظف العيادة الطبية');
 
         // 2. Save contract for medical agent
         const medicalContract = {
@@ -132,7 +132,7 @@ export const generateDemoData = async () => {
 
         // Store agent ID for dashboard
         localStorage.setItem('currentAgentId', medicalAgent.data.id);
-        console.log('✅ تم حفظ معرف الوكيل في localStorage');
+        console.log('✅ تم حفظ معرف الموظف في localStorage');
 
         return {
             success: true,

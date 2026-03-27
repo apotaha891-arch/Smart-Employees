@@ -40,8 +40,8 @@ const AgentTemplates = () => {
     const [selectedTone, setSelectedTone] = useState('friendly');
 
     // Initial industry from Home page state or default
-    const [industry, setIndustry] = useState(location.state?.industry || 'telecom_it');
-    const [isIndustryConfirmed, setIsIndustryConfirmed] = useState(!!location.state?.industry);
+    const [industry, setIndustry] = useState(location.state?.industry || sessionStorage.getItem('selectedSector') || 'telecom_it');
+    const [isIndustryConfirmed, setIsIndustryConfirmed] = useState(!!location.state?.industry || !!sessionStorage.getItem('selectedSector'));
     const [showSectorConfirm, setShowSectorConfirm] = useState(false);
 
     const [dbTemplates, setDbTemplates] = useState([]);
@@ -90,7 +90,7 @@ const AgentTemplates = () => {
         fetchTemplates();
         
         // Show confirm popup if industry isn't confirmed after a delay
-        if (!location.state?.industry) {
+        if (!location.state?.industry && !sessionStorage.getItem('selectedSector')) {
             setTimeout(() => {
                 setShowSectorConfirm(true);
             }, 1000);
@@ -132,12 +132,10 @@ const AgentTemplates = () => {
         { id: 'enthusiastic', icon: <Sparkles size={20} />, label: 'متحمس', labelEn: 'Enthusiastic', description: 'مليء بالطاقة' },
     ];
 
-    // Sort templates: matching industry first, then others
-    const sortedTemplates = [...dbTemplates].sort((a, b) => {
-        if (a.business_type === industry && b.business_type !== industry) return -1;
-        if (a.business_type !== industry && b.business_type === industry) return 1;
-        return 0;
-    });
+    // Filter templates to show only matching industry (unless 'general' is selected, then show all)
+    const filteredTemplates = industry === 'general' 
+        ? dbTemplates 
+        : dbTemplates.filter(t => t.business_type === industry);
 
     const handleSelectTemplate = (template) => {
         setSelectedTemplate(template);
@@ -191,7 +189,7 @@ const AgentTemplates = () => {
                             </h3>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '4px' }}>
                                 <span style={{ color: '#8B5CF6', fontSize: '0.8rem', fontWeight: 700 }}>{t(`home.${industry}`).toUpperCase()}</span>
-                                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>• {dbTemplates.filter(t => t.business_type === industry).length} {t('templates.candidatesCount')}</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>• {filteredTemplates.length} {t('templates.candidatesCount')}</span>
                             </div>
                         </div>
                     </div>
@@ -227,7 +225,7 @@ const AgentTemplates = () => {
                         </div>
                     ) : (
                         <div className="n8n-card-grid">
-                            {sortedTemplates.map((template) => {
+                            {filteredTemplates.map((template) => {
                                 const ui = getTemplateUI(template);
                                 const isEnglish = language === 'en';
                                 const displayName = isEnglish ? (template.name_en || template.name) : template.name;
@@ -261,10 +259,7 @@ const AgentTemplates = () => {
                                                 {ui.creator}
                                             </span>
                                             <span className="verified-badge">●</span>
-                                            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
-                                                <span style={{ fontSize: '0.7rem', color: '#A1A1AA' }}>{t('templates.cost')}</span>
-                                                <span style={{ fontSize: '0.8rem', color: '#F59E0B', fontWeight: 700 }}>{ui.cost} {t('templates.points')}</span>
-                                            </div>
+                                            {/* System Points Cost Removed as requested */}
                                         </div>
 
                                         {/* Recommendation Badge */}
@@ -421,7 +416,7 @@ const AgentTemplates = () => {
                                 ].map(s => (
                                     <button
                                         key={s.id}
-                                        onClick={() => { setIndustry(s.id); setIsIndustryConfirmed(true); setShowSectorConfirm(false); }}
+                                        onClick={() => { setIndustry(s.id); setIsIndustryConfirmed(true); setShowSectorConfirm(false); sessionStorage.setItem('selectedSector', s.id); }}
                                         style={{
                                             padding: '0.75rem 0.5rem',
                                             borderRadius: '12px',
@@ -445,7 +440,7 @@ const AgentTemplates = () => {
                             </div>
 
                             <button
-                                onClick={() => { setIsIndustryConfirmed(true); setShowSectorConfirm(false); }}
+                                onClick={() => { setIsIndustryConfirmed(true); setShowSectorConfirm(false); sessionStorage.setItem('selectedSector', industry); }}
                                 className="btn btn-primary btn-block"
                                 style={{ padding: '1rem' }}
                             >

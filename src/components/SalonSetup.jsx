@@ -850,7 +850,7 @@ const EntitySetup = () => {
                                 </div>
                                 <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.83rem', lineHeight: 1.6 }}>
                                     {language === 'ar'
-                                        ? 'ارفع ملفات منشأتك (PDF, Word, Excel) للحصول على أفضل دقة. وكيلنا الذكي سيقرأها ويُنشئ لك ملف تعريفي متكامل تلقائياً.'
+                                        ? 'ارفع ملفات منشأتك (PDF, Word, Excel) للحصول على أفضل دقة. موظفنا الذكي سيقرأها ويُنشئ لك ملف تعريفي متكامل تلقائياً.'
                                         : 'Upload your business files (PDF, Word, Excel) for best accuracy. Our AI agent will read them and auto-generate a complete profile.'}
                                 </p>
                             </div>

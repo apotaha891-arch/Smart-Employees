@@ -52,7 +52,7 @@ const ContractSign = () => {
             });
 
             if (!agentResult.success) {
-                alert(isArabic ? `حدث خطأ في إنشاء الوكيل. يرجى المحاولة مرة أخرى.\nالسبب: ${agentResult.error}` : `Error creating agent. Please try again.\nReason: ${agentResult.error}`);
+                alert(isArabic ? `حدث خطأ في إنشاء الموظف. يرجى المحاولة مرة أخرى.\nالسبب: ${agentResult.error}` : `Error creating employee. Please try again.\nReason: ${agentResult.error}`);
                 setIsSubmitting(false);
                 return;
             }

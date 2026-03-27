@@ -86,6 +86,8 @@ const InterviewRoom = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [showHireButton, setShowHireButton] = useState(false);
     const [isHiring, setIsHiring] = useState(false);
+    const [showHiringModal, setShowHiringModal] = useState(false);
+    const [userMessageCount, setUserMessageCount] = useState(0);
 
     const [agent, setAgent] = useState(null);
     const [profile, setProfile] = useState(null);
@@ -290,9 +292,7 @@ ${d.knowledge_base || "لا توجد بروتوكولات إضافية حالي�
                     ? `\n**قاعدة خصوصية طبية (خط أحمر):** لا تقدم أي تشخيص طبي إطلاقاً ولا تصرف أي أدوية عبر المحادثة. دورك يقتصر على المواعيد والمعلومات الإدارية وتوجيه المريض لزيارة الطبيب لضمان السرية والمهنية.`
                     : '';
 
-            const languagePrompt = isArabic
-                ? `\n**قاعدة اللغة (خط أحمر):** يجب أن تتحدث **باللغة العربية فقط**. الإجابة يجب أن تكون بالعربية.`
-                : `\n**CRITICAL LANGUAGE RULE (RED LINE):** You MUST reply **EXCLUSIVELY IN ENGLISH**. DO NOT use Arabic letters, words, or sentences. Treat this test strictly as an English-only environment.`;
+            const languagePrompt = `**LANGUAGE RULE (RED LINE):** Always reply in the SAME language the client uses. Arabic → Arabic. English → English. Mix → use the dominant one. NEVER refuse any language.`;
 
             const customPrompt = `أنت الآن تخضع لمقابلة توظيف لدور: ${targetTemplate.title}.
 تخصصك الدقيق هو: ${targetTemplate.specialty}.
@@ -504,6 +504,13 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
             };
 
             setMessages(prev => [...prev, agentMessage]);
+
+            // Show hiring modal after 5 user messages
+            setUserMessageCount(prev => {
+                const next = prev + 1;
+                if (next === 5) setTimeout(() => setShowHiringModal(true), 1500);
+                return next;
+            });
         } catch (error) {
             console.error('Send message error:', error);
             const errorMessage = {
@@ -770,6 +777,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
 
     // --- INTERVIEW ROOM ---
     return (
+        <>
         <div className="ai-aura-container" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
             <div className="container" style={{ position: 'relative', zIndex: 1, paddingBottom: '4rem', paddingTop: '2rem' }}>
                 <div className="page-header text-center" style={{ marginBottom: '3rem' }}>
@@ -1039,7 +1047,12 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                     <AgentIcon size={48} color="#8B5CF6" />
                                 </div>
                                 <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 800 }}>
-                                    {template?.id && getAgentMap(isArabic)[template.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name))}
+                                    {(() => {
+                                        const arName = getAgentMap(true)[template?.id]?.title || template?.title || template?.name || '';
+                                        const enName = getAgentMap(false)[template?.id]?.title || template?.name_en || template?.title || '';
+                                        if (arName && enName && arName !== enName) return `${arName} | ${enName}`;
+                                        return isArabic ? arName : enName;
+                                    })()}
                                 </h3>
                                 <p style={{ fontSize: '0.9rem', color: '#8B5CF6', fontWeight: 600 }}>
                                     {template?.id && getAgentMap(isArabic)[template.id]?.specialty ? getAgentMap(isArabic)[template.id].specialty : (!isArabic && template?.description_en ? template.description_en : (template?.specialty || template?.description))}
@@ -1157,6 +1170,101 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                 </div>
             </div>
         </div>
+        {/* Hiring Decision Modal */}
+        {showHiringModal && (
+            <div style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.85)',
+                backdropFilter: 'blur(12px)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem'
+            }}>
+                <div style={{
+                    background: '#18181B',
+                    border: '1px solid rgba(139, 92, 246, 0.4)',
+                    borderRadius: '28px',
+                    padding: '2.5rem',
+                    maxWidth: '460px',
+                    width: '100%',
+                    textAlign: 'center',
+                    boxShadow: '0 30px 60px rgba(0,0,0,0.5)'
+                }}>
+                    <div style={{
+                        width: '72px',
+                        height: '72px',
+                        background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 1.5rem',
+                        boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)'
+                    }}>
+                        <Sparkles size={34} color="white" fill="white" />
+                    </div>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.75rem', color: 'white' }}>
+                        {isArabic ? '🤔 ما رأيك بالمرشح؟' : '🤔 What do you think?'}
+                    </h2>
+                    <p style={{ color: '#A1A1AA', marginBottom: '2rem', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                        {isArabic
+                            ? `أجرينا محادثة كافية. هل أنت جاهز لاتخاذ قرارك بشأن تعيين هذا الموظف؟`
+                            : `We've had enough conversation. Are you ready to make your hiring decision?`}
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <button
+                            onClick={() => { setShowHiringModal(false); handleHireAgent(); }}
+                            style={{
+                                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '1rem',
+                                borderRadius: '14px',
+                                fontWeight: 900,
+                                fontSize: '1rem',
+                                cursor: 'pointer',
+                                boxShadow: '0 8px 20px rgba(139, 92, 246, 0.4)'
+                            }}
+                        >
+                            ✅ {isArabic ? 'نعم، وظّفه الآن!' : 'Yes, Hire Now!'}
+                        </button>
+                        <button
+                            onClick={() => setShowHiringModal(false)}
+                            style={{
+                                background: 'rgba(255,255,255,0.05)',
+                                color: '#E4E4E7',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                padding: '0.85rem',
+                                borderRadius: '14px',
+                                fontWeight: 700,
+                                fontSize: '0.95rem',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            💬 {isArabic ? 'استمر في المقابلة' : 'Continue Interview'}
+                        </button>
+                        <button
+                            onClick={() => { setShowHiringModal(false); navigate('/templates'); }}
+                            style={{
+                                background: 'transparent',
+                                color: '#6B7280',
+                                border: 'none',
+                                padding: '0.5rem',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                fontWeight: 600
+                            }}
+                        >
+                            {isArabic ? 'إنهاء وعرض مرشحين آخرين' : 'End & View Other Candidates'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 };
 

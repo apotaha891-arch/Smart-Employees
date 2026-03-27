@@ -3,7 +3,8 @@ import { sendMessage, initializeChat, extractConciergeInsights } from '../servic
 import { getPlatformSettings } from '../services/adminService';
 import { useLanguage } from '../LanguageContext';
 import { supabase, getCurrentUser } from '../services/supabaseService';
-import { saveConciergeConversation, getUserConversation } from '../services/conciergeService';
+import { saveConciergeConversation, saveGuestConciergeConversation, getUserConversation } from '../services/conciergeService';
+
 
 const PlatformConcierge = () => {
     // ... (rest of component state)
@@ -13,8 +14,10 @@ const PlatformConcierge = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [config, setConfig] = useState(null);
     const [user, setUser] = useState(null);
+    const [guestSessionId, setGuestSessionId] = useState(null);
     const messagesEndRef = useRef(null);
     const { t, language } = useLanguage();
+
 
     const loadConfig = async (isRefreshing = false) => {
         try {
@@ -76,6 +79,16 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
         const init = async () => {
             const { user: currUser } = await getCurrentUser();
             setUser(currUser);
+
+            // Generate/restore a guest session ID for unauthenticated visitors
+            if (!currUser) {
+                let sid = sessionStorage.getItem('noura_guest_session');
+                if (!sid) {
+                    sid = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    sessionStorage.setItem('noura_guest_session', sid);
+                }
+                setGuestSessionId(sid);
+            }
             
             if (currUser) {
                 const { data: history } = await getUserConversation(currUser.id);
@@ -90,6 +103,7 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
         };
         init();
     }, [language]);
+
 
     // Re-sync whenever the window is opened to ensure latest admin settings
     useEffect(() => {
@@ -137,20 +151,28 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
             const agentMsg = { role: 'agent', content: response.text };
             const updatedMessages = [...newMessages, agentMsg];
             setMessages(updatedMessages);
-            
-            // Save to database
-            if (user) {
-                // Initial save
-                await saveConciergeConversation(user.id, updatedMessages);
-                
-                // Background insights extraction (every 2 full cycles or at key moments)
-                if (updatedMessages.length >= 4 && updatedMessages.length % 2 === 0) {
-                    extractConciergeInsights(updatedMessages).then(res => {
-                        if (res.success) {
-                            saveConciergeConversation(user.id, updatedMessages, null, { insights: res.data });
-                        }
-                    });
+
+            // ── Save conversation for BOTH logged-in users AND guests ──
+            const saveConversation = async (insightMetadata = {}) => {
+                if (user) {
+                    await saveConciergeConversation(user.id, updatedMessages, null, insightMetadata);
+                } else if (guestSessionId) {
+                    const { saveGuestConciergeConversation } = await import('../services/conciergeService');
+                    await saveGuestConciergeConversation(guestSessionId, updatedMessages, insightMetadata);
                 }
+            };
+
+            // First save: persist chat immediately
+            await saveConversation();
+
+            // Background insight extraction: look for phone numbers, booking requests, etc.
+            if (updatedMessages.length >= 2) {
+                extractConciergeInsights(updatedMessages).then(async (res) => {
+                    if (res.success && res.data) {
+                        // Save again with enriched metadata (phone, name, booking_intent, etc.)
+                        await saveConversation({ insights: res.data });
+                    }
+                }).catch(() => {}); // non-blocking
             }
         }
         setIsLoading(false);
