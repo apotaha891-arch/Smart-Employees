@@ -1,5 +1,5 @@
 /**
- * Demo Data Generator for Elite Agents Platform
+ * Demo Data Generator for Elite Employees Platform
  * استخدم هذا الملف لإضافة بيانات تجريبية إلى قاعدة البيانات للاختبار
  */
 
@@ -9,19 +9,19 @@ export const generateDemoData = async () => {
     try {
         console.log('🚀 بدء إنشاء البيانات التجريبية...');
 
-        // 1. Create demo agent for medical clinic
+        // 1. Create demo employee for medical clinic
         const medicalAgent = await createAgent({
             name: 'عيادة الدكتور أحمد للأسنان',
             specialty: 'Medical Clinic - طب الأسنان'
         });
 
         if (!medicalAgent.success) {
-            throw new Error('Failed to create medical agent');
+            throw new Error('Failed to create medical employee');
         }
 
         console.log('✅ تم إنشاء موظف العيادة الطبية');
 
-        // 2. Save contract for medical agent
+        // 2. Save contract for medical employee
         const medicalContract = {
             businessName: 'عيادة الدكتور أحمد للأسنان',
             businessType: 'عيادة طبية',
@@ -130,7 +130,7 @@ export const generateDemoData = async () => {
 
         console.log(`✅ تم إنشاء ${demoTasks.length} مهام تجريبية`);
 
-        // Store agent ID for dashboard
+        // Store employee ID for dashboard
         localStorage.setItem('currentAgentId', medicalAgent.data.id);
         console.log('✅ تم حفظ معرف الموظف في localStorage');
 
@@ -158,7 +158,7 @@ export const generateBeautySalonDemo = async () => {
         });
 
         if (!salonAgent.success) {
-            throw new Error('Failed to create salon agent');
+            throw new Error('Failed to create salon employee');
         }
 
         const salonContract = {

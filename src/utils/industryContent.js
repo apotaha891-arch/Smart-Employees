@@ -415,7 +415,7 @@ export const industryData = {
         general: {
             id: 'general',
             heroTitle: "Elevate Service. Automate Success. With 24Shift.",
-            heroDescription: "Automate and elevate your customer interactions and operational efficiency with 24/7, high-accuracy elite digital agents. Scale your operations in minutes and free up your managers' time.",
+            heroDescription: "Automate and elevate your customer interactions and operational efficiency with 24/7, high-accuracy elite digital employees. Scale your operations in minutes and free up your managers' time.",
             img: "https://images.pexels.com/photos/3182811/pexels-photo-3182811.jpeg?auto=compress&cs=tinysrgb&w=800",
             quote: "24Shift: Your Always-On, Always-Elite Digital Workforce.",
             recommendations: [
@@ -427,7 +427,7 @@ export const industryData = {
                 },
                 {
                     title: "Rapid Expansion & Savings",
-                    desc: "Scale operations quickly by adding agents in minutes, significantly reducing costs compared to human staffing.",
+                    desc: "Scale operations quickly by adding employees in minutes, significantly reducing costs compared to human staffing.",
                     iconName: "TrendingUp",
                     animationPath: "/animations/growth.json"
                 }
@@ -456,7 +456,7 @@ export const industryData = {
         medical: {
             id: 'medical',
             heroTitle: "Digital Receptionist for Your Clinic - Premium Care for Your Patients",
-            heroDescription: "Make your clinic operate 24/7 efficiently. Our smart agents specialize in scheduling medical appointments, answering patient inquiries, and organizing records with high medical precision.",
+            heroDescription: "Make your clinic operate 24/7 efficiently. Our smart employees specialize in scheduling medical appointments, answering patient inquiries, and organizing records with high medical precision.",
             img: "https://images.pexels.com/photos/3845129/pexels-photo-3845129.jpeg?auto=compress&cs=tinysrgb&w=800",
             quote: "The health of your clinic's operations begins with exceptional and seamless customer service.",
             recommendations: [
@@ -497,7 +497,7 @@ export const industryData = {
         real_estate: {
             id: 'real_estate',
             heroTitle: "Your Digital Real Estate Advisor - Don't Miss Any Sale",
-            heroDescription: "Convert WhatsApp inquiries into real deals. Our smart agents are trained to showcase properties, handle customer objections, and identify serious buyers with high accuracy.",
+            heroDescription: "Convert WhatsApp inquiries into real deals. Our smart employees are trained to showcase properties, handle customer objections, and identify serious buyers with high accuracy.",
             img: "https://images.pexels.com/photos/8293778/pexels-photo-8293778.jpeg?auto=compress&cs=tinysrgb&w=800",
             quote: "In real estate, the speed of response is the difference between closing a deal and losing it.",
             recommendations: [
@@ -509,7 +509,7 @@ export const industryData = {
                 },
                 {
                     title: "Identify Serious Buyers",
-                    desc: "The agent identifies buyer budgets and needs before transferring to your human sales team.",
+                    desc: "The employee identifies buyer budgets and needs before transferring to your human sales team.",
                     iconName: "UserCheck",
                     animationPath: "/animations/realestate-client.json"
                 }
@@ -538,7 +538,7 @@ export const industryData = {
         beauty: {
             id: 'beauty',
             heroTitle: "Transform Your Beauty Salon Into a Smart Destination",
-            heroDescription: "A smart reception agent organizes bookings, coordinates stylist schedules, and suggests add-on services to increase your salon's revenue with elegance and professionalism.",
+            heroDescription: "A smart reception employee organizes bookings, coordinates stylist schedules, and suggests add-on services to increase your salon's revenue with elegance and professionalism.",
             img: "https://images.pexels.com/photos/3985338/pexels-photo-3985338.jpeg?auto=compress&cs=tinysrgb&w=800",
             quote: "Beauty begins the moment a client decides to book their first service.",
             recommendations: [
@@ -579,7 +579,7 @@ export const industryData = {
         restaurant: {
             id: 'restaurant',
             heroTitle: "Digital Host for Your Restaurant - Smart Table Management",
-            heroDescription: "Never lose a customer due to a busy line. Our smart agent manages reservations, confirms bookings, and organizes the waitlist with a professional touch.",
+            heroDescription: "Never lose a customer due to a busy line. Our smart employee manages reservations, confirms bookings, and organizes the waitlist with a professional touch.",
             img: "https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800",
             quote: "A memorable dining experience starts with excellent reception and clear booking management.",
             recommendations: [
@@ -620,9 +620,9 @@ export const industryData = {
         fitness: {
             id: 'fitness',
             heroTitle: "Smart Fitness Coordinator - Unlimited Energy for Your Gym",
-            heroDescription: "Transform your fitness center into an interactive environment. Our smart agent books training sessions, tracks member commitments, and answers subscription inquiries.",
+            heroDescription: "Transform your fitness center into an interactive environment. Our smart employee books training sessions, tracks member commitments, and answers subscription inquiries.",
             img: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=800",
-            quote: "Commitment is the secret to success, and our agent ensures your clients stay committed to their fitness goals.",
+            quote: "Commitment is the secret to success, and our employee ensures your clients stay committed to their fitness goals.",
             recommendations: [
                 {
                     title: "Training Session Scheduling",
@@ -660,8 +660,8 @@ export const industryData = {
         },
         retail_ecommerce: {
             id: 'retail_ecommerce',
-            heroTitle: "E-commerce Sales Agent - Your Store Never Sleeps",
-            heroDescription: "Convert store visitors into lifelong customers. Our smart agents specialize in closing sales, answering product inquiries, and recovering abandoned carts with extreme precision.",
+            heroTitle: "E-commerce Sales Employee - Your Store Never Sleeps",
+            heroDescription: "Convert store visitors into lifelong customers. Our smart employees specialize in closing sales, answering product inquiries, and recovering abandoned carts with extreme precision.",
             img: "/retail_ecommerce_hero_1773000795918.png",
             quote: "E-commerce success lies in the speed of response and precision of guidance.",
             recommendations: [
@@ -702,7 +702,7 @@ export const industryData = {
         banking: {
             id: 'banking',
             heroTitle: "Digital Financial Advisor - Elite Level Banking Services",
-            heroDescription: "Elevate your customers' banking experience. Our smart agents are trained to provide instant support for financial inquiries, explain features, and facilitate procedures securely.",
+            heroDescription: "Elevate your customers' banking experience. Our smart employees are trained to provide instant support for financial inquiries, explain features, and facilitate procedures securely.",
             img: "/banking_finance_hero_1773000813076.png",
             quote: "Security and precision are the two fundamental pillars of every successful financial service.",
             recommendations: [
@@ -743,7 +743,7 @@ export const industryData = {
         call_center: {
             id: 'call_center',
             heroTitle: "Smart Call Center - Extraordinary Customer Service Efficiency",
-            heroDescription: "Transform your call center into a tireless digital system. Our smart agents manage thousands of conversations simultaneously with 90% accuracy.",
+            heroDescription: "Transform your call center into a tireless digital system. Our smart employees manage thousands of conversations simultaneously with 90% accuracy.",
             img: "/call_center_hero_1773000831995.png",
             quote: "Happy customers are the result of immediate and professional service that never delays.",
             recommendations: [
@@ -784,7 +784,7 @@ export const industryData = {
         telecom_it: {
             id: 'telecom_it',
             heroTitle: "Digital Tech Engineer - Smart Solutions for the Tech Sector",
-            heroDescription: "Elevate your tech services. Our smart agents are trained to provide initial technical support, explain internet packages, and coordinate engineer visits flawlessly.",
+            heroDescription: "Elevate your tech services. Our smart employees are trained to provide initial technical support, explain internet packages, and coordinate engineer visits flawlessly.",
             img: "/telecom_it_hero_1773000847200.png",
             quote: "In the world of technology, innovation starts with offering futuristic customer service.",
             recommendations: [
@@ -843,7 +843,7 @@ export const getIndustryContent = (industryKey, lang = 'ar', dynamicSectors = {}
                 : `Smart integrated solutions for the ${dynamicSector.l} sector`,
             heroDescription: lang === 'ar'
                 ? `ارتقِ بأعمالك في قطاع ${dynamicSector.l} مع موظفينا الرقميين النخبة. حلول مخصصة تضمن الكفاءة والاحترافية على مدار الساعة.`
-                : `Elevate your ${dynamicSector.l} business with our elite digital agents. Custom solutions ensuring efficiency and professionalism 24/7.`,
+                : `Elevate your ${dynamicSector.l} business with our elite digital employees. Custom solutions ensuring efficiency and professionalism 24/7.`,
             quote: lang === 'ar'
                 ? `${dynamicSector.l}: حيث يلتقي التميز بالذكاء الاصطناعي.`
                 : `${dynamicSector.l}: Where excellence meets AI.`,

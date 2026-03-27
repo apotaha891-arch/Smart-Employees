@@ -22,7 +22,7 @@ const Footer = () => {
                     gap: '2rem'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <img src="/logo.png" alt="24Shift" style={{ height: '40px', objectFit: 'contain', borderRadius: '10px' }} />
+                        <img src="/logo.png" alt="Smart Employees" style={{ height: '40px', objectFit: 'contain', borderRadius: '10px' }} />
                         <span style={{
                             fontFamily: "'Montserrat', 'Inter', sans-serif",
                             fontWeight: 900,

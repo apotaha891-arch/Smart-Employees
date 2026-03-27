@@ -56,6 +56,9 @@ const EntitySetup = () => {
     const [appBaseUrl, setAppBaseUrl] = useState(window.location.origin);
     const [requestToolName, setRequestToolName] = useState('');
     const [requestReason, setRequestReason] = useState('');
+    const [requestContactName, setRequestContactName] = useState('');
+    const [requestContactPhone, setRequestContactPhone] = useState('');
+    const [requestContactEmail, setRequestContactEmail] = useState('');
     const [requestSuccess, setRequestSuccess] = useState(false);
     const [agentId, setAgentId] = useState(null);
 
@@ -714,18 +717,19 @@ const EntitySetup = () => {
     };
 
     const handleCustomToolRequest = async () => {
-        if (!requestToolName.trim()) return;
+        if (!requestToolName.trim() || !requestContactName.trim() || !requestContactPhone.trim()) {
+            alert(language === 'ar' ? 'يرجى إدخال اسم الأداة وبيانات التواصل المطلوبة' : 'Please enter the tool name and required contact info');
+            return;
+        }
         setIntegrationSaving(true);
         try {
-            const { error } = await supabase.from('system_logs').insert([{
-                level: 'info',
-                category: 'system',
-                message: `New Tool Request: ${requestToolName}`,
-                details: {
-                    tool_name: requestToolName,
-                    reason: requestReason,
-                    salon_config_id: salonConfigId
-                }
+            const { error } = await supabase.from('custom_requests').insert([{
+                business_type: profile?.business_type || 'Unknown',
+                required_tasks: `Integration Tool Request: ${requestToolName}\nReason: ${requestReason}`,
+                contact_name: requestContactName,
+                contact_phone: requestContactPhone,
+                contact_email: requestContactEmail,
+                status: 'pending'
             }]);
             if (error) throw error;
             setRequestSuccess(true);
@@ -734,6 +738,9 @@ const EntitySetup = () => {
                 setRequestSuccess(false);
                 setRequestToolName('');
                 setRequestReason('');
+                setRequestContactName('');
+                setRequestContactPhone('');
+                setRequestContactEmail('');
             }, 2500);
         } catch (err) {
             alert('Error sending request: ' + err.message);
@@ -1778,6 +1785,32 @@ const EntitySetup = () => {
                                                                         value={requestReason}
                                                                         onChange={e => setRequestReason(e.target.value)}
                                                                         placeholder={language === 'ar' ? 'لماذا تحتاج هذا الربط؟' : 'How will this help your workflow?'} />
+                                                                </div>
+                                                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                                                                    <h4 style={{ color: '#A78BFA', fontSize: '0.9rem', marginBottom: '1rem' }}>{language === 'ar' ? 'بيانات التواصل' : 'Contact Information'}</h4>
+                                                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                                                        <div style={{ flex: 1 }}>
+                                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                                {language === 'ar' ? 'الاسم' : 'Name'}
+                                                                            </label>
+                                                                            <input style={inp} value={requestContactName}
+                                                                                onChange={e => setRequestContactName(e.target.value)} />
+                                                                        </div>
+                                                                        <div style={{ flex: 1 }}>
+                                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                                {language === 'ar' ? 'رقم الجوال' : 'Phone'}
+                                                                            </label>
+                                                                            <input style={inp} type="tel" value={requestContactPhone}
+                                                                                onChange={e => setRequestContactPhone(e.target.value)} />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div style={{ marginTop: '1rem' }}>
+                                                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                            {language === 'ar' ? 'البريد الإلكتروني' : 'Email'}
+                                                                        </label>
+                                                                        <input style={inp} type="email" value={requestContactEmail}
+                                                                            onChange={e => setRequestContactEmail(e.target.value)} />
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         ) : (

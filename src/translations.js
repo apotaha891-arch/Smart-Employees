@@ -638,7 +638,7 @@ export const translations = {
         agentStep2Label: "Interview",
         agentStep2Desc: "Conduct a thorough interview",
         agentStep3Label: "Hire",
-        agentStep3Desc: "Hire the digital agent",
+        agentStep3Desc: "Hire the digital employee",
         agentStep4Label: "Customize",
         agentStep4Desc: "Customize settings and tasks",
         step: "Step",
@@ -795,17 +795,17 @@ export const translations = {
 
         // Interview Room
         interviewTitle: "Interview Room",
-        interviewSubtitle: "Talk to the AI agent and test their capabilities",
+        interviewSubtitle: "Talk to the AI employee and test their capabilities",
         chatPlaceholder: "Type your message here...",
         sendMessage: "Send",
-        hireAgent: "Hire Agent",
-        agentWelcome: "Hello! I'm a specialized AI agent. Tell me about your business and I'll help you manage it efficiently.",
+        hireAgent: "Hire Employee",
+        agentWelcome: "Hello! I'm a specialized AI employee. Tell me about your business and I'll help you manage it efficiently.",
 
         // Dashboard
         dashboardTitle: "Dashboard",
-        dashboardSubtitle: "Monitor your AI agent's performance in real-time",
+        dashboardSubtitle: "Monitor your AI employee's performance in real-time",
         tasksCompleted: "Tasks Completed",
-        agentStatus: "Agent Status",
+        agentStatus: "Employee Status",
         lastUpdate: "Last Update",
         exportExcel: "Export Excel",
         exportCSV: "Export CSV",
@@ -836,7 +836,7 @@ export const translations = {
         success: "Success",
         error: "Error occurred",
         contractSaved: "Contract saved successfully",
-        agentHired: "Agent hired successfully! Go to dashboard to monitor performance",
+        agentHired: "Employee hired successfully! Go to dashboard to monitor performance",
 
         // Form Labels
         businessName: "Business Name",
