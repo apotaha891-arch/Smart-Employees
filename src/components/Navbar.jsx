@@ -47,12 +47,12 @@ const Navbar = () => {
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 letterSpacing: '1.5px'
-                            }}>SMART EMPLOYEES</span>
-                            <img src="/logo.png" alt="Smart Employees" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
+                            }}>24SHIFT</span>
+                            <img src="/logo.png" alt="24Shift" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
                         </>
                     ) : (
                         <>
-                            <img src="/logo.png" alt="Smart Employees" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
+                            <img src="/logo.png" alt="24Shift" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
                             <span style={{
                                 fontFamily: "'Montserrat', 'Inter', sans-serif",
                                 fontWeight: 900,
@@ -62,7 +62,7 @@ const Navbar = () => {
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 letterSpacing: '1.5px'
-                            }}>SMART EMPLOYEES</span>
+                            }}>24SHIFT</span>
                         </>
                     )}
                 </Link>
