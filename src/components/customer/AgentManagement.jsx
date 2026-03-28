@@ -91,7 +91,7 @@ const AgentManagement = () => {
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' }}>
                         {agents.map(agent => (
-                            <div key={agent.id} className="n8n-card" style={{ padding: '1.5rem' }}>
+                            <div key={agent.id} className="shift-card" style={{ padding: '1.5rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
                                     <h4 style={{ margin: 0 }}>{agent.name}</h4>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>

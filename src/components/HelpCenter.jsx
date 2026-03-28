@@ -126,7 +126,7 @@ const HelpCenter = () => {
     return (
         <div style={{ padding: '1rem', maxWidth: '1000px', margin: '0 auto', color: 'white' }}>
             {/* Header Area */}
-            <div style={{ textAlign: 'center', marginBottom: '3rem', padding: '3rem 1rem', background: 'var(--n8n-surface-card, rgba(255,255,255,0.03))', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '3rem', padding: '3rem 1rem', background: 'var(--shift-surface-card, rgba(255,255,255,0.03))', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '20px', background: 'rgba(139, 92, 246, 0.2)', color: '#C4B5FD', marginBottom: '1.5rem' }}>
                     <HelpCircle size={32} />
                 </div>

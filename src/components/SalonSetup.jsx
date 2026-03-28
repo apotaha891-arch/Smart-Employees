@@ -61,6 +61,7 @@ const EntitySetup = () => {
     const [requestContactEmail, setRequestContactEmail] = useState('');
     const [requestSuccess, setRequestSuccess] = useState(false);
     const [agentId, setAgentId] = useState(null);
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
 
     const handleOAuthConnect = async (platformId) => {
@@ -678,10 +679,21 @@ const EntitySetup = () => {
                 const webhookUrl = `${projectUrl}/functions/v1/telegram-webhook?agent_id=${currentAgentId}`;
                 
                 console.log("Setting up Telegram Webhook with URL:", webhookUrl);
-                fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`)
-                    .then(r => r.json())
-                    .then(res => console.log("Telegram Webhook Sync Result:", res))
-                    .catch(e => console.warn("Webhook Sync Error:", e));
+                try {
+                    const telegramRes = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`);
+                    const telegramData = await telegramRes.json();
+                    
+                    if (telegramData.ok) {
+                        console.log("Telegram Webhook Sync Success ✅");
+                    } else {
+                        console.warn("Telegram Webhook Sync Rejected ❌", telegramData);
+                        alert(language === 'ar' 
+                            ? `⚠️ تم حفظ الإعدادات لكن فشل ربط التيليجرام: ${telegramData.description || 'التوكن غير صالح'}` 
+                            : `⚠️ Settings saved but Telegram setup failed: ${telegramData.description || 'Invalid Token'}`);
+                    }
+                } catch (e) {
+                    console.warn("Webhook Sync Error:", e);
+                }
             }
             
             console.log("Integration saved and synced successfully ✅");
@@ -689,6 +701,10 @@ const EntitySetup = () => {
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
             
             alert(language === 'ar' ? '✅ تم حفظ الإعدادات بنجاح!' : '✅ Settings saved successfully!');
+            
+            // show success state for 3 seconds
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
             
             // Only collapse if not website (to keep the code snippet visible)
             if (expandedIntegration !== 'website') {
@@ -1742,7 +1758,12 @@ const EntitySetup = () => {
                                                                     border: isOpen || isConnected ? '1px solid rgba(255,255,255,0.12)' : 'none',
                                                                     borderRadius: 99, padding: '7px 20px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', transition: '0.2s'
                                                                 }}>
-                                                                {isOpen ? (language === 'ar' ? 'إغلاق' : 'Close') : (language === 'ar' ? 'إعداد' : 'Connect')}
+                                                                {isOpen 
+                                                                    ? (language === 'ar' ? 'إغلاق' : 'Close') 
+                                                                    : isConnected 
+                                                                        ? (language === 'ar' ? 'متصل ✅' : 'Connected ✅')
+                                                                        : (language === 'ar' ? 'إعداد' : 'Connect')
+                                                                }
                                                             </button>
                                                         ) : (
                                                             <button
@@ -1856,12 +1877,15 @@ const EntitySetup = () => {
                                                                 }}>
                                                                 {integrationSaving ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : (requestSuccess ? <CheckCircle2 size={16} /> : <Save size={16} />)}
                                                                 {integrationSaving
-                                                                    ? (language === 'ar' ? 'جاري الإرسال...' : 'Sending Request...')
-                                                                    : (requestSuccess 
-                                                                        ? (language === 'ar' ? 'تم الإرسال!' : 'Request Sent!')
-                                                                        : (isOpen && card.id === 'custom_request' 
-                                                                            ? (language === 'ar' ? 'إرسال الطلب' : 'Send Request')
-                                                                            : (language === 'ar' ? 'حفظ البيانات' : 'Save Connection')
+                                                                    ? (language === 'ar' ? 'جاري الحفظ...' : 'Saving...')
+                                                                    : (saveSuccess 
+                                                                        ? (language === 'ar' ? '✅ تم الحفظ!' : '✅ Saved!')
+                                                                        : (requestSuccess 
+                                                                            ? (language === 'ar' ? 'تم الإرسال!' : 'Request Sent!')
+                                                                            : (isOpen && card.id === 'custom_request' 
+                                                                                ? (language === 'ar' ? 'إرسال الطلب' : 'Send Request')
+                                                                                : (language === 'ar' ? 'حفظ البيانات' : 'Save Connection')
+                                                                              )
                                                                           )
                                                                       )}
                                                             </button>

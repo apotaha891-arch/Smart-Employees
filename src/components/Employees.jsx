@@ -180,7 +180,9 @@ const Employees = () => {
             }
 
             // 3. Register the Webhook with Telegram
-            const supabaseProjectRef = 'dydflepcfdrlslpxapqo';
+            // Derive project ref from VITE_SUPABASE_URL (e.g. "https://abc.supabase.co" -> "abc")
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+            const supabaseProjectRef = supabaseUrl.split('//')[1]?.split('.')[0] || 'dydflepcfdrlslpxapqo';
             const webhookUrl = `https://${supabaseProjectRef}.supabase.co/functions/v1/telegram-webhook?agent_id=${linkingAgent.id}`;
 
             const telegramRes = await fetch(`https://api.telegram.org/bot${linkToken}/setWebhook?url=${webhookUrl}`);

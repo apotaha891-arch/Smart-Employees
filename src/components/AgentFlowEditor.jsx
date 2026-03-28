@@ -9,21 +9,21 @@ const initialNodes = [
     type: 'default',
     data: { label: '👩‍💼 Customer Support' },
     position: { x: 0, y: 0 },
-    className: 'n8n-node'
+    className: 'shift-node'
   },
   {
     id: '2',
     type: 'default',
     data: { label: '✉️ E‑mail Reader/Writer' },
     position: { x: 250, y: 100 },
-    className: 'n8n-node'
+    className: 'shift-node'
   },
   {
     id: '3',
     type: 'default',
     data: { label: '📅 Reservation Agent' },
     position: { x: 500, y: 0 },
-    className: 'n8n-node'
+    className: 'shift-node'
   }
 ];
 

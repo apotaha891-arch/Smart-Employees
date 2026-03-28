@@ -154,25 +154,25 @@ const SettingsPanel = () => {
     const otherSettings = settings.filter(s => s.key !== 'pricing_plans');
 
     return (
-        <div style={{ background: 'var(--n8n-background-dark)', padding: '2rem', borderRadius: '16px' }}>
+        <div style={{ background: 'var(--shift-background-dark)', padding: '2rem', borderRadius: '16px' }}>
             {/* Header */}
             <div style={{ marginBottom: '3rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                     <div style={{ fontSize: '2.5rem' }}>⚙️</div>
                     <div>
-                        <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 900, color: 'var(--n8n-text-main)' }}>لوحة التحكم الإدارية</h1>
-                        <p style={{ margin: '0.5rem 0 0 0', color: 'var(--n8n-text-muted)', fontSize: '0.95rem' }}>إدارة جميع إعدادات المنصة والتكاملات بسهولة</p>
+                        <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 900, color: 'var(--shift-text-main)' }}>لوحة التحكم الإدارية</h1>
+                        <p style={{ margin: '0.5rem 0 0 0', color: 'var(--shift-text-muted)', fontSize: '0.95rem' }}>إدارة جميع إعدادات المنصة والتكاملات بسهولة</p>
                     </div>
                 </div>
             </div>
 
             {/* Pricing Plans Editor */}
-            <div className="n8n-card" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
+            <div className="shift-card" style={{ background: 'var(--shift-surface-card)', border: '1px solid var(--shift-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                     <span style={{ fontSize: '1.8rem' }}>💰</span>
                     <div>
-                        <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--n8n-text-main)' }}>خطط التسعير</h2>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--n8n-text-muted)' }}>أدِر باقاتك وأسعارك بدون الحاجة للـ JSON</p>
+                        <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--shift-text-main)' }}>خطط التسعير</h2>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--shift-text-muted)' }}>أدِر باقاتك وأسعارك بدون الحاجة للـ JSON</p>
                     </div>
                 </div>
 
@@ -180,7 +180,7 @@ const SettingsPanel = () => {
                     <div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
                             {plans.map((plan, idx) => (
-                                <div key={idx} style={{ background: 'var(--n8n-background-dark)', border: '1px solid var(--n8n-border)', padding: '1.5rem', borderRadius: '12px' }}>
+                                <div key={idx} style={{ background: 'var(--shift-background-dark)', border: '1px solid var(--shift-border)', padding: '1.5rem', borderRadius: '12px' }}>
                                     <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
                                         <input 
                                             className="input-field" 
@@ -214,8 +214,8 @@ const SettingsPanel = () => {
                                         />
                                     </div>
                                     
-                                    <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--n8n-border)' }}>
-                                        <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--n8n-text-main)' }}>
+                                    <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--shift-border)' }}>
+                                        <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--shift-text-main)' }}>
                                             <input 
                                                 type="checkbox" 
                                                 checked={!!plan.popular} 
@@ -226,7 +226,7 @@ const SettingsPanel = () => {
                                     </div>
 
                                     <div style={{ marginBottom: '1rem' }}>
-                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '0.75rem', color: 'var(--n8n-text-main)' }}>المميزات:</label>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '0.75rem', color: 'var(--shift-text-main)' }}>المميزات:</label>
                                         {plan.features && plan.features.map((f, fidx) => (
                                             <div key={fidx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                                 <input 
@@ -252,8 +252,8 @@ const SettingsPanel = () => {
                         </div>
                     </div>
                 ) : (
-                    <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--n8n-background-dark)', borderRadius: '8px', border: '1px dashed var(--n8n-border)' }}>
-                        <p style={{ color: 'var(--n8n-text-muted)', marginBottom: '1rem' }}>📊 لم يتم العثور على خطط التسعير</p>
+                    <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--shift-background-dark)', borderRadius: '8px', border: '1px dashed var(--shift-border)' }}>
+                        <p style={{ color: 'var(--shift-text-muted)', marginBottom: '1rem' }}>📊 لم يتم العثور على خطط التسعير</p>
                         <button className="btn btn-primary" onClick={async () => {
                             const defaultPlans = [
                                 { name: 'باقة الاستقطاب', price: '29', credits: '500', features: ['500 موعد/شهرياً'], cta: 'تجديد', popular: false },
@@ -269,21 +269,21 @@ const SettingsPanel = () => {
 
             {/* External Integrations */}
             {integrationsSetting && (
-                <div className="n8n-card" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
+                <div className="shift-card" style={{ background: 'var(--shift-surface-card)', border: '1px solid var(--shift-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                         <span style={{ fontSize: '1.8rem' }}>🔌</span>
                         <div>
-                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--n8n-text-main)' }}>روابط التكامل</h2>
-                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--n8n-text-muted)' }}>ربط الخدمات الخارجية بمفاتيح API وروابط Webhook</p>
+                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--shift-text-main)' }}>روابط التكامل</h2>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--shift-text-muted)' }}>ربط الخدمات الخارجية بمفاتيح API وروابط Webhook</p>
                         </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
                         {integrations.map((intg, idx) => (
-                            <div key={idx} style={{ background: 'var(--n8n-background-dark)', border: '1px solid var(--n8n-border)', padding: '1.5rem', borderRadius: '12px' }}>
-                                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--n8n-border)' }}>
+                            <div key={idx} style={{ background: 'var(--shift-background-dark)', border: '1px solid var(--shift-border)', padding: '1.5rem', borderRadius: '12px' }}>
+                                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--shift-border)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                                         <span style={{ fontSize: '1.5rem' }}>{intg.icon}</span>
-                                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--n8n-text-main)', flex: 1 }}>{intg.name}</h3>
+                                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--shift-text-main)', flex: 1 }}>{intg.name}</h3>
                                         <span className={`badge ${intg.status === 'Connected' ? 'badge-success' : 'badge-secondary'}`} style={{ fontSize: '0.75rem' }}>
                                             {intg.status === 'Connected' ? '✅ متصل' : '⚠️ معطّل'}
                                         </span>
@@ -291,7 +291,7 @@ const SettingsPanel = () => {
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                     <div>
-                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.25rem' }}>مفتاح API</label>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--shift-text-muted)', display: 'block', marginBottom: '0.25rem' }}>مفتاح API</label>
                                         <input 
                                             className="input-field" 
                                             style={{ marginTop: 0, fontSize: '0.85rem' }} 
@@ -302,7 +302,7 @@ const SettingsPanel = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.25rem' }}>Webhook URL</label>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--shift-text-muted)', display: 'block', marginBottom: '0.25rem' }}>Webhook URL</label>
                                         <input 
                                             className="input-field" 
                                             style={{ marginTop: 0, fontSize: '0.85rem' }} 
@@ -321,17 +321,17 @@ const SettingsPanel = () => {
 
             {/* Manager AI Config */}
             {managerSetting && (
-                <div className="n8n-card" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
+                <div className="shift-card" style={{ background: 'var(--shift-surface-card)', border: '1px solid var(--shift-border)', padding: '2rem', marginBottom: '2rem', borderRadius: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                         <span style={{ fontSize: '1.8rem' }}>🤖</span>
                         <div>
-                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--n8n-text-main)' }}>المدير الذكي</h2>
-                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--n8n-text-muted)' }}>خصّص إعدادات المدير التنفيذي الذكي</p>
+                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--shift-text-main)' }}>المدير الذكي</h2>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--shift-text-muted)' }}>خصّص إعدادات المدير التنفيذي الذكي</p>
                         </div>
                     </div>
-                    <div style={{ background: 'var(--n8n-background-dark)', border: '1px solid var(--n8n-border)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
+                    <div style={{ background: 'var(--shift-background-dark)', border: '1px solid var(--shift-border)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
                         <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الاسم</label>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--shift-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الاسم</label>
                             <input 
                                 className="input-field"
                                 style={{ marginTop: 0 }}
@@ -341,7 +341,7 @@ const SettingsPanel = () => {
                             />
                         </div>
                         <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الدور</label>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--shift-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الدور</label>
                             <input 
                                 className="input-field"
                                 style={{ marginTop: 0 }}
@@ -351,7 +351,7 @@ const SettingsPanel = () => {
                             />
                         </div>
                         <div>
-                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--n8n-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الوصف والمعرفة</label>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--shift-text-muted)', display: 'block', marginBottom: '0.5rem' }}>الوصف والمعرفة</label>
                             <textarea 
                                 className="input-field"
                                 style={{ marginTop: 0, minHeight: '120px' }}
@@ -367,38 +367,38 @@ const SettingsPanel = () => {
 
             {/* Generic JSON Settings */}
             {otherSettings.filter(s => s.key !== 'external_integrations' && s.key !== 'manager_ai_config').length > 0 && (
-                <div className="n8n-card" style={{ background: 'var(--n8n-surface-card)', border: '1px solid var(--n8n-border)', padding: '2rem', borderRadius: '16px' }}>
+                <div className="shift-card" style={{ background: 'var(--shift-surface-card)', border: '1px solid var(--shift-border)', padding: '2rem', borderRadius: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                         <span style={{ fontSize: '1.8rem' }}>📋</span>
                         <div>
-                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--n8n-text-main)' }}>الإعدادات الأخرى</h2>
-                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--n8n-text-muted)' }}>تعديل الإعدادات المتقدمة بصيغة JSON</p>
+                            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--shift-text-main)' }}>الإعدادات الأخرى</h2>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--shift-text-muted)' }}>تعديل الإعدادات المتقدمة بصيغة JSON</p>
                         </div>
                     </div>
 
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                             <thead>
-                                <tr style={{ borderBottom: '2px solid var(--n8n-border)', backgroundColor: 'var(--n8n-background-dark)' }}>
-                                    <th style={{ padding: '0.75rem', color: 'var(--n8n-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>المفتاح</th>
-                                    <th style={{ padding: '0.75rem', color: 'var(--n8n-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>القيمة (JSON)</th>
-                                    <th style={{ padding: '0.75rem', color: 'var(--n8n-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>الإجراءات</th>
+                                <tr style={{ borderBottom: '2px solid var(--shift-border)', backgroundColor: 'var(--shift-background-dark)' }}>
+                                    <th style={{ padding: '0.75rem', color: 'var(--shift-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>المفتاح</th>
+                                    <th style={{ padding: '0.75rem', color: 'var(--shift-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>القيمة (JSON)</th>
+                                    <th style={{ padding: '0.75rem', color: 'var(--shift-text-main)', fontWeight: 600, fontSize: '0.85rem' }}>الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {otherSettings.filter(s => s.key !== 'external_integrations' && s.key !== 'manager_ai_config').map((s) => (
-                                    <tr key={s.key} style={{ borderBottom: '1px solid var(--n8n-border)' }}>
-                                        <td style={{ padding: '0.75rem', color: 'var(--n8n-text-main)', fontSize: '0.9rem', fontWeight: 500 }}>{s.key}</td>
+                                    <tr key={s.key} style={{ borderBottom: '1px solid var(--shift-border)' }}>
+                                        <td style={{ padding: '0.75rem', color: 'var(--shift-text-main)', fontSize: '0.9rem', fontWeight: 500 }}>{s.key}</td>
                                         <td style={{ padding: '0.75rem', maxWidth: '50%' }}>
                                             {editKey === s.key ? (
                                                 <textarea
                                                     rows={4}
-                                                    style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--n8n-background-dark)', color: 'var(--n8n-text-main)', border: '1px solid var(--n8n-border)', padding: '0.5rem', borderRadius: '6px' }}
+                                                    style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--shift-background-dark)', color: 'var(--shift-text-main)', border: '1px solid var(--shift-border)', padding: '0.5rem', borderRadius: '6px' }}
                                                     value={editValue}
                                                     onChange={(e) => setEditValue(e.target.value)}
                                                 ></textarea>
                                             ) : (
-                                                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.8rem', color: 'var(--n8n-text-muted)', margin: 0 }}>
+                                                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.8rem', color: 'var(--shift-text-muted)', margin: 0 }}>
                                                     {JSON.stringify(s.value, null, 2)}
                                                 </pre>
                                             )}
@@ -423,8 +423,8 @@ const SettingsPanel = () => {
                     </div>
 
                     {/* Add new setting */}
-                    <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--n8n-border)' }}>
-                        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--n8n-text-main)' }}>➕ إضافة إعداد جديد</h3>
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--shift-border)' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--shift-text-main)' }}>➕ إضافة إعداد جديد</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
                             <input
                                 type="text"

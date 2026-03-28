@@ -43,7 +43,7 @@ const Modal = ({
     };
 
     const modalStyle = {
-        background: 'var(--n8n-surface-card, rgba(15, 15, 30, 0.95))',
+        background: 'var(--shift-surface-card, rgba(15, 15, 30, 0.95))',
         borderRadius: '16px',
         border: '1px solid rgba(255,255,255,0.1)',
         boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',

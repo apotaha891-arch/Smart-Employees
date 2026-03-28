@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
 
-/* import n8n design system styles (only the compiled CSS file exists) */
+/* 24Shift Core Design tokens and layout helpers */
 @import '@n8n/design-system/dist/design-system.css';
 
 :root {
-  /* --- Enterprise Dark Palette (n8n Inspired) --- */
+  /* --- Enterprise Dark Palette (24Shift Core) --- */
   --bg-dark: #09090B;
   /* Deepest Indigo/Slate */
   --bg-card: #121217;
@@ -252,10 +252,10 @@ body {
   width: 100%;
 }
 
-/* --- n8n-specific helpers & layout tokens --- */
+/* --- shift-specific helpers & layout tokens --- */
 
-/* sidebar similar to n8n.io */
-.n8n-sidebar {
+/* sidebar similar to n8n.io but rebranded */
+.shift-sidebar {
   background: var(--bg-card);
   border-right: 1px solid var(--border-subtle);
   width: 250px;
@@ -264,12 +264,12 @@ body {
   padding: 1rem;
 }
 
-.n8n-sidebar .nav-link {
+.shift-sidebar .nav-link {
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
 }
 
-.n8n-panel {
+.shift-panel {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
@@ -277,7 +277,7 @@ body {
 }
 
 /* generic node style used by react‑flow canvas */
-.n8n-node {
+.shift-node {
   background: var(--bg-card);
   border: 2px solid var(--accent-border);
   border-radius: var(--radius-md);
@@ -286,7 +286,7 @@ body {
   font-size: 0.85rem;
 }
 
-.n8n-node.selected {
+.shift-node.selected {
   background: var(--accent-soft);
   border-color: var(--accent);
 }
@@ -305,7 +305,7 @@ body {
   stroke-width: 2px;
 }
 
-/* end n8n-specific helpers */
+/* end shift-specific helpers */
 
 .input-field {
   width: 100%;
@@ -557,8 +557,8 @@ body {
   z-index: 0;
 }
 
-/* --- N8N Inspired Card Styles (V2 - Vertical Fidelity) --- */
-.n8n-card-grid {
+/* --- 24Shift Inspired Card Styles (V2 - Vertical Fidelity) --- */
+.shift-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 320px));
   gap: 1.5rem;
@@ -567,7 +567,7 @@ body {
   justify-content: center;
 }
 
-.n8n-card {
+.shift-card {
   background: linear-gradient(135deg, rgba(18, 18, 30, 0.6) 0%, rgba(30, 27, 52, 0.4) 100%);
   border: 1px solid rgba(139, 92, 246, 0.2);
   border-radius: 20px;
@@ -582,7 +582,7 @@ body {
   overflow: hidden;
 }
 
-.n8n-card::before {
+.shift-card::before {
   content: '';
   position: absolute;
   top: 0;
@@ -594,7 +594,7 @@ body {
   border-radius: 20px;
 }
 
-.n8n-card:hover {
+.shift-card:hover {
   border-color: rgba(139, 92, 246, 0.5);
   background: linear-gradient(135deg, rgba(25, 25, 45, 0.8) 0%, rgba(40, 30, 65, 0.6) 100%);
   transform: translateY(-6px);
@@ -610,7 +610,7 @@ body {
   flex-wrap: wrap;
 }
 
-.n8n-chip {
+.shift-chip {
   width: 38px;
   height: 38px;
   background: rgba(255, 255, 255, 0.05);
@@ -622,7 +622,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.n8n-chip.more {
+.shift-chip.more {
   width: auto;
   padding: 0 0.5rem;
   font-size: 0.75rem;
@@ -630,7 +630,7 @@ body {
   color: #A1A1AA;
 }
 
-.n8n-card-title {
+.shift-card-title {
   font-size: 1.1rem;
   font-weight: 700;
   color: #FFFFFF;
@@ -641,7 +641,7 @@ body {
   align-items: center;
 }
 
-.n8n-card-desc {
+.shift-card-desc {
   font-size: 0.9rem;
   color: #A1A1AA;
   line-height: 1.6;
@@ -649,7 +649,7 @@ body {
   flex-grow: 1;
 }
 
-.card-footer-n8n {
+.card-footer-shift {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -658,7 +658,7 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.avatar-n8n {
+.avatar-shift {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -713,7 +713,7 @@ body {
   border-color: rgba(239, 68, 68, 0.3);
 }
 
-.n8n-card.selected {
+.shift-card.selected {
   border-color: #8B5CF6;
   background: #1E1E22;
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);

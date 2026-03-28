@@ -223,7 +223,7 @@ const AgentTemplates = () => {
                             <p>{t('templates.loadingCadres')}</p>
                         </div>
                     ) : (
-                        <div className="n8n-card-grid">
+                        <div className="shift-card-grid">
                             {filteredTemplates.map((template) => {
                                 const ui = getTemplateUI(template);
                                 const isEnglish = language === 'en';
@@ -234,7 +234,7 @@ const AgentTemplates = () => {
                                 return (
                                     <div
                                         key={template.id}
-                                        className={`n8n-card animate-fade-in ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
+                                        className={`shift-card animate-fade-in ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
                                         style={{ position: 'relative' }}
                                         onClick={() => handleSelectTemplate(template)}
                                     >
@@ -246,7 +246,7 @@ const AgentTemplates = () => {
                                                 style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(139,92,246,0.3)' }} 
                                             />
                                             <div>
-                                                <h4 className="n8n-card-title" style={{ margin: 0, fontSize: '1.1rem' }}>{displayName}</h4>
+                                                <h4 className="shift-card-title" style={{ margin: 0, fontSize: '1.1rem' }}>{displayName}</h4>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                                                     <span style={{ display: 'flex', alignItems: 'center', color: '#8B5CF6' }}>{ui.icon}</span>
                                                     <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{displayRole}</span>
@@ -254,11 +254,11 @@ const AgentTemplates = () => {
                                             </div>
                                         </div>
 
-                                        <p className="n8n-card-desc" style={{ marginTop: 0 }}>{displayDesc}</p>
+                                        <p className="shift-card-desc" style={{ marginTop: 0 }}>{displayDesc}</p>
 
-                                        {/* Creator Footer (n8n style) */}
-                                        <div className="card-footer-n8n">
-                                            <div className="avatar-n8n" style={{ overflow: 'hidden', padding: 0 }}>
+                                        {/* Creator Footer (shift style) */}
+                                        <div className="card-footer-shift">
+                                            <div className="avatar-shift" style={{ overflow: 'hidden', padding: 0 }}>
                                                 <img src={ui.image} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             </div>
                                             <span className="creator-name">

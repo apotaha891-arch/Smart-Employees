@@ -286,7 +286,7 @@ const AgentManagement = () => {
                             onClick={() => setSelectedAgent(agent.id === selectedAgent ? null : agent.id)}
                             style={{
                                 padding: '1.5rem',
-                                background: 'var(--n8n-surface-card, rgba(255,255,255,0.03))',
+                                background: 'var(--shift-surface-card, rgba(255,255,255,0.03))',
                                 border: selectedAgent === agent.id
                                     ? '2px solid var(--accent)'
                                     : '1px solid rgba(255,255,255,0.1)',

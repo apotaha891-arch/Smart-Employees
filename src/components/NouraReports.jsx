@@ -42,7 +42,7 @@ const ExecutiveReports = () => {
     };
 
     return (
-        <div className="card p-xl animate-fade-in" style={{ background: 'var(--n8n-surface-card)', borderRadius: '24px', border: '1px solid var(--n8n-border)' }}>
+        <div className="card p-xl animate-fade-in" style={{ background: 'var(--shift-surface-card)', borderRadius: '24px', border: '1px solid var(--shift-border)' }}>
             <div className="flex align-center justify-between mb-xl">
                 <div className="flex align-center gap-md">
                     <div style={{ width: '50px', height: '50px', background: '#0F172A', color: 'var(--accent)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>👔</div>
@@ -63,18 +63,18 @@ const ExecutiveReports = () => {
 
             <div className="grid grid-2 gap-md">
                 {reports.map((report, i) => (
-                    <div key={i} className="p-lg" style={{ background: 'var(--n8n-background-dark)', borderRadius: '16px', border: '1px solid var(--n8n-border)', position: 'relative' }}>
+                    <div key={i} className="p-lg" style={{ background: 'var(--shift-background-dark)', borderRadius: '16px', border: '1px solid var(--shift-border)', position: 'relative' }}>
                         {report.status === 'New' && (
                             <span style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'var(--accent)', color: 'var(--primary)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 900 }}>سري ✦</span>
                         )}
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{report.date} | {report.id}</div>
-                        <h4 style={{ marginBottom: '0.75rem', fontSize: '1.05rem', color: 'var(--n8n-text-main)' }}>{report.title}</h4>
+                        <h4 style={{ marginBottom: '0.75rem', fontSize: '1.05rem', color: 'var(--shift-text-main)' }}>{report.title}</h4>
                         <div className="flex gap-md mb-md">
-                            <div style={{ textAlign: 'center', flex: 1, background: 'var(--n8n-surface-card)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--n8n-border)' }}>
+                            <div style={{ textAlign: 'center', flex: 1, background: 'var(--shift-surface-card)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--shift-border)' }}>
                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>فرص مكتشفة</div>
                                 <div style={{ fontWeight: 800, color: 'var(--success)' }}>{report.leadsFound}</div>
                             </div>
-                            <div style={{ textAlign: 'center', flex: 1, background: 'var(--n8n-surface-card)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--n8n-border)' }}>
+                            <div style={{ textAlign: 'center', flex: 1, background: 'var(--shift-surface-card)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--shift-border)' }}>
                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>معدل النمو</div>
                                 <div style={{ fontWeight: 800, color: '#D4AF37' }}>{report.growthRate}</div>
                             </div>
