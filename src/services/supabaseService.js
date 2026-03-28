@@ -809,26 +809,22 @@ export const submitCustomRequest = async (requestData) => {
 
 export const saveSalonConfig = async (config) => {
     try {
-        console.log("SupabaseService: Saving config:", config.id ? `UPDATE ${config.id}` : 'INSERT NEW');
+        console.log("SupabaseService: Preparing save for config:", config.id ? `UPDATE ${config.id}` : 'INSERT NEW');
 
         let query;
         if (config.id) {
-            // Separate ID from data to avoid updating PK
             const { id, ...updateData } = config;
-            console.log(`SupabaseService: Updating config ${id}`);
             query = supabase
                 .from('salon_configs')
                 .update(updateData)
                 .eq('id', id);
         } else {
-            // Explicit INSERT
             const { id, ...insertData } = config;
             query = supabase
                 .from('salon_configs')
                 .insert([insertData]);
         }
 
-        // Add a timeout to prevent indefinite hanging
         const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Database operation timed out (30s). Check network or RLS.')), 30000)
         );
@@ -836,12 +832,13 @@ export const saveSalonConfig = async (config) => {
         const executeQuery = async () => {
             const { data, error } = await query.select().maybeSingle();
             if (error) throw error;
+            if (!data) throw new Error('No rows affected. Please check your permissions (RLS) or if the record exists.');
             return data;
         };
 
         const data = await Promise.race([executeQuery(), timeoutPromise]);
 
-        console.log("SupabaseService: Save successful ✅");
+        console.log("SupabaseService: Save successful ✅", data.id);
         return { success: true, data };
     } catch (error) {
         console.error('Save Salon Config Exception:', error);

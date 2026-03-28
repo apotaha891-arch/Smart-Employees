@@ -62,6 +62,7 @@ const EntitySetup = () => {
     const [requestSuccess, setRequestSuccess] = useState(false);
     const [agentId, setAgentId] = useState(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
 
     const handleOAuthConnect = async (platformId) => {
@@ -696,20 +697,27 @@ const EntitySetup = () => {
                 }
             }
             
-            console.log("Integration saved and synced successfully ✅");
-            
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
             
-            alert(language === 'ar' ? '✅ تم حفظ الإعدادات بنجاح!' : '✅ Settings saved successfully!');
+            // Show persistent success banner
+            setStatusMsg({ 
+                type: 'success', 
+                text: language === 'ar' ? '✅ تم حفظ الإعدادات وربط القنوات بنجاح!' : '✅ Settings saved and channels synced successfully!' 
+            });
             
-            // show success state for 3 seconds
+            // show success state on button
             setSaveSuccess(true);
-            setTimeout(() => setSaveSuccess(false), 3000);
             
-            // Only collapse if not website (to keep the code snippet visible)
-            if (expandedIntegration !== 'website') {
-                setExpandedIntegration(null);
-            }
+            // Delay closing the card so user sees the "Saved" state
+            setTimeout(() => {
+                setSaveSuccess(false);
+                if (expandedIntegration !== 'website') {
+                    setExpandedIntegration(null);
+                }
+            }, 2000);
+
+            // Clear banner after 5 seconds
+            setTimeout(() => setStatusMsg({ type: '', text: '' }), 5000);
         } catch (err) {
             console.error("Save integration error detail:", err);
             const msg = err.message || "Unknown error";
@@ -725,8 +733,10 @@ const EntitySetup = () => {
                     ? '⚠️ يرجى التأكد من جودة اتصال الإنترنت والمحاولة مرة أخرى.'
                     : '⚠️ Please check your internet connection and try again.';
             }
-            
-            alert(userMsg);
+
+            // Show error banner instead of alert
+            setStatusMsg({ type: 'error', text: userMsg + (msg ? ` (${msg})` : '') });
+            setTimeout(() => setStatusMsg({ type: '', text: '' }), 8000);
         } finally {
             setIntegrationSaving(false);
         }
@@ -1686,6 +1696,32 @@ const EntitySetup = () => {
                                             : 'Connect the AI agent with your platforms to accelerate workflows.'}
                                     </p>
                                 </div>
+
+                                {/* Status Banner Overlay */}
+                                {statusMsg.text && (
+                                    <div className="animate-fade-in" style={{
+                                        marginBottom: '1.25rem',
+                                        padding: '0.85rem 1.25rem',
+                                        borderRadius: '12px',
+                                        background: statusMsg.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                        border: `1px solid ${statusMsg.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                                        color: statusMsg.type === 'success' ? '#10B981' : '#EF4444',
+                                        fontSize: '0.9rem',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            {statusMsg.type === 'success' ? <CheckCircle2 size={18} /> : <X size={18} />}
+                                            {statusMsg.text}
+                                        </div>
+                                        <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', opacity: 0.6 }}>
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                )}
 
                                 {/* Cards Grid */}
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.25rem' }}>
