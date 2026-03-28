@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { getCurrentUser, getProfile, getPublicTemplates } from '../services/supabaseService';
+import { getRealisticAvatar } from '../utils/avatars';
 import {
     Stethoscope,
     Activity,
@@ -100,27 +101,21 @@ const AgentTemplates = () => {
     // Helper to map specialty/business_type to icons and generic UI strings
     const getTemplateUI = (template) => {
         const bt = template.business_type || '';
-        let icon = <Bot size={24} />;
-        let image = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&h=256&auto=format&fit=crop";
+        let icon = <Bot size={16} />;
+        let image = getRealisticAvatar(template.avatar);
         let cost = 1;
-        let creator = 'Admin';
+        let creator = 'Smart Employees';
 
-        // Map icons based on business_type
-        if (bt === 'medical') { icon = <Stethoscope size={24} />; image = "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=256&h=256&auto=format&fit=crop"; cost = 3; creator = 'د. مريم صبري'; }
-        else if (bt === 'beauty') { icon = <Scissors size={24} />; image = "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=256&h=256&auto=format&fit=crop"; cost = 2; creator = 'نورة علي'; }
-        else if (bt === 'restaurant') { icon = <Utensils size={24} />; image = "https://images.unsplash.com/photo-1577214159280-ca341749e48a?q=80&w=256&h=256&auto=format&fit=crop"; cost = 1; creator = 'أحمد خالد'; }
-        else if (bt === 'real_estate') { icon = <Building size={24} />; image = "https://images.unsplash.com/photo-1556157382-97dee2dcbfe5?q=80&w=256&h=256&auto=format&fit=crop"; cost = 2; creator = 'سالم الدوسري'; }
-        else if (bt === 'fitness') { icon = <GymIcon size={24} />; image = "https://images.unsplash.com/photo-1599058917233-35835fd4578b?q=80&w=256&h=256&auto=format&fit=crop"; cost = 2; creator = 'كابتن فهد'; }
-        else if (bt === 'banking') { icon = <Building2 size={24} />; image = "https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?q=80&w=256&h=256&auto=format&fit=crop"; cost = 4; creator = 'Financial Dept'; }
-        else if (bt === 'ecommerce' || bt === 'retail_ecommerce') { icon = <ShoppingBag size={24} />; image = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=256&h=256&auto=format&fit=crop"; cost = 2; creator = 'Smart Retail'; }
-        else if (bt === 'call_center') { icon = <Headset size={24} />; image = "https://images.unsplash.com/photo-1549923746-c502d488b3ea?q=80&w=256&h=256&auto=format&fit=crop"; cost = 1; creator = 'Support Expert'; }
-        else if (bt === 'telecom_it') { icon = <Zap size={24} />; image = "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=256&h=256&auto=format&fit=crop"; cost = 2; creator = 'Tech Division'; }
-
-        // If template has an avatar emoji, use it for the icon if it's not a standard one
-        if (template.avatar && template.avatar.length <= 2) {
-             const emojiIcon = <span style={{ fontSize: '1.2rem' }}>{template.avatar}</span>;
-             return { icon: emojiIcon, image, cost, creator };
-        }
+        // Map category icons
+        if (bt === 'medical') { icon = <Stethoscope size={16} />; cost = 3; }
+        else if (bt === 'beauty') { icon = <Scissors size={16} />; cost = 2; }
+        else if (bt === 'restaurant') { icon = <Utensils size={16} />; cost = 1; }
+        else if (bt === 'real_estate') { icon = <Building size={16} />; cost = 2; }
+        else if (bt === 'fitness') { icon = <GymIcon size={16} />; cost = 2; }
+        else if (bt === 'banking') { icon = <Building2 size={16} />; cost = 4; }
+        else if (bt === 'ecommerce' || bt === 'retail_ecommerce') { icon = <ShoppingBag size={16} />; cost = 2; }
+        else if (bt === 'call_center') { icon = <Headset size={16} />; cost = 1; }
+        else if (bt === 'telecom_it') { icon = <Zap size={16} />; cost = 2; }
 
         return { icon, image, cost, creator };
     };
@@ -243,16 +238,23 @@ const AgentTemplates = () => {
                                         style={{ position: 'relative' }}
                                         onClick={() => handleSelectTemplate(template)}
                                     >
-                                        {/* Chip Group (n8n style) */}
-                                        <div className="chip-group">
-                                            <div className="n8n-chip">{ui.icon}</div>
-                                            <div className="n8n-chip" style={{ fontSize: '0.8rem' }}>
-                                                {displayRole}
+                                        {/* Realistic Face Header */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1rem' }}>
+                                            <img 
+                                                src={ui.image} 
+                                                alt="Agent Avatar" 
+                                                style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(139,92,246,0.3)' }} 
+                                            />
+                                            <div>
+                                                <h4 className="n8n-card-title" style={{ margin: 0, fontSize: '1.1rem' }}>{displayName}</h4>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                                                    <span style={{ display: 'flex', alignItems: 'center', color: '#8B5CF6' }}>{ui.icon}</span>
+                                                    <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{displayRole}</span>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <h4 className="n8n-card-title">{displayName}</h4>
-                                        <p className="n8n-card-desc">{displayDesc}</p>
+                                        <p className="n8n-card-desc" style={{ marginTop: 0 }}>{displayDesc}</p>
 
                                         {/* Creator Footer (n8n style) */}
                                         <div className="card-footer-n8n">

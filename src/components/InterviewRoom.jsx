@@ -7,6 +7,7 @@ import {
     Stethoscope, Activity, Search, Scissors, Building, Utensils, Zap, Headset,
     User, Send, CheckCircle2, Briefcase, Clock, Shield, Sparkles, Settings, ArrowUp, MoreHorizontal
 } from 'lucide-react';
+import { getRealisticAvatar } from '../utils/avatars';
 
 const iconMap = {
     'dental-receptionist': Stethoscope,
@@ -202,49 +203,17 @@ ${d.knowledge_base || "لا توجد بروتوكولات إضافية حالي�
                 general: "أنت في بيئة أعمال احترافية تسعى للنمو والتنظيم."
             };
 
-            // Read admin-customized agents from localStorage (set via AdminDashboard)
-            let adminAgents = [];
-            try {
-                const stored = localStorage.getItem('admin_interview_agents');
-                if (stored) adminAgents = JSON.parse(stored);
-            } catch {}
+            // Extract metadata from the passed template (from AgentTemplates.jsx or DB)
+            const agentName = targetTemplate.agentName || targetTemplate.name || (isArabic ? 'مستشار الذكاء الاصطناعي' : 'AI Consultant');
+            const adminTitleAr = targetTemplate.roleName || targetTemplate.specialty || '';
+            const adminTitleEn = targetTemplate.name_en || adminTitleAr;
+            const adminTone = targetTemplate.tone || 'professional';
 
-            const adminAgent = adminAgents.find(a => a.id === targetTemplate.id);
+            // Gender: rely on template avatar or heuristic
+            const isFemale = (targetTemplate.avatar && (targetTemplate.avatar.includes('👩') || targetTemplate.avatar.includes('👧') || targetTemplate.avatar.includes('💆‍♀️'))) ||
+                (['سارة', 'هند', 'نورة', 'لجين', 'ريم', 'Sarah', 'Emily', 'Emma', 'Jessica'].some(name => agentName.includes(name))) || 
+                detectedIndustry === 'beauty';
 
-            const defaultNames = {
-                'dental-receptionist': isArabic ? 'د. سارة' : 'Dr. Sarah',
-                'medical-clinic': isArabic ? 'د. هند' : 'Dr. Emily',
-                'sales-lead-gen': isArabic ? 'أستاذ فهد' : 'Mr. James',
-                'beauty-salon': isArabic ? 'نورة' : 'Emma',
-                'real-estate-marketing': isArabic ? 'أستاذ طارق' : 'Mr. Robert',
-                'restaurant-reservations': isArabic ? 'أحمد' : 'Alex',
-                'gym-coordinator': isArabic ? 'كابتن خالد' : 'Coach Chris',
-                'support-agent': isArabic ? 'عبدالرحمن' : 'Adam'
-            };
-            const fallbackNames = {
-                medical: isArabic ? 'د. خالد' : 'Dr. John',
-                realestate: isArabic ? 'سلطان' : 'Michael',
-                beauty: isArabic ? 'سارة' : 'Sarah',
-                restaurant: isArabic ? 'أحمد' : 'Alex',
-                fitness: isArabic ? 'كابتن فهد' : 'Coach Jake',
-                general: isArabic ? 'عبدالله' : 'David'
-            };
-
-            // Admin config takes priority over hardcoded defaults
-            const agentName = adminAgent
-                ? (isArabic ? adminAgent.nameAr : adminAgent.nameEn)
-                : (defaultNames[targetTemplate.id] || fallbackNames[detectedIndustry] || (isArabic ? 'مستشار الذكاء الاصطناعي' : 'AI Consultant'));
-
-            // Gender: admin config > name-based heuristic
-            const isFemale = adminAgent
-                ? adminAgent.gender === 'female'
-                : (['سارة', 'هند', 'نورة', 'Sarah', 'Emily', 'Emma'].some(name => agentName.includes(name)) || detectedIndustry === 'beauty');
-
-            // If admin has set a custom title, override roleTitle later
-            const adminTitleAr = adminAgent?.titleAr;
-            const adminTitleEn = adminAgent?.titleEn;
-            // Admin tone override
-            const adminTone = adminAgent?.tone;
 
             const mockData = {
                 medical: `
@@ -857,7 +826,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                         }}>
                                             {!isUser && (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#A1A1AA', fontSize: '0.8rem', fontWeight: 600 }}>
-                                                    <Sparkles size={14} color="#F97316" />
+                                                    <img src={getRealisticAvatar(template?.avatar)} alt="AI" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
                                                     <span>
                                                         {(() => {
                                                             const rawName = template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'Fin'));
@@ -895,7 +864,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                 <div className="chat-message agent" style={{ display: 'flex', flexDirection: isArabic ? 'row' : 'row', gap: '1rem' }}>
                                     <div style={{ maxWidth: '85%' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#A1A1AA', fontSize: '0.8rem', fontWeight: 600 }}>
-                                            <Sparkles size={14} color="#F97316" />
+                                            <img src={getRealisticAvatar(template?.avatar)} alt="AI" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
                                             <span>
                                                 {(() => {
                                                     const rawName = template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'Fin'));
@@ -1071,23 +1040,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                     overflow: 'hidden'
                                 }}>
                                     {(() => {
-                                        const imageMap = {
-                                            'medical': "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'beauty': "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'restaurant': "https://images.unsplash.com/photo-1577214159280-ca341749e48a?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'realestate': "https://images.unsplash.com/photo-1556157382-97dee2dcbfe5?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'real_estate': "https://images.unsplash.com/photo-1556157382-97dee2dcbfe5?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'fitness': "https://images.unsplash.com/photo-1599058917233-35835fd4578b?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'banking': "https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'call_center': "https://images.unsplash.com/photo-1549923746-c502d488b3ea?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'telecom_it': "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=256&h=256&auto=format&fit=crop",
-                                            'general': "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&h=256&auto=format&fit=crop"
-                                        };
-                                        const dt = template?.detectedIndustry || template?.business_type || 'general';
-                                        
-                                        const agentImage = (template?.avatar && template.avatar.startsWith('http')) ? template.avatar : (imageMap[dt] || imageMap.general);
-
-                                        return <img src={agentImage} alt="Agent Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+                                        return <img src={getRealisticAvatar(template?.avatar)} alt="Agent Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
                                     })()}
                                 </div>
                                 <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 800 }}>

@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx';
 import { signOut } from '../services/supabaseService';
 import { useLanguage } from '../LanguageContext';
 import AdminBlogManager from './AdminBlogManager';
+import { REALISTIC_AVATARS, getRealisticAvatar } from '../utils/avatars';
 
 // ── Icon Mapping for Dynamic Configs ──────────────────────────────────────────
 const ICON_MAP = { Mail, MessageSquare, Bell, Zap, Globe, Bot, Users, Calendar };
@@ -490,7 +491,7 @@ export default function AdminDashboard() {
         { id: 'overview', i: LayoutDashboard, l: 'نظرة عامة' },
         { id: 'clients', i: Users, l: 'العملاء' },
         { id: 'agents', i: Bot, l: 'الموظفات' },
-        { id: 'interview-agents', i: Users, l: 'موظفو المقابلة' },
+        { id: 'interview-agents', i: Users, l: 'قوالب الموظفات' },
         { id: 'bookings', i: Calendar, l: 'الحجوزات' },
         { id: 'pricing', i: CreditCard, l: 'الباقات والأسعار' },
         { id: 'infrastructure', i: Globe, l: 'البنية التحتية' },
@@ -831,7 +832,7 @@ export default function AdminDashboard() {
                     <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>إدارة القطاعات والأدوار وسجلات النظام</p>
 
                     <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: '#111827', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
-                        {[['cfg', '⚙️ الإعدادات'], ['tmpl', '🎭 القوالب'], ['logs', '📋 السجلات']].map(([id, lbl]) => <button key={id} onClick={() => setIntTab(id)} style={{ padding: '7px 18px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', background: intTab === id ? '#8B5CF6' : 'transparent', color: intTab === id ? 'white' : '#6B7280' }}>
+                        {[['cfg', '⚙️ الإعدادات'], ['logs', '📋 السجلات']].map(([id, lbl]) => <button key={id} onClick={() => setIntTab(id)} style={{ padding: '7px 18px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', background: intTab === id ? '#8B5CF6' : 'transparent', color: intTab === id ? 'white' : '#6B7280' }}>
                             {lbl}
                         </button>)}
                     </div>
@@ -938,61 +939,6 @@ export default function AdminDashboard() {
                                         <Input value={app.label} onChange={e => { const u = [...agentAppsConfig]; u[idx].label = e.target.value; setAgentAppsConfig(u); }} />
                                     </div>
                                     <Input value={app.desc} onChange={e => { const u = [...agentAppsConfig]; u[idx].desc = e.target.value; setAgentAppsConfig(u); }} />
-                                </div>} />
-                            ))}
-                        </div>
-                    </div>}
-
-                    {intTab === 'tmpl' && <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>قوالب الموظفات (جاهزة للعملاء)</h3>
-                            <Btn onClick={() => setShowAddTemplate(!showAddTemplate)}><Plus size={14} />إضافة قالب</Btn>
-                        </div>
-
-                        {showAddTemplate && <Card s={{ marginBottom: '1rem', border: '1px solid #8B5CF640' }} c={<div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                                <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>اسم القالب (عربي)</label>
-                                    <Input value={newTemplate.name} onChange={e => setNewTemplate(p => ({ ...p, name: e.target.value }))} placeholder="مثال: منسقة حجوزات ذكية" /></div>
-                                <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>اسم القالب (إنجليزي)</label>
-                                    <Input value={newTemplate.name_en} onChange={e => setNewTemplate(p => ({ ...p, name_en: e.target.value }))} placeholder="e.g. Smart Booking Coordinator" dir="ltr" /></div>
-
-                                <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>التخصص</label>
-                                    <select value={newTemplate.specialty} onChange={e => setNewTemplate(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151' }}>
-                                        {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
-                                    </select></div>
-                                <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>القطاع</label>
-                                    <select value={newTemplate.business_type} onChange={e => setNewTemplate(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151' }}>
-                                        {Object.entries(sectors).map(([k, v]) => <option key={k} value={k}>{v.e} {v.l}</option>)}
-                                    </select></div>
-
-                                <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (عربي)</label>
-                                    <textarea value={newTemplate.description} onChange={e => setNewTemplate(p => ({ ...p, description: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151', minHeight: '60px' }} placeholder="اشرح مهام هذه الموظفة بالعربية..." /></div>
-                                <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (إنجليزي)</label>
-                                    <textarea value={newTemplate.description_en} onChange={e => setNewTemplate(p => ({ ...p, description_en: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151', minHeight: '60px' }} placeholder="Explain this agent's tasks in English..." dir="ltr" /></div>
-                                <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>أيقونة/إيموجي الموظفة</label>
-                                    <Input value={newTemplate.avatar} onChange={e => setNewTemplate(p => ({ ...p, avatar: e.target.value }))} placeholder="👩" /></div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                                <Btn onClick={addTemplate}><Check size={14} />حفظ القالب</Btn>
-                                <button onClick={() => setShowAddTemplate(false)} style={{ background: 'transparent', color: '#6B7280', border: 'none', cursor: 'pointer' }}>إلغاء</button>
-                            </div>
-                        </div>} />}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '1rem' }}>
-                            {templates.map(t => (
-                                <Card key={t.id} c={<div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                                        <div style={{ fontWeight: 700, color: 'white', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
-                                            {isEnglish ? (t.name_en || t.name) : t.name}
-                                        </div>
-                                        <button onClick={() => deleteTemplate(t.id)} style={{ color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={13} /></button>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '4px', marginBottom: '0.5rem' }}>
-                                        <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: '#3B82F620', color: '#3B82F6' }}>{roles[t.specialty]?.l || t.specialty}</span>
-                                        <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: '#9CA3AF' }}>{sectors[t.business_type]?.l || t.business_type}</span>
-                                    </div>
-                                    <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginBottom: '4px', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
-                                        {isEnglish ? (t.description_en || t.description) : t.description}
-                                    </div>
                                 </div>} />
                             ))}
                         </div>
@@ -1279,105 +1225,86 @@ export default function AdminDashboard() {
                     </div>}
                 </div>}
 
-                {/* ── INTERVIEW AGENTS ── */}
+                {/* ── INTERVIEW AGENTS (TEMPLATES) ── */}
                 {tab === 'interview-agents' && <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                         <div>
-                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>🎙️ موظفو غرفة المقابلة</h1>
-                            <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>خصّص اسم وشخصية كل موظف يظهر في جلسات المقابلة للعملاء</p>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>🎙️ قوالب موظفي المقابلة (الموصى بهم)</h1>
+                            <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>قم بإدارة النماذج والشخصيات الجاهزة التي يتم عرضها للعملاء في غرفة المقابلة</p>
                         </div>
-                        <div style={{ display: 'flex', gap: '0.6rem' }}>
-                            <button onClick={resetInterviewAgents} style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>↩️ إعادة الضبط</button>
-                            <Btn onClick={saveInterviewAgents} disabled={savingInterview}><Save size={14} />{savingInterview ? 'جاري الحفظ...' : 'حفظ جميع التغييرات'}</Btn>
-                        </div>
+                        <Btn onClick={() => setShowAddTemplate(!showAddTemplate)}><Plus size={14} />إضافة قالب شخصية جديد</Btn>
                     </div>
 
-                    <div style={{ marginBottom: '1rem', padding: '0.85rem 1rem', background: 'rgba(139,92,246,0.07)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '10px', fontSize: '0.8rem', color: '#A78BFA' }}>
-                        💡 التغييرات تؤثر فوراً على غرفة المقابلة. الاسم والجنس يحددان لغة الترحيب والمسمى الوظيفي تلقائياً.
-                    </div>
+                    {showAddTemplate && <Card s={{ marginBottom: '1rem', border: '1px solid #8B5CF640' }} c={<div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>اسم القالب (عربي)</label>
+                                <Input value={newTemplate.name} onChange={e => setNewTemplate(p => ({ ...p, name: e.target.value }))} placeholder="مثال: منسقة حجوزات ذكية" /></div>
+                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>اسم القالب (إنجليزي)</label>
+                                <Input value={newTemplate.name_en} onChange={e => setNewTemplate(p => ({ ...p, name_en: e.target.value }))} placeholder="e.g. Smart Booking Coordinator" dir="ltr" /></div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1rem' }}>
-                        {interviewAgents.map((agent, idx) => (
-                            <Card key={agent.id} c={
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                                    {/* Header */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                                        <div style={{ fontSize: '2rem', width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(139,92,246,0.1)', borderRadius: '12px' }}>{agent.avatar}</div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'white' }}>{agent.nameAr}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{agent.titleAr}</div>
-                                        </div>
-                                        <span style={{ fontSize: '0.65rem', padding: '3px 8px', borderRadius: '20px', fontWeight: 700, background: agent.gender === 'female' ? 'rgba(236,72,153,0.15)' : 'rgba(59,130,246,0.15)', color: agent.gender === 'female' ? '#EC4899' : '#60A5FA' }}>
-                                            {agent.gender === 'female' ? '♀ أنثى' : '♂ ذكر'}
-                                        </span>
-                                    </div>
+                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>التخصص</label>
+                                <select value={newTemplate.specialty} onChange={e => setNewTemplate(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151' }}>
+                                    {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
+                                </select></div>
+                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>القطاع</label>
+                                <select value={newTemplate.business_type} onChange={e => setNewTemplate(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151' }}>
+                                    {Object.entries(sectors).map(([k, v]) => <option key={k} value={k}>{v.e} {v.l}</option>)}
+                                </select></div>
 
-                                    {/* Avatar + Gender Row */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                                        <div>
-                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>الإيموجي / الأفاتار</label>
-                                            <input value={agent.avatar} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, avatar: e.target.value } : a))}
-                                                style={{ width: '100%', padding: '7px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '1.1rem', textAlign: 'center', boxSizing: 'border-box' }} />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>الجنس</label>
-                                            <select value={agent.gender} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, gender: e.target.value } : a))}
-                                                style={{ width: '100%', padding: '7px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem', boxSizing: 'border-box' }}>
-                                                <option value="male">♂ ذكر</option>
-                                                <option value="female">♀ أنثى</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    {/* Name Row */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                                        <div>
-                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>الاسم بالعربية</label>
-                                            <Input value={agent.nameAr} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, nameAr: e.target.value } : a))} placeholder="مثال: سارة" />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>الاسم بالإنجليزية</label>
-                                            <Input value={agent.nameEn} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, nameEn: e.target.value } : a))} placeholder="e.g. Sarah" />
-                                        </div>
-                                    </div>
-
-                                    {/* Title Row */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                                        <div>
-                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>المسمى الوظيفي (عربي)</label>
-                                            <Input value={agent.titleAr} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, titleAr: e.target.value } : a))} placeholder="مثال: منسقة مواعيد" />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>Job Title (English)</label>
-                                            <Input value={agent.titleEn} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, titleEn: e.target.value } : a))} placeholder="e.g. Coordinator" />
-                                        </div>
-                                    </div>
-
-                                    {/* Tone */}
-                                    <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 600 }}>النبرة الشخصية</label>
-                                        <select value={agent.tone} onChange={e => setInterviewAgents(prev => prev.map((a, i) => i === idx ? { ...a, tone: e.target.value } : a))}
-                                            style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem' }}>
-                                            <option value="professional">🎩 مهني واحترافي</option>
-                                            <option value="friendly">😊 ودود ودافئ</option>
-                                            <option value="enthusiastic">⚡ نشيط وحيوي</option>
-                                            <option value="luxury">✨ فاخر وراقي</option>
-                                            <option value="casual">💬 بسيط وغير رسمي</option>
-                                            <option value="fast">🚀 سريع ومباشر</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Role ID tag */}
-                                    <div style={{ fontSize: '0.65rem', color: '#374151', background: '#1F2937', padding: '3px 8px', borderRadius: '4px', fontFamily: 'monospace', alignSelf: 'flex-start' }}>ID: {agent.id}</div>
+                            <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (عربي)</label>
+                                <textarea value={newTemplate.description} onChange={e => setNewTemplate(p => ({ ...p, description: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151', minHeight: '60px' }} placeholder="اشرح مهام هذه الموظفة بالعربية..." /></div>
+                            <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (إنجليزي)</label>
+                                <textarea value={newTemplate.description_en} onChange={e => setNewTemplate(p => ({ ...p, description_en: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151', minHeight: '60px' }} placeholder="Explain this agent's tasks in English..." dir="ltr" /></div>
+                            <div style={{ gridColumn: 'span 2' }}>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '6px' }}>صورة الموظفة (صورة حقيقية)</label>
+                                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '8px' }}>
+                                    {REALISTIC_AVATARS.map((url, i) => (
+                                        <img 
+                                            key={i} 
+                                            src={url} 
+                                            onClick={() => setNewTemplate(p => ({ ...p, avatar: url }))}
+                                            style={{ 
+                                                cursor: 'pointer',
+                                                width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover',
+                                                border: newTemplate.avatar === url ? '2px solid #8B5CF6' : '2px solid transparent',
+                                                opacity: newTemplate.avatar === url ? 1 : 0.6,
+                                                transition: 'all 0.2s'
+                                            }} 
+                                        />
+                                    ))}
                                 </div>
-                            } />
+                                <Input value={newTemplate.avatar} onChange={e => setNewTemplate(p => ({ ...p, avatar: e.target.value }))} placeholder="أو أدخل رابط صورة مخصصة..." />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                            <Btn onClick={addTemplate}><Check size={14} />حفظ القالب الجديد</Btn>
+                            <button onClick={() => setShowAddTemplate(false)} style={{ background: 'transparent', color: '#6B7280', border: 'none', cursor: 'pointer' }}>إلغاء</button>
+                        </div>
+                    </div>} />}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
+                        {templates.map(t => (
+                            <Card key={t.id} c={<div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <img src={getRealisticAvatar(t.avatar)} alt="Avatar" style={{ width: '38px', height: '38px', borderRadius: '10px', objectFit: 'cover' }} />
+                                        <div>
+                                            <div style={{ fontWeight: 700, color: 'white', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
+                                                {isEnglish ? (t.name_en || t.name) : t.name}
+                                            </div>
+                                            <div style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>{t.name_en && !isEnglish ? t.name_en : ''}</div>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => deleteTemplate(t.id)} style={{ color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={13} /></button>
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px', marginBottom: '0.5rem' }}>
+                                    <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: '#3B82F620', color: '#3B82F6' }}>{roles[t.specialty]?.l || t.specialty}</span>
+                                    <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: '#9CA3AF' }}>{sectors[t.business_type]?.l || t.business_type}</span>
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginBottom: '4px', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
+                                    {isEnglish ? (t.description_en || t.description) : t.description}
+                                </div>
+                            </div>} />
                         ))}
-                    </div>
-
-                    <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                        <Btn onClick={saveInterviewAgents} disabled={savingInterview} style={{ margin: '0 auto', padding: '12px 32px', fontSize: '0.95rem' }}>
-                            <Save size={16} />{savingInterview ? 'جاري الحفظ...' : '💾 حفظ جميع إعدادات الموظفين'}
-                        </Btn>
                     </div>
                 </div>}
 
