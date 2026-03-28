@@ -132,10 +132,14 @@ const AgentTemplates = () => {
         { id: 'enthusiastic', icon: <Sparkles size={20} />, label: 'متحمس', labelEn: 'Enthusiastic', description: 'مليء بالطاقة' },
     ];
 
-    // Filter templates to show only matching industry (unless 'general' is selected, then show all)
+    // Filter templates to show matching industry PLUS purely generic roles (Customer Service, generic Bookings, etc.)
     const filteredTemplates = industry === 'general' 
         ? dbTemplates 
-        : dbTemplates.filter(t => t.business_type === industry);
+        : dbTemplates.filter(t => 
+            t.business_type === industry || 
+            t.business_type === 'general' ||
+            t.business_type === 'call_center'
+        );
 
     const handleSelectTemplate = (template) => {
         setSelectedTemplate(template);

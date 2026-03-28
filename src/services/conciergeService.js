@@ -38,6 +38,43 @@ const _notifyAdmin = async (conversationId, userId, messages) => {
 };
 
 /**
+ * Escalate Noura conversation to humans
+ */
+export const notifyNouraEscalation = async (insights, messages, userIdOrSession) => {
+    try {
+        const lastMsg = messages[messages.length - 1]?.content || 'طلب تصعيد';
+
+        // 1. Alert in dashboard
+        await supabase.rpc('notify_admin', {
+            p_type: 'escalation',
+            p_title: 'عاجل: تصعيد بشري (نورة)',
+            p_message: `نورة بحاجة لتدخل بشري: "${lastMsg.substring(0, 50)}..."`,
+            p_link: '/admin/concierge',
+            p_metadata: { insights, user_id: userIdOrSession }
+        });
+
+        // 2. Alert via N8N
+        const integrations = await getPlatformSettings('external_integrations');
+        const n8n = integrations?.find(i => i.id === 'n8n' && i.status === 'connected');
+        if (n8n?.credentials?.webhook_url) {
+            fetch(n8n.credentials.webhook_url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    event: 'noura_escalation',
+                    user_id: userIdOrSession,
+                    insights: insights,
+                    last_message: lastMsg,
+                    timestamp: new Date().toISOString()
+                })
+            }).catch(e => console.error('N8N Webhook failed (Escalation):', e));
+        }
+    } catch (err) {
+        console.warn('Noura escalation notification failed:', err.message);
+    }
+};
+
+/**
  * Saves or updates a concierge conversation for an authenticated user
  */
 export const saveConciergeConversation = async (userId, messages, ticketId = null, metadata = {}) => {

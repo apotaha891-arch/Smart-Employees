@@ -171,6 +171,13 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
                     if (res.success && res.data) {
                         // Save again with enriched metadata (phone, name, booking_intent, etc.)
                         await saveConversation({ insights: res.data });
+                        
+                        // Check if Noura explicitly thinks a human needs to follow up
+                        if (res.data.lead_status === 'needs_manual_followup') {
+                            const { notifyNouraEscalation } = await import('../services/conciergeService');
+                            const targetId = user ? user.id : guestSessionId;
+                            await notifyNouraEscalation(res.data, updatedMessages, targetId);
+                        }
                     }
                 }).catch(() => {}); // non-blocking
             }

@@ -121,7 +121,7 @@ export const updatePassword = async (newPassword) => {
     try {
         console.log("SupabaseService: Updating password...");
         // Add a timeout to prevent indefinite hanging
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Password update timed out (30s). Check your connection.')), 30000)
         );
 
@@ -130,7 +130,7 @@ export const updatePassword = async (newPassword) => {
         });
 
         const { data, error } = await Promise.race([updatePromise, timeoutPromise]);
-        
+
         if (error) {
             console.error("SupabaseService: Update password error:", error);
             throw error;
@@ -288,9 +288,9 @@ export const invokeMultiFileWorkflow = async (files, urls) => {
         clearTimeout(timeoutId);
         console.error('Error invoking multi-file-workflow:', error);
         const isTimeout = error.name === 'AbortError' || error.message.includes('timeout');
-        return { 
-            success: false, 
-            error: isTimeout ? "The analysis engine timed out. Please try with fewer links or smaller files." : error.message 
+        return {
+            success: false,
+            error: isTimeout ? "The analysis engine timed out. Please try with fewer links or smaller files." : error.message
         };
     }
 };
@@ -705,11 +705,11 @@ export const getProfile = async (userId) => {
                 .select('id, full_name, email')
                 .eq('id', userId)
                 .maybeSingle();
-            
+
             if (fallbackError) throw fallbackError;
             return { success: true, data: fallbackData };
         }
-        
+
         return { success: true, data };
     } catch (error) {
         console.error("Profile fetch error:", error);
@@ -810,7 +810,7 @@ export const submitCustomRequest = async (requestData) => {
 export const saveSalonConfig = async (config) => {
     try {
         console.log("SupabaseService: Saving config:", config.id ? `UPDATE ${config.id}` : 'INSERT NEW');
-        
+
         let query;
         if (config.id) {
             // Separate ID from data to avoid updating PK
@@ -829,7 +829,7 @@ export const saveSalonConfig = async (config) => {
         }
 
         // Add a timeout to prevent indefinite hanging
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Database operation timed out (30s). Check network or RLS.')), 30000)
         );
 
@@ -840,7 +840,7 @@ export const saveSalonConfig = async (config) => {
         };
 
         const data = await Promise.race([executeQuery(), timeoutPromise]);
-        
+
         console.log("SupabaseService: Save successful ✅");
         return { success: true, data };
     } catch (error) {

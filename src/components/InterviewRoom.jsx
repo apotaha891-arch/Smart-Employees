@@ -135,9 +135,13 @@ const InterviewRoom = () => {
         }
 
         // ALWAYS prioritize the explicitly chosen industry from the setup screen
-        if (targetTemplate && (targetTemplate.industry || targetTemplate.detectedIndustry)) {
-            detectedIndustry = targetTemplate.industry || targetTemplate.detectedIndustry;
+        if (targetTemplate && (targetTemplate.industry || targetTemplate.detectedIndustry || targetTemplate.business_type)) {
+            detectedIndustry = targetTemplate.industry || targetTemplate.detectedIndustry || targetTemplate.business_type;
         }
+        
+        // Normalize industry string for mockData mapping
+        if (detectedIndustry === 'real_estate') detectedIndustry = 'realestate';
+        if (detectedIndustry === 'retail_ecommerce') detectedIndustry = 'ecommerce';
 
         if (user) {
             const p = await getProfile(user.id);
@@ -314,7 +318,7 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
 3. أنت في منتصف مقابلة عمل مع المدير. أجب بمهنية واستخدم المصطلحات المناسبة لقطاعك ولكن بأسلوب طبيعي جداً ومرن بعيد عن الجمود.
 4. ${industryPrivacyRules}
 5. **الحدود التقنية (الرقمية البحتة):** تذكر دائماً أنك موظف "رقمي عن بعد" (ضمن نظام 24Shift). **ممنوع منعاً باتاً** أن تعرض القيام بأفعال جسدية مثل "سأذهب لمكتب الطبيب"، "سأطلب من زميلي تغطية مكاني". في حالات الطوارئ تقترح إرسال إشعار فوري عبر النظام، وليس التحرك الفعلي!
-6. ${isArabic ? '**تعدد اللغات والمطابقة:** إذا تحدث العميل بلهجة سعودية (مثل "وش"، "أبي")، جارِ حديثه بلهجة محترمة تعكس فهمك لثقافته، مثل "أبشر"، "طال عمرك". لا تكن كالآلة الصماء!' : '**Empathy & Culture:** Match the applicant\'s tone politely. If they speak casually, remain professional but highly approachable and relatable. NEVER reply in Arabic.'}
+6. ${isArabic ? '**تعدد اللغات والمطابقة:** إذا تحدث العميل بلهجة سعودية (مثل "وش"، "أبي")، جارِ حديثه بلهجة محترمة تعكس فهمك لثقافته، مثل "أبشر"، "طال عمرك". لا تكن كالآلة الصماء!' : '**Empathy & Culture:** Match the applicant\'s tone politely. If they speak casually, remain professional but highly approachable and relatable.'}
 7. **استخدم البيانات المحددة في إجاباتك عند سؤالك عن الخدمات والأسعار (لإبراز مهارتك).**
 8. **يجب ألا تتجاوز إجاباتك إطلاقاً ثلاثة جمل قصيرة في كل مرة.** (كن مختصراً ومباشراً دائماً).
 9. **ممنوع تكرار اسمك أو الترحيب مجدداً.** لقد عرفت بنفسك في البداية، ادخل في صلب الموضوع.
@@ -823,7 +827,12 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                             <div className="flex align-center gap-sm">
                                 <Sparkles size={20} color="#F97316" />
                                 <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'white' }}>
-                                    {template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'AI Agent'))}
+                                    {(() => {
+                                        const rawName = template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'AI Agent'));
+                                        const parts = rawName.split('|').map(s => s.trim());
+                                        let finalName = isArabic ? parts[0] : (parts[1] || parts[0]);
+                                        return finalName.replace(/وكيل/g, 'مستشار').replace(/Agent/g, 'Consultant');
+                                    })()}
                                 </span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -849,7 +858,15 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                             {!isUser && (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#A1A1AA', fontSize: '0.8rem', fontWeight: 600 }}>
                                                     <Sparkles size={14} color="#F97316" />
-                                                    <span>{template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'Fin'))} • {isArabic ? 'موظف ذكي' : 'AI Agent'}</span>
+                                                    <span>
+                                                        {(() => {
+                                                            const rawName = template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'Fin'));
+                                                            const parts = rawName.split('|').map(s => s.trim());
+                                                            let finalName = isArabic ? parts[0] : (parts[1] || parts[0]);
+                                                            return finalName.replace(/وكيل/g, 'مستشار').replace(/Agent/g, 'Consultant');
+                                                        })()}
+                                                        {' '}• {isArabic ? 'موظف ذكي' : 'AI Consultant'}
+                                                    </span>
                                                 </div>
                                             )}
                                             <div
@@ -879,7 +896,15 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                     <div style={{ maxWidth: '85%' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#A1A1AA', fontSize: '0.8rem', fontWeight: 600 }}>
                                             <Sparkles size={14} color="#F97316" />
-                                            <span>{template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'Fin'))} • {isArabic ? 'موظف ذكي' : 'AI Agent'}</span>
+                                            <span>
+                                                {(() => {
+                                                    const rawName = template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'Fin'));
+                                                    const parts = rawName.split('|').map(s => s.trim());
+                                                    let finalName = isArabic ? parts[0] : (parts[1] || parts[0]);
+                                                    return finalName.replace(/وكيل/g, 'مستشار').replace(/Agent/g, 'Consultant');
+                                                })()}
+                                                {' '}• {isArabic ? 'موظف ذكي' : 'AI Consultant'}
+                                            </span>
                                         </div>
                                         <div style={{
                                             padding: '1rem 1.25rem',
@@ -1042,16 +1067,37 @@ ${profileDetails ? profileDetails : `\n**بما أنه لم يتم تزويدك 
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    border: '1px solid rgba(255,255,255,0.05)'
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    overflow: 'hidden'
                                 }}>
-                                    <AgentIcon size={48} color="#8B5CF6" />
+                                    {(() => {
+                                        const imageMap = {
+                                            'medical': "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'beauty': "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'restaurant': "https://images.unsplash.com/photo-1577214159280-ca341749e48a?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'realestate': "https://images.unsplash.com/photo-1556157382-97dee2dcbfe5?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'real_estate': "https://images.unsplash.com/photo-1556157382-97dee2dcbfe5?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'fitness': "https://images.unsplash.com/photo-1599058917233-35835fd4578b?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'banking': "https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'call_center': "https://images.unsplash.com/photo-1549923746-c502d488b3ea?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'telecom_it': "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=256&h=256&auto=format&fit=crop",
+                                            'general': "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&h=256&auto=format&fit=crop"
+                                        };
+                                        const dt = template?.detectedIndustry || template?.business_type || 'general';
+                                        
+                                        const agentImage = (template?.avatar && template.avatar.startsWith('http')) ? template.avatar : (imageMap[dt] || imageMap.general);
+
+                                        return <img src={agentImage} alt="Agent Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+                                    })()}
                                 </div>
                                 <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 800 }}>
                                     {(() => {
-                                        const arName = getAgentMap(true)[template?.id]?.title || template?.title || template?.name || '';
-                                        const enName = getAgentMap(false)[template?.id]?.title || template?.name_en || template?.title || '';
-                                        if (arName && enName && arName !== enName) return `${arName} | ${enName}`;
-                                        return isArabic ? arName : enName;
+                                        const rawArName = getAgentMap(true)[template?.id]?.title || template?.title || template?.name || '';
+                                        const rawEnName = getAgentMap(false)[template?.id]?.title || template?.name_en || template?.title || '';
+                                        const baseName = isArabic ? rawArName : rawEnName;
+                                        const parts = baseName.split('|').map(s => s.trim());
+                                        let finalName = isArabic ? parts[0] : (parts[1] || parts[0]);
+                                        return finalName.replace(/وكيل/g, 'مستشار').replace(/Agent/g, 'Consultant');
                                     })()}
                                 </h3>
                                 <p style={{ fontSize: '0.9rem', color: '#8B5CF6', fontWeight: 600 }}>

@@ -329,6 +329,19 @@ YOUR GUIDELINES:
 6. IF BOOKING IS NEEDED: Collect Service, Time, Name, and Phone, then use (book_appointment).
             `;
         }
+
+        const handoffRules = `
+[HUMAN HANDOFF PROTOCOL - ESCALATE GRACEFULLY]
+- TRIGGER 1: The customer explicitly asks for a human, agent, or manager (e.g., "أبي أكلم موظف", "عطني مسؤول", "human agent please").
+- TRIGGER 2: The customer is repeatedly frustrated, angry, or using hostile language.
+- TRIGGER 3: The customer's request is highly complex or strictly falls outside your defined Knowledge Base.
+ACTION TO TAKE:
+1. Empathize and agree to transfer them to a human team member gracefully. Use a polite, local tone (e.g., "أبشر طال عمرك، بمرر محادثتك للزملاء المختصين عشان يخدمونك بشكل أفضل وأسرع").
+2. If you DO NOT have their phone number or contact info yet in the context, politely ask them to provide it first so the human team can reach out to them.
+3. If/Once you know their contact info, use the (update_customer_notes) tool. Start the notes EXACTLY with "⚠️ HUMAN ESCALATION EXECUTED: [brief reason]".
+`;
+        systemInstruction += "\n" + handoffRules;
+
         // ────────────────────────────────────────────────────────────────────────
 
         // 5. Load chat history
@@ -746,6 +759,56 @@ YOUR GUIDELINES:
                         }).eq('id', existingCust.id);
                     }
                 }
+                
+                // --- ESCALATION NOTIFICATION HOOK ---
+                if (callArgs.notes?.includes("HUMAN ESCALATION EXECUTED")) {
+                    console.log("⚠️ Agent Escalation Triggered. Fetching notification webhook...");
+                    
+                    try {
+                        // 1. Get Platform Integrations
+                        const { data: settingsData } = await supabaseClient
+                            .from('platform_settings')
+                            .select('value')
+                            .eq('key', 'external_integrations')
+                            .maybeSingle();
+                        
+                        const integrations = settingsData?.value || [];
+                        const n8n = integrations.find((i: any) => i.id === 'n8n' && i.status === 'connected');
+                        
+                        if (n8n?.credentials?.webhook_url) {
+                            // 2. Get Owner Email for routing
+                            const { data: owner } = await supabaseClient
+                                .from('profiles')
+                                .select('email, full_name')
+                                .eq('id', agent.user_id)
+                                .single();
+
+                            console.log(`Sending Escalation to N8N Webhook for owner: ${owner?.email}`);
+                            
+                            // 3. Fire Webhook
+                            fetch(n8n.credentials.webhook_url, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    event: 'agent_escalation',
+                                    owner_email: owner?.email,
+                                    owner_name: owner?.full_name,
+                                    agent_id: agentId,
+                                    agent_name: agent.name,
+                                    customer_phone: phone,
+                                    escalation_note: callArgs.notes,
+                                    timestamp: new Date().toISOString()
+                                })
+                            }).catch(e => console.error("N8N escalation push failed:", e.message));
+                        } else {
+                            console.log("No active N8N webhook found for escalation alerts.");
+                        }
+                    } catch (escErr: any) {
+                        console.error("Failed to process escalation webhook:", escErr.message);
+                    }
+                }
+                // ------------------------------------
+                
             } catch (err: any) {
                 console.error("Notes Update Error:", err.message);
             }
