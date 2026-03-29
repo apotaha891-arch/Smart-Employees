@@ -792,14 +792,12 @@ export const checkAndDeductCredit = async (userId, cost = 1) => {
 
 export const submitCustomRequest = async (requestData) => {
     try {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('custom_requests')
-            .insert([requestData])
-            .select()
-            .single();
+            .insert([requestData]);
 
         if (error) throw error;
-        return { success: true, data };
+        return { success: true };
     } catch (error) {
         return { success: false, error: error.message };
     }
