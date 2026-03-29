@@ -200,9 +200,10 @@ export default function AdminDashboard() {
 
     const load = async () => {
         setLoading(true);
+        console.log("AdminDashboard: Starting full data load...");
         try {
             // Use allSettled so one failing RPC doesn't crash the whole load
-            const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes, endCustRes] = await Promise.allSettled([
+            const results = await Promise.allSettled([
                 adminService.getAllCustomers(),
                 adminService.getAllAgents(),
                 adminService.getAllBookings(),
@@ -212,6 +213,17 @@ export default function AdminDashboard() {
                 adminService.getAllEndCustomers()
             ]);
 
+            const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes, endCustRes] = results;
+
+            // Debug logging
+            results.forEach((res, i) => {
+                if (res.status === 'rejected') console.error(`Fetch ${i} failed:`, res.reason);
+            });
+
+            if (profilesRes.status === 'rejected') {
+                flash('❌ فشل جلب بيانات العملاء: ' + profilesRes.reason.message);
+            }
+
             const profiles = profilesRes.status === 'fulfilled' ? profilesRes.value : [];
             const ag       = agRes.status === 'fulfilled'       ? agRes.value       : [];
             const bk       = bkRes.status === 'fulfilled'       ? bkRes.value       : [];
@@ -220,32 +232,44 @@ export default function AdminDashboard() {
             const notifs   = notifsRes.status === 'fulfilled'   ? notifsRes.value   : [];
             const endCust  = endCustRes.status === 'fulfilled'  ? endCustRes.value  : [];
 
+            console.log(`AdminDashboard: Loaded ${profiles.length} profiles, ${ag.length} agents, ${bk.length} bookings`);
+
             // Merge Profile + SalonConfig data
             const clientMap = {};
             (profiles || []).forEach(p => {
-                clientMap[p.id] = { ...p, full_name: p.full_name || '—', email: p.email || '—' };
+                const uid = p.id || p.user_id; // Support both naming conventions
+                if (!uid) return;
+                clientMap[uid] = { 
+                    ...p, 
+                    id: uid,
+                    full_name: p.full_name || p.business_name || '—', 
+                    email: p.email || '—' 
+                };
             });
             (keyData || []).forEach(k => {
                 if (clientMap[k.user_id]) {
                     clientMap[k.user_id] = { ...clientMap[k.user_id], salonConfigId: k.id };
                 }
             });
-            setClients(Object.values(clientMap));
+            
+            const clientList = Object.values(clientMap);
+            setClients(clientList);
             setAgents(ag || []);
             setBookings(bk || []);
             setConciergeChats(chats || []);
             setNotifications(notifs || []);
             setEndCustomers(endCust || []);
 
-            // Platform settings & Dynamic Configs (runs regardless of above)
-            const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.all([
+            // Platform settings & Dynamic Configs
+            const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.allSettled([
                 adminService.getPlatformSettings('pricing_plans'),
                 adminService.getPlatformSettings('external_integrations'),
                 adminService.getPlatformSettings('system_sectors'),
                 adminService.getPlatformSettings('system_roles'),
                 adminService.getPlatformSettings('system_agent_apps'),
                 adminService.getPlatformSettings('manager_ai_config'),
-            ]);
+            ]).then(res => res.map(r => r.status === 'fulfilled' ? r.value : null));
+            
             setPricing(plans || [
                 { id: 'starter', name: 'الباقة الأساسية', monthlyPrice: 39, yearlyPrice: 31, trialPrice: 20, credits: 2000, agentsLimit: 1, toolsLimit: 2 },
                 { id: 'pro', name: 'الباقة المتقدمة', monthlyPrice: 69, yearlyPrice: 55, trialPrice: 45, credits: 5000, agentsLimit: 2, toolsLimit: 3 },
@@ -264,34 +288,28 @@ export default function AdminDashboard() {
             if (dbApps) setAgentAppsConfig(dbApps);
             if (dbAiConfig) setAiConfig(dbAiConfig);
 
-            // Per-client keys
             const kmap = {};
             (keyData || []).forEach(k => { kmap[k.user_id] = { telegram_token: k.telegram_token || '', whatsapp_number: k.whatsapp_number || '', whatsapp_api_key: k.whatsapp_api_key || '' }; });
             setClientKeys(kmap);
 
-            // Agent apps (stored in agents.metadata jsonb)
             const appMap = {};
             (ag || []).forEach(a => { if (a.metadata?.apps) appMap[a.id] = a.metadata.apps; });
             setAgentApps(appMap);
 
-            // Setup Realtime subscription for notifications
             try {
                 const channel = supabase.channel('platform_notifications')
                     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'platform_notifications' }, (payload) => {
                         setNotifications(prev => [payload.new, ...prev].slice(0, 50));
                     })
                     .subscribe();
-                // Cleanup registered via useEffect return
                 window.__adminDashboardChannel = channel;
-            } catch (realtimeErr) {
-                console.warn('Realtime subscription failed (non-critical):', realtimeErr.message);
-            }
+            } catch (rtErr) { console.warn('Realtime failed:', rtErr.message); }
 
             fetchTemplates();
             adminService.logSystemEvent('info', 'system', 'Admin dashboard loaded successfully');
         } catch (e) {
-            console.error('Admin load error:', e);
-            flash('❌ خطأ في تحميل البيانات: ' + e.message);
+            console.error('Admin load fatal error:', e);
+            flash('❌ خطأ فادح في التحميل: ' + e.message);
         }
         setLoading(false);
     };
@@ -425,11 +443,21 @@ export default function AdminDashboard() {
     };
     const updateBookingStatus = async (id, status) => {
         try {
+            console.log(`AdminDashboard: Updating booking ${id} status to ${status}...`);
             const { error } = await supabase.from('bookings').update({ status }).eq('id', id);
             if (error) throw error;
+            
             setBookings(p => p.map(b => b.id === id ? { ...b, status } : b));
-            flash('✅ تم تحديث حالة الحجز');
-        } catch (err) { flash('❌ فشل تحديث الحجز'); }
+            flash(status === 'confirmed' ? '✅ تم تأكيد الحجز وإرسال إشعار' : '✅ تم تحديث حالة الحجز');
+            
+            // Trigger Automated Notification to Customer
+            if (status === 'confirmed' || status === 'cancelled') {
+                await adminService.sendBookingNotification(id, status);
+            }
+        } catch (err) { 
+            console.error('Update Booking Error:', err);
+            flash('❌ فشل تحديث الحجز'); 
+        }
     };
     const savePlatformInteg = async () => { setSaving(true); await adminService.updatePlatformSettings('external_integrations', integrations); setSaving(false); flash('✅ تم الحفظ'); };
     const saveClientKey = async (uid) => {

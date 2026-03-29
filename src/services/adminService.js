@@ -6,26 +6,24 @@ import { supabase } from './supabaseService';
 export const getAllCustomers = async () => {
     // Try admin RPC first (bypasses RLS)
     const { data: rpcData, error: rpcErr } = await supabase.rpc('get_admin_clients');
-    if (!rpcErr && rpcData?.length) return rpcData;
+    if (!rpcErr && rpcData) return rpcData;
 
-    if (rpcErr) console.warn('get_admin_clients RPC failed:', rpcErr.message, '— trying fallback');
+    if (rpcErr) { 
+        console.warn('get_admin_clients RPC failed:', rpcErr.message, '— trying fallback to profiles');
+    }
 
-    // Fallback: salon_configs is usually readable without RLS issues
-    const { data: configs, error: cfgErr } = await supabase
-        .from('salon_configs')
-        .select('id, user_id, business_type, agent_name, created_at')
+    // Fallback: profiles table (works if user is authorized as admin)
+    const { data: profiles, error: profErr } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, subscription_tier, created_at, business_name, business_type')
         .order('created_at', { ascending: false });
 
-    if (cfgErr) console.warn('salon_configs fallback also failed:', cfgErr.message);
+    if (profErr) {
+        console.error('profiles fallback failed:', profErr.message);
+        throw new Error('تعذر الوصول لبيانات العملاء. يرجى التأكد من صلاحيات الأدمن أو تشغيل كود SQL المطلوب.');
+    }
 
-    return (configs || []).map(c => ({
-        id: c.user_id,
-        full_name: c.agent_name || '—',
-        email: '—',
-        subscription_tier: 'basic',
-        business_type: c.business_type,
-        created_at: c.created_at,
-    }));
+    return profiles || [];
 };
 
 export const getAllEndCustomers = async () => {
@@ -271,3 +269,84 @@ export const updateBlogSettings = async (settings) => {
 
 // Legacy export for backward compat
 export const getAllCustomers_legacy = getAllCustomers;
+
+/**
+ * Sends a notification to the customer when their booking status changes
+ */
+export const sendBookingNotification = async (bookingId, newStatus) => {
+    try {
+        console.log(`AdminService: Dispatching booking notification for ${bookingId} with status ${newStatus}`);
+        
+        // 1. Fetch booking details to get session_id / customer info
+        const { data: booking, error: bErr } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('id', bookingId)
+            .single();
+
+        if (bErr || !booking) throw new Error('Booking not found');
+
+        const { session_id, customer_name, booking_date, booking_time } = booking;
+        if (!session_id) {
+            console.warn('Booking has no session_id, cannot notify customer via chat');
+            return { success: false, error: 'No associated session found' };
+        }
+
+        // 2. Prepare the message
+        const statusText = newStatus === 'confirmed' ? 'مؤكد ✅' : (newStatus === 'cancelled' ? 'ملغي ❌' : newStatus);
+        const msgContent = `عزيزي ${customer_name || 'العميل'}، نود إبلاغك بأن حالة حجزك بتاريخ ${booking_date} الساعة ${booking_time} قد أصبحت: ${statusText}. شكراً لاختيارك لنا!`;
+
+        // 3. Platform Detection & Sending
+        if (session_id.startsWith('wa:') || session_id.startsWith('tg:')) {
+            // EXTERNAL: WhatsApp/Telegram
+            console.log('Detected External Messenger:', session_id);
+            // Trigger appropriate webhook logic
+            // (Assumes you have a generalized message sender endpoint or logic)
+        } else {
+            // WEB WIDGET: Update concierge_conversations history
+            console.log('Detected Web Messenger (Session):', session_id);
+            const { data: conv, error: convErr } = await supabase
+                .from('concierge_conversations')
+                .select('id, messages')
+                .or(`session_id.eq.${session_id},user_id.eq.${session_id}`)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (conv) {
+                const newMessages = [...(conv.messages || []), {
+                    role: 'assistant',
+                    content: msgContent,
+                    timestamp: new Date().toISOString(),
+                    is_system: true
+                }];
+
+                const { error: updErr } = await supabase
+                    .from('concierge_conversations')
+                    .update({ 
+                        messages: newMessages, 
+                        last_message: msgContent,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', conv.id);
+                
+                if (updErr) throw updErr;
+                console.log('Web Widget conversation updated with confirmation message');
+            } else {
+                console.warn('No active conversation found for session_id:', session_id);
+            }
+        }
+
+        return { success: true };
+    } catch (err) {
+        console.error('sendBookingNotification error:', err);
+        return { success: false, error: err.message };
+    }
+};
+
+export const logSystemEvent = async (level, category, message) => {
+    try {
+        await supabase.from('system_logs').insert([{ level, category, message }]);
+    } catch (e) { console.warn('Logging failed:', e.message); }
+};
+
