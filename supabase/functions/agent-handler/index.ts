@@ -364,10 +364,9 @@ ACTION TO TAKE:
 
         // 6. Model Fallback Loop — Flash first (fast ~3-5s), Pro last (slow ~30s)
         const MODELS = [
-            "gemini-3-flash-preview",         // 🥇 الأسرع — يجب أن ينجح في <5 ثوانٍ
-            "gemini-2.5-flash-preview-04-17", // 🥈 احتياطي سريع
-            "gemini-1.5-flash",               // 🥉 الأكثر استقراراً
-            "gemini-3.1-pro-preview",         // 🏅 الأقوى لكن بطيء — آخر محاولة
+            "gemini-2.0-flash-exp",           // 🥇 Fastest & Most Modern (if available)
+            "gemini-1.5-flash",               // 🥈 Proven Stability & High Speed
+            "gemini-1.5-pro",                 // 🥉 Maximum Intelligence & Tool-Use accuracy
         ];
 
         let finalResponse: any = null;
@@ -852,8 +851,8 @@ ACTION TO TAKE:
         const confirmationWords = ['تم', 'تأكيد', 'حجز', 'موعدك', 'بنجاح'];
         const matchCount = confirmationWords.filter(w => aiText.includes(w)).length;
         if (matchCount >= 2 && !callName) {
-            console.error("⛔ AI hallucinated booking confirmation without tool call!");
-            aiText = "عذراً يا غالية، واجهت مشكلة تقنية. الرجاء المحاولة مرة أخرى.";
+            console.error("⛔ AI hallucinated booking confirmation without tool call! RAW TEXT:", aiText);
+            aiText = "عذراً يا غالية، واجهت مشكلة تقنية فنية بسيطة أو نقص في البيانات. هل يمكنكِ تزويدي برقم الجوال أو الوقت المناسب لنقوم بتأكيد الحجز لكِ فوراً؟ ✨";
         }
 
         return new Response(
@@ -862,12 +861,19 @@ ACTION TO TAKE:
         );
 
     } catch (error: any) {
-        console.error("FATAL ERROR:", error.message);
-        const errMsg = error.message?.includes('timeout')
-            ? "عذراً، استغرق الرد وقتاً أطول من المعتاد. يرجى المحاولة مرة أخرى."
-            : "عذراً، حدث خطأ مؤقت. يرجى المحاولة مرة أخرى بعد لحظات.";
+        console.error("FATAL ERROR in agent-handler:", error.message);
+        
+        // Provide the actual error message to the user for one-time debugging
+        // This will tell us if it's a GEMINI_API_KEY issue, a timeout, or something else.
+        const errorDetail = error.message || "Unknown Error";
+        const isTimeout = errorDetail.includes('timeout') || errorDetail.includes('Abort');
+        
+        const errMsg = isTimeout
+            ? "⚠️ عذراً، استغرق الرد وقتاً أطول من المعتاد. (الخطأ: timeout)"
+            : `⚠️ عذراً، حدث خطأ تقني في "عقل" الموظف. التفاصيل: ${errorDetail.substring(0, 150)}`;
+            
         return new Response(
-            JSON.stringify({ success: false, text: errMsg, error: error.message }),
+            JSON.stringify({ success: false, text: errMsg, error: errorDetail }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }

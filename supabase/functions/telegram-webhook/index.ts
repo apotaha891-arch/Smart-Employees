@@ -51,7 +51,7 @@ serve(async (req: any) => {
             // Find the matching Agent
             const { data: agent, error: agentError } = await supabase
                 .from('agents')
-                .select('id, user_id, telegram_token')
+                .select('id, user_id, telegram_token, salon_config_id')
                 .eq('id', targetAgentId)
                 .single();
 
@@ -60,12 +60,25 @@ serve(async (req: any) => {
                 return;
             }
 
-            // CRITICAL: Strict token isolation. 
-            // We MUST NOT fallback to global TELEGRAM_BOT_TOKEN in a multi-tenant environment.
-            const dynamicBotToken = agent.telegram_token;
+            // CRITICAL: Strict token isolation with fallback.
+            let dynamicBotToken = agent.telegram_token;
+
+            // Fallback to salon_configs if token isn't in agent table yet
+            if (!dynamicBotToken && agent.salon_config_id) {
+                console.log("Agent token missing, falling back to salon_configs...");
+                const { data: config } = await supabase
+                    .from('salon_configs')
+                    .select('telegram_token')
+                    .eq('id', agent.salon_config_id)
+                    .single();
+                if (config?.telegram_token) {
+                    dynamicBotToken = config.telegram_token;
+                    console.log("Found token via salon_configs fallback ✅");
+                }
+            }
 
             if (!dynamicBotToken) {
-                console.error("No telegram token configured specifically for agent", targetAgentId);
+                console.error("No telegram token configured for agent or salon config", targetAgentId);
                 return;
             }
 

@@ -9,7 +9,7 @@ import {
 } from '../services/supabaseService';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-    User, FileText, Calendar, CheckCircle2, Smartphone,
+    User, FileText, Calendar, CheckCircle2, Smartphone, AlertCircle,
     MessageCircle, Settings, Upload, Clock, Briefcase, Sparkles,
     CreditCard, Activity, Users, Send, Plus, Edit2, Trash2, Save, X, Puzzle, Star, Target, Zap,
     Link as LinkIcon, Loader, Globe, Linkedin, Facebook, Instagram, Mail, HardDrive, BookOpen
@@ -17,6 +17,7 @@ import {
 import ServicesTable from './ServicesTable';
 
 const EntitySetup = () => {
+    console.log("SalonSetup.jsx v2-banner-fix: Loaded. Status Banner ready.");
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const { t, language } = useLanguage();
     const navigate = useNavigate();
@@ -253,9 +254,9 @@ const EntitySetup = () => {
             }
 
             setActiveTab('identity');
-            alert(language === 'ar' ? '✅ تم حفظ بيانات المنشأة ومزامنة الموظف بنجاح!' : '✅ Entity profile saved and agent synced successfully!');
+            setStatusMsg({ type: 'success', text: language === 'ar' ? '✅ تم حفظ بيانات المنشأة ومزامنة الموظف بنجاح!' : '✅ Entity profile saved and agent synced successfully!' });
         } catch (err) {
-            alert('Error: ' + err.message);
+            setStatusMsg({ type: 'error', text: (isAr ? '❌ فشل الحفظ: ' : '❌ Save failed: ') + err.message });
         }
         setLoading(false);
     };
@@ -266,13 +267,58 @@ const EntitySetup = () => {
             let configs = null;
             const { user } = await getCurrentUser();
             if (user) {
+                console.log("SalonSetup: Initialization for user", user.id);
+                setCurrentUserId(user.id);
+
+                // Priority 1: Fetch the global/latest salon_configs as baseline
+                const { data: globalConfigs, error: globalError } = await supabase
+                    .from('salon_configs')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                
+                if (globalError) console.error("SalonSetup: Error fetching global configs:", globalError);
+                if (globalConfigs) {
+                    console.log("SalonSetup: Found global config baseline:", globalConfigs.id);
+                    configs = globalConfigs;
+                }
+
+                // Priority 2: If we have an agent, fetch the config specific to it (OVERRIDE)
+                const agentIdFromUrl = queryParams.get('agent');
+                if (agentIdFromUrl) {
+                    console.log("SalonSetup: Operating on agent from URL:", agentIdFromUrl);
+                    setAgentId(agentIdFromUrl);
+
+                    const { data: linkedAgent } = await supabase
+                        .from('agents')
+                        .select('salon_config_id')
+                        .eq('id', agentIdFromUrl)
+                        .maybeSingle();
+                    
+                    if (linkedAgent?.salon_config_id) {
+                        const { data: linkedConfig } = await supabase
+                            .from('salon_configs')
+                            .select('*')
+                            .eq('id', linkedAgent.salon_config_id)
+                            .maybeSingle();
+                        if (linkedConfig) {
+                            console.log("SalonSetup: Found agent-specific config override:", linkedConfig.id);
+                            configs = linkedConfig;
+                        }
+                    }
+                }
+
                 const profileResult = await getProfile(user.id);
                 if (profileResult.success && profileResult.data) {
                     const balanceResult = await getWalletBalance(user.id);
                     if (balanceResult.success) {
                         setWalletBalance(balanceResult.balance);
                     }
-                    const type = (profileResult.data.business_type || configs?.specialty || '').toLowerCase();
+                    
+                    // Industry detection based on config OR profile
+                    const type = (configs?.specialty || profileResult.data.business_type || '').toLowerCase();
                     if (type?.includes('طب') || type?.includes('صحي') || type?.includes('clinic') || type === 'medical') setIndustry('medical');
                     else if (type?.includes('عقار') || type?.includes('estate') || type === 'real_estate') setIndustry('realestate');
                     else if (type?.includes('تجميل') || type?.includes('salon') || type?.includes('beauty') || type === 'beauty') setIndustry('beauty');
@@ -283,9 +329,10 @@ const EntitySetup = () => {
                     else if (type === 'call_center' || type?.includes('اتصال') || type?.includes('خدمة')) setIndustry('call_center');
                     else if (type === 'telecom_it' || type?.includes('تكنو') || type?.includes('برمج') || type?.includes('it')) setIndustry('telecom_it');
 
+                    // Set Form Data from config or fallback to profile
                     setFormData(prev => ({
                         ...prev,
-                        businessName: configs?.agent_name || prev.businessName,
+                        businessName: configs?.agent_name || profileResult.data.business_name || prev.businessName,
                         businessType: configs?.specialty || profileResult.data.business_type || prev.businessType,
                         description: configs?.description || prev.description,
                         phone: configs?.phone || profileResult.data.phone || prev.phone,
@@ -296,38 +343,13 @@ const EntitySetup = () => {
                     }));
                 }
 
-                const agentIdFromUrl = queryParams.get('agent');
-                if (agentIdFromUrl) {
-                    console.log("SalonSetup: Operating on agent from URL:", agentIdFromUrl);
-                    setAgentId(agentIdFromUrl);
-                }
-
-                // Priority 1: If we have an agent, fetch the config specific to it
-                if (agentIdFromUrl) {
-                    const { data: linkedAgent } = await supabase
-                        .from('agents')
-                        .select('salon_config_id')
-                        .eq('id', agentIdFromUrl)
-                        .maybeSingle();
-                    
-                    if (linkedAgent?.salon_config_id) {
-                        const { data } = await supabase
-                            .from('salon_configs')
-                            .select('*')
-                            .eq('id', linkedAgent.salon_config_id)
-                            .maybeSingle();
-                        configs = data;
-                    }
-                }
-
                 if (configs) {
-                    console.log("SalonSetup: Found existing config:", configs.id);
+                    console.log("SalonSetup: Finalizing sync... Config ID ->", configs.id);
                     setSalonConfigId(configs.id);
 
                     // Migration logic for multiple shifts
                     const migrateWorkingHours = (wh) => {
                         if (!wh) return { shifts: [{ start: '09:00', end: '22:00' }] };
-                        // If already in new format, return as is
                         if (wh.shifts || (wh.isCustom && wh.days && Object.values(wh.days).some(d => d.shifts))) return wh;
 
                         if (wh.isCustom && wh.days) {
@@ -364,6 +386,7 @@ const EntitySetup = () => {
                         sop_instructions: configs.sop_instructions || prev.sop_instructions || '',
                         knowledge_base: configs.knowledge_base || prev.knowledge_base || '',
                     }));
+                    
                     setIntegrationKeys({
                         website: configs.website || '',
                         telegram_token: configs.telegram_token || '',
@@ -375,30 +398,33 @@ const EntitySetup = () => {
                         widget_color: configs.widget_color || '#8B5CF6',
                     });
 
-                    // If we don't have an agentId from URL, try to find the one linked to this config
+                    // If we didn't have an agentId from URL, try to find one for this config
+                    const agentIdFromUrl = queryParams.get('agent');
                     if (!agentIdFromUrl) {
                         const { data: agentData } = await supabase
                             .from('agents')
                             .select('id')
                             .eq('salon_config_id', configs.id)
                             .maybeSingle();
-                        
                         if (agentData) setAgentId(agentData.id);
                     }
-                } else if (!agentIdFromUrl) {
-                     // Last fallback: find any agent for this user
-                     const { data: userAgent } = await supabase
-                        .from('agents')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .limit(1)
-                        .maybeSingle();
-                    if (userAgent) setAgentId(userAgent.id);
+                } else {
+                    const agentIdFromUrl = queryParams.get('agent');
+                     if (!agentIdFromUrl) {
+                        const { data: userAgent } = await supabase
+                            .from('agents')
+                            .select('id')
+                            .eq('user_id', user.id)
+                            .limit(1)
+                            .maybeSingle();
+                        if (userAgent) setAgentId(userAgent.id);
+                     }
                 }
             }
         };
         checkUser().catch(err => {
             console.error("SalonSetup: Initialization error:", err);
+            setStatusMsg({ type: 'error', text: isAr ? '❌ فشل تحميل البيانات.' : '❌ Failed to load data.' });
         });
     }, [location.search]);
 
@@ -463,12 +489,12 @@ const EntitySetup = () => {
 
     const handleAddService = async () => {
         if (!newService.service_name) {
-            alert(language === 'ar' ? 'الرجاء إدخال اسم الخدمة' : 'Please enter a service name');
+            setStatusMsg({ type: 'error', text: language === 'ar' ? 'الرجاء إدخال اسم الخدمة' : 'Please enter a service name' });
             return;
         }
 
         if (!salonConfigId) {
-            alert(language === 'ar' ? '⚠️ يرجى حفظ بيانات المنشأة (Entity Info) أولاً قبل إضافة الخدمات.' : '⚠️ Please save the Entity Info first before adding services.');
+            setStatusMsg({ type: 'error', text: language === 'ar' ? '⚠️ يرجى حفظ بيانات المنشأة (Entity Info) أولاً قبل إضافة الخدمات.' : '⚠️ Please save the Entity Info first before adding services.' });
             return;
         }
 
@@ -509,7 +535,7 @@ const EntitySetup = () => {
             setServices(services.map(s => s.id === serviceId ? result.data : s));
             setEditingService(null);
         } else {
-            alert('فشل في تحديث الخدمة: ' + result.error);
+            setStatusMsg({ type: 'error', text: (isAr ? '❌ فشل تحديث الخدمة: ' : '❌ Failed to update service: ') + result.error });
         }
     };
 
@@ -520,7 +546,7 @@ const EntitySetup = () => {
         if (result.success) {
             setServices(services.filter(s => s.id !== serviceId));
         } else {
-            alert(t('failedDeleteService') + result.error);
+            setStatusMsg({ type: 'error', text: (isAr ? '❌ فشل حذف الخدمة: ' : '❌ Failed to delete service: ') + result.error });
         }
     };
 
@@ -635,7 +661,10 @@ const EntitySetup = () => {
 
     const handleSaveIntegration = async () => {
         if (!salonConfigId) {
-            alert(language === 'ar' ? 'يرجى حفظ بيانات المنشأة أولاً.' : 'Please save entity info first.');
+            setStatusMsg({ 
+                type: 'error', 
+                text: language === 'ar' ? '⚠️ يرجى حفظ بيانات المنشأة (Entity Info) أولاً قبل ربط الأدوات.' : '⚠️ Please save Entity Info first before linking tools.' 
+            });
             return;
         }
         if (expandedIntegration === 'custom_request') {
@@ -688,9 +717,12 @@ const EntitySetup = () => {
                         console.log("Telegram Webhook Sync Success ✅");
                     } else {
                         console.warn("Telegram Webhook Sync Rejected ❌", telegramData);
-                        alert(language === 'ar' 
-                            ? `⚠️ تم حفظ الإعدادات لكن فشل ربط التيليجرام: ${telegramData.description || 'التوكن غير صالح'}` 
-                            : `⚠️ Settings saved but Telegram setup failed: ${telegramData.description || 'Invalid Token'}`);
+                        setStatusMsg({ 
+                            type: 'error', 
+                            text: language === 'ar' 
+                                ? `⚠️ تم حفظ الإعدادات لكن فشل ربط التيليجرام: ${telegramData.description || 'التوكن غير صالح'}` 
+                                : `⚠️ Settings saved but Telegram setup failed: ${telegramData.description || 'Invalid Token'}` 
+                        });
                     }
                 } catch (e) {
                     console.warn("Webhook Sync Error:", e);
@@ -796,7 +828,41 @@ const EntitySetup = () => {
     };
 
     return (
-        <div className="fade-in" dir={language === 'ar' ? 'rtl' : 'ltr'} style={{ textAlign: language === 'ar' ? 'right' : 'left', color: 'white' }}>
+        <div className="fade-in" dir={language === 'ar' ? 'rtl' : 'ltr'} style={{ textAlign: language === 'ar' ? 'right' : 'left', color: 'white', position: 'relative', minHeight: '100vh' }}>
+            
+            {/* Global Status Banner - TOP of Setup Page (Sticky) */}
+            {statusMsg.text && (
+                <div className="status-banner" style={{
+                    position: 'fixed',
+                    top: '1rem',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 10000,
+                    width: '90%',
+                    maxWidth: '550px',
+                    background: statusMsg.type === 'success' ? '#059669' : '#DC2626',
+                    color: 'white',
+                    padding: '1.25rem 2rem',
+                    borderRadius: '24px',
+                    boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 1), 0 0 30px rgba(139, 92, 246, 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '15px',
+                    border: '2px solid rgba(255,255,255,0.2)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        {statusMsg.type === 'success' ? <CheckCircle2 size={30} /> : <AlertCircle size={30} />}
+                        <div style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>{statusMsg.type === 'success' ? (language === 'ar' ? 'نجاح ✅' : 'Success ✅') : (language === 'ar' ? 'خطأ ⚠️' : 'Error ⚠️')}</div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.9 }}>{statusMsg.text}</div>
+                        </div>
+                    </div>
+                    <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <X size={24} />
+                    </button>
+                </div>
+            )}
 
             {/* Page Header */}
             {paymentSuccess && (
@@ -1697,32 +1763,6 @@ const EntitySetup = () => {
                                     </p>
                                 </div>
 
-                                {/* Status Banner Overlay */}
-                                {statusMsg.text && (
-                                    <div className="animate-fade-in" style={{
-                                        marginBottom: '1.25rem',
-                                        padding: '0.85rem 1.25rem',
-                                        borderRadius: '12px',
-                                        background: statusMsg.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                        border: `1px solid ${statusMsg.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
-                                        color: statusMsg.type === 'success' ? '#10B981' : '#EF4444',
-                                        fontSize: '0.9rem',
-                                        fontWeight: 600,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                                    }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            {statusMsg.type === 'success' ? <CheckCircle2 size={18} /> : <X size={18} />}
-                                            {statusMsg.text}
-                                        </div>
-                                        <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', opacity: 0.6 }}>
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                )}
-
                                 {/* Cards Grid */}
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.25rem' }}>
                                     {CARDS.map(card => {
@@ -1879,16 +1919,47 @@ const EntitySetup = () => {
                                                                             — {language === 'ar' ? f.hintAr : f.hintEn}
                                                                         </span>
                                                                     </label>
-                                                                    <input
-                                                                        type={f.password ? 'password' : f.type || 'text'}
-                                                                        value={integrationDraft[f.key] ?? (f.type === 'color' ? '#8B5CF6' : '')}
-                                                                        onChange={e => setIntegrationDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                                                        placeholder={f.placeholder}
-                                                                        style={{
-                                                                            width: '100%', padding: f.type === 'color' ? '2px 6px' : '10px 14px', height: f.type === 'color' ? '42px' : 'auto', background: '#27272A', border: '1px solid #3F3F46', borderRadius: 10, color: '#FFFFFF',
-                                                                            fontFamily: 'monospace', fontSize: '0.9rem', letterSpacing: f.password ? '0.1em' : 'normal', outline: 'none', cursor: f.type === 'color' ? 'pointer' : 'text'
-                                                                        }}
-                                                                    />
+                                                                    <div style={{ position: 'relative' }}>
+                                                                        <input
+                                                                            type={f.password ? 'password' : f.type || 'text'}
+                                                                            value={integrationDraft[f.key] ?? (f.type === 'color' ? '#8B5CF6' : '')}
+                                                                            onChange={e => setIntegrationDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                                                            placeholder={f.placeholder}
+                                                                            style={{
+                                                                                width: '100%', padding: f.type === 'color' ? '2px 6px' : (f.key === 'telegram_token' ? '10px 60px 10px 14px' : '10px 14px'), height: f.type === 'color' ? '42px' : 'auto', background: '#27272A', border: '1px solid #3F3F46', borderRadius: 10, color: '#FFFFFF',
+                                                                                fontFamily: 'monospace', fontSize: '0.9rem', letterSpacing: f.password ? '0.1em' : 'normal', outline: 'none', cursor: f.type === 'color' ? 'pointer' : 'text'
+                                                                            }}
+                                                                        />
+                                                                        {f.key === 'telegram_token' && integrationDraft[f.key] && (
+                                                                            <button 
+                                                                                onClick={async (e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setIntegrationSaving(true);
+                                                                                    try {
+                                                                                        const currentAgentId = agentId || localStorage.getItem('currentAgentId');
+                                                                                        if (!currentAgentId) throw new Error(language === 'ar' ? '⚠️ لم يتم العثور على معرّف الموظف.' : '⚠️ Agent ID not found.');
+                                                                                        
+                                                                                        // 1. SYNC: Save to Agent Table First (Backend needs this)
+                                                                                        const tokenVal = integrationDraft[f.key];
+                                                                                        console.log("Syncing token to Agent Table before linking:", currentAgentId);
+                                                                                        await updateAgent(currentAgentId, { telegram_token: tokenVal });
+
+                                                                                        // 2. LINK: Register Webhook with Telegram
+                                                                                        const url = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '') + '/functions/v1/telegram-webhook?agent_id=' + currentAgentId;
+                                                                                        const res = await fetch(`https://api.telegram.org/bot${tokenVal}/setWebhook?url=${encodeURIComponent(url)}`);
+                                                                                        const data = await res.json();
+                                                                                        if (data.ok) setStatusMsg({ type: 'success', text: language === 'ar' ? '✅ تم بنجاح! البوت مربوط الآن وسيبدأ الرد فوراً.' : '✅ Success! Bot is linked and will reply now.' });
+                                                                                        else setStatusMsg({ type: 'error', text: language === 'ar' ? `❌ فشل الربط: ${data.description}` : `❌ Link Failed: ${data.description}` });
+                                                                                    } catch (err) {
+                                                                                        setStatusMsg({ type: 'error', text: String(err.message) });
+                                                                                    } finally { setIntegrationSaving(false); }
+                                                                                }}
+                                                                                style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(34,197,94,0.1)', color: '#10B981', border: '1px solid rgba(34,197,94,0.2)', padding: '5px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                                                            >
+                                                                                {language === 'ar' ? 'اختبار' : 'Test'}
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
                                                                     {f.guide && (
                                                                         <span
                                                                             onClick={(e) => { e.stopPropagation(); navigate('/help/integrations'); }}
@@ -1945,9 +2016,9 @@ const EntitySetup = () => {
                                                                         try {
                                                                             const { error } = await supabase.from('salon_services').delete().eq('salon_config_id', salonConfigId);
                                                                             if (error) throw error;
-                                                                            alert(language === 'ar' ? '✅ تم تصفير البيانات! قم بتحديث الصفحة وسيعود الذكاء لبروفايلك الحالي.' : '✅ Data cleared! Refresh page to force AI reset.');
+                                                                            setStatusMsg({ type: 'success', text: language === 'ar' ? '✅ تم تصفير البيانات! قم بتحديث الصفحة وسيعود الذكاء لبروفايلك الحالي.' : '✅ Data cleared! Refresh page to force AI reset.' });
                                                                         } catch (e) {
-                                                                            alert('Error: ' + e.message);
+                                                                            setStatusMsg({ type: 'error', text: 'Error: ' + e.message });
                                                                         }
                                                                     }}
                                                                     style={{ background: 'transparent', border: '1px solid #EF4444', color: '#EF4444', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>

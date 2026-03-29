@@ -37,6 +37,7 @@ const ROLE_LABELS = {
 };
 
 const Employees = () => {
+    console.log("Employees.jsx v2-banner-fix: Loaded. Status Banner ready.");
     const { t, language } = useLanguage();
     const isAr = language === 'ar';
     const navigate = useNavigate();
@@ -53,6 +54,7 @@ const Employees = () => {
     const [linkingAgent, setLinkingAgent] = useState(null);
     const [linkToken, setLinkToken] = useState('');
     const [savingLink, setSavingLink] = useState(false);
+    const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
     useEffect(() => { loadSectorAndAgents(); }, []);
 
@@ -145,21 +147,31 @@ const Employees = () => {
     };
 
     const handleSaveLink = async () => {
-        if (!linkToken || !linkingAgent) return;
+        if (!linkingAgent) {
+            console.error("No linkingAgent selected!");
+            return;
+        }
+        if (!linkToken) {
+            setStatusMsg({ type: 'error', text: isAr ? 'يرجى إدخال التوكن أولاً' : 'Please enter token first' });
+            return;
+        }
+        
         setSavingLink(true);
+        setStatusMsg({ type: '', text: '' }); 
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("User not authenticated");
 
-            // Update Name to include Telegram if not already there
+            console.log("Employees: Saving link for agent", linkingAgent.id, "with token length:", linkToken.length);
+
+            // 1. Update the agent's token and name in the 'agents' table
             let updatedName = linkingAgent.name || 'موظف';
             const platformTag = isAr ? '(تيليجرام)' : '(Telegram)';
             if (!updatedName.includes('(')) {
                 updatedName = `${updatedName} ${platformTag}`;
             }
 
-            // 1. Update the agent's token and name in the 'agents' table
             const { error: agentUpdateError } = await supabase
                 .from('agents')
                 .update({
@@ -180,27 +192,55 @@ const Employees = () => {
             }
 
             // 3. Register the Webhook with Telegram
-            // Derive project ref from VITE_SUPABASE_URL (e.g. "https://abc.supabase.co" -> "abc")
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-            const supabaseProjectRef = supabaseUrl.split('//')[1]?.split('.')[0] || 'dydflepcfdrlslpxapqo';
-            const webhookUrl = `https://${supabaseProjectRef}.supabase.co/functions/v1/telegram-webhook?agent_id=${linkingAgent.id}`;
+            const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+            const webhookUrl = `${supabaseUrl}/functions/v1/telegram-webhook?agent_id=${linkingAgent.id}`;
 
-            const telegramRes = await fetch(`https://api.telegram.org/bot${linkToken}/setWebhook?url=${webhookUrl}`);
+            console.log("Employees: Setting up Webhook ->", webhookUrl);
+            
+            const telegramRes = await fetch(`https://api.telegram.org/bot${linkToken}/setWebhook?url=${encodeURIComponent(webhookUrl)}`);
             const telegramData = await telegramRes.json();
 
-            if (!telegramData.ok) {
-                console.error('Telegram setWebhook failed:', telegramData.description);
-                alert(`فشل ربط التيليجرام: ${telegramData.description}`);
-            } else {
-                alert('تم ربط وتفعيل الموظف بنجاح!');
+            if (!telegramRes.ok || !telegramData.ok) {
+                const errorDetail = telegramData.description || 'Unknown error';
+                console.error('Employees: Telegram setWebhook failed:', errorDetail);
+                setStatusMsg({ 
+                    type: 'error', 
+                    text: isAr 
+                        ? `⚠️ تم حفظ البيانات ولكن فشل ربط التيليجرام: ${errorDetail}` 
+                        : `⚠️ Data saved, but Telegram linking failed: ${errorDetail}` 
+                });
+                return;
+            }
+
+            setStatusMsg({ 
+                type: 'success', 
+                text: isAr ? '✅ تم حفظ وربط وتفعيل الموظف بنجاح!' : '✅ Agent saved, linked, and activated successfully!' 
+            });
+            
+            setTimeout(() => {
                 setShowLinkModal(false);
                 setLinkToken('');
                 setLinkingAgent(null);
+                setStatusMsg({ type: '', text: '' });
                 loadSectorAndAgents();
-            }
+            }, 2500);
+
         } catch (error) {
-            console.error('Error saving link:', error);
-            alert('حدث خطأ أثناء حفظ الإعدادات.');
+            console.error('Employees: Error saving link:', error);
+            const errorMsg = error.message || String(error);
+            const userText = isAr ? `❌ فشل الحفظ: ${errorMsg}` : `❌ Save failed: ${errorMsg}`;
+            
+            setStatusMsg({ 
+                type: 'error', 
+                text: userText
+            });
+            
+            // Fallback to alert if banner fails to show
+            setTimeout(() => {
+                if (!document.querySelector('.animate-fade-in')) {
+                    alert(userText);
+                }
+            }, 500);
         } finally {
             setSavingLink(false);
         }
@@ -257,6 +297,40 @@ const Employees = () => {
                         </p>
                     </div>
                 </div>
+
+                {/* Global Status Banner - TOP of component (Sticky) */}
+                {statusMsg.text && (
+                    <div className="status-banner" style={{
+                        position: 'fixed',
+                        top: '1rem',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 10000,
+                        width: '90%',
+                        maxWidth: '550px',
+                        background: statusMsg.type === 'success' ? '#059669' : '#DC2626',
+                        color: 'white',
+                        padding: '1.25rem 2rem',
+                        borderRadius: '24px',
+                        boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 1), 0 0 30px rgba(139, 92, 246, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '15px',
+                        border: '2px solid rgba(255,255,255,0.2)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            {statusMsg.type === 'success' ? <CheckCircle2 size={30} /> : <AlertCircle size={30} />}
+                            <div style={{ textAlign: isAr ? 'right' : 'left' }}>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>{statusMsg.type === 'success' ? 'نجاح ✅' : 'خطأ ⚠️'}</div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.9 }}>{statusMsg.text}</div>
+                            </div>
+                        </div>
+                        <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <X size={24} />
+                        </button>
+                    </div>
+                )}
                 <button
                     onClick={() => navigate('/hire-agent')}
                     style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 4px 20px rgba(139, 92, 246, 0.3)', transition: 'transform 0.2s' }}
@@ -475,14 +549,60 @@ const Employees = () => {
                             </p>
                         </div>
 
-                        <div style={{ marginBottom: '1.5rem' }}>
+                        {/* Status Banner Inside Modal */}
+                        {statusMsg.text && (
+                            <div className="animate-fade-in" style={{
+                                marginBottom: '1.5rem',
+                                padding: '0.85rem 1rem',
+                                borderRadius: '12px',
+                                background: statusMsg.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                border: `1px solid ${statusMsg.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                                color: statusMsg.type === 'success' ? '#10B981' : '#EF4444',
+                                fontSize: '0.82rem',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                            }}>
+                                {statusMsg.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                                <div style={{ flex: 1 }}>{statusMsg.text}</div>
+                                <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', opacity: 0.6 }}>
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        )}
+
+                        <div style={{ marginBottom: '1.25rem' }}>
                             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '8px' }}>{t('telegramBotTokenLabel') || 'Telegram Bot Token'}</label>
-                            <input
-                                value={linkToken}
-                                onChange={e => setLinkToken(e.target.value)}
-                                placeholder={t('telegramPlaceholder') || '7434105220:AAFvW...'}
-                                style={{ width: '100%', background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px', color: 'white', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none' }}
-                            />
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    value={linkToken}
+                                    onChange={e => setLinkToken(e.target.value)}
+                                    placeholder={t('telegramPlaceholder') || '7434105220:AAFvW...'}
+                                    style={{ width: '100%', background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px', color: 'white', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none' }}
+                                />
+                                {linkToken && (
+                                    <button 
+                                        onClick={async () => {
+                                            if (savingLink) return;
+                                            setSavingLink(true);
+                                            try {
+                                                const url = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '') + '/functions/v1/telegram-webhook?agent_id=' + linkingAgent.id;
+                                                const res = await fetch(`https://api.telegram.org/bot${linkToken}/setWebhook?url=${encodeURIComponent(url)}`);
+                                                const data = await res.json();
+                                                if (data.ok) setStatusMsg({ type: 'success', text: isAr ? '✅ اختبار ناجح: البوت مربوط الآن!' : '✅ Test Success: Bot is linked!' });
+                                                else setStatusMsg({ type: 'error', text: isAr ? `❌ فشل الاختبار: ${data.description}` : `❌ Test Failed: ${data.description}` });
+                                            } catch (e) {
+                                                setStatusMsg({ type: 'error', text: String(e.message) });
+                                            } finally { setSavingLink(false); }
+                                        }}
+                                        style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.2)', padding: '5px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
+                                    >
+                                        {isAr ? 'اختبار' : 'Test'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <div style={{ display: 'flex', gap: '1rem' }}>
