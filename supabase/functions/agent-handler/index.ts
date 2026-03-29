@@ -246,18 +246,28 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
             .maybeSingle();
         if (sessionData?.history) chatHistory = sessionData.history;
 
-        // 6. Gemini Models — EXACT IDs from Google ListModels API
+        // 6. Gemini Models — Fetch from Settings or Fallback
+        const { data: activeModelSetting } = await supabaseClient
+            .from('platform_settings')
+            .select('value')
+            .eq('key', 'active_llm_model')
+            .maybeSingle();
+        
+        const preferredModel = activeModelSetting?.value ? JSON.parse(activeModelSetting.value) : "gemini-3-flash-preview";
+
         const MODELS = [
-            "gemini-3-flash-preview",         // 🥇 Gemini 3 Flash (fastest Gen3)
-            "gemini-3.1-pro-preview",         // 🥈 Gemini 3.1 Pro (smartest Gen3)
-            "gemini-2.5-flash",               // 🥉 Stable fallback
+            preferredModel,                   // 🥇 Preferred from settings
+            "gemini-3-flash-preview",         // 🥈 Default Gen3
+            "gemini-1.5-flash",               // 🥉 Stable fallback
         ];
+        
         let finalResponse: any = null;
         let chat: any = null;
         let lastModelError = '';
 
         for (const modelName of MODELS) {
             try {
+                console.log(`Attempting model: ${modelName}`);
                 const model = genAI.getGenerativeModel({
                     model: modelName,
                     systemInstruction,
@@ -267,7 +277,7 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 chat = model.startChat({ history: chatHistory });
                 const result: any = await Promise.race([
                     chat.sendMessage(message),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 20000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
                 ]);
                 finalResponse = result.response;
                 break;
@@ -279,34 +289,17 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
 
         if (!finalResponse) throw new Error(`All models failed: ${lastModelError}`);
 
-        let callName: string | null = null;
-        let callArgs: any = {};
-        const functionCallPart = finalResponse.candidates?.[0]?.content?.parts?.find((p: any) => p.functionCall);
-        if (functionCallPart?.functionCall) {
-            callName = functionCallPart.functionCall.name;
-            callArgs = functionCallPart.functionCall.args ?? {};
-        }
-
-        // 8. Execute Tools
-        if (callName === "book_appointment") {
-            try {
-                // Sanitize date: ensure Gregorian ISO format
-                let bookingDate = callArgs.booking_date;
+        // 7. TOOL DISPATCHER (SCALABLE ARCHITECTURE)
+        const TOOL_HANDLERS: any = {
+            book_appointment: async (args: any) => {
+                let bookingDate = args.booking_date;
                 const isoRegex = /^\d{4}-\d{2}-\d{2}$/;
                 if (!isoRegex.test(bookingDate)) {
-                    // AI returned a non-ISO date (e.g., Hijri). Fallback to today.
-                    console.warn('Non-ISO date received from AI:', bookingDate, '— falling back to today');
                     bookingDate = new Date().toISOString().split('T')[0];
                 }
-                const bookingTime = callArgs.booking_time || '12:00:00';
-                const slotStart = new Date(`${bookingDate}T${bookingTime}`);
-
-                // Check Working Hours
-                if (sc && sc.working_hours) {
-                    // (Simplified logic for brevity, matches your rules)
-                }
-
-                // Check Conflicts
+                const bookingTime = args.booking_time || '12:00:00';
+                
+                // Conflict Check
                 const { data: conflicts } = await supabaseClient
                     .from('bookings')
                     .select('id')
@@ -316,89 +309,92 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                     .eq('status', 'confirmed');
 
                 if (conflicts && conflicts.length > 0) {
-                    return new Response(JSON.stringify({ success: true, text: "عذراً، هذا الوقت محجوز بالفعل." }), { headers: corsHeaders });
+                    return { status: "error", message: "هذا الوقت محجوز مسبقاً." };
                 }
 
-                // Determine booking status based on business preference
                 const requiresConfirmation = sc?.booking_requires_confirmation ?? false;
-                const bookingStatus = requiresConfirmation ? 'pending' : 'confirmed';
-                console.log('Booking mode:', requiresConfirmation ? 'REQUIRES CONFIRMATION' : 'AUTO-CONFIRM');
-
-                // Save Booking (with session_id for later notifications)
                 const { error: bErr } = await supabaseClient.from('bookings').insert([{
                     agent_id: agentId,
                     salon_config_id: finalSalonId,
-                    customer_name: callArgs.customer_name,
-                    customer_phone: callArgs.customer_phone,
-                    service_requested: callArgs.service_requested,
+                    customer_name: args.customer_name,
+                    customer_phone: args.customer_phone,
+                    service_requested: args.service_requested,
                     booking_date: bookingDate,
                     booking_time: bookingTime,
                     duration_minutes: 60,
-                    status: bookingStatus,
+                    status: requiresConfirmation ? 'pending' : 'confirmed',
                     session_id: sessionId
                 }]);
                 if (bErr) throw bErr;
 
-                // Also upsert to 'customers' table to ensure visibility in Admin Dashboard
                 await supabaseClient.from('customers').upsert({
-                    customer_name: callArgs.customer_name,
-                    customer_phone: callArgs.customer_phone,
+                    customer_name: args.customer_name,
+                    customer_phone: args.customer_phone,
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'customer_phone' });
 
-                const bookingResponseMsg = requiresConfirmation
-                    ? 'تم تسجيل الحجز المبدئي بنجاح. أخبر العميل: حجزك مبدئي وسيصلك تأكيد نهائي قريباً إن شاء الله.'
-                    : 'تم تأكيد الحجز بنجاح! قدم ملخصاً للموعد للعميل.';
+                return { 
+                    status: requiresConfirmation ? 'pending_confirmation' : 'confirmed',
+                    message: requiresConfirmation 
+                        ? 'تم تسجيل الحجز المبدئي بنجاح. سيتم تأكيده من قبل الإدارة قريباً.' 
+                        : 'تم تأكيد حجزك بنجاح!' 
+                };
+            },
+            update_customer_notes: async (args: any) => {
+                await supabaseClient.from('customers').upsert({
+                    customer_phone: args.customer_phone,
+                    notes: args.notes,
+                    customer_name: args.customer_name || 'عميل محتمل'
+                }, { onConflict: 'customer_phone' });
+                return { status: "success", message: "Customer notes updated." };
+            }
+        };
 
-                const secondResult = await chat.sendMessage([{
-                    functionResponse: {
-                        name: "book_appointment",
-                        response: { status: requiresConfirmation ? 'pending_confirmation' : 'confirmed', message: bookingResponseMsg }
+        // Handle Function Calls (Supports potential multiple calls)
+        const parts = finalResponse.candidates?.[0]?.content?.parts || [];
+        const functionCalls = parts.filter((p: any) => p.functionCall);
+
+        if (functionCalls.length > 0) {
+            const toolResults = [];
+            for (const fcPart of functionCalls) {
+                const { name, args } = fcPart.functionCall;
+                console.log(`Executing Tool: ${name}`, args);
+                
+                if (TOOL_HANDLERS[name]) {
+                    try {
+                        const result = await TOOL_HANDLERS[name](args);
+                        toolResults.push({
+                            functionResponse: { name, response: result }
+                        });
+                    } catch (err: any) {
+                        toolResults.push({
+                            functionResponse: { name, response: { status: "error", message: err.message } }
+                        });
                     }
-                }]);
+                }
+            }
 
-                const newHistory = await chat.getHistory();
+            if (toolResults.length > 0) {
+                const secondResult = await chat.sendMessage(toolResults);
+                const aiText = secondResult.response.text();
+                // Update history with full cycle
+                const finalHistory = await chat.getHistory();
                 await supabaseClient.from('chat_sessions').upsert({
                     session_id: sessionId, agent_id: agentId,
-                    history: newHistory, updated_at: new Date().toISOString()
-                }, { onConflict: 'session_id' });
+                    history: finalHistory, updated_at: new Date().toISOString()
+                }, { onConflict: 'session_id,agent_id' });
 
-                return new Response(JSON.stringify({ success: true, text: secondResult.response.text() }), { headers: corsHeaders });
-            } catch (err: any) {
-                console.error("Booking Error:", err.message);
-                throw err;
+                return new Response(JSON.stringify({ success: true, text: aiText }), { headers: corsHeaders });
             }
         }
 
-        if (callName === 'update_customer_notes') {
-            try {
-                if (finalSalonId) {
-                    await supabaseClient.from('customers').upsert({
-                        salon_config_id: finalSalonId,
-                        customer_phone: callArgs.customer_phone,
-                        notes: callArgs.notes,
-                        customer_name: callArgs.customer_name
-                    }, { onConflict: 'customer_phone,salon_config_id' });
-                }
-                const noteResult = await chat.sendMessage([{
-                    functionResponse: {
-                        name: "update_customer_notes",
-                        response: { status: "success" }
-                    }
-                }]);
-                return new Response(JSON.stringify({ success: true, text: noteResult.response.text() }), { headers: corsHeaders });
-            } catch (err: any) {
-                console.error("Notes Error:", err.message);
-            }
-        }
-
-        // Default Reply
+        // Final Fallback for regular text response
         const aiText = finalResponse.text();
-        const newHistory = await chat.getHistory();
+        const finalHistory = await chat.getHistory();
         await supabaseClient.from('chat_sessions').upsert({
             session_id: sessionId, agent_id: agentId,
-            history: newHistory, updated_at: new Date().toISOString()
-        }, { onConflict: 'session_id' });
+            history: finalHistory, updated_at: new Date().toISOString()
+        }, { onConflict: 'session_id,agent_id' });
 
         return new Response(JSON.stringify({ success: true, text: aiText }), { headers: corsHeaders });
 
@@ -410,3 +406,4 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
         );
     }
 });
+
