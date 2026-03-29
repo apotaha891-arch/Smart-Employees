@@ -3,32 +3,24 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    apiVersion: "v1beta",
-    generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-    },
-    safetySettings: [
-        {
-            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-            threshold: HarmBlockThreshold.BLOCK_NONE,
+const getModel = (modelName = "gemini-3-flash") => {
+    return genAI.getGenerativeModel({
+        model: modelName,
+        apiVersion: "v1beta",
+        generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
         },
-        {
-            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            threshold: HarmBlockThreshold.BLOCK_NONE,
-        },
-        {
-            category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-        {
-            category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-    ]
-});
+        safetySettings: [
+            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+        ]
+    });
+};
+
+const model = getModel("gemini-3-flash"); // Strictly using Gemini 3 Flash as agreed
 
 // Dictionary to store multiple chat sessions (e.g., 'agent', 'manager')
 let chatSessions = {};
@@ -43,7 +35,7 @@ export const initializeChat = (customPrompt, sessionId = 'default') => {
 
     // Create a specific model instance for this session with the system instruction
     const sessionModel = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash",
         apiVersion: "v1beta",
         systemInstruction: prompt,
         generationConfig: {

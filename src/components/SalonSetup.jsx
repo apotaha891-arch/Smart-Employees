@@ -583,29 +583,34 @@ const EntitySetup = () => {
 
             if (!configResult.success) throw new Error(configResult.error);
 
-            // 2. Sync to Agent Identity (Fix personality context)
-            if (agentId && configResult.data?.id) {
-                await updateAgent(agentId, {
-                    name: formData.businessName,
-                    specialty: formData.businessType,
-                    salon_config_id: configResult.data.id
-                });
+            // 2. Sync to ALL agents for this user (Unified Source of Truth)
+            if (configResult.data?.id) {
+                console.log("Syncing ALL agents to Master Config:", configResult.data.id);
+                const { error: syncError } = await supabase
+                    .from('agents')
+                    .update({ 
+                        salon_config_id: configResult.data.id,
+                        // We also sync the basic business info to the agent's identity for immediate context
+                        name: formData.businessName,
+                        specialty: formData.businessType
+                    })
+                    .eq('user_id', user.id);
+                
+                if (syncError) console.error("Error syncing all agents:", syncError);
             }
 
             // 3. Update Profile Extended Fields
-            // Use supabase from the service import explicitly
-            const { error: profileError } = await supabase.from('profiles').update({
+            await supabase.from('profiles').update({
                 position: formData.position || null,
                 business_type: formData.businessType || null,
                 phone: formData.phone || null,
                 business_name: formData.businessName || null
             }).eq('id', user.id);
 
-            if (profileError) {
-                console.warn("Profile update warning (safe if columns just added):", profileError);
-            }
-
-            alert(language === 'ar' ? '✅ تم تحديث بيانات المنشأة ومزامنة الموظف بنجاح!' : '✅ Business profile updated and agent synced successfully!');
+            setStatusMsg({ 
+                type: 'success', 
+                text: language === 'ar' ? '✅ تم توحيد بيانات المنشأة لجميع الموظفين بنجاح!' : '✅ Business profile unified across all agents successfully!' 
+            });
         } catch (error) {
             console.error("Profile save error:", error);
             const msg = error.message || "";
