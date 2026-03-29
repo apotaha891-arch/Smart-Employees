@@ -77,6 +77,49 @@ const Bookings = () => {
     const handleStatusChange = async (bookingId, newStatus) => {
         const result = await updateBooking(bookingId, { status: newStatus });
         if (result.success) {
+            // Send confirmation/cancellation to customer via Telegram
+            if (newStatus === 'confirmed' || newStatus === 'cancelled') {
+                const booking = bookings.find(b => b.id === bookingId);
+                
+                // Only send if booking came from Telegram (has telegram_ session_id)
+                if (booking?.session_id?.startsWith('telegram_') && booking?.agent_id) {
+                    try {
+                        const chatId = booking.session_id.replace('telegram_', '');
+                        
+                        // Get the bot token
+                        const { data: agent } = await supabase
+                            .from('agents')
+                            .select('telegram_token, user_id')
+                            .eq('id', booking.agent_id)
+                            .single();
+
+                        let botToken = agent?.telegram_token;
+                        if (!botToken && agent?.user_id) {
+                            const { data: sc } = await supabase.from('salon_configs')
+                                .select('telegram_token')
+                                .eq('user_id', agent.user_id)
+                                .order('created_at', { ascending: false })
+                                .limit(1).maybeSingle();
+                            botToken = sc?.telegram_token;
+                        }
+
+                        if (botToken && chatId) {
+                            const msg = newStatus === 'confirmed'
+                                ? `✅ تم تأكيد حجزك!\n\n📋 ${booking.service_requested}\n📅 ${booking.booking_date}\n🕐 ${booking.booking_time?.substring(0, 5)}\n\nنتطلع لخدمتك! 💜`
+                                : `❌ عذراً، تم إلغاء حجزك.\n\n📋 ${booking.service_requested}\n📅 ${booking.booking_date}\n\nيمكنك الحجز مجدداً في أي وقت.`;
+
+                            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ chat_id: chatId, text: msg })
+                            });
+                            console.log(`✅ ${newStatus} notification sent to Telegram:`, chatId);
+                        }
+                    } catch (err) {
+                        console.error('Notification error (non-blocking):', err);
+                    }
+                }
+            }
             loadBookings();
         } else {
             alert(t('failedUpdateStatus') + result.error);

@@ -167,8 +167,9 @@ serve(async (req: any) => {
             .eq('status', 'connected');
 
         const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') ?? '');
-        const currentDateStr = new Date().toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' });
-        const isoDateStr = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const isoDateStr = now.toISOString().split('T')[0];
+        const currentDateStr = `${isoDateStr} (${now.toLocaleString('en-US', { timeZone: 'Asia/Riyadh', weekday: 'long' })})`;
 
         const tools = [{
             functionDeclarations: [
@@ -181,8 +182,8 @@ serve(async (req: any) => {
                             customer_name: { type: SchemaType.STRING },
                             customer_phone: { type: SchemaType.STRING },
                             service_requested: { type: SchemaType.STRING },
-                            booking_date: { type: SchemaType.STRING },
-                            booking_time: { type: SchemaType.STRING },
+                            booking_date: { type: SchemaType.STRING, description: "MUST be Gregorian ISO format YYYY-MM-DD, e.g. 2026-03-29. NEVER use Hijri dates." },
+                            booking_time: { type: SchemaType.STRING, description: "24-hour format HH:mm:00, e.g. 14:30:00" },
                             original_time_text: { type: SchemaType.STRING }
                         },
                         required: ["customer_name", "customer_phone", "service_requested", "booking_date", "booking_time"]
@@ -214,14 +215,21 @@ serve(async (req: any) => {
 
         let systemInstruction = `
 You are a Professional Assistant at ${businessName}.
-Today's date: ${currentDateStr}
+Today's date (Gregorian): ${isoDateStr} ${currentDateStr}
 ${businessContext}${servicesText}
+
+CRITICAL DATE RULES:
+- ALWAYS use Gregorian calendar dates in YYYY-MM-DD format (e.g., ${isoDateStr}).
+- NEVER use Hijri/Islamic calendar dates.
+- If the customer says "tomorrow", calculate from today ${isoDateStr}.
+- If the customer says "بكرة" or "غداً", that means the next Gregorian day.
 
 RULES:
 1. Identify as ${businessName}.
 2. Always reply in the user's language (Arabic/English).
 3. TO BOOK: You MUST call 'book_appointment' ONLY after gathering: Name, Phone, Service, and Time.
 4. NEVER confirm a booking unless you have successfully called the tool.
+${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the customer: "تم تسجيل حجزك المبدئي بنجاح! سيصلك تأكيد نهائي قريباً." (Your preliminary booking is registered! You will receive a final confirmation soon.)` : ''}
 `;
 
         if (isSales) systemInstruction += "\nRole: Sales & Consultation Expert.";
@@ -238,12 +246,11 @@ RULES:
             .maybeSingle();
         if (sessionData?.history) chatHistory = sessionData.history;
 
-        // 6. Gemini Model Selection with Stable Fallbacks
+        // 6. Gemini Models — EXACT IDs from Google ListModels API
         const MODELS = [
-            "gemini-3.1-pro",                 // 🥇 Next-Gen Pro (Preview)
-            "gemini-3-flash",                 // 🥈 Next-Gen Flash (Preview)
-            "gemini-1.5-pro",                 // 🥉 Stable fallback (High Quality)
-            "gemini-1.5-flash",               // 🏅 Stable fallback (High Speed)
+            "gemini-3-flash-preview",         // 🥇 Gemini 3 Flash (fastest Gen3)
+            "gemini-3.1-pro-preview",         // 🥈 Gemini 3.1 Pro (smartest Gen3)
+            "gemini-2.5-flash",               // 🥉 Stable fallback
         ];
         let finalResponse: any = null;
         let chat: any = null;
@@ -283,8 +290,15 @@ RULES:
         // 8. Execute Tools
         if (callName === "book_appointment") {
             try {
-                const bookingDate = callArgs.booking_date;
-                const bookingTime = callArgs.booking_time;
+                // Sanitize date: ensure Gregorian ISO format
+                let bookingDate = callArgs.booking_date;
+                const isoRegex = /^\d{4}-\d{2}-\d{2}$/;
+                if (!isoRegex.test(bookingDate)) {
+                    // AI returned a non-ISO date (e.g., Hijri). Fallback to today.
+                    console.warn('Non-ISO date received from AI:', bookingDate, '— falling back to today');
+                    bookingDate = new Date().toISOString().split('T')[0];
+                }
+                const bookingTime = callArgs.booking_time || '12:00:00';
                 const slotStart = new Date(`${bookingDate}T${bookingTime}`);
 
                 // Check Working Hours
@@ -305,23 +319,34 @@ RULES:
                     return new Response(JSON.stringify({ success: true, text: "عذراً، هذا الوقت محجوز بالفعل." }), { headers: corsHeaders });
                 }
 
-                // Save Booking
+                // Determine booking status based on business preference
+                const requiresConfirmation = sc?.booking_requires_confirmation ?? false;
+                const bookingStatus = requiresConfirmation ? 'pending' : 'confirmed';
+                console.log('Booking mode:', requiresConfirmation ? 'REQUIRES CONFIRMATION' : 'AUTO-CONFIRM');
+
+                // Save Booking (with session_id for later notifications)
                 const { error: bErr } = await supabaseClient.from('bookings').insert([{
+                    agent_id: agentId,
                     salon_config_id: finalSalonId,
                     customer_name: callArgs.customer_name,
                     customer_phone: callArgs.customer_phone,
                     service_requested: callArgs.service_requested,
                     booking_date: bookingDate,
                     booking_time: bookingTime,
-                    status: 'confirmed',
-                    source: 'ai_agent'
+                    duration_minutes: 60,
+                    status: bookingStatus,
+                    session_id: sessionId
                 }]);
                 if (bErr) throw bErr;
+
+                const bookingResponseMsg = requiresConfirmation
+                    ? 'تم تسجيل الحجز المبدئي بنجاح. أخبر العميل: حجزك مبدئي وسيصلك تأكيد نهائي قريباً إن شاء الله.'
+                    : 'تم تأكيد الحجز بنجاح! قدم ملخصاً للموعد للعميل.';
 
                 const secondResult = await chat.sendMessage([{
                     functionResponse: {
                         name: "book_appointment",
-                        response: { status: "success" }
+                        response: { status: requiresConfirmation ? 'pending_confirmation' : 'confirmed', message: bookingResponseMsg }
                     }
                 }]);
 

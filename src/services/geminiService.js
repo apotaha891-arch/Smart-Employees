@@ -20,7 +20,7 @@ const getModel = (modelName = "gemini-3-flash") => {
     });
 };
 
-const model = getModel("gemini-3-flash"); // Strictly using Gemini 3 Flash as agreed
+const model = getModel("gemini-3-flash-preview"); // Exact API name from Google ListModels
 
 // Dictionary to store multiple chat sessions (e.g., 'agent', 'manager')
 let chatSessions = {};
@@ -35,7 +35,7 @@ export const initializeChat = (customPrompt, sessionId = 'default') => {
 
     // Create a specific model instance for this session with the system instruction
     const sessionModel = genAI.getGenerativeModel({
-        model: "gemini-3-flash",
+        model: "gemini-3-flash-preview",
         apiVersion: "v1beta",
         systemInstruction: prompt,
         generationConfig: {

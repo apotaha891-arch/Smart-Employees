@@ -109,6 +109,7 @@ const EntitySetup = () => {
         brand_voice_details: '',
         faq_data: [],
         sop_instructions: '',
+        booking_requires_confirmation: false,
     });
 
     // Services State
@@ -385,6 +386,7 @@ const EntitySetup = () => {
                         faq_data: (Array.isArray(configs.faq_data) && configs.faq_data.length > 0) ? configs.faq_data : (prev.faq_data || []),
                         sop_instructions: configs.sop_instructions || prev.sop_instructions || '',
                         knowledge_base: configs.knowledge_base || prev.knowledge_base || '',
+                        booking_requires_confirmation: configs.booking_requires_confirmation ?? prev.booking_requires_confirmation ?? false,
                     }));
                     
                     setIntegrationKeys({
@@ -578,6 +580,7 @@ const EntitySetup = () => {
                 faq_data: formData.faq_data || [],
                 sop_instructions: formData.sop_instructions || null,
                 knowledge_base: formData.knowledge_base || null,
+                booking_requires_confirmation: formData.booking_requires_confirmation || false,
                 is_active: false,
             });
 
@@ -1353,6 +1356,38 @@ const EntitySetup = () => {
                                         <textarea style={{ ...inp, minHeight: 180, border: '1px solid rgba(139, 92, 246, 0.2)', background: 'rgba(17, 24, 39, 0.4)' }} 
                                             placeholder={language === 'ar' ? 'مثال: إذا طلب العميل خصماً، قم بإبلاغه بوجود باقات التوفير...' : 'e.g. If client asks for discount, tell them about saving bundles...'} 
                                             value={formData.sop_instructions} onChange={e => setFormData({...formData, sop_instructions: e.target.value})} />
+                                    </div>
+
+                                    {/* Booking Confirmation Toggle */}
+                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <Calendar size={18} color="#F59E0B" />
+                                                <div>
+                                                    <h4 style={{ margin: 0 }}>{language === 'ar' ? 'تأكيد الحجوزات يدوياً' : 'Manual Booking Confirmation'}</h4>
+                                                    <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: '4px 0 0' }}>
+                                                        {language === 'ar' 
+                                                            ? 'عند التفعيل: الحجوزات تكون مبدئية وتحتاج تأكيدك. الموظف سيُبلغ العميل بأن الحجز مبدئي وسيصله تأكيد لاحقاً.' 
+                                                            : 'When enabled: Bookings are preliminary and need your approval. The agent will inform the customer that a confirmation will be sent.'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <label style={{ position: 'relative', display: 'inline-block', width: 50, height: 26 }}>
+                                                <input type="checkbox" checked={formData.booking_requires_confirmation} 
+                                                    onChange={e => setFormData({...formData, booking_requires_confirmation: e.target.checked})}
+                                                    style={{ opacity: 0, width: 0, height: 0 }} />
+                                                <span style={{
+                                                    position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                                    background: formData.booking_requires_confirmation ? '#F59E0B' : '#374151',
+                                                    borderRadius: 26, transition: '0.3s',
+                                                }} />
+                                                <span style={{
+                                                    position: 'absolute', height: 20, width: 20, 
+                                                    left: formData.booking_requires_confirmation ? 26 : 4, bottom: 3,
+                                                    background: 'white', borderRadius: '50%', transition: '0.3s',
+                                                }} />
+                                            </label>
+                                        </div>
                                     </div>
 
                                     <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
