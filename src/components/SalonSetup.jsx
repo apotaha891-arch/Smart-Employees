@@ -790,7 +790,7 @@ const EntitySetup = () => {
         setIntegrationSaving(true);
         try {
             const { error } = await supabase.from('custom_requests').insert([{
-                business_type: profile?.business_type || 'Unknown',
+                business_type: formData.businessType || 'Unknown',
                 required_tasks: `Integration Tool Request: ${requestToolName}\nReason: ${requestReason}`,
                 contact_name: requestContactName,
                 contact_phone: requestContactPhone,
