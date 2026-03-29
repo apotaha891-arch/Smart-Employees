@@ -629,6 +629,36 @@ export const translations = {
         failedLoadBookings: "فشل في تحميل الحجوزات: ",
         failedUpdateStatus: "فشل في تحديث الحالة: ",
         failedCancelBooking: "فشل في إلغاء الحجز: ",
+
+        // Admin Dashboard
+        admin: {
+            overview: "نظرة عامة",
+            clients: "العملاء",
+            agents: "الموظفات",
+            templates: "قوالب الموظفات",
+            bookings: "الحجوزات",
+            pricing: "الباقات والأسعار",
+            infrastructure: "البنية التحتية",
+            integrations: "الربط التقني",
+            concierge: "محادثات نورة",
+            aiSettings: "المستشارة الذكية",
+            blog: "المدونة",
+            subscribers: "المشتركين",
+            notifications: "الإشعارات",
+            endCustomers: "العملاء المسجلين",
+            loading: "جاري تحميل بيانات المنصة...",
+            logout: "تسجيل الخروج",
+            totalClients: "إجمالي العملاء",
+            totalAgents: "إجمالي الموظفات",
+            totalBookings: "إجمالي الحجوزات",
+            systemHealth: "سلامة النظام",
+            exportExcel: "تصدير Excel",
+            searchPlaceholder: "بحث...",
+            clientDetails: "تفاصيل العميل",
+            saveKeys: "حفظ المفاتيح",
+            markRead: "تحديد كمقروء",
+            noNotifications: "لا توجد إشعارات حالياً",
+        }
     },
 
     en: {
@@ -1256,5 +1286,35 @@ export const translations = {
         failedLoadBookings: "Failed to load bookings: ",
         failedUpdateStatus: "Failed to update status: ",
         failedCancelBooking: "Failed to cancel booking: ",
+
+        // Admin Dashboard
+        admin: {
+            overview: "Overview",
+            clients: "Clients",
+            agents: "Agents",
+            templates: "Agent Templates",
+            bookings: "Bookings",
+            pricing: "Plans & Pricing",
+            infrastructure: "Infrastructure",
+            integrations: "Technical Linking",
+            concierge: "Noura Chats",
+            aiSettings: "AI Consultant",
+            blog: "Blog",
+            subscribers: "Subscribers",
+            notifications: "Notifications",
+            endCustomers: "Registered Customers",
+            loading: "Loading platform data...",
+            logout: "Logout",
+            totalClients: "Total Clients",
+            totalAgents: "Total Agents",
+            totalBookings: "Total Bookings",
+            systemHealth: "System Health",
+            exportExcel: "Export Excel",
+            searchPlaceholder: "Search...",
+            clientDetails: "Client Details",
+            saveKeys: "Save Keys",
+            markRead: "Mark as Read",
+            noNotifications: "No notifications currently",
+        }
     }
 };

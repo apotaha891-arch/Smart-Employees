@@ -136,6 +136,7 @@ export default function AdminDashboard() {
     const [logs, setLogs] = useState([]);
     const [logParams, setLogParams] = useState({ category: '', level: '', limit: 50 });
     const [templates, setTemplates] = useState([]);
+    const [endCustomers, setEndCustomers] = useState([]);
     const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '👩' });
     const [showAddTemplate, setShowAddTemplate] = useState(false);
     
@@ -201,13 +202,14 @@ export default function AdminDashboard() {
         setLoading(true);
         try {
             // Use allSettled so one failing RPC doesn't crash the whole load
-            const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes] = await Promise.allSettled([
+            const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes, endCustRes] = await Promise.allSettled([
                 adminService.getAllCustomers(),
                 adminService.getAllAgents(),
                 adminService.getAllBookings(),
                 adminService.getAllSalonConfigs(),
                 adminService.getAllConciergeConversations(),
-                adminService.getAllNotifications()
+                adminService.getAllNotifications(),
+                adminService.getAllEndCustomers()
             ]);
 
             const profiles = profilesRes.status === 'fulfilled' ? profilesRes.value : [];
@@ -216,6 +218,7 @@ export default function AdminDashboard() {
             const keyData  = keyRes.status === 'fulfilled'      ? keyRes.value      : [];
             const chats    = chatsRes.status === 'fulfilled'    ? chatsRes.value    : [];
             const notifs   = notifsRes.status === 'fulfilled'   ? notifsRes.value   : [];
+            const endCust  = endCustRes.status === 'fulfilled'  ? endCustRes.value  : [];
 
             // Merge Profile + SalonConfig data
             const clientMap = {};
@@ -232,6 +235,7 @@ export default function AdminDashboard() {
             setBookings(bk || []);
             setConciergeChats(chats || []);
             setNotifications(notifs || []);
+            setEndCustomers(endCust || []);
 
             // Platform settings & Dynamic Configs (runs regardless of above)
             const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.all([
@@ -488,70 +492,85 @@ export default function AdminDashboard() {
     const unreadChats = notifications.filter(n => !n.is_read && n.type === 'new_chat').length;
 
     const NAV = [
-        { id: 'overview', i: LayoutDashboard, l: 'نظرة عامة' },
-        { id: 'clients', i: Users, l: 'العملاء' },
-        { id: 'agents', i: Bot, l: 'الموظفات' },
-        { id: 'interview-agents', i: Users, l: 'قوالب الموظفات' },
-        { id: 'bookings', i: Calendar, l: 'الحجوزات' },
-        { id: 'pricing', i: CreditCard, l: 'الباقات والأسعار' },
-        { id: 'infrastructure', i: Globe, l: 'البنية التحتية' },
-        { id: 'integrations', i: LinkIcon, l: 'الربط التقني' },
-        { id: 'concierge-chats', i: MessageSquare, l: 'محادثات نورة', badge: unreadChats },
-        { id: 'ai-settings', i: Bot, l: 'المستشارة الذكية' },
-        { id: 'blog', i: Newspaper, l: 'المدونة' },
-        { id: 'subscribers', i: Mail, l: 'المشتركين' },
+        { id: 'overview', i: LayoutDashboard, l: t('admin.overview') },
+        { id: 'clients', i: Users, l: t('admin.clients') },
+        { id: 'end-customers', i: Users, l: t('admin.endCustomers') },
+        { id: 'agents', i: Bot, l: t('admin.agents') },
+        { id: 'interview-agents', i: Users, l: t('admin.templates') },
+        { id: 'bookings', i: Calendar, l: t('admin.bookings') },
+        { id: 'pricing', i: CreditCard, l: t('admin.pricing') },
+        { id: 'integrations', i: LinkIcon, l: t('admin.integrations') },
+        { id: 'notifications', i: Bell, l: t('admin.notifications'), badge: notifications.filter(n => !n.is_read).length },
+        { id: 'concierge-chats', i: MessageSquare, l: t('admin.concierge'), badge: unreadChats },
+        { id: 'ai-settings', i: Bot, l: t('admin.aiSettings') },
+        { id: 'blog', i: Newspaper, l: t('admin.blog') },
+        { id: 'subscribers', i: Mail, l: t('admin.subscribers') },
     ];
 
-    if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />جاري تحميل بيانات المنصة...</div>;
+    if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />{t('admin.loading')}</div>;
+
+    const isRtl = !isEnglish;
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#070B14', direction: 'rtl', color: '#E4E4E7', fontFamily: "'Inter','Tajawal',sans-serif" }}>
+        <div style={{ display: 'flex', minHeight: '100vh', background: '#070B14', direction: isRtl ? 'rtl' : 'ltr', color: '#E4E4E7', fontFamily: "'Inter','Tajawal',sans-serif" }}>
             {/* Flash message */}
             {msg && <div style={{ position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', background: '#1F2937', border: '1px solid #374151', color: 'white', padding: '10px 20px', borderRadius: '10px', zIndex: 9999, fontWeight: 600, fontSize: '0.9rem' }}>{msg}</div>}
 
             {/* Sidebar */}
-            <aside style={{ width: '230px', background: '#0D1117', borderLeft: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', position: 'fixed', height: '100vh', right: 0, zIndex: 50 }}>
+            <aside style={{ 
+                width: '230px', 
+                background: '#0D1117', 
+                borderLeft: isRtl ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                borderRight: !isRtl ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                display: 'flex', 
+                flexDirection: 'column', 
+                position: 'fixed', 
+                height: '100vh', 
+                right: isRtl ? 0 : 'auto',
+                left: !isRtl ? 0 : 'auto', 
+                zIndex: 50 
+            }}>
                 <div style={{ padding: '1.1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '9px' }}>
                     <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg,#10B981,#3B82F6)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.8rem' }}>24</div>
-                    <div><div style={{ fontWeight: 900, fontSize: '0.95rem', background: 'linear-gradient(90deg,#fff,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>24Shift</div>
+                    <div><div style={{ fontWeight: 900, fontSize: '0.95rem', background: 'linear-gradient(90deg,#fff,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{t('brand.name')}</div>
                         <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 700 }}>⚡ ADMIN</div></div>
                 </div>
                 <nav style={{ flex: 1, padding: '0.6rem', overflowY: 'auto' }}>
                     {NAV.map(({ id, i: Icon, l, badge }) => {
                         const a = tab === id; return (
-                            <button key={id} onClick={() => { setTab(id); if (id === 'concierge-chats') notifications.filter(n => !n.is_read && n.type === 'new_chat').forEach(n => adminService.markNotificationAsRead(n.id)); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '9px', padding: '9px 11px', borderRadius: '8px', background: a ? 'rgba(139,92,246,0.12)' : 'transparent', color: a ? '#A78BFA' : '#6B7280', border: 'none', cursor: 'pointer', fontWeight: a ? 700 : 400, fontSize: '0.84rem', marginBottom: '2px', borderRight: a ? '3px solid #8B5CF6' : '3px solid transparent', transition: 'all 0.15s', position: 'relative' }}>
+                            <button key={id} onClick={() => { setTab(id); if (id === 'concierge-chats' || id === 'notifications') notifications.filter(n => !n.is_read).forEach(n => adminService.markNotificationAsRead(n.id)); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '9px', padding: '9px 11px', borderRadius: '8px', background: a ? 'rgba(139,92,246,0.12)' : 'transparent', color: a ? '#A78BFA' : '#6B7280', border: 'none', cursor: 'pointer', fontWeight: a ? 700 : 400, fontSize: '0.84rem', marginBottom: '2px', borderRight: (isRtl && a) ? '3px solid #8B5CF6' : '3px solid transparent', borderLeft: (!isRtl && a) ? '3px solid #8B5CF6' : '3px solid transparent', transition: 'all 0.15s', position: 'relative', textAlign: isRtl ? 'right' : 'left' }}>
                                 <Icon size={16} />
                                 <span>{l}</span>
-                                {badge > 0 && <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', background: '#EF4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>{badge}</span>}
+                                {badge > 0 && <span style={{ position: 'absolute', left: isRtl ? '10px' : 'auto', right: !isRtl ? '10px' : 'auto', top: '50%', transform: 'translateY(-50%)', background: '#EF4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>{badge}</span>}
                             </button>
                         );
                     })}
                 </nav>
                 <div style={{ padding: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                    <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 11px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: 'none', cursor: 'pointer', fontSize: '0.83rem' }}>
-                        <LogOut size={14} />تسجيل الخروج
+                    <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 11px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: 'none', cursor: 'pointer', fontSize: '0.83rem', textAlign: isRtl ? 'right' : 'left' }}>
+                        <LogOut size={14} />{t('admin.logout')}
                     </button>
                 </div>
             </aside>
 
             {/* Content */}
-            <main style={{ flex: 1, marginRight: '230px', padding: '1.75rem 2rem', overflowX: 'hidden', minWidth: 0 }}>
+            <main style={{ flex: 1, marginRight: isRtl ? '230px' : 0, marginLeft: !isRtl ? '230px' : 0, padding: '1.75rem 2rem', overflowX: 'hidden', minWidth: 0 }}>
 
                 {/* ── OVERVIEW ── */}
                 {tab === 'overview' && <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>لوحة القيادة</h1>
-                    <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.85rem' }}>نظرة شاملة على أداء منصة 24Shift</p>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>{t('admin.overview')}</h1>
+                    <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.85rem' }}>{isEnglish ? 'Comprehensive overview of 24Shift performance' : 'نظرة شاملة على أداء منصة 24Shift'}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(175px,1fr))', gap: '0.9rem', marginBottom: '1.75rem' }}>
-                        <StatCard icon={Users} label="إجمالي العملاء" value={clients.length} color="#10B981" sub={`+${clients.filter(c => new Date(c.created_at) > new Date(Date.now() - 30 * 24 * 3600 * 1000)).length} عملاء جدد`} />
-                        <StatCard icon={Bot} label="موظفات نشطة" value={agents.filter(a => a.status === 'active').length} color="#8B5CF6" />
-                        <StatCard icon={Calendar} label="حجوزات معلقة" value={bookings.filter(b => b.status === 'pending').length} color="#F59E0B" sub="تحتاج مراجعة" />
+                        <StatCard icon={Users} label={t('admin.totalClients')} value={clients.length} color="#10B981" sub={`+${clients.filter(c => new Date(c.created_at) > new Date(Date.now() - 30 * 24 * 3600 * 1000)).length} ${isEnglish ? 'new clients' : 'عملاء جدد'}`} />
+                        <StatCard icon={Bot} label={isEnglish ? 'Active Agents' : 'موظفات نشطة'} value={agents.filter(a => a.status === 'active').length} color="#8B5CF6" />
+                        <StatCard icon={Calendar} label={isEnglish ? 'Pending Bookings' : 'حجوزات معلقة'} value={bookings.filter(b => b.status === 'pending').length} color="#F59E0B" sub={isEnglish ? 'Requires review' : 'تحتاج مراجعة'} />
                         {(() => {
                             const avgPrice = pricing.find(p => p.id === 'pro')?.monthlyPrice || 69;
                             const estRev = clients.length * avgPrice;
-                            return <StatCard icon={TrendingUp} label="إيراد متوقع" value={`${estRev.toLocaleString()} $`} color="#3B82F6" sub="شهري تقديري" />;
+                            return <StatCard icon={TrendingUp} label={isEnglish ? 'Estimated Revenue' : 'إيراد متوقع'} value={`${estRev.toLocaleString()} $`} color="#3B82F6" sub={isEnglish ? 'Monthly Est.' : 'شهري تقديري'} />;
                         })()}
                     </div>
-                    <h3 style={{ color: 'white', marginBottom: '0.9rem', fontSize: '0.9rem', fontWeight: 700 }}>توزيع العملاء بالقطاعات</h3>
+                    <h3 style={{ color: 'white', marginBottom: '0.9rem', fontSize: '0.9rem', fontWeight: 700 }}>{isEnglish ? 'Client Sector Distribution' : 'توزيع العملاء بالقطاعات'}</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: '0.75rem' }}>
                         {Object.entries(sectors).map(([k, v]) => {
                             // Normalize business_type to sector key
@@ -582,12 +601,12 @@ export default function AdminDashboard() {
                 {/* ── CLIENTS ── */}
                 {tab === 'clients' && <div style={{ display: 'flex', gap: '1.25rem' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>العملاء</h1>
-                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{filteredClients.length} عميل مطابق</p>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>{t('admin.clients')}</h1>
+                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{filteredClients.length} {isEnglish ? 'clients matched' : 'عميل مطابق'}</p>
                         
                         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                             <select value={cFilter} onChange={e => setCFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
-                                <option value="">كل العملاء</option>
+                                <option value="">{isEnglish ? 'All Clients' : 'كل العملاء'}</option>
                                 {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
                             </select>
                             <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
@@ -596,9 +615,9 @@ export default function AdminDashboard() {
                             </div>
                             <Btn onClick={() => handleExport(filteredClients, 'clients')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />تصدير Excel</Btn>
                         </div>
-                        <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                        <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
                             <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                {['العميل', 'القطاع', 'الموظفات', 'الاشتراك', 'تفاصيل'].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                                {[t('admin.clients'), t('home.sectorTitle'), t('admin.agents'), t('nav.pricing'), t('admin.clientDetails')].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
                             </tr></thead>
                             <tbody>
                                 {filteredClients.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد عملاء مطابقين للبحث</td></tr>
@@ -618,8 +637,8 @@ export default function AdminDashboard() {
                                                 {Object.entries(PLANS).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
                                             </select></td>
                                             <td style={{ padding: '0.75rem 0.9rem', display: 'flex', gap: '6px' }}>
-                                                <button onClick={() => setSelClient(selClient?.id === c.id ? null : c)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px' }}><Eye size={12} />عرض</button>
-                                                <button onClick={() => remoteLogin(c.email)} disabled={saving} style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px', opacity: saving ? 0.5 : 1 }}><LogOut size={12} style={{ transform: 'rotate(180deg)' }} />دعم المالك</button>
+                                                <button onClick={() => setSelClient(selClient?.id === c.id ? null : c)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px' }}><Eye size={12} />{isEnglish ? 'View' : 'عرض'}</button>
+                                                <button onClick={() => remoteLogin(c.email)} disabled={saving} style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px', opacity: saving ? 0.5 : 1 }}><LogOut size={12} style={{ transform: isRtl ? 'rotate(180deg)' : 'none' }} />{isEnglish ? 'Support Login' : 'دعم المالك'}</button>
                                             </td>
                                         </tr>;
                                     })}
@@ -629,7 +648,7 @@ export default function AdminDashboard() {
                     {/* Client panel */}
                     {selClient && <div style={{ width: '300px', flexShrink: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
-                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.95rem' }}>🔍 تفاصيل العميل</div>
+                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.95rem' }}>🔍 {t('admin.clientDetails')}</div>
                             <button onClick={() => setSelClient(null)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }}><X size={16} /></button>
                         </div>
                         <Card s={{ marginBottom: '0.75rem' }} c={<>
@@ -651,62 +670,108 @@ export default function AdminDashboard() {
                                 <span style={{ background: sc.bg, color: sc.t, padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{sc.l}</span>
                             </>} />;
                         })}
-                        <div style={{ color: '#9CA3AF', fontSize: '0.73rem', fontWeight: 600, marginTop: '0.7rem', marginBottom: '5px' }}>🔑 مفاتيح الربط</div>
+                        <div style={{ color: '#9CA3AF', fontSize: '0.73rem', fontWeight: 600, marginTop: '0.7rem', marginBottom: '5px' }}>🔑 {isEnglish ? 'Integration Keys' : 'مفاتيح الربط'}</div>
                         <Card c={<>
-                            {[['telegram_token', 'Telegram Token'], ['whatsapp_number', 'رقم WhatsApp'], ['whatsapp_api_key', 'WhatsApp Key']].map(([f, l]) => <div key={f} style={{ marginBottom: '0.6rem' }}>
+                            {[['telegram_token', 'Telegram Token'], ['whatsapp_number', isEnglish ? 'WhatsApp Number' : 'رقم WhatsApp'], ['whatsapp_api_key', 'WhatsApp Key']].map(([f, l]) => <div key={f} style={{ marginBottom: '0.6rem' }}>
                                 <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '3px' }}>{l}</label>
                                 <Input type={f.includes('token') || f.includes('key') ? 'password' : 'text'} value={clientKeys[selClient.id]?.[f] || ''} placeholder="—" onChange={e => setClientKeys(p => ({ ...p, [selClient.id]: { ...(p[selClient.id] || {}), [f]: e.target.value } }))} />
                             </div>)}
-                            <Btn onClick={() => saveClientKey(selClient.id)} style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}><Key size={13} />حفظ المفاتيح</Btn>
+                            <Btn onClick={() => saveClientKey(selClient.id)} style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}><Key size={13} />{t('admin.saveKeys')}</Btn>
                         </>} />
                     </div>}
+                </div>}
+
+                {/* ── END CUSTOMERS (Total Database) ── */}
+                {tab === 'end-customers' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>{t('admin.endCustomers')}</h1>
+                    <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{endCustomers.length} {isEnglish ? 'total registered customers' : 'إجمالي العملاء المسجلين'}</p>
+                    
+                    <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
+                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            {['ID', t('fullName'), t('phoneLabel'), 'Instagram', 'Telegram', t('lastUpdate')].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                        </tr></thead>
+                        <tbody>
+                            {endCustomers.length === 0 ? <tr><td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>{isEnglish ? 'No customers found' : 'لا يوجد زبائن مسجلين'}</td></tr>
+                                : endCustomers.map(c => (
+                                    <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.65rem' }}>{c.id.slice(0, 8)}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'white', fontWeight: 600 }}>{c.customer_name || '—'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF' }}>{c.customer_phone || '—'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF' }}>{c.instagram_id || '—'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF' }}>{c.telegram_id || '—'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(c.updated_at).toLocaleDateString(isEnglish ? 'en-US' : 'ar-EG')}</td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>} />
+                </div>}
+
+                {/* ── NOTIFICATIONS ── */}
+                {tab === 'notifications' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 1.25rem' }}>{t('admin.notifications')}</h1>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {notifications.length === 0 ? <Card c={<div style={{ textAlign: 'center', color: '#6B7280', padding: '2rem' }}>{t('admin.noNotifications')}</div>} />
+                        : notifications.map(n => (
+                            <Card key={n.id} s={{ background: n.is_read ? '#111827' : 'rgba(139,92,246,0.08)', borderLeft: n.is_read ? '1px solid rgba(255,255,255,0.06)' : '4px solid #8B5CF6' }} c={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={18} color={n.is_read ? '#6B7280' : '#8B5CF6'} /></div>
+                                    <div>
+                                        <div style={{ fontWeight: 700, color: 'white', fontSize: '0.9rem' }}>{n.title}</div>
+                                        <div style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>{n.message}</div>
+                                        <div style={{ color: '#6B7280', fontSize: '0.7rem', marginTop: '4px' }}>{new Date(n.created_at).toLocaleString(isEnglish ? 'en-US' : 'ar-EG')}</div>
+                                    </div>
+                                </div>
+                                {!n.is_read && <button onClick={() => adminService.markNotificationAsRead(n.id).then(() => setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x)))} style={{ background: 'none', border: 'none', color: '#8B5CF6', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>{t('admin.markRead')}</button>}
+                            </div>} />
+                        ))}
+                    </div>
                 </div>}
 
                 {/* ── AGENTS ── */}
                 {tab === 'agents' && <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                        <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>الموظفات</h1>
-                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>{filteredAgents.length} موظفة مطابقة</p></div>
+                        <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>{t('admin.agents')}</h1>
+                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>{filteredAgents.length} {isEnglish ? 'matching agents' : 'موظفة مطابقة'}</p></div>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                            <Btn onClick={() => handleExport(filteredAgents, 'agents')} color="#10B981"><Download size={14} />تصدير</Btn>
-                            <Btn onClick={() => setShowAddAgent(!showAddAgent)}><Plus size={15} />إضافة موظفة</Btn>
+                            <Btn onClick={() => handleExport(filteredAgents, 'agents')} color="#10B981"><Download size={14} />{isEnglish ? 'Export' : 'تصدير'}</Btn>
+                            <Btn onClick={() => setShowAddAgent(!showAddAgent)}><Plus size={15} />{isEnglish ? 'Add Agent' : 'إضافة موظفة'}</Btn>
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
                         <select value={aFilter} onChange={e => setAFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', padding: '9px 11px', fontSize: '0.85rem', minWidth: '200px' }}>
-                            <option value="">كل العملاء ({agents.length})</option>
+                            <option value="">{isEnglish ? 'All Clients' : 'كل العملاء'} ({agents.length})</option>
                             {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email} ({cl(c.id).length})</option>)}
                         </select>
                         <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
-                            <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
-                            <input value={aSearch} onChange={e => setASearch(e.target.value)} placeholder="بحث باسم الموظفة أو المالك..." style={{ width: '100%', padding: '9px 30px 9px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', fontSize: '0.85rem' }} />
+                            <Search size={14} style={{ position: 'absolute', [isRtl ? 'right' : 'left']: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                            <input value={aSearch} onChange={e => setASearch(e.target.value)} placeholder={isEnglish ? 'Search agent or owner...' : 'بحث باسم الموظفة أو المالك...'} style={{ width: '100%', padding: isRtl ? '9px 30px 9px 10px' : '9px 10px 9px 30px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', fontSize: '0.85rem' }} />
                         </div>
                     </div>
 
                     {/* Add agent form */}
                     {showAddAgent && <Card s={{ marginBottom: '1.25rem', border: '1px solid rgba(139,92,246,0.3)' }} c={<div>
-                        <div style={{ fontWeight: 700, color: '#A78BFA', marginBottom: '1rem', fontSize: '0.9rem' }}>➕ إضافة موظفة جديدة</div>
+                        <div style={{ fontWeight: 700, color: '#A78BFA', marginBottom: '1rem', fontSize: '0.9rem' }}>➕ {isEnglish ? 'Register New Digital Agent' : 'تسجيل موظفة جديدة'}</div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>اسم الموظفة *</label>
-                                <Input value={newAgent.name} onChange={e => setNewAgent(p => ({ ...p, name: e.target.value }))} placeholder="مثال: سارة" /></div>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>التخصص</label>
+                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{isEnglish ? 'Agent Name *' : 'اسم الموظفة *'}</label>
+                                <Input value={newAgent.name} onChange={e => setNewAgent(p => ({ ...p, name: e.target.value }))} placeholder={isEnglish ? 'e.g. Sarah' : 'مثال: سارة'} /></div>
+                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{t('specialtyLabel')}</label>
                                 <select value={newAgent.specialty} onChange={e => setNewAgent(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem' }}>
-                                    {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
+                                    {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{isEnglish ? k.toUpperCase() : v.l}</option>)}
                                 </select></div>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>القطاع</label>
+                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{t('home.sectorTitle')}</label>
                                 <select value={newAgent.business_type} onChange={e => setNewAgent(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem' }}>
-                                    {Object.entries(sectors).map(([k, v]) => <option key={k} value={k}>{v.e} {v.l}</option>)}
+                                    {Object.entries(sectors).map(([k, v]) => <option key={k} value={k}>{v.e} {isEnglish ? k.toUpperCase() : v.l}</option>)}
                                 </select></div>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>أسند للعميل *</label>
+                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{isEnglish ? 'Assign to Client *' : 'أسند للعميل *'}</label>
                                 <select value={newAgent.user_id} onChange={e => setNewAgent(p => ({ ...p, user_id: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem' }}>
-                                    <option value="">اختر عميل...</option>
+                                    <option value="">{isEnglish ? 'Select client...' : 'اختر عميل...'}</option>
                                     {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
                                 </select></div>
                         </div>
                         <div style={{ display: 'flex', gap: '0.6rem' }}>
-                            <Btn onClick={addAgent}><Check size={14} />إنشاء الموظفة</Btn>
-                            <button onClick={() => setShowAddAgent(false)} style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.83rem' }}>إلغاء</button>
+                            <Btn onClick={addAgent}><Check size={14} />{isEnglish ? 'Create Agent' : 'إنشاء الموظفة'}</Btn>
+                            <button onClick={() => setShowAddAgent(false)} style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.83rem' }}>{t('templates.cancelBtn')}</button>
                         </div>
                     </div>} />}
 

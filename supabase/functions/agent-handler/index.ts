@@ -339,6 +339,13 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 }]);
                 if (bErr) throw bErr;
 
+                // Also upsert to 'customers' table to ensure visibility in Admin Dashboard
+                await supabaseClient.from('customers').upsert({
+                    customer_name: callArgs.customer_name,
+                    customer_phone: callArgs.customer_phone,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'customer_phone' });
+
                 const bookingResponseMsg = requiresConfirmation
                     ? 'تم تسجيل الحجز المبدئي بنجاح. أخبر العميل: حجزك مبدئي وسيصلك تأكيد نهائي قريباً إن شاء الله.'
                     : 'تم تأكيد الحجز بنجاح! قدم ملخصاً للموعد للعميل.';

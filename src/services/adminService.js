@@ -28,6 +28,23 @@ export const getAllCustomers = async () => {
     }));
 };
 
+export const getAllEndCustomers = async () => {
+    // End customers are people who booked or interacted with agents
+    // Try admin RPC first
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('get_admin_end_customers');
+    if (!rpcErr && rpcData) return rpcData;
+
+    console.warn('get_admin_end_customers RPC failed, using fallback:', rpcErr?.message);
+    // Fallback: direct table access (works if user is authorized as admin)
+    const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .order('created_at', { ascending: false });
+    
+    if (error) console.error('Error fetching end customers:', error.message);
+    return data || [];
+};
+
 export const getAllAgents = async () => {
     const { data, error } = await supabase.rpc('get_admin_agents');
     if (!error && data) return data;
