@@ -37,7 +37,8 @@ export const getAllEndCustomers = async () => {
     const { data, error } = await supabase
         .from('customers')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .limit(300);
     
     if (error) console.error('Error fetching end customers:', error.message);
     return data || [];

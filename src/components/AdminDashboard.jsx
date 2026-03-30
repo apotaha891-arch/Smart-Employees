@@ -196,14 +196,32 @@ export default function AdminDashboard() {
     const [showAddAgent, setShowAddAgent] = useState(false);
     const [newAgent, setNewAgent] = useState({ name: '', specialty: 'booking', business_type: 'telecom_it', user_id: '' });
     const [agentApps, setAgentApps] = useState({}); // {agentId: {appId: bool}}
+    const [loadProgress, setLoadProgress] = useState({ clients: 0, agents: 0, bookings: 0, chats: 0 });
 
     useEffect(() => { load(); }, []);
 
     const load = async () => {
         setLoading(true);
-        console.log("AdminDashboard: Starting full data load...");
+        console.log("AdminDashboard: Starting optimized data load...");
         try {
-            // Use allSettled so one failing RPC doesn't crash the whole load
+            // Priority 1: Meta-data & Configs (Fastest)
+            const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.allSettled([
+                adminService.getPlatformSettings('pricing_plans'),
+                adminService.getPlatformSettings('external_integrations'),
+                adminService.getPlatformSettings('system_sectors'),
+                adminService.getPlatformSettings('system_roles'),
+                adminService.getPlatformSettings('system_agent_apps'),
+                adminService.getPlatformSettings('manager_ai_config'),
+            ]).then(res => res.map(r => r.status === 'fulfilled' ? r.value : null));
+
+            setPricing(plans || []);
+            setIntegrations(integ || []);
+            if (dbSectors) setSectors(dbSectors);
+            if (dbRoles) setRoles(dbRoles);
+            if (dbApps) setAgentAppsConfig(dbApps);
+            if (dbAiConfig) setAiConfig(dbAiConfig);
+
+            // Priority 2: Core Business Data (Larger)
             const results = await Promise.allSettled([
                 adminService.getAllCustomers(),
                 adminService.getAllAgents(),
@@ -217,15 +235,6 @@ export default function AdminDashboard() {
 
             const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes, endCustRes, custReqRes] = results;
 
-            // Debug logging
-            results.forEach((res, i) => {
-                if (res.status === 'rejected') console.error(`Fetch ${i} failed:`, res.reason);
-            });
-
-            if (profilesRes.status === 'rejected') {
-                flash('❌ فشل جلب بيانات العملاء: ' + profilesRes.reason.message);
-            }
-
             const profiles = profilesRes.status === 'fulfilled' ? profilesRes.value : [];
             const ag       = agRes.status === 'fulfilled'       ? agRes.value       : [];
             const bk       = bkRes.status === 'fulfilled'       ? bkRes.value       : [];
@@ -235,12 +244,17 @@ export default function AdminDashboard() {
             const endCust  = endCustRes.status === 'fulfilled'  ? endCustRes.value  : [];
             const custReq  = custReqRes.status === 'fulfilled'  ? custReqRes.value  : [];
 
-            console.log(`AdminDashboard: Loaded ${profiles.length} profiles, ${ag.length} agents, ${bk.length} bookings, ${custReq.length} requests`);
+            setLoadProgress({ 
+                clients: profiles.length, 
+                agents: ag.length, 
+                bookings: bk.length, 
+                chats: chats.length 
+            });
 
             // Merge Profile + SalonConfig data
             const clientMap = {};
             (profiles || []).forEach(p => {
-                const uid = p.id || p.user_id; // Support both naming conventions
+                const uid = p.id || p.user_id;
                 if (!uid) return;
                 clientMap[uid] = { 
                     ...p, 
@@ -250,13 +264,10 @@ export default function AdminDashboard() {
                 };
             });
             (keyData || []).forEach(k => {
-                if (clientMap[k.user_id]) {
-                    clientMap[k.user_id] = { ...clientMap[k.user_id], salonConfigId: k.id };
-                }
+                if (clientMap[k.user_id]) clientMap[k.user_id] = { ...clientMap[k.user_id], salonConfigId: k.id };
             });
             
-            const clientList = Object.values(clientMap);
-            setClients(clientList);
+            setClients(Object.values(clientMap));
             setAgents(ag || []);
             setBookings(bk || []);
             setConciergeChats(chats || []);
@@ -264,34 +275,7 @@ export default function AdminDashboard() {
             setEndCustomers(endCust || []);
             setCustomRequests(custReq || []);
 
-            // Platform settings & Dynamic Configs
-            const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.allSettled([
-                adminService.getPlatformSettings('pricing_plans'),
-                adminService.getPlatformSettings('external_integrations'),
-                adminService.getPlatformSettings('system_sectors'),
-                adminService.getPlatformSettings('system_roles'),
-                adminService.getPlatformSettings('system_agent_apps'),
-                adminService.getPlatformSettings('manager_ai_config'),
-            ]).then(res => res.map(r => r.status === 'fulfilled' ? r.value : null));
-            
-            setPricing(plans || [
-                { id: 'starter', name: 'الباقة الأساسية', monthlyPrice: 39, yearlyPrice: 31, trialPrice: 20, credits: 2000, agentsLimit: 1, toolsLimit: 2 },
-                { id: 'pro', name: 'الباقة المتقدمة', monthlyPrice: 69, yearlyPrice: 55, trialPrice: 45, credits: 5000, agentsLimit: 2, toolsLimit: 3 },
-                { id: 'enterprise', name: 'باقة النخبة', monthlyPrice: 199, yearlyPrice: 159, trialPrice: 0, credits: 99999, agentsLimit: 10, toolsLimit: 10 },
-                { id: 'addon_1k', name: 'شحن 1000 نقطة', monthlyPrice: 10, credits: 1000 },
-                { id: 'addon_5k', name: 'شحن 5000 نقطة', monthlyPrice: 35, credits: 5000 }
-            ]);
-            setIntegrations(integ || [
-                { id: 'n8n', name: 'n8n Webhook', url: '', key: '', status: 'Disconnected' },
-                { id: 'openai', name: 'OpenAI API', url: '', key: '', status: 'Disconnected' },
-                { id: 'telegram', name: 'Telegram Platform Bot', url: '', key: '', status: 'Disconnected' }
-            ]);
-
-            if (dbSectors) setSectors(dbSectors);
-            if (dbRoles) setRoles(dbRoles);
-            if (dbApps) setAgentAppsConfig(dbApps);
-            if (dbAiConfig) setAiConfig(dbAiConfig);
-
+            // Setup keys & apps mapping
             const kmap = {};
             (keyData || []).forEach(k => { kmap[k.user_id] = { telegram_token: k.telegram_token || '', whatsapp_number: k.whatsapp_number || '', whatsapp_api_key: k.whatsapp_api_key || '' }; });
             setClientKeys(kmap);
@@ -313,7 +297,7 @@ export default function AdminDashboard() {
             adminService.logSystemEvent('info', 'system', 'Admin dashboard loaded successfully');
         } catch (e) {
             console.error('Admin load fatal error:', e);
-            flash('❌ خطأ فادح في التحميل: ' + e.message);
+            flash('❌ خطأ في التحميل: ' + e.message);
         }
         setLoading(false);
     };
