@@ -22,7 +22,7 @@ serve(async (req) => {
         console.log(`Webhook Verification Attempt: mode=${mode}, token=${token}`);
 
         // We use a fixed verify token or check it against Env
-        const verifyToken = Deno.env.get('FB_VERIFY_TOKEN') || '24shift_instagram_verify';
+        const verifyToken = Deno.env.get('IG_VERIFY_TOKEN') || '24shift_instagram_verify';
 
         if (mode === 'subscribe' && token === verifyToken) {
             console.log('Instagram Webhook Verified Successfully ✅');

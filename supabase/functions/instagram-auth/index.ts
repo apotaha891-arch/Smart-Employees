@@ -13,8 +13,8 @@ serve(async (req: Request) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    const fbAppId = Deno.env.get('FB_APP_ID');
-    const fbAppSecret = Deno.env.get('FB_APP_SECRET');
+    const fbAppId = Deno.env.get('IG_APP_ID');
+    const fbAppSecret = Deno.env.get('IG_APP_SECRET');
 
     const url = new URL(req.url);
     const path = url.pathname.split('/').pop();
