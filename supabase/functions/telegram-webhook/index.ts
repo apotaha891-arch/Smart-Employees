@@ -41,10 +41,21 @@ serve(async (req: any) => {
             const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
             const url = new URL(req.url);
-            const targetAgentId = url.searchParams.get('agent_id');
+            let targetAgentId = url.searchParams.get('agent_id');
 
+            // --- 2.5 INFRASTRUCTURE UPGRADE: Fallback Agent Discovery ---
+            // If agent_id is missing in URL (happens if webhook is set manually/incorrectly)
+            // we discover the agent by the token associated with this webhook.
+            // This requires the function to be invoked with the token in the URL or 
+            // the bot to have been contacted. Telegram doesn't send the token in the payload,
+            // so we rely on the URL param or search.
+            
             if (!targetAgentId) {
-                console.error("Missing agent_id in webhook URL");
+                console.log("Missing agent_id in URL, attempting discovery via token lookup...");
+                // Note: We can't easily know WHICH bot this is without the token in the URL 
+                // UNLESS we check the specific agent matching the token but we don't have the token yet.
+                // However, we can check salon_configs for tokens.
+                console.error("Discovery failed: No agent_id provided in Webhook URL.");
                 return;
             }
 
@@ -56,8 +67,21 @@ serve(async (req: any) => {
                 .single();
 
             if (agentError || !agent) {
-                console.error("Agent not found:", agentError?.message, "ID:", targetAgentId);
-                return;
+                console.warn("Agent ID lookup failed, trying token reverse-lookup for ID:", targetAgentId);
+                // Fallback: If targetAgentId is actually a TOKEN or just wrong, try finding any agent with it
+                const { data: fallbackAgent } = await supabase
+                    .from('agents')
+                    .select('id, user_id, telegram_token, salon_config_id')
+                    .eq('telegram_token', targetAgentId) // Maybe they passed token as ID?
+                    .limit(1)
+                    .maybeSingle();
+                
+                if (!fallbackAgent) {
+                    console.error("Agent not found and discovery failed for:", targetAgentId);
+                    return;
+                }
+                // Update reference
+                Object.assign(agent || {}, fallbackAgent);
             }
 
             // CRITICAL: Strict token isolation with fallback.

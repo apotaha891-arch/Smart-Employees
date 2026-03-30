@@ -465,9 +465,48 @@ export default function AdminDashboard() {
     };
     const savePlatformInteg = async () => { setSaving(true); await adminService.updatePlatformSettings('external_integrations', integrations); setSaving(false); flash('✅ تم الحفظ'); };
     const saveClientKey = async (uid) => {
+        setSaving(true);
         const k = clientKeys[uid] || {};
-        const { error } = await supabase.from('salon_configs').update({ telegram_token: k.telegram_token || null, whatsapp_number: k.whatsapp_number || null, whatsapp_api_key: k.whatsapp_api_key || null }).eq('user_id', uid);
-        flash(error ? '❌ خطأ في الحفظ' : '✅ تم حفظ مفاتيح العميل');
+        const { data: config, error } = await supabase.from('salon_configs').update({ 
+            telegram_token: k.telegram_token || null, 
+            whatsapp_number: k.whatsapp_number || null, 
+            whatsapp_api_key: k.whatsapp_api_key || null 
+        }).eq('user_id', uid).select('id').single();
+
+        if (error) {
+            flash('❌ خطأ في الحفظ: ' + error.message);
+            setSaving(false);
+            return;
+        }
+
+        // --- 🔑 Automated Telegram Webhook Setup for Admins ---
+        if (k.telegram_token) {
+            try {
+                // Find first active agent for this user to link the bot
+                const { data: ag } = await supabase.from('agents').select('id').eq('user_id', uid).limit(1).maybeSingle();
+                
+                if (ag) {
+                    const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-webhook?agent_id=${ag.id}`;
+                    console.log('Admin setting webhook:', webhookUrl);
+                    const tgRes = await fetch(`https://api.telegram.org/bot${k.telegram_token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`);
+                    const tgData = await tgRes.json();
+                    
+                    if (tgData.ok) {
+                        flash('✅ تم الحفظ وتفعيل بوت التيليجرام بنجاح');
+                    } else {
+                        flash(`⚠️ تم حفظ التوكن لكن فشل تفعيل البوت: ${tgData.description}`);
+                    }
+                } else {
+                    flash('✅ تم حفظ التوكن (تنبيه: لا يوجد موظف مرتبط حالياً لتفعيل البوت)');
+                }
+            } catch (e) {
+                console.error('Webhook error:', e);
+                flash('✅ تم حفظ التوكن (حدث خطأ في طلب الربط الآلي)');
+            }
+        } else {
+            flash('✅ تم حفظ مفاتيح العميل');
+        }
+        setSaving(false);
     };
     const saveAiConfig = async () => { setSaving(true); await adminService.updatePlatformSettings('manager_ai_config', aiConfig); setSaving(false); flash('✅ تم حفظ إعدادات المستشارة الذكية'); };
     const handleLogout = async () => { await signOut(); navigate('/login'); };
