@@ -236,6 +236,32 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
         else if (isHR) systemInstruction += "\nRole: HR & Recruitment Coordinator.";
         else if (isSupport) systemInstruction += "\nRole: Technical Support Expert.";
 
+        // --- 4.5 Automated Customer Registration (Lead Generation) ---
+        try {
+            const platformPrefix = sessionId.split('_')[0];
+            const platformId = sessionId.split('_')[1];
+            
+            const customerUpsert: any = {
+                salon_config_id: finalSalonId,
+                user_id: agent.user_id,
+                updated_at: new Date().toISOString()
+            };
+
+            if (platformPrefix === 'instagram') customerUpsert.instagram_id = platformId;
+            else if (platformPrefix === 'telegram') customerUpsert.telegram_id = platformId;
+            // Add other platforms if needed
+
+            // Search for existing chat name in history to update customer_name if possible
+            // For now, we just ensure the record exists so they show up in "Customers"
+            const { error: custError } = await supabaseClient
+                .from('customers')
+                .upsert(customerUpsert, { onConflict: platformPrefix === 'instagram' ? 'instagram_id' : 'telegram_id' });
+            
+            if (custError) console.warn("Customer registration error (non-fatal):", custError.message);
+        } catch (e) {
+            console.warn("Auto-registration logic failed:", e);
+        }
+
         // 5. Load chat history
         let chatHistory: any[] = [];
         const { data: sessionData } = await supabaseClient
@@ -313,7 +339,7 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 }
 
                 const requiresConfirmation = sc?.booking_requires_confirmation ?? false;
-                const { error: bErr } = await supabaseClient.from('bookings').insert([{
+                const { data: newBooking, error: bErr } = await supabaseClient.from('bookings').insert([{
                     agent_id: agentId,
                     salon_config_id: finalSalonId,
                     customer_name: args.customer_name,
@@ -324,14 +350,28 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                     duration_minutes: 60,
                     status: requiresConfirmation ? 'pending' : 'confirmed',
                     session_id: sessionId
-                }]);
+                }]).select('id').single();
+                
                 if (bErr) throw bErr;
 
-                await supabaseClient.from('customers').upsert({
+                // Sync to Customers Table with Full Details
+                const platformPrefix = sessionId.split('_')[0];
+                const platformId = sessionId.split('_')[1];
+                
+                const customerData: any = {
+                    salon_config_id: finalSalonId,
+                    user_id: agent.user_id,
                     customer_name: args.customer_name,
                     customer_phone: args.customer_phone,
+                    last_service_date: bookingDate,
                     updated_at: new Date().toISOString()
-                }, { onConflict: 'customer_phone' });
+                };
+                if (platformPrefix === 'instagram') customerData.instagram_id = platformId;
+                if (platformPrefix === 'telegram') customerData.telegram_id = platformId;
+
+                await supabaseClient.from('customers').upsert(customerData, { 
+                    onConflict: platformPrefix === 'instagram' ? 'instagram_id' : (platformPrefix === 'telegram' ? 'telegram_id' : 'customer_phone') 
+                });
 
                 return { 
                     status: requiresConfirmation ? 'pending_confirmation' : 'confirmed',
@@ -341,11 +381,23 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 };
             },
             update_customer_notes: async (args: any) => {
-                await supabaseClient.from('customers').upsert({
-                    customer_phone: args.customer_phone,
+                const platformPrefix = sessionId.split('_')[0];
+                const platformId = sessionId.split('_')[1];
+
+                const notesData: any = {
+                    salon_config_id: finalSalonId,
+                    user_id: agent.user_id,
                     notes: args.notes,
-                    customer_name: args.customer_name || 'عميل محتمل'
-                }, { onConflict: 'customer_phone' });
+                    customer_phone: args.customer_phone,
+                    customer_name: args.customer_name || 'عميل مهتم',
+                    updated_at: new Date().toISOString()
+                };
+                if (platformPrefix === 'instagram') notesData.instagram_id = platformId;
+                if (platformPrefix === 'telegram') notesData.telegram_id = platformId;
+
+                await supabaseClient.from('customers').upsert(notesData, { 
+                    onConflict: platformPrefix === 'instagram' ? 'instagram_id' : (platformPrefix === 'telegram' ? 'telegram_id' : 'customer_phone') 
+                });
                 return { status: "success", message: "Customer notes updated." };
             }
         };
