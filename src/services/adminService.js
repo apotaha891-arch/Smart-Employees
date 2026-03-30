@@ -344,9 +344,3 @@ export const sendBookingNotification = async (bookingId, newStatus) => {
     }
 };
 
-export const logSystemEvent = async (level, category, message) => {
-    try {
-        await supabase.from('system_logs').insert([{ level, category, message }]);
-    } catch (e) { console.warn('Logging failed:', e.message); }
-};
-
