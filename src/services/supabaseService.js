@@ -791,6 +791,10 @@ export const checkAndDeductCredit = async (userId, cost = 1) => {
 // ==================== CUSTOM REQUESTS ====================
 
 export const submitCustomRequest = async (requestData) => {
+    // DIAGNOSTIC LOGGING - Check this in your browser console!
+    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+    console.log("Using Anon Key (First 10 chars):", import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 10));
+
     try {
         const { error } = await supabase
             .from('custom_requests')
@@ -799,6 +803,7 @@ export const submitCustomRequest = async (requestData) => {
         if (error) throw error;
         return { success: true };
     } catch (error) {
+        console.error('Submit Custom Request Error:', error);
         return { success: false, error: error.message };
     }
 };
