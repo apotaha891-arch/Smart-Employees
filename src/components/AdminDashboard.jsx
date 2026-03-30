@@ -752,10 +752,10 @@ export default function AdminDashboard() {
                         <tbody>
                             {customRequests.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد طلبات حالياً</td></tr>
                             : customRequests.map(r => {
-                                const st = r.status === 'completed' ? { c: '#10B981', bg: '#10B98120', l: (isArabic ? 'مكتمل' : 'Completed') } : { c: '#F59E0B', bg: '#F59E0B20', l: (isArabic ? 'قيد المراجعة' : 'Pending') };
+                                const st = r.status === 'completed' ? { c: '#10B981', bg: '#10B98120', l: (!isEnglish ? 'مكتمل' : 'Completed') } : { c: '#F59E0B', bg: '#F59E0B20', l: (!isEnglish ? 'قيد المراجعة' : 'Pending') };
                                 return (
                                     <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                                        <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(r.created_at).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US')}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(r.created_at).toLocaleDateString(!isEnglish ? 'ar-EG' : 'en-US')}</td>
                                         <td style={{ padding: '0.75rem 0.9rem' }}>
                                             <div style={{ fontWeight: 700, color: 'white', fontSize: '0.85rem' }}>{r.contact_name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#A78BFA' }}>{r.contact_phone}</div>
