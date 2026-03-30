@@ -344,3 +344,26 @@ export const sendBookingNotification = async (bookingId, newStatus) => {
     }
 };
 
+// ─── Custom Requests ────────────────────────────────────────────────────────
+export const getAllCustomRequests = async () => {
+    const { data, error } = await supabase
+        .from('custom_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+    
+    if (error) {
+        console.error('Error fetching custom requests:', error.message);
+        return [];
+    }
+    return data || [];
+};
+
+export const updateCustomRequestStatus = async (id, status) => {
+    const { error } = await supabase
+        .from('custom_requests')
+        .update({ status })
+        .eq('id', id);
+    if (error) throw error;
+    return true;
+};
+

@@ -801,6 +801,19 @@ export const submitCustomRequest = async (requestData) => {
             .insert([requestData]);
 
         if (error) throw error;
+
+        // Trigger an admin notification
+        try {
+            await supabase.from('platform_notifications').insert([{
+                title: 'طلب موظف مخصص جديد ⚡',
+                message: `طلب جديد من ${requestData.contact_name} لقطاع ${requestData.business_type}`,
+                type: 'custom_request',
+                is_read: false
+            }]);
+        } catch (notifErr) {
+            console.warn('Failed to create notification:', notifErr.message);
+        }
+
         return { success: true };
     } catch (error) {
         console.error('Submit Custom Request Error:', error);

@@ -115,6 +115,7 @@ export default function AdminDashboard() {
     const [conciergeChats, setConciergeChats] = useState([]);
     const [selChat, setSelChat] = useState(null);
     const [notifications, setNotifications] = useState([]);
+    const [customRequests, setCustomRequests] = useState([]);
 
     // Generate dynamic PLANS mapping from pricing state
     const PLANS = useMemo(() => {
@@ -210,10 +211,11 @@ export default function AdminDashboard() {
                 adminService.getAllSalonConfigs(),
                 adminService.getAllConciergeConversations(),
                 adminService.getAllNotifications(),
-                adminService.getAllEndCustomers()
+                adminService.getAllEndCustomers(),
+                adminService.getAllCustomRequests()
             ]);
 
-            const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes, endCustRes] = results;
+            const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes, endCustRes, custReqRes] = results;
 
             // Debug logging
             results.forEach((res, i) => {
@@ -231,8 +233,9 @@ export default function AdminDashboard() {
             const chats    = chatsRes.status === 'fulfilled'    ? chatsRes.value    : [];
             const notifs   = notifsRes.status === 'fulfilled'   ? notifsRes.value   : [];
             const endCust  = endCustRes.status === 'fulfilled'  ? endCustRes.value  : [];
+            const custReq  = custReqRes.status === 'fulfilled'  ? custReqRes.value  : [];
 
-            console.log(`AdminDashboard: Loaded ${profiles.length} profiles, ${ag.length} agents, ${bk.length} bookings`);
+            console.log(`AdminDashboard: Loaded ${profiles.length} profiles, ${ag.length} agents, ${bk.length} bookings, ${custReq.length} requests`);
 
             // Merge Profile + SalonConfig data
             const clientMap = {};
@@ -259,6 +262,7 @@ export default function AdminDashboard() {
             setConciergeChats(chats || []);
             setNotifications(notifs || []);
             setEndCustomers(endCust || []);
+            setCustomRequests(custReq || []);
 
             // Platform settings & Dynamic Configs
             const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.allSettled([
@@ -533,6 +537,7 @@ export default function AdminDashboard() {
         { id: 'ai-settings', i: Bot, l: t('admin.aiSettings') },
         { id: 'blog', i: Newspaper, l: t('admin.blog') },
         { id: 'subscribers', i: Mail, l: t('admin.subscribers') },
+        { id: 'custom-requests', i: Zap, l: isEnglish ? 'Custom Requests' : 'طلبات التوظيف', badge: customRequests.filter(r => r.status === 'pending').length },
     ];
 
     if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />{t('admin.loading')}</div>;
@@ -592,6 +597,7 @@ export default function AdminDashboard() {
                         <StatCard icon={Users} label={t('admin.totalClients')} value={clients.length} color="#10B981" sub={`+${clients.filter(c => new Date(c.created_at) > new Date(Date.now() - 30 * 24 * 3600 * 1000)).length} ${isEnglish ? 'new clients' : 'عملاء جدد'}`} />
                         <StatCard icon={Bot} label={isEnglish ? 'Active Agents' : 'موظفات نشطة'} value={agents.filter(a => a.status === 'active').length} color="#8B5CF6" />
                         <StatCard icon={Calendar} label={isEnglish ? 'Pending Bookings' : 'حجوزات معلقة'} value={bookings.filter(b => b.status === 'pending').length} color="#F59E0B" sub={isEnglish ? 'Requires review' : 'تحتاج مراجعة'} />
+                        <StatCard icon={Zap} label={isEnglish ? 'Custom Requests' : 'طلبات التوظيف'} value={customRequests.filter(r => r.status === 'pending').length} color="#A78BFA" sub={isEnglish ? 'New lead requests' : 'طلبات توظيف جديدة'} />
                         {(() => {
                             const avgPrice = pricing.find(p => p.id === 'pro')?.monthlyPrice || 69;
                             const estRev = clients.length * avgPrice;
@@ -730,6 +736,47 @@ export default function AdminDashboard() {
                                         <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(c.updated_at).toLocaleDateString(isEnglish ? 'en-US' : 'ar-EG')}</td>
                                     </tr>
                                 ))}
+                        </tbody>
+                    </table>} />
+                </div>}
+
+                {/* ── CUSTOM REQUESTS ── */}
+                {tab === 'custom-requests' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>{isEnglish ? 'Custom Employee Requests' : 'طلبات التوظيف المخصصة'}</h1>
+                    <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{customRequests.length} {isEnglish ? 'total requests' : 'إجمالي الطلبات المستلمة'}</p>
+
+                    <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
+                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            {[(isEnglish ? 'Date' : 'التاريخ'), (isEnglish ? 'Contact' : 'بيانات التواصل'), (isEnglish ? 'Requirements' : 'المتطلبات'), (isEnglish ? 'Status' : 'الحالة'), (isEnglish ? 'Actions' : 'إجراءات')].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                        </tr></thead>
+                        <tbody>
+                            {customRequests.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد طلبات حالياً</td></tr>
+                            : customRequests.map(r => {
+                                const st = r.status === 'completed' ? { c: '#10B981', bg: '#10B98120', l: (isArabic ? 'مكتمل' : 'Completed') } : { c: '#F59E0B', bg: '#F59E0B20', l: (isArabic ? 'قيد المراجعة' : 'Pending') };
+                                return (
+                                    <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(r.created_at).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US')}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem' }}>
+                                            <div style={{ fontWeight: 700, color: 'white', fontSize: '0.85rem' }}>{r.contact_name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#A78BFA' }}>{r.contact_phone}</div>
+                                            <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{r.contact_email}</div>
+                                        </td>
+                                        <td style={{ padding: '0.75rem 0.9rem', maxWidth: '300px' }}>
+                                            <div style={{ fontSize: '0.78rem', color: '#E4E4E7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={r.required_tasks}>
+                                                <strong>{r.business_type}</strong>: {r.required_tasks}
+                                            </div>
+                                            <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{isEnglish ? 'Integrations' : 'ربط'}: {r.integrations || '—'}</div>
+                                        </td>
+                                        <td style={{ padding: '0.75rem 0.9rem' }}>
+                                            <span style={{ background: st.bg, color: st.c, padding: '2px 8px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700 }}>{st.l}</span>
+                                        </td>
+                                        <td style={{ padding: '0.75rem 0.9rem', display: 'flex', gap: '6px' }}>
+                                            <button onClick={() => window.open(`https://wa.me/${r.contact_phone.replace(/\D/g,'')}`, '_blank')} style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem' }}>WhatsApp</button>
+                                            <button onClick={() => adminService.updateCustomRequestStatus(r.id, r.status === 'completed' ? 'pending' : 'completed').then(() => load())} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem' }}>{r.status === 'completed' ? 'Undo' : 'Done'}</button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>} />
                 </div>}
