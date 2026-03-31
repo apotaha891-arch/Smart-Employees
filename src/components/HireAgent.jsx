@@ -79,7 +79,7 @@ const HireAgent = () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 const { data } = await supabase
-                    .from('salon_configs')
+                    .from('entities')
                     .select('agent_name, business_type')
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
@@ -206,7 +206,7 @@ const HireAgent = () => {
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button
-                        onClick={() => navigate('/salon-setup')}
+                        onClick={() => navigate('/entity-setup')}
                         style={{ padding: '12px 28px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)', color: 'white', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
                     >
                         {isAr ? '🏢 إعداد المنشأة الآن' : '🏢 Set Up Entity Now'}

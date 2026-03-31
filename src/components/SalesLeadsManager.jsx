@@ -23,7 +23,7 @@ const SalesLeadsManager = () => {
 
             // First get the business config to find the right customers
             const { data: config } = await supabase
-                .from('salon_configs')
+                .from('entities')
                 .select('id')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
@@ -33,7 +33,7 @@ const SalesLeadsManager = () => {
             let query = supabase.from('customers').select('*');
 
             if (config) {
-                query = query.eq('salon_config_id', config.id);
+                query = query.eq('entity_id', config.id);
             } else {
                 // Fallback to user_id if config not found (assuming migration run or legacy data)
                 query = query.eq('user_id', user.id);

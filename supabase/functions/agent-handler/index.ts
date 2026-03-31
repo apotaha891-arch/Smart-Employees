@@ -107,26 +107,26 @@ serve(async (req: any) => {
         if (agent.description) businessContext += `\nAgent Primary Role: ${agent.description}`;
         if (agent.knowledge_base) businessContext += `\nAgent Knowledge Base: ${agent.knowledge_base}`;
 
-        // UNIFICATION: Fetch latest salon config for THIS user
+        // UNIFICATION: Fetch latest entity config for THIS user
         const { data: latestConfig } = await supabaseClient
-            .from('salon_configs')
+            .from('entities')
             .select('*')
             .eq('user_id', agent.user_id)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
 
-        const sc = latestConfig;
-        const finalSalonId = sc?.id || agent.salon_config_id;
+        const ec = latestConfig;
+        const finalEntityId = ec?.id || agent.entity_id;
 
-        if (sc) {
-            console.log("Using Unified Business Config:", sc.id);
-            if (sc.business_name) resolvedBusinessName = sc.business_name;
-            if (sc.description) businessContext += `\nBusiness Description: ${sc.description}`;
-            if (sc.knowledge_base) businessContext += `\nBusiness Knowledge Base/FAQ: ${sc.knowledge_base}`;
-            if (sc.phone) businessContext += `\nBusiness Contact Phone: ${sc.phone}`;
-            if (sc.address) businessContext += `\nBusiness Physical Address: ${sc.address}`;
-            if (sc.website) businessContext += `\nBusiness Official Website: ${sc.website}`;
+        if (ec) {
+            console.log("Using Unified Business Config:", ec.id);
+            if (ec.business_name) resolvedBusinessName = ec.business_name;
+            if (ec.description) businessContext += `\nBusiness Description: ${ec.description}`;
+            if (ec.knowledge_base) businessContext += `\nBusiness Knowledge Base/FAQ: ${ec.knowledge_base}`;
+            if (ec.phone) businessContext += `\nBusiness Contact Phone: ${ec.phone}`;
+            if (ec.address) businessContext += `\nBusiness Physical Address: ${ec.address}`;
+            if (ec.website) businessContext += `\nBusiness Official Website: ${ec.website}`;
             
             const formatWorkingHours = (wh: any) => {
                 if (!wh) return 'Not specified';
@@ -142,18 +142,18 @@ serve(async (req: any) => {
                 const shifts = wh.shifts || [{ start: wh.start, end: wh.end }];
                 return `Standard: ${shifts.map((s: any) => `${s.start}-${s.end}`).join(', ')}`;
             };
-            if (sc.working_hours) businessContext += `\nWorking Hours: ${formatWorkingHours(sc.working_hours)}`;
-            if (sc.mission_statement) businessContext += `\nBusiness Mission: ${sc.mission_statement}`;
-            if (sc.target_audience) businessContext += `\nTarget Audience: ${sc.target_audience}`;
-            if (sc.brand_voice_details) businessContext += `\nBrand Voice/Tone: ${sc.brand_voice_details}`;
-            if (sc.sop_instructions) businessContext += `\nStandard Operating Procedures (SOP): ${sc.sop_instructions}`;
+            if (ec.working_hours) businessContext += `\nWorking Hours: ${formatWorkingHours(ec.working_hours)}`;
+            if (ec.mission_statement) businessContext += `\nBusiness Mission: ${ec.mission_statement}`;
+            if (ec.target_audience) businessContext += `\nTarget Audience: ${ec.target_audience}`;
+            if (ec.brand_voice_details) businessContext += `\nBrand Voice/Tone: ${ec.brand_voice_details}`;
+            if (ec.sop_instructions) businessContext += `\nStandard Operating Procedures (SOP): ${ec.sop_instructions}`;
         }
 
-        if (finalSalonId) {
+        if (finalEntityId) {
             const { data: svcs } = await supabaseClient
-                .from('salon_services')
+                .from('entity_services')
                 .select('service_name, price, duration_minutes')
-                .eq('salon_config_id', finalSalonId)
+                .eq('entity_id', finalEntityId)
                 .order('service_name');
             if (svcs && svcs.length > 0) {
                 servicesText = `\n\nOFFICIAL SERVICE MENU:\n`
@@ -242,7 +242,7 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
             const platformId = sessionId.split('_')[1];
             
             const customerUpsert: any = {
-                salon_config_id: finalSalonId,
+                entity_id: finalEntityId,
                 user_id: agent.user_id,
                 updated_at: new Date().toISOString()
             };
@@ -329,7 +329,7 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 const { data: conflicts } = await supabaseClient
                     .from('bookings')
                     .select('id')
-                    .eq('salon_config_id', finalSalonId)
+                    .eq('entity_id', finalEntityId)
                     .eq('booking_date', bookingDate)
                     .eq('booking_time', bookingTime)
                     .eq('status', 'confirmed');
@@ -338,10 +338,10 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                     return { status: "error", message: "هذا الوقت محجوز مسبقاً." };
                 }
 
-                const requiresConfirmation = sc?.booking_requires_confirmation ?? false;
+                const requiresConfirmation = ec?.booking_requires_confirmation ?? false;
                 const { data: newBooking, error: bErr } = await supabaseClient.from('bookings').insert([{
                     agent_id: agentId,
-                    salon_config_id: finalSalonId,
+                    entity_id: finalEntityId,
                     customer_name: args.customer_name,
                     customer_phone: args.customer_phone,
                     service_requested: args.service_requested,
@@ -359,7 +359,7 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 const platformId = sessionId.split('_')[1];
                 
                 const customerData: any = {
-                    salon_config_id: finalSalonId,
+                    entity_id: finalEntityId,
                     user_id: agent.user_id,
                     customer_name: args.customer_name,
                     customer_phone: args.customer_phone,
@@ -385,7 +385,7 @@ ${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 const platformId = sessionId.split('_')[1];
 
                 const notesData: any = {
-                    salon_config_id: finalSalonId,
+                    entity_id: finalEntityId,
                     user_id: agent.user_id,
                     notes: args.notes,
                     customer_phone: args.customer_phone,

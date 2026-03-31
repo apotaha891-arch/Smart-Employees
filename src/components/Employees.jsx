@@ -45,7 +45,7 @@ const Employees = () => {
     const [loading, setLoading] = useState(true);
     const [userSector, setUserSector] = useState('general');
     const [filterRole, setFilterRole] = useState('');
-    const [salonConfig, setSalonConfig] = useState(null);
+    const [entityConfig, setEntityConfig] = useState(null);
     const [templates, setTemplates] = useState([]);
     const [fetchingTemplates, setFetchingTemplates] = useState(false);
 
@@ -65,14 +65,14 @@ const Employees = () => {
             if (user) {
                 // Fetch Sector and Config
                 const [configRes, profileRes] = await Promise.all([
-                    supabase.from('salon_configs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+                    supabase.from('entities').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
                     supabase.from('profiles').select('business_type').eq('id', user.id).maybeSingle()
                 ]);
 
                 const config = configRes.data;
                 const profile = profileRes.data;
 
-                if (config) setSalonConfig(config);
+                if (config) setEntityConfig(config);
                 
                 // Robust sector detection: handle case sensitivity and Arabic values
                 let rawSector = (config?.business_type || profile?.business_type || 'general').toLowerCase();
@@ -133,7 +133,7 @@ const Employees = () => {
 
     const toggleAgent = async (agent) => {
         const isTelegram = (agent.platform || '').includes('telegram');
-        const hasToken = agent.telegram_token || salonConfig?.telegram_token;
+        const hasToken = agent.telegram_token || entityConfig?.telegram_token;
 
         if (agent.status !== 'active' && isTelegram && !hasToken) {
             setLinkingAgent(agent);
@@ -184,11 +184,11 @@ const Employees = () => {
 
             if (agentUpdateError) throw agentUpdateError;
 
-            // 2. Also keep it in salon_configs for backward compatibility
-            if (salonConfig) {
-                await supabase.from('salon_configs')
+            // 2. Also keep it in entities for backward compatibility
+            if (entityConfig) {
+                await supabase.from('entities')
                     .update({ telegram_token: linkToken })
-                    .eq('id', salonConfig.id);
+                    .eq('id', entityConfig.id);
             }
 
             // 3. Register the Webhook with Telegram
@@ -432,7 +432,7 @@ const Employees = () => {
                         const RoleIcon = role.icon;
                         const isActive = agent.status === 'active';
                         const isTelegram = (agent.platform || '').includes('telegram');
-                        const hasToken = agent.telegram_token || salonConfig?.telegram_token;
+                        const hasToken = agent.telegram_token || entityConfig?.telegram_token;
                         const needsLink = isTelegram && !hasToken;
 
                         return (
@@ -490,7 +490,7 @@ const Employees = () => {
 
                                 {/* Footer Actions */}
                                 <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.03)', display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.1)' }}>
-                                    <button onClick={() => navigate(`/salon-setup?agent=${agent.id}`)}
+                                    <button onClick={() => navigate(`/entity-setup?agent=${agent.id}`)}
                                         style={{ flex: 1, background: 'rgba(255,255,255,0.03)', color: '#D1D5DB', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s' }}
                                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
                                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}

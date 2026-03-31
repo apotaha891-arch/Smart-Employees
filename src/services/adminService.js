@@ -61,11 +61,11 @@ export const getAllBookings = async () => {
     return fallback || [];
 };
 
-export const getAllSalonConfigs = async () => {
-    const { data, error } = await supabase.rpc('get_admin_salon_configs');
+export const getAllEntities = async () => {
+    const { data, error } = await supabase.rpc('get_admin_entities');
     if (!error && data) return data;
-    console.warn('get_admin_salon_configs RPC failed:', error?.message);
-    const { data: fallback } = await supabase.from('salon_configs').select('id, user_id, business_type, agent_name, telegram_token, whatsapp_number, whatsapp_api_key, created_at').order('created_at', { ascending: false });
+    console.warn('get_admin_entities RPC failed:', error?.message);
+    const { data: fallback } = await supabase.from('entities').select('id, user_id, business_type, agent_name, telegram_token, whatsapp_number, whatsapp_api_key, created_at').order('created_at', { ascending: false });
     return fallback || [];
 };
 

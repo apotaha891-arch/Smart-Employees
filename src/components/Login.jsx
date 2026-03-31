@@ -10,7 +10,7 @@ import { Sparkles, Mail, CheckCircle, Eye, EyeOff, Key } from 'lucide-react';
 const getUserDestination = async (userId) => {
     const [{ data: profile }, { data: config }] = await Promise.all([
         supabase.from('profiles').select('role').eq('id', userId).maybeSingle(),
-        supabase.from('salon_configs').select('business_type').eq('user_id', userId).not('business_type', 'is', null).limit(1).maybeSingle()
+        supabase.from('entities').select('business_type').eq('user_id', userId).not('business_type', 'is', null).limit(1).maybeSingle()
     ]);
     const isAdmin = profile?.role === 'admin';
     const hasSector = !!config?.business_type;
@@ -41,7 +41,7 @@ const Login = () => {
             } else if (userRole === 'customer') {
                 supabase.auth.getUser().then(({ data: { user } }) => {
                     if (user) {
-                        supabase.from('salon_configs').select('business_type').eq('user_id', user.id).not('business_type', 'is', null).limit(1).maybeSingle()
+                        supabase.from('entities').select('business_type').eq('user_id', user.id).not('business_type', 'is', null).limit(1).maybeSingle()
                             .then(({ data }) => {
                                 navigate(location.state?.redirectTo || (data?.business_type ? '/dashboard' : '/onboarding'), { replace: true });
                             });

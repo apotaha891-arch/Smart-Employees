@@ -226,7 +226,7 @@ export default function AdminDashboard() {
                 adminService.getAllCustomers(),
                 adminService.getAllAgents(),
                 adminService.getAllBookings(),
-                adminService.getAllSalonConfigs(),
+                adminService.getAllEntities(),
                 adminService.getAllConciergeConversations(),
                 adminService.getAllNotifications(),
                 adminService.getAllEndCustomers(),
@@ -264,7 +264,7 @@ export default function AdminDashboard() {
                 };
             });
             (keyData || []).forEach(k => {
-                if (clientMap[k.user_id]) clientMap[k.user_id] = { ...clientMap[k.user_id], salonConfigId: k.id };
+                if (clientMap[k.user_id]) clientMap[k.user_id] = { ...clientMap[k.user_id], entityId: k.id };
             });
             
             setClients(Object.values(clientMap));
@@ -412,7 +412,7 @@ export default function AdminDashboard() {
             specialty: newAgent.specialty,
             business_type: newAgent.business_type,
             user_id: newAgent.user_id,
-            salon_config_id: client?.salonConfigId || null,
+            entity_id: client?.entityId || null,
             status: 'active',
             created_at: new Date().toISOString()
         }).select().single();
@@ -451,7 +451,7 @@ export default function AdminDashboard() {
     const saveClientKey = async (uid) => {
         setSaving(true);
         const k = clientKeys[uid] || {};
-        const { data: config, error } = await supabase.from('salon_configs').update({ 
+        const { data: config, error } = await supabase.from('entities').update({ 
             telegram_token: k.telegram_token || null, 
             whatsapp_number: k.whatsapp_number || null, 
             whatsapp_api_key: k.whatsapp_api_key || null 
@@ -517,8 +517,8 @@ export default function AdminDashboard() {
         setSaving(false);
     };
 
-    const cl = (uid) => agents.filter(a => a.user_id === uid || a.salon_config_id === clients.find(c => c.id === uid)?.salonConfigId);
-    const bl = (uid) => bookings.filter(b => b.user_id === uid || b.salon_config_id === clients.find(c => c.id === uid)?.salonConfigId);
+    const cl = (uid) => agents.filter(a => a.user_id === uid || a.entity_id === clients.find(c => c.id === uid)?.entityId);
+    const bl = (uid) => bookings.filter(b => b.user_id === uid || b.entity_id === clients.find(c => c.id === uid)?.entityId);
     
     // Filtering Logic
     const filteredClients = (clients || []).filter(c => {
@@ -537,7 +537,7 @@ export default function AdminDashboard() {
         return matchesSearch && matchesFilter;
     });
 
-    const baseBookings = bFilter ? bookings.filter(b => b.user_id === bFilter || b.salon_id === bFilter || b.salon_config_id === bFilter) : bookings;
+    const baseBookings = bFilter ? bookings.filter(b => b.user_id === bFilter || b.entity_id === bFilter) : bookings;
     const filtBk = baseBookings.filter(b => 
         (b.customer_name || '').toLowerCase().includes(bSearch.toLowerCase()) || 
         (b.customer_phone || '').toLowerCase().includes(bSearch.toLowerCase()) ||
@@ -1277,7 +1277,7 @@ export default function AdminDashboard() {
                         </div>}
 
                         {intTab === 'client' && <div>
-                            <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>أضف مفاتيح الربط لعميل معين — تُخزَّن في <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>salon_configs</code></p>
+                            <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>أضف مفاتيح الربط لعميل معين — تُخزَّن في <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>entities</code></p>
                             <select value={selIntClient || ''} onChange={e => setSelIntClient(e.target.value || null)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 12px', fontSize: '0.83rem', minWidth: '260px', marginBottom: '1rem' }}>
                                 <option value="">اختر عميلاً...</option>
                                 {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}

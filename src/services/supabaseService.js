@@ -168,14 +168,14 @@ export const linkGoogleAccount = async () => {
 
 export const saveIntegrationCredentials = async (userId, provider, credentials) => {
     try {
-        // Fetch salon_config_id to link it properly
-        const { data: salonConfigs } = await supabase
-            .from('salon_configs')
+        // Fetch entity_id to link it properly
+        const { data: entityConfigs } = await supabase
+            .from('entities')
             .select('id')
             .eq('user_id', userId)
             .limit(1);
 
-        const salonConfigId = salonConfigs?.[0]?.id || null;
+        const entityId = entityConfigs?.[0]?.id || null;
 
         // Check if an integration already exists
         const { data: existing } = await supabase
@@ -187,7 +187,7 @@ export const saveIntegrationCredentials = async (userId, provider, credentials) 
 
         if (existing) {
             const { error } = await supabase.from('integrations').update({
-                salon_config_id: salonConfigId,
+                entity_id: entityId,
                 credentials: credentials,
                 status: 'connected',
                 updated_at: new Date().toISOString()
@@ -196,7 +196,7 @@ export const saveIntegrationCredentials = async (userId, provider, credentials) 
         } else {
             const { error } = await supabase.from('integrations').insert({
                 user_id: userId,
-                salon_config_id: salonConfigId,
+                entity_id: entityId,
                 provider: provider,
                 credentials: credentials,
                 status: 'connected',
@@ -821,23 +821,23 @@ export const submitCustomRequest = async (requestData) => {
     }
 };
 
-// ==================== SALON SETUP & N8N INTEGRATION ====================
+// ==================== ENTITY SETUP & N8N INTEGRATION ====================
 
-export const saveSalonConfig = async (config) => {
+export const saveEntityConfig = async (config) => {
     try {
-        console.log("SupabaseService: Preparing save for config:", config.id ? `UPDATE ${config.id}` : 'INSERT NEW');
+        console.log("SupabaseService: Preparing save for entity config:", config.id ? `UPDATE ${config.id}` : 'INSERT NEW');
 
         let query;
         if (config.id) {
             const { id, ...updateData } = config;
             query = supabase
-                .from('salon_configs')
+                .from('entities')
                 .update(updateData)
                 .eq('id', id);
         } else {
             const { id, ...insertData } = config;
             query = supabase
-                .from('salon_configs')
+                .from('entities')
                 .insert([insertData]);
         }
 
@@ -857,21 +857,21 @@ export const saveSalonConfig = async (config) => {
         console.log("SupabaseService: Save successful ✅", data.id);
         return { success: true, data };
     } catch (error) {
-        console.error('Save Salon Config Exception:', error);
+        console.error('Save Entity Config Exception:', error);
         return { success: false, error: error.message || 'Database connection error' };
     }
 };
 
-export const activateSalonAgent = async (salonId, calendarToken) => {
+export const activateEntityAgent = async (entityId, calendarToken) => {
     try {
         // 1. Update status in DB
         const { error } = await supabase
-            .from('salon_configs')
+            .from('entities')
             .update({
                 is_active: true,
                 google_calendar_token: calendarToken
             })
-            .eq('id', salonId);
+            .eq('id', entityId);
 
         if (error) throw error;
 
@@ -884,12 +884,12 @@ export const activateSalonAgent = async (salonId, calendarToken) => {
 
 // ==================== SERVICES MANAGEMENT ====================
 
-export const getServices = async (salonConfigId) => {
+export const getServices = async (entityId) => {
     try {
         const { data, error } = await supabase
-            .from('salon_services')
+            .from('entity_services')
             .select('*')
-            .eq('salon_config_id', salonConfigId)
+            .eq('entity_id', entityId)
             .eq('is_active', true)
             .order('created_at', { ascending: true });
 
@@ -904,7 +904,7 @@ export const getServices = async (salonConfigId) => {
 export const addService = async (serviceData) => {
     try {
         const { data, error } = await supabase
-            .from('salon_services')
+            .from('entity_services')
             .insert([serviceData])
             .select()
             .single();
@@ -920,7 +920,7 @@ export const addService = async (serviceData) => {
 export const updateService = async (serviceId, updates) => {
     try {
         const { data, error } = await supabase
-            .from('salon_services')
+            .from('entity_services')
             .update({ ...updates, updated_at: new Date().toISOString() })
             .eq('id', serviceId)
             .select()
@@ -938,7 +938,7 @@ export const deleteService = async (serviceId) => {
     try {
         // Soft delete by setting is_active to false
         const { error } = await supabase
-            .from('salon_services')
+            .from('entity_services')
             .update({ is_active: false })
             .eq('id', serviceId);
 
@@ -952,12 +952,12 @@ export const deleteService = async (serviceId) => {
 
 // ==================== CUSTOMERS MANAGEMENT ====================
 
-export const getCustomers = async (salonConfigId) => {
+export const getCustomers = async (entityId) => {
     try {
         const { data, error } = await supabase
             .from('customers')
             .select('*')
-            .eq('salon_config_id', salonConfigId)
+            .eq('entity_id', entityId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -984,12 +984,12 @@ export const upsertCustomer = async (customerData) => {
     }
 };
 
-export const searchCustomerByIdentity = async (salonConfigId, platform, identityValue) => {
+export const searchCustomerByIdentity = async (entityId, platform, identityValue) => {
     try {
         let query = supabase
             .from('customers')
             .select('*')
-            .eq('salon_config_id', salonConfigId);
+            .eq('entity_id', entityId);
 
         if (platform === 'phone') {
             query = query.eq('customer_phone', identityValue);
@@ -1010,15 +1010,15 @@ export const searchCustomerByIdentity = async (salonConfigId, platform, identity
 
 // ==================== BOOKINGS MANAGEMENT ====================
 
-export const getBookings = async (salonConfigId, filters = {}) => {
+export const getBookings = async (entityId, filters = {}) => {
     try {
         let query = supabase
             .from('bookings')
             .select(`
                 *,
-                service:salon_services(service_name, price, duration_minutes)
+                service:entity_services(service_name, price, duration_minutes)
             `)
-            .eq('salon_config_id', salonConfigId)
+            .eq('entity_id', entityId)
             .order('booking_date', { ascending: true })
             .order('booking_time', { ascending: true });
 
@@ -1043,27 +1043,27 @@ export const getBookings = async (salonConfigId, filters = {}) => {
     }
 };
 
-export const getAvailableSlots = async (salonConfigId, date) => {
+export const getAvailableSlots = async (entityId, date) => {
     try {
         // Get all bookings for the specified date
         const { data: bookings, error } = await supabase
             .from('bookings')
             .select('booking_time, duration_minutes')
-            .eq('salon_config_id', salonConfigId)
+            .eq('entity_id', entityId)
             .eq('booking_date', date)
             .in('status', ['pending', 'confirmed']);
 
         if (error) throw error;
 
-        // Get salon working hours
-        const { data: salonConfig } = await supabase
-            .from('salon_configs')
+        // Get entity working hours
+        const { data: entityConfig } = await supabase
+            .from('entities')
             .select('working_hours')
-            .eq('id', salonConfigId)
+            .eq('id', entityId)
             .single();
 
         // Generate available slots
-        const workingHours = salonConfig?.working_hours || { start: '10:00', end: '22:00' };
+        const workingHours = entityConfig?.working_hours || { start: '10:00', end: '22:00' };
         const bookedSlots = bookings.map(b => b.booking_time);
 
         return { success: true, data: { workingHours, bookedSlots } };
@@ -1080,7 +1080,7 @@ export const createBooking = async (bookingData) => {
             .insert([bookingData])
             .select(`
                 *,
-                service:salon_services(service_name, price)
+                service:entity_services(service_name, price)
             `)
             .single();
 

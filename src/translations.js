@@ -74,7 +74,7 @@ export const translations = {
             reports: "التقارير الإحصائية",
             templates: "الموظفون",
             pricing: "الأسعار",
-            salonSetup: "إعداد المنشأة",
+            entitySetup: "إعداد المنشأة",
             blog: "المدونة",
             logout: "تسجيل الخروج"
         },
@@ -251,7 +251,7 @@ export const translations = {
         employeeIntelligence: "✦ ذكاء الموظف",
         employeeIntelligenceDesc: "عند إضافة معلومات جديدة لقاعدة المعرفة، يقوم الموظف بربط هذه المعلومات بالأسئلة الواردة تلقائياً، دون أي تدخل بشري.",
 
-        // SalonSetup Component
+        // EntitySetup Component
         activeWorkflow: "سير العمل النشط",
         activeEmployees: "الموظفين النشطين",
         totalMessages: "إجمالي الرسائل",
@@ -729,7 +729,7 @@ export const translations = {
             reports: "Reports",
             templates: "Templates",
             pricing: "Pricing",
-            salonSetup: "Business Setup",
+            entitySetup: "Business Setup",
             blog: "Blog",
             logout: "Logout"
         },
@@ -909,7 +909,7 @@ export const translations = {
         employeeIntelligence: "✦ Employee Intelligence",
         employeeIntelligenceDesc: "When adding new information to the knowledge base, your employee automatically links this information to incoming questions without any human intervention.",
 
-        // SalonSetup Component
+        // EntitySetup Component
         activeWorkflow: "Active Workflow",
         activeEmployees: "Active Employees",
         totalMessages: "Total Messages",

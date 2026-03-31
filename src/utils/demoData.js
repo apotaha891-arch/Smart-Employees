@@ -150,18 +150,18 @@ export const generateDemoData = async () => {
 };
 
 // Beauty Salon Demo Data
-export const generateBeautySalonDemo = async () => {
+export const generateBeautyEntityDemo = async () => {
     try {
-        const salonAgent = await createAgent({
+        const entityAgent = await createAgent({
             name: 'صالون الجمال الراقي',
             specialty: 'Beauty Salon - صالون تجميل'
         });
 
-        if (!salonAgent.success) {
-            throw new Error('Failed to create salon employee');
+        if (!entityAgent.success) {
+            throw new Error('Failed to create entity employee');
         }
 
-        const salonContract = {
+        const entityContract = {
             businessName: 'صالون الجمال الراقي',
             businessType: 'صالون تجميل',
             specialty: 'عناية شاملة بالمرأة',
@@ -195,11 +195,11 @@ export const generateBeautySalonDemo = async () => {
             ]
         };
 
-        await saveContract(salonAgent.data.id, salonContract);
+        await saveContract(entityAgent.data.id, entityContract);
 
-        const salonTasks = [
+        const entityTasks = [
             {
-                agentId: salonAgent.data.id,
+                agentId: entityAgent.data.id,
                 taskType: 'appointment',
                 taskData: {
                     clientName: 'سارة عبدالله',
@@ -211,7 +211,7 @@ export const generateBeautySalonDemo = async () => {
                 }
             },
             {
-                agentId: salonAgent.data.id,
+                agentId: entityAgent.data.id,
                 taskType: 'appointment',
                 taskData: {
                     clientName: 'ريم محمد',
@@ -224,13 +224,13 @@ export const generateBeautySalonDemo = async () => {
             }
         ];
 
-        for (const task of salonTasks) {
+        for (const task of entityTasks) {
             await createTask(task);
         }
 
         return {
             success: true,
-            agentId: salonAgent.data.id,
+            agentId: entityAgent.data.id,
             message: 'تم إنشاء بيانات صالون التجميل بنجاح!'
         };
 

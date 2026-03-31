@@ -16,7 +16,7 @@ export const getAgentTemplates = async (userId) => {
                 const type = profileResult.data.business_type?.toLowerCase() || '';
                 if (type.includes('طب') || type.includes('صحي') || type.includes('clinic') || type === 'medical') industry = 'medical';
                 else if (type.includes('عقار') || type.includes('estate') || type === 'real_estate') industry = 'real_estate';
-                else if (type.includes('تجميل') || type.includes('salon') || type.includes('beauty') || type === 'beauty') industry = 'beauty';
+                else if (type.includes('تجميل') || type.includes('entity') || type.includes('beauty') || type === 'beauty') industry = 'beauty';
                 else if (type.includes('مطعم') || type.includes('restau') || type === 'restaurant') industry = 'restaurant';
                 else if (type.includes('رياض') || type.includes('gym') || type.includes('club') || type.includes('fit') || type === 'fitness') industry = 'fitness';
                 else if (type.includes('تجارة') || type.includes('commerce') || type.includes('retail') || type.includes('shop')) industry = 'general'; // Commerce maps to general for now or its own if we add it
@@ -33,7 +33,7 @@ export const getAgentTemplates = async (userId) => {
                 { id: 'leasing_agent', title: 'وسيط تأجير', specialty: 'تأجير', icon: '🔑', description: 'ينسق جولات المشاهدة ويتابع عقود الإيجار وعمليات التجديد.' }
             ],
             beauty: [
-                { id: 'salon_receptionist', title: 'مسؤول حجز الخدمات', specialty: 'استقبال', icon: '💇‍♀️', description: 'يرتب مواعيد الخدمات ويرد على استفسارات الأسعار والباقات.' },
+                { id: 'entity_receptionist', title: 'مسؤول حجز الخدمات والكيان', specialty: 'استقبال', icon: '🏢', description: 'يرتب مواعيد الخدمات ويرد على استفسارات الأسعار والباقات.' },
                 { id: 'style_consultant', title: 'مستشار الأناقة', specialty: 'استشارات', icon: '💅', description: 'يقدم نصائح للخدمات المناسبة ويقترح منتجات العناية بالبشرة والشعر.' }
             ],
             restaurant: [

@@ -26,7 +26,7 @@ const OnboardingSector = () => {
             if (user) {
                 // Check if user already has a business type set or a config
                 const { data: profile } = await supabase.from('profiles').select('business_type').eq('id', user.id).maybeSingle();
-                const { data: config } = await supabase.from('salon_configs').select('id').eq('user_id', user.id).maybeSingle();
+                const { data: config } = await supabase.from('entities').select('id').eq('user_id', user.id).maybeSingle();
                 
                 if (profile?.business_type || config) {
                     console.log("Existing user detected, redirecting to dashboard...");
@@ -59,9 +59,9 @@ const OnboardingSector = () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { navigate('/login'); return; }
 
-            // Save business_type to salon_configs (upsert)
+            // Save business_type to entities (upsert)
             const { data: existingConfig } = await supabase
-                .from('salon_configs')
+                .from('entities')
                 .select('id')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
@@ -69,11 +69,11 @@ const OnboardingSector = () => {
                 .maybeSingle();
 
             if (existingConfig) {
-                await supabase.from('salon_configs')
+                await supabase.from('entities')
                     .update({ business_type: selected })
                     .eq('id', existingConfig.id);
             } else {
-                await supabase.from('salon_configs')
+                await supabase.from('entities')
                     .insert({ user_id: user.id, business_type: selected, status: 'active' });
             }
 

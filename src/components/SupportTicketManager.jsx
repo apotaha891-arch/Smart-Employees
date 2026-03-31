@@ -195,7 +195,7 @@ const SupportTicketManager = () => {
                                 </div>
                             </div>
                             <div 
-                                onClick={() => window.location.href='/salon-setup'}
+                                onClick={() => window.location.href='/entity-setup'}
                                 style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
                                 onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
                                 onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}

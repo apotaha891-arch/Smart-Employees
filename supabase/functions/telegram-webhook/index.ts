@@ -62,7 +62,7 @@ serve(async (req: any) => {
             // Find the matching Agent
             const { data: agent, error: agentError } = await supabase
                 .from('agents')
-                .select('id, user_id, telegram_token, salon_config_id')
+                .select('id, user_id, telegram_token, entity_id')
                 .eq('id', targetAgentId)
                 .single();
 
@@ -71,7 +71,7 @@ serve(async (req: any) => {
                 // Fallback: If targetAgentId is actually a TOKEN or just wrong, try finding any agent with it
                 const { data: fallbackAgent } = await supabase
                     .from('agents')
-                    .select('id, user_id, telegram_token, salon_config_id')
+                    .select('id, user_id, telegram_token, entity_id')
                     .eq('telegram_token', targetAgentId) // Maybe they passed token as ID?
                     .limit(1)
                     .maybeSingle();
@@ -84,22 +84,20 @@ serve(async (req: any) => {
                 Object.assign(agent || {}, fallbackAgent);
             }
 
-            // CRITICAL: Strict token isolation with fallback.
-            let dynamicBotToken = agent.telegram_token;
-
-            // Fallback to salon_configs if token isn't in agent table yet
-            if (!dynamicBotToken && agent.salon_config_id) {
-                console.log("Agent token missing, falling back to salon_configs...");
+            // Fallback to entities if token isn't in agent table yet
+            if (!dynamicBotToken && agent.entity_id) {
+                console.log("Agent token missing, falling back to entities...");
                 const { data: config } = await supabase
-                    .from('salon_configs')
+                    .from('entities')
                     .select('telegram_token')
-                    .eq('id', agent.salon_config_id)
+                    .eq('id', agent.entity_id)
                     .single();
                 if (config?.telegram_token) {
                     dynamicBotToken = config.telegram_token;
-                    console.log("Found token via salon_configs fallback ✅");
+                    console.log("Found token via entities fallback ✅");
                 }
             }
+        
 
             if (!dynamicBotToken) {
                 console.error("No telegram token configured for agent or salon config", targetAgentId);

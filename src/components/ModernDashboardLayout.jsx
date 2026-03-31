@@ -25,9 +25,9 @@ const ModernDashboardLayout = ({ children }) => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                // Fetch latest salon_config and profile
+                // Fetch latest entity config and profile
                 const [configRes, profileRes] = await Promise.all([
-                    supabase.from('salon_configs').select('business_type').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+                    supabase.from('entities').select('business_type').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
                     getProfile(user.id)
                 ]);
 
@@ -68,8 +68,8 @@ const ModernDashboardLayout = ({ children }) => {
         { icon: Users, label: language === 'ar' ? 'قاعدة العملاء' : 'Customer Base', path: '/customers' },
 
         { type: 'title', label: language === 'ar' ? 'الحساب والإعدادات' : 'Account & Config' },
-        { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/salon-setup' },
-        { icon: Puzzle, label: language === 'ar' ? 'أدوات الربط والمنصات' : 'Tools & Connections', path: '/salon-setup?tab=integrations' },
+        { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/entity-setup' },
+        { icon: Puzzle, label: language === 'ar' ? 'أدوات الربط والمنصات' : 'Tools & Connections', path: '/entity-setup?tab=integrations' },
         { icon: CreditCard, label: language === 'ar' ? 'الأسعار والفوترة' : 'Pricing & Billing', path: '/pricing' },
         { icon: HelpCircle, label: language === 'ar' ? 'مركز المساعدة' : 'Help Center', path: '/help' },
     ];

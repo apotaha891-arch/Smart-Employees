@@ -25,7 +25,7 @@ import BusinessSetup from './components/BusinessSetup';
 import AdminDashboard from './components/AdminDashboard';
 import ResetPassword from './components/ResetPassword';
 import PlatformConcierge from './components/PlatformConcierge';
-import SalonSetup from './components/SalonSetup';
+import EntitySetup from './components/EntitySetup';
 import ModernDashboardLayout from './components/ModernDashboardLayout';
 import Bookings from './components/Bookings';
 import Customers from './components/Customers';
@@ -66,7 +66,7 @@ function AppContent() {
     const { isAuthenticated } = useAuth();
     
     // Routes that ALWAYS use the Dashboard Layout
-    const alwaysDashboardRoutes = ['/dashboard', '/setup', '/salon-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
+    const alwaysDashboardRoutes = ['/dashboard', '/setup', '/entity-setup', '/salon-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
     
     // Routes that use Dashboard Layout ONLY when logged in
     const hybridRoutes = ['/templates', '/interview', '/pricing'];
@@ -113,13 +113,14 @@ function AppContent() {
                     }
                 />
                 <Route
-                    path="/salon-setup"
+                    path="/entity-setup"
                     element={
                         <ProtectedRoute requiredRole="customer">
-                            <ModernDashboardLayout><SalonSetup /></ModernDashboardLayout>
+                            <ModernDashboardLayout><EntitySetup /></ModernDashboardLayout>
                         </ProtectedRoute>
                     }
                 />
+                <Route path="/salon-setup" element={<Navigate to="/entity-setup" replace />} />
                 <Route
                     path="/contract"
                     element={
@@ -146,7 +147,7 @@ function AppContent() {
                 />
                 <Route
                     path="/deploy-agent"
-                    element={<Navigate to="/salon-setup?tab=integrations" replace />}
+                    element={<Navigate to="/entity-setup?tab=integrations" replace />}
                 />
                 <Route
                     path="/customers"

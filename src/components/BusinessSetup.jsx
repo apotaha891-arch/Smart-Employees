@@ -102,9 +102,9 @@ const BusinessSetup = () => {
         }
 
         setLoading(true);
-        // 1. Fetch the latest salon_config to create a hard link
+        // 1. Fetch the latest entity config to create a hard link
         const { data: latestConfig } = await supabase
-            .from('salon_configs')
+            .from('entities')
             .select('id')
             .eq('user_id', user?.id)
             .order('created_at', { ascending: false })
@@ -115,7 +115,7 @@ const BusinessSetup = () => {
         const result = await updateAgent(agentId, {
             name: formData.business_name,
             specialty: formData.business_type,
-            salon_config_id: latestConfig?.id || null, // Create hard link to prevent context leakage
+            entity_id: latestConfig?.id || null, // Create hard link to prevent context leakage
             knowledge_base: formData.knowledge_base + (formData.working_hours ? '\n\nمواعيد العمل:\n' + formData.working_hours : '') + (formData.services ? '\n\nتفاصيل الخدمات:\n' + formData.services : ''),
             branding_tone: formData.branding_tone
         });
@@ -123,7 +123,7 @@ const BusinessSetup = () => {
         if (result.success) {
             alert(language === 'ar' ? '✅ تم تهيئة الموظف بنجاح! الرابط جاهز للربط.' : '✅ Agent configured successfully! Connection ready.');
             // Step 7: Transition to Dashboard Integration Selection (New Tool Page)
-            navigate('/salon-setup?tab=integrations', { state: { agentId } });
+            navigate('/entity-setup?tab=integrations', { state: { agentId } });
         } else {
             alert((language === 'ar' ? 'حدث خطأ: ' : 'Error: ') + result.error);
         }

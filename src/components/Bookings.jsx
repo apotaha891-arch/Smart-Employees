@@ -7,7 +7,7 @@ const Bookings = () => {
     const { t } = useLanguage();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [salonConfigId, setSalonConfigId] = useState(null);
+    const [entityId, setEntityId] = useState(null);
     const [agentIds, setAgentIds] = useState([]);
     const [filters, setFilters] = useState({
         status: '',
@@ -30,15 +30,15 @@ const Bookings = () => {
             const { user } = await getCurrentUser();
             if (!user) return;
 
-            // Get salon_config_id
+            // Get entity id
             const { data: configs } = await supabase
-                .from('salon_configs')
+                .from('entities')
                 .select('id')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
-            if (configs) setSalonConfigId(configs.id);
+            if (configs) setEntityId(configs.id);
 
             // Directly load all agents regardless of linkage (needed to set agentIds)
             const { data: allAgents } = await supabase.from('agents').select('id');
@@ -95,7 +95,7 @@ const Bookings = () => {
 
                         let botToken = agent?.telegram_token;
                         if (!botToken && agent?.user_id) {
-                            const { data: sc } = await supabase.from('salon_configs')
+                            const { data: sc } = await supabase.from('entities')
                                 .select('telegram_token')
                                 .eq('user_id', agent.user_id)
                                 .order('created_at', { ascending: false })

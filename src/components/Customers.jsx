@@ -8,7 +8,7 @@ const Customers = () => {
     const { t } = useLanguage();
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [salonConfigId, setSalonConfigId] = useState(null);
+    const [entityId, setEntityId] = useState(null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -21,9 +21,9 @@ const Customers = () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { setError(t('mustLogin')); setLoading(false); return; }
 
-            // Get most recent salon config (don't filter by is_active)
+            // Get most recent entity config (don't filter by is_active)
             const { data: config } = await supabase
-                .from('salon_configs')
+                .from('entities')
                 .select('id')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
@@ -31,7 +31,7 @@ const Customers = () => {
                 .maybeSingle();
 
             if (config) {
-                setSalonConfigId(config.id);
+                setEntityId(config.id);
                 const result = await getCustomers(config.id);
                 setCustomers(result.data || []);
             } else {

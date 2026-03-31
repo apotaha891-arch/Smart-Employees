@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { 
-    getCurrentUser, getProfile, getWalletBalance, saveSalonConfig, 
-    activateSalonAgent, getServices, addService, updateService, 
+    getCurrentUser, getProfile, getWalletBalance, saveEntityConfig, 
+    activateEntityAgent, getServices, addService, updateService, 
     deleteService, linkGoogleAccount, saveIntegrationCredentials, 
     getIntegrations, updateAgent, invokeMultiFileWorkflow,
     supabase 
@@ -17,7 +17,7 @@ import {
 import ServicesTable from './ServicesTable';
 
 const EntitySetup = () => {
-    console.log("SalonSetup.jsx v2-banner-fix: Loaded. Status Banner ready.");
+    console.log("EntitySetup.jsx v2-banner-fix: Loaded. Status Banner ready.");
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const { t, language } = useLanguage();
     const navigate = useNavigate();
@@ -26,7 +26,7 @@ const EntitySetup = () => {
     const queryParams = new URLSearchParams(location.search);
     const initialTab = queryParams.get('tab') || 'sources';
     const [activeTab, setActiveTab] = useState(initialTab);
-    const [salonConfigId, setSalonConfigId] = useState(null);
+    const [entityId, setEntityId] = useState(null);
     const [industry, setIndustry] = useState('general');
     const [walletBalance, setWalletBalance] = useState(null);
     const [connectedIntegrations, setConnectedIntegrations] = useState({ google: false, whatsapp: false });
@@ -224,7 +224,7 @@ const EntitySetup = () => {
         try {
             const { user } = await getCurrentUser();
             if (!user) throw new Error('Auth required');
-            const configResult = await saveSalonConfig({
+            const configResult = await saveEntityConfig({
                 user_id: user.id,
                 agent_name: extractedProfile.businessName,
                 specialty: extractedProfile.businessType,
@@ -240,7 +240,7 @@ const EntitySetup = () => {
                 is_active: false,
             });
             if (!configResult.success) throw new Error(configResult.error);
-            setSalonConfigId(configResult.data.id);
+            setEntityId(configResult.data.id);
             setExtractedProfile(null);
             setAiFiles([]);
             setAiUrlsList([]);
@@ -250,7 +250,7 @@ const EntitySetup = () => {
                 await updateAgent(agentId, {
                     name: extractedProfile.businessName,
                     specialty: extractedProfile.businessType,
-                    salon_config_id: configResult.data.id
+                    entity_id: configResult.data.id
                 });
             }
 
@@ -271,9 +271,9 @@ const EntitySetup = () => {
                 console.log("SalonSetup: Initialization for user", user.id);
                 setCurrentUserId(user.id);
 
-                // Priority 1: Fetch the global/latest salon_configs as baseline
+                // Priority 1: Fetch the global/latest entities as baseline
                 const { data: globalConfigs, error: globalError } = await supabase
-                    .from('salon_configs')
+                    .from('entities')
                     .select('*')
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
@@ -287,22 +287,33 @@ const EntitySetup = () => {
                 }
 
                 // Priority 2: If we have an agent, fetch the config specific to it (OVERRIDE)
-                const agentIdFromUrl = queryParams.get('agent');
-                if (agentIdFromUrl) {
-                    console.log("SalonSetup: Operating on agent from URL:", agentIdFromUrl);
-                    setAgentId(agentIdFromUrl);
+                let finalAgentId = queryParams.get('agent');
+                
+                // Fallback: If no agent in URL, find the first agent for this user
+                if (!finalAgentId) {
+                    console.log("SalonSetup: No agent in URL, fetching default agent...");
+                    const { data: userAgents } = await getAgents();
+                    if (userAgents && userAgents.length > 0) {
+                        finalAgentId = userAgents[0].id;
+                        console.log("SalonSetup: Auto-detected default agent:", finalAgentId);
+                    }
+                }
+
+                if (finalAgentId) {
+                    setAgentId(finalAgentId);
+                    localStorage.setItem('currentAgentId', finalAgentId);
 
                     const { data: linkedAgent } = await supabase
                         .from('agents')
-                        .select('salon_config_id')
-                        .eq('id', agentIdFromUrl)
+                        .select('entity_id')
+                        .eq('id', finalAgentId)
                         .maybeSingle();
                     
-                    if (linkedAgent?.salon_config_id) {
+                    if (linkedAgent?.entity_id) {
                         const { data: linkedConfig } = await supabase
-                            .from('salon_configs')
+                            .from('entities')
                             .select('*')
-                            .eq('id', linkedAgent.salon_config_id)
+                            .eq('id', linkedAgent.entity_id)
                             .maybeSingle();
                         if (linkedConfig) {
                             console.log("SalonSetup: Found agent-specific config override:", linkedConfig.id);
@@ -345,8 +356,8 @@ const EntitySetup = () => {
                 }
 
                 if (configs) {
-                    console.log("SalonSetup: Finalizing sync... Config ID ->", configs.id);
-                    setSalonConfigId(configs.id);
+                    console.log("EntitySetup: Finalizing sync... Config ID ->", configs.id);
+                    setEntityId(configs.id);
 
                     // Migration logic for multiple shifts
                     const migrateWorkingHours = (wh) => {
@@ -406,7 +417,7 @@ const EntitySetup = () => {
                         const { data: agentData } = await supabase
                             .from('agents')
                             .select('id')
-                            .eq('salon_config_id', configs.id)
+                            .eq('entity_id', configs.id)
                             .maybeSingle();
                         if (agentData) setAgentId(agentData.id);
                     }
@@ -477,13 +488,13 @@ const EntitySetup = () => {
 
     // Load services when salon config is available
     useEffect(() => {
-        if (salonConfigId) {
+        if (entityId) {
             loadServices();
         }
-    }, [salonConfigId]);
+    }, [entityId]);
 
     const loadServices = async () => {
-        const result = await getServices(salonConfigId);
+        const result = await getServices(entityId);
         if (result.success) {
             setServices(result.data || []);
         }
@@ -495,7 +506,7 @@ const EntitySetup = () => {
             return;
         }
 
-        if (!salonConfigId) {
+        if (!entityId) {
             setStatusMsg({ type: 'error', text: language === 'ar' ? '⚠️ يرجى حفظ بيانات المنشأة (Entity Info) أولاً قبل إضافة الخدمات.' : '⚠️ Please save the Entity Info first before adding services.' });
             return;
         }
@@ -506,7 +517,7 @@ const EntitySetup = () => {
             price: newService.price || 0,
             duration_minutes: newService.duration_minutes || 0,
             description: newService.description || null,
-            salon_config_id: salonConfigId
+            entity_id: entityId
         };
 
         const result = await addService(payload);
@@ -563,9 +574,9 @@ const EntitySetup = () => {
             const { user } = await getCurrentUser();
             if (!user) throw new Error('Authentication required. Please refresh.');
 
-            // 1. Update Salon Config
-            const configResult = await saveSalonConfig({
-                id: salonConfigId,
+            // 1. Update Entity Config
+            const configResult = await saveEntityConfig({
+                id: entityId,
                 user_id: user.id,
                 agent_name: formData.businessName,
                 specialty: formData.businessType,
@@ -592,7 +603,7 @@ const EntitySetup = () => {
                 const { error: syncError } = await supabase
                     .from('agents')
                     .update({ 
-                        salon_config_id: configResult.data.id,
+                        entity_id: configResult.data.id,
                         // We also sync the basic business info to the agent's identity for immediate context
                         name: formData.businessName,
                         specialty: formData.businessType
@@ -633,14 +644,14 @@ const EntitySetup = () => {
 
     const handleActivate = async () => {
         setLoading(true);
-        if (!salonConfigId) {
+        if (!entityId) {
             alert(language === 'ar' ? 'يرجى حفظ بيانات المنشأة أولاً.' : 'Please save entity info first.');
             setLoading(false);
             return;
         }
 
         try {
-            const result = await activateSalonAgent(salonConfigId);
+            const result = await activateEntityAgent(entityId);
             if (result.success) {
                 alert(language === 'ar' ? '🎉 تم تفعيل الموظف بنجاح! سيتم تحويلك للوحة التحكم.' : '🎉 Agent activated successfully! Redirecting...');
                 setTimeout(() => navigate('/dashboard'), 1500);
@@ -668,7 +679,7 @@ const EntitySetup = () => {
     };
 
     const handleSaveIntegration = async () => {
-        if (!salonConfigId) {
+        if (!entityId) {
             setStatusMsg({ 
                 type: 'error', 
                 text: language === 'ar' ? '⚠️ يرجى حفظ بيانات المنشأة (Entity Info) أولاً قبل ربط الأدوات.' : '⚠️ Please save Entity Info first before linking tools.' 
@@ -682,73 +693,62 @@ const EntitySetup = () => {
         if (Object.keys(integrationDraft).length === 0) return;
         
         setIntegrationSaving(true);
+        setStatusMsg({ type: '', text: '' });
+        
         try {
-            const { user } = await getCurrentUser();
-            console.log("Saving integration via Service:", integrationDraft, "for ID:", salonConfigId);
+            console.log("EntitySetup: Starting save sequence for integrations...");
             
-            // 1. Update Salon Config
-            const result = await saveSalonConfig({
-                id: salonConfigId,
+            const userCheck = Promise.race([
+                getCurrentUser(),
+                new Promise((_, rej) => setTimeout(() => rej(new Error("Auth Timeout")), 8000))
+            ]);
+            
+            const { user } = await userCheck;
+            if (!user) throw new Error(language === 'ar' ? '⚠️ فشل التحقق من الجلسة. يرجى تحديث الصفحة.' : '⚠️ Session check failed. Please refresh.');
+
+            console.log("EntitySetup: Saving integration for Entity ID:", entityId);
+            
+            const result = await saveEntityConfig({
+                id: entityId,
                 user_id: user?.id,
                 ...integrationDraft
             });
             
             if (!result.success) throw new Error(result.error);
 
-            // 2. IMPORTANT: Sync Token to the specific Agent if active
             const currentAgentId = agentId || localStorage.getItem('currentAgentId');
-            if (currentAgentId && result.success) {
-                console.log("Syncing token to agent:", currentAgentId);
+            if (currentAgentId) {
+                console.log("EntitySetup: Syncing to agent:", currentAgentId);
                 const agentUpdate = {};
                 if (integrationDraft.telegram_token) agentUpdate.telegram_token = integrationDraft.telegram_token;
-                if (integrationDraft.whatsapp_number) agentUpdate.whatsapp_token = integrationDraft.whatsapp_number; // Syncing number as token reference if needed
+                if (integrationDraft.whatsapp_number) agentUpdate.whatsapp_token = integrationDraft.whatsapp_number;
                 
                 if (Object.keys(agentUpdate).length > 0) {
                     await updateAgent(currentAgentId, agentUpdate);
                 }
             }
 
-            // 3. Auto-Setup Telegram Webhook if token provided
             if (integrationDraft.telegram_token) {
                 const token = integrationDraft.telegram_token;
                 const projectUrl = import.meta.env.VITE_SUPABASE_URL || '';
-                
-                // Use the standard Supabase API gateway URL for functions
                 const webhookUrl = `${projectUrl}/functions/v1/telegram-webhook?agent_id=${currentAgentId}`;
                 
-                console.log("Setting up Telegram Webhook with URL:", webhookUrl);
-                try {
-                    const telegramRes = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`);
-                    const telegramData = await telegramRes.json();
-                    
-                    if (telegramData.ok) {
-                        console.log("Telegram Webhook Sync Success ✅");
-                    } else {
-                        console.warn("Telegram Webhook Sync Rejected ❌", telegramData);
-                        setStatusMsg({ 
-                            type: 'error', 
-                            text: language === 'ar' 
-                                ? `⚠️ تم حفظ الإعدادات لكن فشل ربط التيليجرام: ${telegramData.description || 'التوكن غير صالح'}` 
-                                : `⚠️ Settings saved but Telegram setup failed: ${telegramData.description || 'Invalid Token'}` 
-                        });
-                    }
-                } catch (e) {
-                    console.warn("Webhook Sync Error:", e);
+                console.log("EntitySetup: Registering Telegram Webhook...");
+                const telegramRes = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`);
+                const telegramData = await telegramRes.json();
+                
+                if (!telegramData.ok) {
+                    console.warn("EntitySetup: Webhook Sync Rejected", telegramData);
                 }
             }
-            
+
             setIntegrationKeys(prev => ({ ...prev, ...integrationDraft }));
-            
-            // Show persistent success banner
+            setSaveSuccess(true);
             setStatusMsg({ 
                 type: 'success', 
                 text: language === 'ar' ? '✅ تم حفظ الإعدادات وربط القنوات بنجاح!' : '✅ Settings saved and channels synced successfully!' 
             });
             
-            // show success state on button
-            setSaveSuccess(true);
-            
-            // Delay closing the card so user sees the "Saved" state
             setTimeout(() => {
                 setSaveSuccess(false);
                 if (expandedIntegration !== 'website') {
@@ -756,27 +756,15 @@ const EntitySetup = () => {
                 }
             }, 2000);
 
-            // Clear banner after 5 seconds
             setTimeout(() => setStatusMsg({ type: '', text: '' }), 5000);
+
         } catch (err) {
-            console.error("Save integration error detail:", err);
+            console.error("EntitySetup: Integration Save Error:", err);
             const msg = err.message || "Unknown error";
-            const isCors = msg.includes('CORS') || msg.includes('fetch');
-            const isTimeout = msg.includes('timeout') || msg.includes('30 seconds');
-
-            let userMsg = language === 'ar' 
-                ? '⚠️ حدث خطأ أثناء الحفظ. يرجى المحاولة مرة أخرى.' 
-                : '⚠️ Error saving settings. Please try again.';
-                
-            if (isCors || isTimeout) {
-                userMsg = language === 'ar'
-                    ? '⚠️ يرجى التأكد من جودة اتصال الإنترنت والمحاولة مرة أخرى.'
-                    : '⚠️ Please check your internet connection and try again.';
-            }
-
-            // Show error banner instead of alert
-            setStatusMsg({ type: 'error', text: userMsg + (msg ? ` (${msg})` : '') });
-            setTimeout(() => setStatusMsg({ type: '', text: '' }), 8000);
+            setStatusMsg({ 
+                type: 'error', 
+                text: (language === 'ar' ? '❌ فشل الحفظ: ' : '❌ Save failed: ') + msg
+            });
         } finally {
             setIntegrationSaving(false);
         }
@@ -2054,7 +2042,7 @@ const EntitySetup = () => {
                                                                     onClick={async () => {
                                                                         if (!confirm(language === 'ar' ? 'هل أنت متأكد من مسح خدمات النشاط؟' : 'Are you sure you want to wipe business services?')) return;
                                                                         try {
-                                                                            const { error } = await supabase.from('salon_services').delete().eq('salon_config_id', salonConfigId);
+                                                                            const { error } = await supabase.from('entity_services').delete().eq('entity_id', entityId);
                                                                             if (error) throw error;
                                                                             setStatusMsg({ type: 'success', text: language === 'ar' ? '✅ تم تصفير البيانات! قم بتحديث الصفحة وسيعود الذكاء لبروفايلك الحالي.' : '✅ Data cleared! Refresh page to force AI reset.' });
                                                                         } catch (e) {
