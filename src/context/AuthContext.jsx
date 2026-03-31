@@ -53,11 +53,17 @@ export const createAuthProvider = () => {
                 async (_event, session) => {
                     const authUser = session?.user ?? null;
                     if (cancelled) return;
-                    setUser(authUser);
+
+                    // Prevent redundant state updates if user ID is the same
+                    setUser(prev => {
+                        if (prev?.id === authUser?.id) return prev;
+                        return authUser;
+                    });
+                    
                     const role = await getRoleFromUser(authUser);
                     if (!cancelled) {
                         setUserRole(role);
-                        setLoading(false); // ← always unblock here
+                        setLoading(false);
                     }
                 }
             );

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { 
     getCurrentUser, getProfile, getWalletBalance, saveEntityConfig, 
     activateEntityAgent, getServices, addService, updateService, 
     deleteService, linkGoogleAccount, saveIntegrationCredentials, 
-    getIntegrations, updateAgent, invokeMultiFileWorkflow,
+    getIntegrations, updateAgent, invokeMultiFileWorkflow, getAgents,
     supabase 
 } from '../services/supabaseService';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -17,7 +17,8 @@ import {
 import ServicesTable from './ServicesTable';
 
 const EntitySetup = () => {
-    console.log("EntitySetup.jsx v2-banner-fix: Loaded. Status Banner ready.");
+    const hasInitialized = useRef(false);
+    console.info("EntitySetup: Loaded (v3-stability-fix). Status Banner ready.");
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const { t, language } = useLanguage();
     const navigate = useNavigate();
@@ -165,11 +166,11 @@ const EntitySetup = () => {
         
         setExtractedProfile(null);
         setAiLoading(true);
-        console.log("SalonSetup: Initiating AI Extraction", { files: aiFiles.length, urls: aiUrlsList });
+        console.log("EntitySetup: Initiating AI Extraction", { files: aiFiles.length, urls: aiUrlsList });
         
         try {
             const result = await invokeMultiFileWorkflow(aiFiles, aiUrlsList);
-            console.log("SalonSetup: Extraction Result:", result);
+            console.log("EntitySetup: Extraction Result:", result);
             
             if (result.success && result.data) {
                 // Store for preview — user reviews then confirms
@@ -189,17 +190,17 @@ const EntitySetup = () => {
                     brand_voice: result.data.brand_voice || '',
                     procedures: result.data.procedures || '',
                 });
-                console.log("SalonSetup: Profile extracted and set for preview ✅");
+                console.log("EntitySetup: Profile extracted and set for preview ✅");
             } else {
-                console.error("SalonSetup: Extraction failed:", result.error);
+                console.error("EntitySetup: Extraction failed:", result.error);
                 alert(language === 'ar' ? 'حدث خطأ أثناء التحليل: ' + result.error : 'Analysis error: ' + result.error);
             }
         } catch (error) {
-            console.error("SalonSetup: Unexpected error during AI generate:", error);
+            console.error("EntitySetup: Unexpected error during AI generate:", error);
             alert(language === 'ar' ? 'خطأ غير متوقع: ' + error.message : 'Unexpected error: ' + error.message);
         } finally {
             setAiLoading(false);
-            console.log("SalonSetup: AI Extraction process finished.");
+            console.log("EntitySetup: AI Extraction process finished.");
         }
     };
 
@@ -264,11 +265,17 @@ const EntitySetup = () => {
 
 
     useEffect(() => {
+        // Guard to prevent infinite re-initialization loops
+        if (hasInitialized.current) return;
+        
         const checkUser = async () => {
             let configs = null;
-            const { user } = await getCurrentUser();
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session?.user;
+            
             if (user) {
-                console.log("SalonSetup: Initialization for user", user.id);
+                console.info("EntitySetup: [INIT] Starting initialization for user", user.id);
+                hasInitialized.current = true;
                 setCurrentUserId(user.id);
 
                 // Priority 1: Fetch the global/latest entities as baseline
@@ -280,9 +287,9 @@ const EntitySetup = () => {
                     .limit(1)
                     .maybeSingle();
                 
-                if (globalError) console.error("SalonSetup: Error fetching global configs:", globalError);
+                if (globalError) console.error("EntitySetup: Error fetching global configs:", globalError);
                 if (globalConfigs) {
-                    console.log("SalonSetup: Found global config baseline:", globalConfigs.id);
+                    console.log("EntitySetup: Found global config baseline:", globalConfigs.id);
                     configs = globalConfigs;
                 }
 
@@ -291,11 +298,11 @@ const EntitySetup = () => {
                 
                 // Fallback: If no agent in URL, find the first agent for this user
                 if (!finalAgentId) {
-                    console.log("SalonSetup: No agent in URL, fetching default agent...");
+                    console.log("EntitySetup: No agent in URL, fetching default agent...");
                     const { data: userAgents } = await getAgents();
                     if (userAgents && userAgents.length > 0) {
                         finalAgentId = userAgents[0].id;
-                        console.log("SalonSetup: Auto-detected default agent:", finalAgentId);
+                        console.log("EntitySetup: Auto-detected default agent:", finalAgentId);
                     }
                 }
 
@@ -316,7 +323,7 @@ const EntitySetup = () => {
                             .eq('id', linkedAgent.entity_id)
                             .maybeSingle();
                         if (linkedConfig) {
-                            console.log("SalonSetup: Found agent-specific config override:", linkedConfig.id);
+                            console.log("EntitySetup: Found agent-specific config override:", linkedConfig.id);
                             configs = linkedConfig;
                         }
                     }
@@ -436,7 +443,7 @@ const EntitySetup = () => {
             }
         };
         checkUser().catch(err => {
-            console.error("SalonSetup: Initialization error:", err);
+            console.error("EntitySetup: Initialization error:", err);
             setStatusMsg({ type: 'error', text: isAr ? '❌ فشل تحميل البيانات.' : '❌ Failed to load data.' });
         });
     }, [location.search]);
@@ -486,7 +493,7 @@ const EntitySetup = () => {
 
 
 
-    // Load services when salon config is available
+    // Load services when entity config is available
     useEffect(() => {
         if (entityId) {
             loadServices();
@@ -696,49 +703,60 @@ const EntitySetup = () => {
         setStatusMsg({ type: '', text: '' });
         
         try {
-            console.log("EntitySetup: Starting save sequence for integrations...");
+            console.info("EntitySetup: [STEP 1] Starting integration save sequence...");
             
-            const userCheck = Promise.race([
-                getCurrentUser(),
-                new Promise((_, rej) => setTimeout(() => rej(new Error("Auth Timeout")), 8000))
+            // 1. Get Session instead of full Auth Check (no-hang)
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session?.user;
+            
+            if (!user) {
+                console.error("EntitySetup: No active session found.");
+                throw new Error(language === 'ar' ? '⚠️ فشل التحقق من الجلسة. يرجى تسجيل الدخول مجدداً.' : '⚠️ Session check failed. Please log in again.');
+            }
+
+            console.info("EntitySetup: [STEP 2] Saving to Entity Table...", entityId);
+            
+            // 2. Wrap DB operations in a timeout
+            const dbSave = Promise.race([
+                saveEntityConfig({ id: entityId, user_id: user.id, ...integrationDraft }),
+                new Promise((_, rej) => setTimeout(() => rej(new Error("Database Timeout")), 10000))
             ]);
             
-            const { user } = await userCheck;
-            if (!user) throw new Error(language === 'ar' ? '⚠️ فشل التحقق من الجلسة. يرجى تحديث الصفحة.' : '⚠️ Session check failed. Please refresh.');
-
-            console.log("EntitySetup: Saving integration for Entity ID:", entityId);
-            
-            const result = await saveEntityConfig({
-                id: entityId,
-                user_id: user?.id,
-                ...integrationDraft
-            });
-            
+            const result = await dbSave;
             if (!result.success) throw new Error(result.error);
 
             const currentAgentId = agentId || localStorage.getItem('currentAgentId');
             if (currentAgentId) {
-                console.log("EntitySetup: Syncing to agent:", currentAgentId);
+                console.info("EntitySetup: [STEP 3] Syncing to Agent:", currentAgentId);
                 const agentUpdate = {};
                 if (integrationDraft.telegram_token) agentUpdate.telegram_token = integrationDraft.telegram_token;
                 if (integrationDraft.whatsapp_number) agentUpdate.whatsapp_token = integrationDraft.whatsapp_number;
                 
                 if (Object.keys(agentUpdate).length > 0) {
-                    await updateAgent(currentAgentId, agentUpdate);
+                    const agentSync = Promise.race([
+                        updateAgent(currentAgentId, agentUpdate),
+                        new Promise((_, rej) => setTimeout(() => rej(new Error("Agent Sync Timeout")), 10000))
+                    ]);
+                    await agentSync;
                 }
             }
 
             if (integrationDraft.telegram_token) {
+                console.info("EntitySetup: [STEP 4] Registering Telegram Webhook...");
                 const token = integrationDraft.telegram_token;
-                const projectUrl = import.meta.env.VITE_SUPABASE_URL || '';
+                const projectUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
                 const webhookUrl = `${projectUrl}/functions/v1/telegram-webhook?agent_id=${currentAgentId}`;
                 
-                console.log("EntitySetup: Registering Telegram Webhook...");
-                const telegramRes = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`);
+                const webhookFetch = Promise.race([
+                    fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`),
+                    new Promise((_, rej) => setTimeout(() => rej(new Error("Webhook API Timeout")), 10000))
+                ]);
+                
+                const telegramRes = await webhookFetch;
                 const telegramData = await telegramRes.json();
                 
                 if (!telegramData.ok) {
-                    console.warn("EntitySetup: Webhook Sync Rejected", telegramData);
+                    console.warn("EntitySetup: Webhook Registration Warn:", telegramData.description);
                 }
             }
 
@@ -1203,7 +1221,7 @@ const EntitySetup = () => {
                                     </label>
                                     <input style={inp} value={formData.businessName}
                                         onChange={e => setFormData({ ...formData, businessName: e.target.value })}
-                                        placeholder={language === 'ar' ? 'مثال: صالون نورة، عيادة الشفاء...' : 'e.g. Nora Salon, Al-Shifa Clinic...'} />
+                                        placeholder={language === 'ar' ? 'مثال: شركة البركة، عيادة الشفاء...' : 'e.g. Al-Baraka Co, Al-Shifa Clinic...'} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>

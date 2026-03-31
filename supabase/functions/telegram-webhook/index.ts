@@ -51,10 +51,6 @@ serve(async (req: any) => {
             // so we rely on the URL param or search.
             
             if (!targetAgentId) {
-                console.log("Missing agent_id in URL, attempting discovery via token lookup...");
-                // Note: We can't easily know WHICH bot this is without the token in the URL 
-                // UNLESS we check the specific agent matching the token but we don't have the token yet.
-                // However, we can check salon_configs for tokens.
                 console.error("Discovery failed: No agent_id provided in Webhook URL.");
                 return;
             }
@@ -84,6 +80,8 @@ serve(async (req: any) => {
                 Object.assign(agent || {}, fallbackAgent);
             }
 
+            let dynamicBotToken = agent?.telegram_token;
+
             // Fallback to entities if token isn't in agent table yet
             if (!dynamicBotToken && agent.entity_id) {
                 console.log("Agent token missing, falling back to entities...");
@@ -100,7 +98,7 @@ serve(async (req: any) => {
         
 
             if (!dynamicBotToken) {
-                console.error("No telegram token configured for agent or salon config", targetAgentId);
+                console.error("No telegram token configured for agent or entity config", targetAgentId);
                 return;
             }
 
@@ -118,20 +116,29 @@ serve(async (req: any) => {
                 }
             }
 
-            // --- QUOTA LOGIC ---
-            const { data: owner } = await supabase
-                .from('profiles')
-                .select('id, message_limit')
-                .eq('id', agent.user_id)
-                .single();
+            // --- QUOTA LOGIC (Unified Wallet System) ---
+            const { data: wallet, error: walletError } = await supabase
+                .from('wallet_credits')
+                .select('balance')
+                .eq('user_id', agent.user_id)
+                .maybeSingle();
 
-            if (!owner || (owner.message_limit !== null && owner.message_limit <= 0)) {
-                await sendTelegram("عذراً، لقد استنفد هذا الموظف رصيد المحادثات الخاص به. يرجى من صاحب المنشأة ترقية الباقة لضمان استمرار الخدمة.");
+            if (walletError) {
+                console.error("Wallet fetch error:", walletError.message);
+            }
+
+            const currentBalance = wallet?.balance ?? 50; // Default if not found
+
+            if (currentBalance <= 0) {
+                await sendTelegram("عذراً، لقد استنفد هذا الموظف رصيد المحادثات الخاص به. يرجى من صاحب المنشأة شحن الرصيد لضمان استمرار الخدمة.");
                 return;
             }
 
-            // Decrement the quota limit by 1
-            await supabase.from('profiles').update({ message_limit: owner.message_limit - 1 }).eq('id', owner.id);
+            // Decrement the balance by 1 in the unified wallet table
+            await supabase
+                .from('wallet_credits')
+                .update({ balance: currentBalance - 1 })
+                .eq('user_id', agent.user_id);
             // --- END QUOTA LOGIC ---
 
 

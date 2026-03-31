@@ -633,6 +633,7 @@ export const subscribeToTasks = (agentId, callback) => {
     return channel;
 };
 
+
 export const unsubscribeFromTasks = (channel) => {
     if (channel) {
         supabase.removeChannel(channel);

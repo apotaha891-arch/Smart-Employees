@@ -66,7 +66,7 @@ function AppContent() {
     const { isAuthenticated } = useAuth();
     
     // Routes that ALWAYS use the Dashboard Layout
-    const alwaysDashboardRoutes = ['/dashboard', '/setup', '/entity-setup', '/salon-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
+    const alwaysDashboardRoutes = ['/dashboard', '/setup', '/entity-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
     
     // Routes that use Dashboard Layout ONLY when logged in
     const hybridRoutes = ['/templates', '/interview', '/pricing'];

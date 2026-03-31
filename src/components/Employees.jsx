@@ -37,7 +37,7 @@ const ROLE_LABELS = {
 };
 
 const Employees = () => {
-    console.log("Employees.jsx v2-banner-fix: Loaded. Status Banner ready.");
+    // console.log("Employees.jsx v2-banner-fix: Loaded. Status Banner ready.");
     const { t, language } = useLanguage();
     const isAr = language === 'ar';
     const navigate = useNavigate();

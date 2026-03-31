@@ -100,6 +100,37 @@ serve(async (req: any) => {
         if (agentError || !agent) throw new Error(`Agent not found: ${agentError?.message}`);
         console.log("Agent loaded:", agent.name);
 
+        // --- QUOTA LOGIC (Unified Wallet System) ---
+        const { data: wallet, error: walletError } = await supabaseClient
+            .from('wallet_credits')
+            .select('balance')
+            .eq('user_id', agent.user_id)
+            .maybeSingle();
+
+        if (walletError) {
+            console.error("Wallet fetch error:", walletError.message);
+        }
+
+        const currentBalance = wallet?.balance ?? 50; // Default if not found
+
+        if (currentBalance <= 0) {
+            return new Response(
+                JSON.stringify({ 
+                    success: false, 
+                    text: "عذراً، لقد استنفد هذا الموظف رصيد المحادثات الخاص به. يرجى من صاحب المنشأة شحن الرصيد لضمان استمرار الخدمة.",
+                    errorCode: 'OUT_OF_CREDITS'
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        // Decrement the balance by 1
+        await supabaseClient
+            .from('wallet_credits')
+            .update({ balance: currentBalance - 1 })
+            .eq('user_id', agent.user_id);
+        // --- END QUOTA LOGIC ---
+
         let businessContext = '';
         let servicesText = '';
         let resolvedBusinessName = agent.name || 'الموظف الذكي';
@@ -229,7 +260,7 @@ RULES:
 2. Always reply in the user's language (Arabic/English).
 3. TO BOOK: You MUST call 'book_appointment' ONLY after gathering: Name, Phone, Service, and Time.
 4. NEVER confirm a booking unless you have successfully called the tool.
-${sc?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the customer: "تم تسجيل حجزك المبدئي بنجاح! سيصلك تأكيد نهائي قريباً." (Your preliminary booking is registered! You will receive a final confirmation soon.)` : ''}
+${ec?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the customer: "تم تسجيل حجزك المبدئي بنجاح! سيصلك تأكيد نهائي قريباً." (Your preliminary booking is registered! You will receive a final confirmation soon.)` : ''}
 `;
 
         if (isSales) systemInstruction += "\nRole: Sales & Consultation Expert.";
