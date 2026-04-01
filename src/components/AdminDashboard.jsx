@@ -519,6 +519,125 @@ export default function AdminDashboard() {
 
     const cl = (uid) => agents.filter(a => a.user_id === uid || a.entity_id === clients.find(c => c.id === uid)?.entityId);
     const bl = (uid) => bookings.filter(b => b.user_id === uid || b.entity_id === clients.find(c => c.id === uid)?.entityId);
+
+    const MarketingManager = () => {
+        const [targetEntity, setTargetEntity] = useState('');
+        const [broadcastTitle, setBroadcastTitle] = useState('');
+        const [broadcastText, setBroadcastText] = useState('');
+        const [sending, setSending] = useState(false);
+
+        const handleSendBroadcast = async () => {
+            if (!broadcastText || !targetEntity) {
+                flash(isEnglish ? "Please select a business and enter a message" : "يرجى اختيار المنشأة وكتابة الرسالة");
+                return;
+            }
+
+            setSending(true);
+            try {
+                // 1. Create campaign record
+                await adminService.createBroadcast({
+                    entity_id: targetEntity,
+                    title: broadcastTitle || 'Marketing Message',
+                    message: broadcastText,
+                    status: 'sent'
+                });
+
+                // 2. Call Edge Function (Broadcasting to all telegram IDs for this entity)
+                const res = await adminService.sendCustomerMessage({
+                    entityId: targetEntity,
+                    message: broadcastText,
+                    platform: 'telegram'
+                });
+
+                if (res.success) {
+                    flash(isEnglish ? "✅ Broadcast sent successfully!" : "✅ تم إرسال البث بنجاح!");
+                    setBroadcastText('');
+                    setBroadcastTitle('');
+                } else {
+                    throw new Error(res.error);
+                }
+            } catch (err) {
+                flash("❌ Error: " + err.message);
+            } finally {
+                setSending(false);
+            }
+        };
+
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>
+                    {isEnglish ? 'Marketing & Broadcasts' : 'التسويق والبث المباشر'}
+                </h1>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <Card c={
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <h3 style={{ margin: 0, color: '#F9FAFB', fontSize: '1rem' }}>
+                                {isEnglish ? 'Create New Broadcast' : 'إنشاء رسالة بث جديدة'}
+                            </h3>
+                            
+                            <div>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>
+                                    {isEnglish ? 'Target Business' : 'المنشأة المستهدفة'}
+                                </label>
+                                <select 
+                                    value={targetEntity}
+                                    onChange={(e) => setTargetEntity(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white' }}
+                                >
+                                    <option value="">{isEnglish ? 'Select Business' : 'اختر المنشأة'}</option>
+                                    {clients.map(e => <option key={e.id} value={e.id}>{e.full_name || e.business_type}</option>)}
+                                </select>
+                            </div>
+
+                            <Input 
+                                placeholder={isEnglish ? "Campaign Title (Internal)" : "عنوان الحملة (داخلي)"} 
+                                value={broadcastTitle}
+                                onChange={(e) => setBroadcastTitle(e.target.value)}
+                            />
+
+                            <textarea 
+                                placeholder={isEnglish ? "Your marketing message..." : "اكتب رسالتك التسويقية هنا..."}
+                                value={broadcastText}
+                                onChange={(e) => setBroadcastText(e.target.value)}
+                                style={{ width: '100%', height: '120px', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', resize: 'none', fontFamily: 'inherit' }}
+                            />
+
+                            <Btn disabled={sending} onClick={handleSendBroadcast}>
+                                <Megaphone size={16} />
+                                {sending ? (isEnglish ? 'Sending...' : 'جاري الإرسال...') : (isEnglish ? 'Send to All Customers' : 'إرسال لجميع العملاء')}
+                            </Btn>
+                        </div>
+                    } />
+
+                    <Card c={
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <h3 style={{ margin: 0, color: '#F9FAFB', fontSize: '1rem' }}>
+                                {isEnglish ? 'Reach Distribution' : 'توزيع الوصول'}
+                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-around', padding: '1rem 0' }}>
+                                <div style={{ textAlign: 'center' }}>
+                                    <div style={{ color: '#8B5CF6', fontSize: '1.5rem', fontWeight: 800 }}>
+                                        {endCustomers.filter(c => !!c.telegram_id).length}
+                                    </div>
+                                    <div style={{ color: '#9CA3AF', fontSize: '0.7rem' }}>Telegram</div>
+                                </div>
+                                <div style={{ textAlign: 'center' }}>
+                                    <div style={{ color: '#EC4899', fontSize: '1.5rem', fontWeight: 800 }}>
+                                        {endCustomers.filter(c => !!c.instagram_id).length}
+                                    </div>
+                                    <div style={{ color: '#9CA3AF', fontSize: '0.7rem' }}>Instagram</div>
+                                </div>
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#6B7280', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px' }}>
+                                {isEnglish ? 'Only customers with linked social IDs will receive the broadcast.' : 'سيستلم البرودكاست فقط العملاء الذين تم ربط معرفاتهم الاجتماعية.'}
+                            </div>
+                        </div>
+                    } />
+                </div>
+            </div>
+        );
+    };
     
     // Filtering Logic
     const filteredClients = (clients || []).filter(c => {
@@ -558,8 +677,8 @@ export default function AdminDashboard() {
         { id: 'notifications', i: Bell, l: t('admin.notifications'), badge: notifications.filter(n => !n.is_read).length },
         { id: 'concierge-chats', i: MessageSquare, l: t('admin.concierge'), badge: unreadChats },
         { id: 'ai-settings', i: Bot, l: t('admin.aiSettings') },
-        { id: 'blog', i: Newspaper, l: t('admin.blog') },
         { id: 'subscribers', i: Mail, l: t('admin.subscribers') },
+        { id: 'marketing', i: Megaphone, l: isEnglish ? 'Broadcasting' : 'البث المباشر' },
         { id: 'custom-requests', i: Zap, l: isEnglish ? 'Custom Requests' : 'طلبات التوظيف', badge: customRequests.filter(r => r.status === 'pending').length },
     ];
 
@@ -1504,6 +1623,9 @@ export default function AdminDashboard() {
 
                 {/* ── BLOG ── */}
                 {tab === 'blog' && <AdminBlogManager />}
+
+                {/* ── BROADCASTING ── */}
+                {tab === 'marketing' && <MarketingManager />}
 
                 {/* ── SUBSCRIBERS ── */}
                 {tab === 'subscribers' && <NewsletterSubscribers />}

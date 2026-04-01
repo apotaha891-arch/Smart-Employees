@@ -634,6 +634,51 @@ export const subscribeToTasks = (agentId, callback) => {
 };
 
 
+// ==================== CUSTOMERS & BROADCASTS ====================
+
+export const getCustomers = async (entityId = null) => {
+    try {
+        let query = supabase.from('customers').select('*');
+        if (entityId) query = query.eq('entity_id', entityId);
+        
+        const { data, error } = await query.order('created_at', { ascending: false });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('getCustomers error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const createBroadcast = async (broadcastData) => {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data, error } = await supabase
+            .from('customer_broadcasts')
+            .insert([{ ...broadcastData, user_id: user.id }])
+            .select()
+            .single();
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('createBroadcast error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const sendCustomerMessage = async (params) => {
+    try {
+        const { data, error } = await supabase.functions.invoke('send-customer-message', {
+            body: params
+        });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('sendCustomerMessage error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 export const unsubscribeFromTasks = (channel) => {
     if (channel) {
         supabase.removeChannel(channel);
