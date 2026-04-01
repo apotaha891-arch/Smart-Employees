@@ -998,22 +998,6 @@ export const deleteService = async (serviceId) => {
 
 // ==================== CUSTOMERS MANAGEMENT ====================
 
-export const getCustomers = async (entityId) => {
-    try {
-        const { data, error } = await supabase
-            .from('customers')
-            .select('*')
-            .eq('entity_id', entityId)
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        return { success: true, data };
-    } catch (error) {
-        console.error('Get Customers Error:', error);
-        return { success: false, error: error.message };
-    }
-};
-
 export const upsertCustomer = async (customerData) => {
     try {
         const { data, error } = await supabase
@@ -1168,6 +1152,67 @@ export const cancelBooking = async (bookingId) => {
         return { success: true, data };
     } catch (error) {
         console.error('Cancel Booking Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// ==================== CLIENT NOTIFICATIONS ====================
+
+export const getClientNotifications = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('client_notifications')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('getClientNotifications error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const markClientNotificationRead = async (id) => {
+    try {
+        const { error } = await supabase
+            .from('client_notifications')
+            .update({ is_read: true })
+            .eq('id', id);
+        
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('markClientNotificationRead error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const subscribeToClientNotifications = (userId, callback) => {
+    return supabase
+        .channel(`client_notifications_${userId}`)
+        .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'client_notifications',
+            filter: `user_id=eq.${userId}` 
+        }, callback)
+        .subscribe();
+};
+export const getUserAgentCount = async (userId) => {
+    try {
+        const { count, error } = await supabase
+            .from('agents')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('status', 'active');
+        
+        if (error) throw error;
+        return { success: true, count: count || 0 };
+    } catch (error) {
+        console.error('getUserAgentCount error:', error);
         return { success: false, error: error.message };
     }
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase, getProfile } from '../services/supabaseService';
+import { supabase, getProfile, getUserAgentCount } from '../services/supabaseService';
+import { getPlatformSettings } from '../services/adminService';
 import {
     Bot, ArrowRight, ArrowLeft, Check,
     Calendar, TrendingUp, MessageCircle, Users, Mail
@@ -73,6 +74,8 @@ const HireAgent = () => {
     const [sector, setSector] = useState('telecom_it');
     const [entityReady, setEntityReady] = useState(null); // null=checking, true=ready, false=not set
     const [maxTools, setMaxTools] = useState(2); // default 2 tools for starter plan
+    const [agentsLimit, setAgentsLimit] = useState(1); // default 1 agent for starter plan
+    const [currentAgents, setCurrentAgents] = useState(0);
 
     useEffect(() => {
         (async () => {
@@ -93,11 +96,30 @@ const HireAgent = () => {
                 }
                 // check user tier
                 const profileResult = await getProfile(user.id);
-                if (profileResult.success && profileResult.data?.subscription_plan) {
-                    const plan = profileResult.data.subscription_plan;
-                    if (plan === 'enterprise') setMaxTools(5);
-                    else if (plan === 'pro') setMaxTools(3);
-                    else setMaxTools(2);
+                const tier = profileResult.data?.subscription_plan || 'starter';
+
+                // Fetch dynamic limits from platform settings
+                try {
+                    const pricingData = await getPlatformSettings('pricing_plans');
+                    if (pricingData) {
+                        const planConfig = pricingData.find(p => p.id === tier);
+                        if (planConfig) {
+                            setAgentsLimit(planConfig.agentsLimit || (tier === 'pro' ? 2 : tier === 'enterprise' ? 10 : 1));
+                            setMaxTools(planConfig.toolsLimit || (tier === 'pro' ? 3 : tier === 'enterprise' ? 5 : 2));
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error fetching dynamic limits:', err);
+                    // Fallback to defaults
+                    if (tier === 'enterprise') { setMaxTools(5); setAgentsLimit(10); }
+                    else if (tier === 'pro') { setMaxTools(3); setAgentsLimit(2); }
+                    else { setMaxTools(2); setAgentsLimit(1); }
+                }
+
+                // Count existing agents
+                const countRes = await getUserAgentCount(user.id);
+                if (countRes.success) {
+                    setCurrentAgents(countRes.count);
                 }
 
             } else {
@@ -112,6 +134,16 @@ const HireAgent = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error(isAr ? 'يجب تسجيل الدخول أولاً' : 'Auth required');
+
+            // Final safety check for limits
+            if (currentAgents >= agentsLimit) {
+                alert(isAr 
+                    ? `لقد وصلت للحد الأقصى لباقة منشأتك الحالي (${agentsLimit} موظفين). يرجى تقديم طلب ترقية لتوظيف المزيد.` 
+                    : `You have reached the maximum agent limit for your plan (${agentsLimit} agents). Please upgrade to hire more.`);
+                setSaving(false);
+                navigate('/pricing');
+                return;
+            }
 
             const agentData = {
                 name: form.name,
@@ -258,6 +290,43 @@ const HireAgent = () => {
                     <div style={{ height: '100%', width: `${step * 50}%`, background: 'linear-gradient(90deg,#8B5CF6,#6D28D9)', borderRadius: 99, transition: 'width 0.35s' }} />
                 </div>
             </div>
+
+            {/* ── Limit Warning Banner ── */}
+            {currentAgents >= agentsLimit && (
+                <div style={{ 
+                    marginBottom: '1.5rem', 
+                    padding: '1.25rem', 
+                    background: 'rgba(239, 68, 68, 0.1)', 
+                    border: '1px solid rgba(239, 68, 68, 0.2)', 
+                    borderRadius: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '1rem'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444' }}>
+                            ⚠️
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 700, color: '#FCA5A5', fontSize: '0.95rem' }}>
+                                {isAr ? 'وصلت للحد الأقصى للموظفين' : 'Agent Limit Reached'}
+                            </div>
+                            <div style={{ color: '#9CA3AF', fontSize: '0.8rem', marginTop: '2px' }}>
+                                {isAr 
+                                    ? `باقتك الحالية تسمح بـ ${agentsLimit} موظف فقط. لديك حالياً ${currentAgents} موظفين نشطين.` 
+                                    : `Your current plan allows for ${agentsLimit} agents. You already have ${currentAgents} active agents.`}
+                            </div>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => navigate('/pricing')}
+                        style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#EF4444', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+                    >
+                        {isAr ? 'ترقية الآن' : 'Upgrade Now'}
+                    </button>
+                </div>
+            )}
 
             {/* ── Step 1: Choose Role ── */}
             {step === 1 && (

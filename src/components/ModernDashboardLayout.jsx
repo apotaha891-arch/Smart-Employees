@@ -8,9 +8,11 @@ import {
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { signOut, supabase, getProfile } from '../services/supabaseService';
+import NotificationCenter from './shared/NotificationCenter';
+import { Globe } from 'lucide-react';
 
 const ModernDashboardLayout = ({ children }) => {
-    const { t, language } = useLanguage();
+    const { t, language, toggleLanguage } = useLanguage();
     const location = useLocation();
     const navigate = useNavigate();
     const { isAdmin, isCustomer } = useAuth();
@@ -230,6 +232,56 @@ const ModernDashboardLayout = ({ children }) => {
                 overflowX: 'hidden',
                 boxSizing: 'border-box'
             }}>
+                {/* Top Header Bar */}
+                <header style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '1rem 2rem',
+                    background: '#111827',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 100
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                        <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
+                            <Search size={16} style={{ position: 'absolute', top: '50%', [language === 'ar' ? 'right' : 'left']: '12px', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                            <input 
+                                type="text" 
+                                placeholder={language === 'ar' ? 'بحث...' : 'Search...'} 
+                                style={{ width: '100%', padding: language === 'ar' ? '8px 36px 8px 12px' : '8px 12px 8px 36px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white', fontSize: '0.85rem' }} 
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        {/* Language Toggle */}
+                        <button
+                            onClick={toggleLanguage}
+                            style={{
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '10px',
+                                padding: '10px',
+                                color: '#9CA3AF',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '0.8rem',
+                                fontWeight: 700
+                            }}
+                        >
+                            <Globe size={18} />
+                            <span>{language === 'ar' ? 'EN' : 'AR'}</span>
+                        </button>
+
+                        {/* Notifications */}
+                        <NotificationCenter userId={supabase.auth.at_current_user_id || userData?.id} />
+                    </div>
+                </header>
+
                 {/* Page Content */}
                 <div style={{ padding: '2rem', flex: 1, overflowY: 'auto' }}>
                     {children}
