@@ -1687,65 +1687,91 @@ const EntitySetup = () => {
 
                             {
                                 id: 'whatsapp', icon: MessageCircle, color: '#25D366',
-                                titleAr: 'واتساب للأعمال', titleEn: 'WhatsApp Business',
-                                descAr: 'ربط حساب واتساب للأعمال للرد التلقائي',
-                                descEn: 'Connect WhatsApp for automated replies',
-                                badge: 'Add-on', badgeColor: '#10B981',
+                                titleAr: 'واتساب للأعمال (BYOT)', titleEn: 'WhatsApp Business (BYOT)',
+                                descAr: 'ربط حسابك الخاص عبر Meta للتحكم الكامل',
+                                descEn: 'Connect your own Meta account for full control',
+                                badge: language === 'ar' ? 'حر' : 'Hassle-Free', badgeColor: '#10B981',
                                 fields: [
-                                    { key: 'whatsapp_number', labelAr: 'معرف رقم الهاتف (Phone ID)', labelEn: 'Phone Number ID', placeholder: '101234567890', password: false, hintAr: 'من Meta Developers', hintEn: 'from Meta Developers', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' },
-                                    { key: 'whatsapp_api_key', labelAr: 'رمز الوصول (Access Token)', labelEn: 'Access Token', placeholder: 'EAAG...', password: true, hintAr: 'رمز الوصول الدائم', hintEn: 'Permanent Access Token', guide: 'https://developers.facebook.com/docs/whatsapp/cloud-api/get-started' }
-                                ]
-                            },
-                            {
-                                id: 'sheets', icon: FileText, color: '#0F9D58',
-                                titleAr: 'جداول جوجل', titleEn: 'Google Sheets',
-                                descAr: 'تصدير الحجوزات والعملاء تلقائياً لجدولك',
-                                descEn: 'Auto-export bookings to Google Sheets',
-                                badge: 'Pro', badgeColor: '#F59E0B',
-                                comingSoon: true,
-                                fields: [
-                                    { key: 'google_sheets_id', labelAr: 'معرّف الجدول', labelEn: 'Spreadsheet ID', placeholder: '1BxiMVs0XRA...', password: false, hintAr: 'بعد /d/', hintEn: 'after /d/', guide: 'https://developers.google.com/sheets/api/guides/concepts' }
-                                ]
-                            },
-                            {
-                                id: 'calendar', icon: Calendar, color: '#DB4437',
-                                titleAr: 'تقويم جوجل', titleEn: 'Google Calendar',
-                                descAr: 'مزامنة المواعيد مع تقويم جوجل تلقائياً',
-                                descEn: 'Sync with Google Calendar automatically',
-                                badge: 'Pro', badgeColor: '#F59E0B',
-                                comingSoon: true,
-                                fields: [
-                                    { key: 'google_calendar_id', labelAr: 'معرّف التقويم', labelEn: 'Calendar ID', placeholder: 'your-email@gmail.com', password: false, hintAr: 'من الإعدادات', hintEn: 'from settings', guide: 'https://support.google.com/calendar/answer/37103' }
-                                ]
-                            },
-                            // ── NEW INTEGRATIONS ──
-                            {
-                                id: 'linkedin_personal', icon: Linkedin, color: '#0A66C2',
-                                titleAr: 'لينكد إن (حساب شخصي)', titleEn: 'LinkedIn (Personal)',
-                                descAr: 'إنشاء ومشاركة منشورات مع متابعيك.',
-                                descEn: 'Create and share posts with your network.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
-                            },
-                            {
-                                id: 'linkedin_org', icon: Linkedin, color: '#0A66C2',
-                                titleAr: 'لينكد إن (الصفحات)', titleEn: 'LinkedIn (Organization)',
-                                descAr: 'إدارة حساب شركتك على لينكد إن ونشر المحتوى.',
-                                descEn: 'Create and share posts on your organization\'s behalf.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
-                            },
-                            {
-                                id: 'facebook', icon: Facebook, color: '#1877F2',
-                                titleAr: 'فيسبوك', titleEn: 'Facebook',
-                                descAr: 'إدارة صفحات الفيسبوك وحسابات إنستغرام والنشر.',
-                                descEn: 'Manage Facebook and Instagram pages, accounts, and posts.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: true, fields: []
+                                    { key: 'whatsapp_api_key', labelAr: 'رمز الوصول الدائم (Token)', labelEn: 'Permanent Access Token', placeholder: 'EAAG...', password: true, hintAr: 'من Meta Business', hintEn: 'from Meta Business', guide: true },
+                                    { key: 'whatsapp_number', labelAr: 'معرف رقم الهاتف (Phone ID)', labelEn: 'Phone Number ID', placeholder: '101234567890', password: false, hintAr: 'Phone Number ID', hintEn: 'Phone Number ID', guide: true },
+                                    { key: 'whatsapp_waba_id', labelAr: 'معرف حساب الأعمال (WABA ID)', labelEn: 'WhatsApp Business Account ID', placeholder: '201234567890', password: false, hintAr: 'WABA ID', hintEn: 'WABA ID', guide: true }
+                                ],
+                                customContent: (expandedIntegration === 'whatsapp' && currentUserId) && (
+                                    <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(37, 211, 102, 0.05)', borderRadius: '12px', border: '1px solid rgba(37, 211, 102, 0.2)' }}>
+                                        <h5 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: '#25D366' }}>{language === 'ar' ? 'رابط الـ Webhook الخاص بك' : 'Your Unique Webhook URL'}</h5>
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <code style={{ flex: 1, background: '#0F172A', padding: '8px', borderRadius: '6px', fontSize: '0.7rem', color: '#E2E8F0', wordBreak: 'break-all' }}>
+                                                {`${supabaseUrl}/functions/v1/meta-webhook?user_id=${currentUserId}`}
+                                            </code>
+                                            <button onClick={() => {
+                                                navigator.clipboard.writeText(`${supabaseUrl}/functions/v1/meta-webhook?user_id=${currentUserId}`);
+                                                alert(language === 'ar' ? 'تم النسخ!' : 'Copied!');
+                                            }} style={{ background: '#374151', border: 'none', color: 'white', padding: '0 12px', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer' }}>
+                                                {language === 'ar' ? 'نسخ' : 'Copy'}
+                                            </button>
+                                        </div>
+                                        <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#9CA3AF' }}>{language === 'ar' ? 'استخدم هذا الرابط في إعدادات Webhook في تطبيق Meta الخاص بك.' : 'Use this URL in your Meta App Webhook settings.'}</p>
+                                    </div>
+                                )
                             },
                             {
                                 id: 'instagram', icon: Instagram, color: '#E4405F',
-                                titleAr: 'إنستغرام', titleEn: 'Instagram',
-                                descAr: 'إدارة حساب إنستغرام للأعمال أو منشئ المحتوى.',
-                                descEn: 'Manage your Instagram Business or Creator account.',
-                                badge: 'OAuth', badgeColor: '#3B82F6', comingSoon: false, fields: []
+                                titleAr: 'إنستجرام للأعمال (BYOT)', titleEn: 'Instagram Business (BYOT)',
+                                descAr: 'ربط حساب إنستجرام عبر تطبيق Meta الخاص بك',
+                                descEn: 'Connect Instagram via your own Meta App',
+                                badge: language === 'ar' ? 'حر' : 'Hassle-Free', badgeColor: '#E4405F',
+                                fields: [
+                                    { key: 'instagram_token', labelAr: 'رمز الوصول الدائم (Token)', labelEn: 'Permanent Access Token', placeholder: 'EAAG...', password: true, hintAr: 'رمز الوصول الدائم', hintEn: 'Permanent Access Token', guide: true },
+                                    { key: 'instagram_account_id', labelAr: 'معرف حساب إنستجرام', labelEn: 'Instagram Business ID', placeholder: '1784...', password: false, hintAr: 'من إعدادات تطبيق Meta', hintEn: 'from Meta App settings', guide: true }
+                                ],
+                                customContent: (expandedIntegration === 'instagram' && currentUserId) && (
+                                    <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(228, 64, 95, 0.05)', borderRadius: '12px', border: '1px solid rgba(228, 64, 95, 0.2)' }}>
+                                        <h5 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: '#E4405F' }}>{language === 'ar' ? 'رابط الـ Webhook الخاص بك' : 'Your Unique Webhook URL'}</h5>
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <code style={{ flex: 1, background: '#0F172A', padding: '8px', borderRadius: '6px', fontSize: '0.7rem', color: '#E2E8F0', wordBreak: 'break-all' }}>
+                                                {`${supabaseUrl}/functions/v1/meta-webhook?user_id=${currentUserId}`}
+                                            </code>
+                                            <button onClick={() => {
+                                                navigator.clipboard.writeText(`${supabaseUrl}/functions/v1/meta-webhook?user_id=${currentUserId}`);
+                                                alert(language === 'ar' ? 'تم النسخ!' : 'Copied!');
+                                            }} style={{ background: '#374151', border: 'none', color: 'white', padding: '0 12px', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer' }}>
+                                                {language === 'ar' ? 'نسخ' : 'Copy'}
+                                            </button>
+                                        </div>
+                                        <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#9CA3AF' }}>{language === 'ar' ? 'تأكد من اختيار (messages) في اشتراكات Webhook.' : 'Ensure you select (messages) in Webhook subscriptions.'}</p>
+                                    </div>
+                                )
+                            },
+                            {
+                                id: 'sheets', icon: FileText, color: '#0F9D58',
+                                titleAr: 'جداول جوجل (بدون موافقة)', titleEn: 'Google Sheets (Easy Sync)',
+                                descAr: 'تصدير الحجوزات تلقائياً دون شاشات موافقة جوجل',
+                                descEn: 'Auto-export bookings without OAuth consent screens',
+                                badge: language === 'ar' ? 'سريع' : 'Fast', badgeColor: '#0F9D58',
+                                fields: [
+                                    { key: 'google_sheets_id', labelAr: 'معرّف الجدول', labelEn: 'Spreadsheet ID', placeholder: '1BxiMVs0XRA...', password: false, hintAr: 'بعد /d/ في الرابط', hintEn: 'from the URL after /d/', guide: true }
+                                ],
+                                customContent: (expandedIntegration === 'sheets') && (
+                                    <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(15, 157, 88, 0.05)', borderRadius: '12px', border: '1px solid rgba(15, 157, 88, 0.2)' }}>
+                                        <h5 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: '#0F9D58' }}>{language === 'ar' ? 'الخطوة الأخيرة: مشاركة الجدول' : 'Final Step: Share Spreadsheet'}</h5>
+                                        <p style={{ margin: '0 0 8px', fontSize: '0.8rem', color: '#E2E8F0', lineHeight: 1.4 }}>
+                                            {language === 'ar' 
+                                                ? 'يرجى مشاركة جدول البيانات الخاص بك مع البريد الإلكتروني التالي (صلاحية محرر):' 
+                                                : 'Please share your Google Sheet with the following email as an Editor:'}
+                                        </p>
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <code style={{ flex: 1, background: '#0F172A', padding: '8px', borderRadius: '6px', fontSize: '0.7rem', color: '#22C55E', fontWeight: 700 }}>
+                                                connect-sheets@smart-employees.iam.gserviceaccount.com
+                                            </code>
+                                            <button onClick={() => {
+                                                navigator.clipboard.writeText('connect-sheets@smart-employees.iam.gserviceaccount.com');
+                                                alert(language === 'ar' ? 'تم نسخ البريد!' : 'Email copied!');
+                                            }} style={{ background: '#374151', border: 'none', color: 'white', padding: '0 12px', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer' }}>
+                                                {language === 'ar' ? 'نسخ' : 'Copy'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )
                             },
                             {
                                 id: 'gmail', icon: Mail, color: '#EA4335',

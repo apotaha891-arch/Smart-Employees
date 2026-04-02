@@ -212,6 +212,19 @@ export const saveIntegrationCredentials = async (userId, provider, credentials) 
     }
 };
 
+export const connectMetaBYOT = async (params) => {
+    try {
+        const { data, error } = await supabase.functions.invoke('meta-connection-handler', {
+            body: params
+        });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('connectMetaBYOT error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 export const getIntegrations = async (userId) => {
     try {
         const { data, error } = await supabase

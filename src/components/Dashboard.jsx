@@ -244,17 +244,18 @@ const Dashboard = () => {
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                                 {[
-                                    { label: language === 'ar' ? 'إضافة قائمة الخدمات والأسعار' : 'Add Services & Pricing', checked: true },
-                                    { label: language === 'ar' ? 'تحديد ساعات العمل الرسمية' : 'Set Working Hours', checked: profile?.business_name ? true : false },
-                                    { label: language === 'ar' ? 'ربط التقويم أو الواتساب' : 'Link Calendar or WhatsApp', checked: false },
-                                    { label: language === 'ar' ? 'تدريب الموظف على الأسئلة الشائعة' : 'Train Agent on FAQs', checked: false },
+                                    { label: language === 'ar' ? 'إضافة قائمة الخدمات والأسعار' : 'Add Services & Pricing', checked: services?.length > 0, path: '/entity-setup?tab=services' },
+                                    { label: language === 'ar' ? 'تحديد ساعات العمل الرسمية' : 'Set Working Hours', checked: profile?.business_name ? true : false, path: '/entity-setup?tab=identity' },
+                                    { label: language === 'ar' ? 'ربط التقويم أو الواتساب' : 'Link Calendar or WhatsApp', checked: true === false, path: '/entity-setup?tab=integrations' }, // Placeholder for checked: false
+                                    { label: language === 'ar' ? 'تدريب الموظف على الأسئلة الشائعة' : 'Train Agent on FAQs', checked: profile?.faq_data?.length > 0, path: '/entity-setup?tab=identity' },
                                 ].map((item, idx) => (
-                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: item.checked ? '#22c59e' : '#9CA3AF' }}>
+                                    <Link key={idx} to={item.path} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: item.checked ? '#10B981' : '#9CA3AF', transition: 'transform 0.2s' }} onMouseOver={e => !item.checked && (e.currentTarget.style.transform = 'translateX(5px)')} onMouseOut={e => e.currentTarget.style.transform = 'translateX(0)'}>
                                         <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1px solid ${item.checked ? '#22c59e' : 'rgba(255,255,255,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: item.checked ? 'rgba(34,197,94,0.1)' : 'transparent' }}>
                                             {item.checked && <Zap size={10} />}
                                         </div>
-                                        <span>{item.label}</span>
-                                    </div>
+                                        <span style={{ fontWeight: item.checked ? 600 : 400 }}>{item.label}</span>
+                                        {!item.checked && <ChevronRight size={12} style={{ opacity: 0.5 }} />}
+                                    </Link>
                                 ))}
                             </div>
                         </div>

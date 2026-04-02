@@ -48,20 +48,31 @@ serve(async (req) => {
     }
 
     const sheetsCreds = integrations.credentials;
-    const spreadsheetId = sheetsCreds.spreadsheet_id; // Added during OAuth setup
+    const spreadsheetId = sheetsCreds.spreadsheet_id;
 
     if (!spreadsheetId) {
       console.log('No Spreadsheet ID specified in credentials.');
       return new Response('Configuration missing', { status: 200, headers: corsHeaders });
     }
 
-    // 3. Initialize Google Sheets API
-    const auth = new google.auth.OAuth2();
-    auth.setCredentials(sheetsCreds);
+    // 3. Initialize Google Sheets API using Service Account
+    const serviceAccountKeyJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_KEY');
+    if (!serviceAccountKeyJson) {
+      console.error('GOOGLE_SERVICE_ACCOUNT_KEY environment variable is not set');
+      return new Response('Server configuration error', { status: 500, headers: corsHeaders });
+    }
+
+    const serviceAccountKey = JSON.parse(serviceAccountKeyJson);
+    const auth = new google.auth.JWT(
+      serviceAccountKey.client_email,
+      null,
+      serviceAccountKey.private_key,
+      ['https://www.googleapis.com/auth/spreadsheets']
+    );
+
     const sheets = google.sheets({ version: 'v4', auth });
 
     // 4. Prepare data to append
-    // Map the database record to columns in the sheet
     const rowData = [
       newRecord.id,
       newRecord.created_at,
@@ -83,11 +94,11 @@ serve(async (req) => {
       },
     });
 
-    console.log(\`Successfully synced record \${newRecord.id} to Google Sheets.\`);
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    console.log(`Successfully synced record ${newRecord.id} to Google Sheets via Service Account.`);
+    return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
 
-    } catch (error: any) {
-        console.error('Error in Sheets Sync:', error);
-        return new Response(JSON.stringify({ success: false, error: error.message || String(error) }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 });
-    }
+  } catch (error: any) {
+    console.error('Error in Sheets Sync:', error);
+    return new Response(JSON.stringify({ success: false, error: error.message || String(error) }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 });
+  }
 });
