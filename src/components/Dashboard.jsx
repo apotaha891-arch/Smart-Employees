@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getCurrentUser, getProfile, getWalletBalance } from '../services/supabaseService';
+import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getCurrentUser, getProfile, getWalletBalance, getServices, getIntegrations, getUserEntities } from '../services/supabaseService';
 import { Link } from 'react-router-dom';
 import LowCreditModal from './LowCreditModal';
 import * as XLSX from 'xlsx';
@@ -20,6 +20,8 @@ const Dashboard = () => {
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [agentStatus, setAgentStatus] = useState('active');
     const [profile, setProfile] = useState(null);
+    const [services, setServices] = useState([]);
+    const [integrations, setIntegrations] = useState([]);
     const [showLowCreditModal, setShowLowCreditModal] = useState(false);
 
     const agentId = localStorage.getItem('currentAgentId');
@@ -56,6 +58,18 @@ const Dashboard = () => {
                     }
 
                     setProfile(profileData);
+                    
+                    // Fetch services for the mission checklist
+                    const entitiesResult = await getUserEntities(user.id);
+                    const entityId = entitiesResult.success && entitiesResult.data?.[0]?.id;
+                    if (entityId) {
+                        const servicesResult = await getServices(entityId);
+                        if (servicesResult.success) setServices(servicesResult.data);
+                    }
+
+                    // Fetch integrations to check connection status
+                    const integrationsResult = await getIntegrations(user.id);
+                    if (integrationsResult.success) setIntegrations(integrationsResult.data);
 
                     // Show modal if credits are low (< 10) and not unlimited
                     const remaining = (profileData.total_credits || 0) - (profileData.credits_used || 0);
@@ -246,7 +260,7 @@ const Dashboard = () => {
                                 {[
                                     { label: language === 'ar' ? 'إضافة قائمة الخدمات والأسعار' : 'Add Services & Pricing', checked: services?.length > 0, path: '/entity-setup?tab=services' },
                                     { label: language === 'ar' ? 'تحديد ساعات العمل الرسمية' : 'Set Working Hours', checked: profile?.business_name ? true : false, path: '/entity-setup?tab=identity' },
-                                    { label: language === 'ar' ? 'ربط التقويم أو الواتساب' : 'Link Calendar or WhatsApp', checked: true === false, path: '/entity-setup?tab=integrations' }, // Placeholder for checked: false
+                                    { label: language === 'ar' ? 'ربط التقويم أو الواتساب' : 'Link Calendar or WhatsApp', checked: integrations?.some(i => i.status === 'connected'), path: '/entity-setup?tab=integrations' },
                                     { label: language === 'ar' ? 'تدريب الموظف على الأسئلة الشائعة' : 'Train Agent on FAQs', checked: profile?.faq_data?.length > 0, path: '/entity-setup?tab=identity' },
                                 ].map((item, idx) => (
                                     <Link key={idx} to={item.path} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: item.checked ? '#10B981' : '#9CA3AF', transition: 'transform 0.2s' }} onMouseOver={e => !item.checked && (e.currentTarget.style.transform = 'translateX(5px)')} onMouseOut={e => e.currentTarget.style.transform = 'translateX(0)'}>

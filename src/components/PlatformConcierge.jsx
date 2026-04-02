@@ -118,7 +118,7 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
 
     // Listen for custom event to open the concierge window
     useEffect(() => {
-        const handleOpenConcierge = (e) => {
+        const handleOpenConcierge = async (e) => {
             setIsOpen(true);
             
             // If it's a special request (like Elite/Enterprise from Pricing)
@@ -130,6 +130,22 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
                     role: 'agent',
                     content: language === 'ar' ? eliteGreetingAr : eliteGreetingEn
                 }]);
+            } else if (e.detail?.type === 'support' && e.detail?.message) {
+                // Automated support request
+                const supportMsg = e.detail.message;
+                const userMsg = { role: 'user', content: supportMsg };
+                setMessages(prev => [...prev, userMsg]);
+                setIsLoading(true);
+                try {
+                    const response = await sendMessage(supportMsg, 'concierge');
+                    if (response.success) {
+                        setMessages(prev => [...prev, { role: 'agent', content: response.text }]);
+                    }
+                } catch (err) {
+                    console.error('Concierge support error:', err);
+                } finally {
+                    setIsLoading(false);
+                }
             }
         };
         window.addEventListener('open-concierge', handleOpenConcierge);

@@ -921,6 +921,20 @@ export const saveEntityConfig = async (config) => {
     }
 };
 
+export const getUserEntities = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('entities')
+            .select('*')
+            .eq('user_id', userId);
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('getUserEntities error:', error);
+        return { success: false, error: error.message, data: [] };
+    }
+};
+
 export const activateEntityAgent = async (entityId, calendarToken) => {
     try {
         // 1. Update status in DB

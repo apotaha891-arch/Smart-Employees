@@ -65,6 +65,119 @@ const EntitySetup = () => {
     const [agentId, setAgentId] = useState(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
+    const [isTestingSheets, setIsTestingSheets] = useState(false);
+    const [showHelpModal, setShowHelpModal] = useState(false);
+    const [helpModalType, setHelpModalType] = useState(null);
+    const [activeFieldGuide, setActiveFieldGuide] = useState(null);
+
+    const integrationGuides = {
+        whatsapp_api_key: {
+            stepsAr: [
+                'اذهب إلى (Meta for Developers) وافتح تطبيقك.',
+                'من القائمة الجانبية اختر (WhatsApp) ثم (Configuration).',
+                'قم بإنشاء (System User Token) جديد.',
+                'تأكد من اختيار صلاحيات: whatsapp_business_management و whatsapp_business_messaging.'
+            ],
+            stepsEn: [
+                'Go to (Meta for Developers) and open your app.',
+                'From the side menu, select (WhatsApp) then (Configuration).',
+                'Generate a new (System User Token).',
+                'Ensure you select: whatsapp_business_management and whatsapp_business_messaging permissions.'
+            ],
+            url: 'https://developers.facebook.com/apps/'
+        },
+        whatsapp_number: {
+            stepsAr: [
+                'اذهب إلى تطبيقك في Meta for Developers.',
+                'اختر (WhatsApp) ثم (API Setup).',
+                'ستجد (Phone number ID) في قسم خطوات الإرسال.',
+                'انسخ الرقم الطويل المكون من عدة خانات.'
+            ],
+            stepsEn: [
+                'Go to your app in Meta for Developers.',
+                'Select (WhatsApp) then (API Setup).',
+                'You will find (Phone number ID) in the "Send and receive messages" section.',
+                'Copy the long numeric ID.'
+            ],
+            url: 'https://developers.facebook.com/apps/'
+        },
+        whatsapp_waba_id: {
+            stepsAr: [
+                'اذهب إلى تطبيقك في Meta for Developers.',
+                'اختر (WhatsApp) ثم (API Setup).',
+                'ستجد (WhatsApp Business Account ID) تحت رقم الهاتف.',
+                'انسخ هذا المعرّف لاستخدامه هنا.'
+            ],
+            stepsEn: [
+                'Go to your app in Meta for Developers.',
+                'Select (WhatsApp) then (API Setup).',
+                'You will find (WhatsApp Business Account ID) right below the Phone ID.',
+                'Copy this ID to use here.'
+            ],
+            url: 'https://developers.facebook.com/apps/'
+        },
+        instagram_token: {
+            stepsAr: [
+                'اذهب إلى Meta for Developers.',
+                'أنشئ (System User Token) مع صلاحية instagram_manage_messages.',
+                'يجب أن يكون حساب إنستجرام مربوطاً بصفحة فيسبوك داخل نفس الـ Business Manager.'
+            ],
+            stepsEn: [
+                'Go to Meta for Developers.',
+                'Generate a (System User Token) with instagram_manage_messages permission.',
+                'Ensure your Instagram account is linked to a Facebook Page within the same Business Manager.'
+            ],
+            url: 'https://developers.facebook.com/apps/'
+        },
+        instagram_account_id: {
+            stepsAr: [
+                'افتح (Meta Business Suite).',
+                'اذهب إلى (Settings) ثم (Business Assets).',
+                'اذهب لتبويب (Instagram Accounts) وستجد المعرّف هناك.',
+                'أو من خلال إعدادات صفحة فيسبوك المربوطة.'
+            ],
+            stepsEn: [
+                'Open (Meta Business Suite).',
+                'Go to (Settings) then (Business Assets).',
+                'Go to the (Instagram Accounts) tab to find the ID.',
+                'Alternatively, find it via your linked Facebook Page settings.'
+            ]
+        },
+        google_sheets_id: {
+            stepsAr: [
+                'افتح ملف جوجل شيت الخاص بك.',
+                'انسخ الجزء الموجود في الرابط (URL) بين /d/ و /edit.',
+                'مثال: 1BxiMVs0XRA... هو المعرّف المطلوب.'
+            ],
+            stepsEn: [
+                'Open your Google Sheet.',
+                'Copy the part of the URL between /d/ and /edit.',
+                'Example: 1BxiMVs0XRA... is the ID you need.'
+            ]
+        }
+    };
+    
+    // Shared Styles
+    const cardStyle = {
+        padding: '1.25rem',
+        background: '#1F2937',
+        borderRadius: 16,
+        border: '1px solid rgba(255,255,255,0.05)',
+        transition: 'all 0.3s ease'
+    };
+
+    const inp = {
+        width: '100%',
+        padding: '12px 16px',
+        borderRadius: 12,
+        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'rgba(255,255,255,0.03)',
+        color: 'white',
+        fontSize: '0.9rem',
+        outline: 'none',
+        boxSizing: 'border-box',
+        transition: 'all 0.2s ease'
+    };
 
 
     const handleOAuthConnect = async (platformId) => {
@@ -82,12 +195,8 @@ const EntitySetup = () => {
             return;
         }
 
-        setLoadingOAuth(platformId);
-        // Simulate other OAuth redirects
-        setTimeout(() => {
-            setIntegrationKeys(prev => ({ ...prev, [`oauth_${platformId}`]: true }));
-            setLoadingOAuth(null);
-        }, 1800);
+        // Default "Coming Soon" behavior for other OAuth services
+        alert(language === 'ar' ? 'هذه الميزة (OAuth) سيتم تفعيلها قريباً! الموظف حالياً يدعم الربط السريع عبر Service Accounts.' : 'This OAuth feature is coming soon! Currently, we support Fast Sync via Service Accounts.');
     };
 
     // Handle OAuth Redirect and Load Integrations
@@ -149,6 +258,110 @@ const EntitySetup = () => {
     const handleFileChange = e => {
         if (e.target.files) setAiFiles(prev => [...prev, ...Array.from(e.target.files)]);
     };
+
+    const handleTestSheetsConnection = async () => {
+        const spreadsheetId = integrationKeys.google_sheets_id || integrationDraft.google_sheets_id;
+        if (!spreadsheetId) {
+            alert(language === 'ar' ? 'يرجى إدخال معرّف الجدول أولاً' : 'Please enter Spreadsheet ID first');
+            return;
+        }
+        
+        setIsTestingSheets(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('sheets-sync', {
+                body: {
+                    type: 'INSERT',
+                    record: {
+                        id: 'test-' + Date.now(),
+                        user_id: currentUserId,
+                        customer_name: 'نورة (اختبار الربط) ✨',
+                        customer_phone: '12345678',
+                        service_requested: 'Test Service / خدمة تجريبية',
+                        booking_date: new Date().toLocaleDateString(),
+                        booking_time: new Date().toLocaleTimeString(),
+                        status: 'test'
+                    },
+                    // Special override for test button to use draft ID if DB is not updated yet
+                    test_spreadsheet_id: spreadsheetId 
+                }
+            });
+
+            if (error) throw error;
+            
+            // Handle string response or object response
+            const result = typeof data === 'string' ? { success: false, error: data } : data;
+
+            if (result?.success) {
+                setStatusMsg({ 
+                    type: 'success', 
+                    text: language === 'ar' ? '✅ تم إرسال صف تجريبي بنجاح! تحقق من جدول البيانات الخاص بك.' : '✅ Test row sent successfully! Check your spreadsheet.' 
+                });
+            } else {
+                throw new Error(result?.error || (language === 'ar' ? 'فشل الاختبار: تأكد من مشاركة الجدول مع البريد الإلكتروني المذكور.' : 'Test failed: Make sure the sheet is shared with the indicated email.'));
+            }
+        } catch (err) {
+            console.error('Sheets test error:', err);
+            setStatusMsg({ 
+                type: 'error', 
+                text: language === 'ar' ? `❌ فشل الاختبار: ${err.message}` : `❌ Test failed: ${err.message}` 
+            });
+        } finally {
+            setIsTestingSheets(false);
+            // Auto hide message after 5 seconds
+            setTimeout(() => setStatusMsg({ type: '', text: '' }), 5000);
+        }
+    };
+
+    const [isTestingCalendar, setIsTestingCalendar] = useState(false);
+
+    const handleTestCalendarConnection = async () => {
+        const calendarId = integrationKeys.google_calendar_id || integrationDraft.google_calendar_id || 'primary';
+        
+        setIsTestingCalendar(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('calendar-sync', {
+                body: {
+                    type: 'TEST',
+                    calendar_id: calendarId,
+                    user_id: currentUserId,
+                    event: {
+                        summary: 'نورة (اختبار الربط) ✨',
+                        description: 'تم إنشاء هذا الحدث لاختبار ربط التقويم مع الموظف الذكي.',
+                        start: {
+                            dateTime: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
+                            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                        },
+                        end: {
+                            dateTime: new Date(Date.now() + 7200000).toISOString(), // 2 hours from now
+                            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                        }
+                    }
+                }
+            });
+
+            if (error) throw error;
+            const result = typeof data === 'string' ? { success: false, error: data } : data;
+
+            if (result?.success) {
+                setStatusMsg({ 
+                    type: 'success', 
+                    text: language === 'ar' ? '✅ تم إنشاء موعد تجريبي بنجاح! تحقق من تقويم جوجل الخاص بك.' : '✅ Test event created successfully! Check your Google Calendar.' 
+                });
+            } else {
+                throw new Error(result?.error || (language === 'ar' ? 'فشل الاختبار: تأكد من مشاركة التقويم مع البريد الإلكتروني المذكور.' : 'Test failed: Make sure the calendar is shared with the indicated email.'));
+            }
+        } catch (err) {
+            console.error('Calendar test error:', err);
+            setStatusMsg({ 
+                type: 'error', 
+                text: language === 'ar' ? `❌ فشل الاختبار: ${err.message}` : `❌ Test failed: ${err.message}` 
+            });
+        } finally {
+            setIsTestingCalendar(false);
+            setTimeout(() => setStatusMsg({ type: '', text: '' }), 5000);
+        }
+    };
+
     const removeFile = i => setAiFiles(prev => prev.filter((_, idx) => idx !== i));
     const handleAddUrl = () => {
         if (aiUrl && !aiUrlsList.includes(aiUrl)) {
@@ -258,7 +471,7 @@ const EntitySetup = () => {
             setActiveTab('identity');
             setStatusMsg({ type: 'success', text: language === 'ar' ? '✅ تم حفظ بيانات المنشأة ومزامنة الموظف بنجاح!' : '✅ Entity profile saved and agent synced successfully!' });
         } catch (err) {
-            setStatusMsg({ type: 'error', text: (isAr ? '❌ فشل الحفظ: ' : '❌ Save failed: ') + err.message });
+            setStatusMsg({ type: 'error', text: (language === 'ar' ? '❌ فشل الحفظ: ' : '❌ Save failed: ') + err.message });
         }
         setLoading(false);
     };
@@ -834,15 +1047,202 @@ const EntitySetup = () => {
         </div>
     );
 
-    const inp = {
-        width: '100%', padding: '11px 14px',
-        background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: '10px', color: 'white', fontSize: '0.9rem',
-        boxSizing: 'border-box', outline: 'none',
+    const renderHelpModal = () => {
+        if (!showHelpModal || !helpModalType) return null;
+
+        const guides = {
+            sheets: {
+                title: language === 'ar' ? 'دليل ربط جداول جوجل 📊' : 'Google Sheets Setup Guide 📊',
+                color: '#0F9D58',
+                steps: language === 'ar' ? [
+                    { t: 'أنشئ جدول بيانات جديد', d: 'قم بفتح Google Sheets وأنشئ جدولاً جديداً أو استخدم جدولاً موجوداً.' },
+                    { t: 'المشاركة مع الموظف الذكي', d: 'هذه أهم خطوة! اضغط على زر "مشاركة" (Share) وأضف البريد التالي كـ "محرر" (Editor):', copy: 'google-sheet@smart-employees.iam.gserviceaccount.com' },
+                    { t: 'نسخ معرّف الجدول', d: 'ستجده في رابط المتصفح (URL) بين /d/ و /edit. مثال: 1BxiMVs0XRA...' },
+                    { t: 'الحفظ والاختبار', d: 'ضع المعرف في الخانة المخصصة واضغط "اختبار الربط" للتأكد من وصول البيانات.' }
+                ] : [
+                    { t: 'Create a Spreadsheet', d: 'Open Google Sheets and create a new sheet or use an existing one.' },
+                    { t: 'Share with the AI Agent', d: 'Crucial step! Click "Share" and add this email as an "Editor":', copy: 'google-sheet@smart-employees.iam.gserviceaccount.com' },
+                    { t: 'Copy Spreadsheet ID', d: 'Found in the URL between /d/ and /edit. Example: 1BxiMVs0XRA...' },
+                    { t: 'Save & Test', d: 'Enter the ID in the field and click "Test Connection" to verify.' }
+                ]
+            },
+            calendar: {
+                title: language === 'ar' ? 'دليل ربط تقويم جوجل 📅' : 'Google Calendar Setup Guide 📅',
+                color: '#4285F4',
+                steps: language === 'ar' ? [
+                    { t: 'افتح إعدادات التقويم', d: 'اذهب إلى Google Calendar، اضغط على أيقونة الترس ثم "الإعدادات".' },
+                    { t: 'المشاركة مع الموظف', d: 'اختر تقويمك من القائمة الجانبية، ثم "مشاركة مع أشخاص محددين". أضف البريد التالي:', copy: 'google-sheet@smart-employees.iam.gserviceaccount.com' },
+                    { t: 'تعيين الصلاحيات', d: 'تأكد من اختيار صلاحية "إجراء تغييرات على الأحداث" (Make changes to events).' },
+                    { t: 'معرّف التقويم (ID)', d: 'انزل لأسفل في الإعدادات لقسم "دمج التقويم"، وانسخ الـ Calendar ID كاملاً (مثال: email@group.calendar.google.com).' }
+                ] : [
+                    { t: 'Open Calendar Settings', d: 'Go to Google Calendar, click the gear icon, then "Settings".' },
+                    { t: 'Share with the Agent', d: 'Select your calendar on the left, then "Share with specific people". Add this email:', copy: 'google-sheet@smart-employees.iam.gserviceaccount.com' },
+                    { t: 'Set Permissions', d: 'Ensure you select "Make changes to events" permission.' },
+                    { t: 'Calendar ID', d: 'Scroll down to the "Integrate calendar" section and copy the full Calendar ID (e.g., email@group.calendar.google.com).' }
+                ]
+            },
+            whatsapp: {
+                title: language === 'ar' ? 'دليل ربط واتساب للأعمال 💬' : 'WhatsApp Business Setup Guide 💬',
+                color: '#25D366',
+                steps: language === 'ar' ? [
+                    { t: 'بوابة Meta للمطورين', d: 'سجل الدخول في developers.facebook.com وأنشئ تطبيقاً من نوع Business.' },
+                    { t: 'إعداد واتساب', d: 'أضف منتج "WhatsApp" لتطبيقك وقم بربط رقم هاتفك.' },
+                    { t: 'الرموز والمعرفات', d: 'ستحتاج لنسخ الـ Phone ID والـ WABA ID من قسم API Setup.' },
+                    { t: 'مفتاح الوصول الدائم', d: 'أنشئ System User Token دائم وتأكد من اختيار صلاحيات الرسائل.' }
+                ] : [
+                    { t: 'Meta Developers Portal', d: 'Log in to developers.facebook.com and create a "Business" type app.' },
+                    { t: 'Setup WhatsApp', d: 'Add "WhatsApp" to your app and link your phone number.' },
+                    { t: 'IDs & Tokens', d: 'Copy the Phone ID and WABA ID from the API Setup section.' },
+                    { t: 'Permanent Token', d: 'Generate a Permanent System User Token with messaging permissions.' }
+                ]
+            },
+            instagram: {
+                title: language === 'ar' ? 'دليل ربط إنستجرام للأعمال 📸' : 'Instagram Business Setup Guide 📸',
+                color: '#E4405F',
+                steps: language === 'ar' ? [
+                    { t: 'حساب تجاري', d: 'تأكد أن حسابك في إنستجرام هو حساب "تجاري" (Business) أو "صانع محتوى" (Creator).' },
+                    { t: 'ربط بصفحة فيسبوك', d: 'يجب ربط حساب إنستجرام بصفحة فيسبوك نشطة من خلال Meta Business Suite.' },
+                    { t: 'تفعيل الوصول للرسائل', d: 'من تطبيق إنستجرام: الإعدادات > الرسائل والردود على القصص > أدوات المراسلة > فعل "السماح بالوصول إلى الرسائل".' },
+                    { t: 'بوابة Meta للمطورين', d: 'سجل في developers.facebook.com وأنشئ تطبيقاً من نوع (Business). أضف منتج "Instagram Graph API".' },
+                    { t: 'معرّف الحساب (ID)', d: 'ستجد Instagram Business ID في Meta Business Suite > Settings > Business Assets.' },
+                    { t: 'رمز الوصول الدائم (Token)', d: 'أنشئ (System User Token) دائم عبر Business Manager بصلاحيات: instagram_basic, instagram_manage_messages.' },
+                    { t: 'إعداد الـ Webhook', d: 'في إعدادات تطبيق Meta، استخدم الرابط التالي لتلقي الرسائل مجاناً وفي الوقت الفعلي:', copy: (import.meta.env.VITE_SUPABASE_URL || '') + '/functions/v1/meta-webhook?user_id=' + currentUserId }
+                ] : [
+                    { t: 'Business Account', d: 'Ensure your Instagram account is set to "Business" or "Creator" mode.' },
+                    { t: 'Link Facebook Page', d: 'Your Instagram must be linked to a Facebook Page via Meta Business Suite.' },
+                    { t: 'Allow Message Access', d: 'In Instagram App: Settings > Messages & Story Replies > Message Tools > Toggle "Allow Access to Messages".' },
+                    { t: 'Meta Developer App', d: 'Sign up at developers.facebook.com and create a "Business" type app. Add the "Instagram Graph API" product.' },
+                    { t: 'Business Account ID', d: 'Found in Meta Business Suite > Settings > Business Assets under Instagram Accounts.' },
+                    { t: 'Permanent Token', d: 'Generate a Permanent System User Token in Business Manager with permissions: instagram_basic, instagram_manage_messages.' },
+                    { t: 'Configure Webhook', d: 'In your Meta App Webhook settings, use this URL to receive live messages:', copy: (import.meta.env.VITE_SUPABASE_URL || '') + '/functions/v1/meta-webhook?user_id=' + currentUserId }
+                ]
+            },
+            telegram: {
+                title: language === 'ar' ? 'دليل إعداد بوت تيليجرام 🤖' : 'Telegram Bot Setup Guide 🤖',
+                color: '#229ED9',
+                steps: language === 'ar' ? [
+                    { t: 'ابدأ مع BotFather', d: 'افتح تطبيق تيليجرام وابحث عن @BotFather.' },
+                    { t: 'إنشاء بوت جديد', d: 'أرسل الأمر /newbot واتبع التعليمات لاختيار اسم ومعرف للبوت.' },
+                    { t: 'الحصول على التوكن', d: 'بعد الانتهاء، سيعطيك BotFather "API Token" (رقم طويل مع أحرف). انسخه هنا.' },
+                    { t: 'تفعيل الموظف', d: 'ضع التوكن في الخانة المخصصة واحفظ الإعدادات لتفعيل الرد التلقائي.' }
+                ] : [
+                    { t: 'Start with BotFather', d: 'Open Telegram and search for @BotFather.' },
+                    { t: 'Create New Bot', d: 'Send /newbot and follow instructions to set a name and username.' },
+                    { t: 'Get API Token', d: 'BotFather will provide a long numeric/alphabetic token. Copy it.' },
+                    { t: 'Activate Agent', d: 'Paste the token in the field and save your settings.' }
+                ]
+            }
+        };
+
+        const guide = guides[helpModalType];
+        if (!guide) return null;
+
+        return (
+            <div style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 10000, padding: '20px'
+            }}>
+                <div className="animate-scale-in" style={{
+                    width: '100%', maxWidth: '600px', background: '#18181B',
+                    borderRadius: '24px', border: `1px solid ${guide.color}44`,
+                    overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                }}>
+                    <div style={{
+                        padding: '24px', background: `linear-gradient(135deg, ${guide.color}22, transparent)`,
+                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                    }}>
+                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF' }}>{guide.title}</h3>
+                        <button 
+                            onClick={() => setShowHelpModal(false)}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#9CA3AF', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    <div style={{ padding: '24px', maxHeight: '70vh', overflowY: 'auto' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            {guide.steps.map((step, idx) => (
+                                <div key={idx} style={{ display: 'flex', gap: '16px' }}>
+                                    <div style={{
+                                        width: '32px', height: '32px', borderRadius: '10px', background: `${guide.color}22`,
+                                        color: guide.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: '0.9rem', fontWeight: 800, flexShrink: 0, border: `1px solid ${guide.color}44`
+                                    }}>
+                                        {idx + 1}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <h4 style={{ margin: '0 0 6px', fontSize: '1rem', fontWeight: 700, color: '#E5E7EB' }}>{step.t}</h4>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#9CA3AF', lineHeight: 1.5 }}>{step.d}</p>
+                                        
+                                        {step.copy && (
+                                            <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                                                <code style={{ flex: 1, background: '#0F172A', padding: '10px', borderRadius: '10px', fontSize: '0.8rem', color: guide.color, border: '1px solid rgba(255,255,255,0.05)', wordBreak: 'break-all' }}>
+                                                    {step.copy}
+                                                </code>
+                                                <button 
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(step.copy);
+                                                        setStatusMsg({ type: 'success', text: language === 'ar' ? 'تم نسخ البريد!' : 'Email copied!' });
+                                                    }}
+                                                    style={{ background: '#374151', border: 'none', color: 'white', padding: '0 16px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}
+                                                >
+                                                    {language === 'ar' ? 'نسخ' : 'Copy'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{ 
+                            marginTop: '32px', padding: '20px', background: 'rgba(139, 92, 246, 0.05)', 
+                            borderRadius: '16px', border: '1px dashed rgba(139, 92, 246, 0.3)',
+                            display: 'flex', alignItems: 'center', gap: '16px'
+                        }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                ✨
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <p style={{ margin: 0, fontSize: '0.85rem', color: '#E5E7EB', fontWeight: 600 }}>
+                                    {language === 'ar' ? 'هل تواجه صعوبة؟' : 'Need more help?'}
+                                </p>
+                                <p style={{ margin: 0, fontSize: '0.8rem', color: '#9CA3AF' }}>
+                                    {language === 'ar' ? 'يمكن لـ "نورة" مساعدتك في كل خطوة.' : 'Noura can guide you through every step.'}
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    setShowHelpModal(false);
+                                    const msg = language === 'ar' 
+                                        ? `أريد مساعدة في تفعيل ربط ${guide.title}` 
+                                        : `I need help activating ${guide.title}`;
+                                    window.dispatchEvent(new CustomEvent('open-concierge', { detail: { type: 'support', message: msg } }));
+                                }}
+                                style={{ background: '#8B5CF6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                            >
+                                {language === 'ar' ? 'اسأل نورة' : 'Ask Noura'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style={{ padding: '20px', background: '#18181B', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                        <button onClick={() => setShowHelpModal(false)} style={{ background: 'transparent', color: '#9CA3AF', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
+                            {language === 'ar' ? 'فهمت ذلك، إغلاق' : 'Got it, close'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     return (
         <div className="fade-in" dir={language === 'ar' ? 'rtl' : 'ltr'} style={{ textAlign: language === 'ar' ? 'right' : 'left', color: 'white', position: 'relative', minHeight: '100vh' }}>
+            {renderHelpModal()}
             
             {/* Global Status Banner - TOP of Setup Page (Sticky) */}
             {statusMsg.text && (
@@ -1681,8 +2081,23 @@ const EntitySetup = () => {
                                 descEn: 'Connect your Telegram bot to receive & reply',
                                 badge: language === 'ar' ? 'مضمّن' : 'Included', badgeColor: '#22C55E',
                                 fields: [
-                                    { key: 'telegram_token', labelAr: 'توكن البوت', labelEn: 'Bot Token', placeholder: '123456789:AAF...', password: false, hintAr: 'من @BotFather في تيليجرام', hintEn: 'from @BotFather', guide: 'https://core.telegram.org/bots/tutorial' }
-                                ]
+                                    { key: 'telegram_token', labelAr: 'توكن البوت', labelEn: 'Bot Token', placeholder: '123456789:AAF...', password: false, hintAr: 'من @BotFather في تيليجرام', hintEn: 'from @BotFather', guide: null }
+                                ],
+                                customContent: (expandedIntegration === 'telegram') && (
+                                    <div style={{ marginTop: '1rem' }}>
+                                        <button 
+                                            onClick={() => { setHelpModalType('telegram'); setShowHelpModal(true); }}
+                                            style={{
+                                                width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(34, 158, 217, 0.1)',
+                                                border: '1px dashed #229ED9', color: '#229ED9', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                                            }}
+                                        >
+                                            <BookOpen size={14} />
+                                            {language === 'ar' ? 'كيف أحصل على توكن البوت؟' : 'How to get Bot Token?'}
+                                        </button>
+                                    </div>
+                                )
                             },
 
                             {
@@ -1710,6 +2125,17 @@ const EntitySetup = () => {
                                                 {language === 'ar' ? 'نسخ' : 'Copy'}
                                             </button>
                                         </div>
+                                        <button 
+                                            onClick={() => { setHelpModalType('whatsapp'); setShowHelpModal(true); }}
+                                            style={{
+                                                width: '100%', marginTop: '12px', padding: '10px', borderRadius: '10px', background: 'rgba(37, 211, 102, 0.1)',
+                                                border: '1px dashed #25D366', color: '#25D366', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                                            }}
+                                        >
+                                            <BookOpen size={14} />
+                                            {language === 'ar' ? 'دليل إعداد منصة Meta (WhatsApp)' : 'Meta Platform Setup Guide (WhatsApp)'}
+                                        </button>
                                         <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#9CA3AF' }}>{language === 'ar' ? 'استخدم هذا الرابط في إعدادات Webhook في تطبيق Meta الخاص بك.' : 'Use this URL in your Meta App Webhook settings.'}</p>
                                     </div>
                                 )
@@ -1738,7 +2164,68 @@ const EntitySetup = () => {
                                                 {language === 'ar' ? 'نسخ' : 'Copy'}
                                             </button>
                                         </div>
+                                        <button 
+                                            onClick={() => { setHelpModalType('instagram'); setShowHelpModal(true); }}
+                                            style={{
+                                                width: '100%', marginTop: '12px', padding: '10px', borderRadius: '10px', background: 'rgba(228, 64, 95, 0.1)',
+                                                border: '1px dashed #E4405F', color: '#E4405F', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                                            }}
+                                        >
+                                            <BookOpen size={14} />
+                                            {language === 'ar' ? 'دليل إعداد منصة Meta (Instagram)' : 'Meta Platform Setup Guide (Instagram)'}
+                                        </button>
                                         <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#9CA3AF' }}>{language === 'ar' ? 'تأكد من اختيار (messages) في اشتراكات Webhook.' : 'Ensure you select (messages) in Webhook subscriptions.'}</p>
+                                    </div>
+                                )
+                            },
+                            {
+                                id: 'calendar', icon: Calendar, color: '#4285F4',
+                                titleAr: 'تقويم جوجل (بدون موافقة)', titleEn: 'Google Calendar (Easy Sync)',
+                                descAr: 'حجز المواعيد تلقائياً في تقويمك الخاص',
+                                descEn: 'Auto-book appointments directly in your calendar',
+                                badge: language === 'ar' ? 'سريع' : 'Fast', badgeColor: '#4285F4',
+                                fields: [
+                                    { key: 'google_calendar_id', labelAr: 'معرّف التقويم', labelEn: 'Calendar ID', placeholder: 'primary', password: false, hintAr: 'استخدم primary للتقويم الأساسي', hintEn: 'use primary for your main calendar', guide: true }
+                                ],
+                                customContent: (expandedIntegration === 'calendar') && (
+                                    <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(66, 133, 244, 0.05)', borderRadius: '12px', border: '1px solid rgba(66, 133, 244, 0.2)' }}>
+                                        <button 
+                                            onClick={() => { setHelpModalType('calendar'); setShowHelpModal(true); }}
+                                            style={{
+                                                width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(66, 133, 244, 0.1)',
+                                                border: '1px dashed #4285F4', color: '#4285F4', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: '1rem'
+                                            }}
+                                        >
+                                            <BookOpen size={16} />
+                                            {language === 'ar' ? 'عرض دليل الإعداد المصبور (خطوة بخطوة)' : 'View Step-by-Step Setup Guide'}
+                                        </button>
+                                        
+                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                                            <button 
+                                                onClick={handleTestCalendarConnection}
+                                                disabled={isTestingCalendar}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '10px',
+                                                    borderRadius: '8px',
+                                                    background: 'rgba(66, 133, 244, 0.1)',
+                                                    border: '1px solid rgba(66, 133, 244, 0.3)',
+                                                    color: '#4285F4',
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 600,
+                                                    cursor: isTestingCalendar ? 'not-allowed' : 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: 8
+                                                }}
+                                            >
+                                                {isTestingCalendar ? <Loader size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Zap size={14} />}
+                                                {language === 'ar' ? 'اختبار ربط التقويم (إنشاء موعد)' : 'Test Calendar Link (Create Event)'}
+                                            </button>
+                                        </div>
                                     </div>
                                 )
                             },
@@ -1753,21 +2240,40 @@ const EntitySetup = () => {
                                 ],
                                 customContent: (expandedIntegration === 'sheets') && (
                                     <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(15, 157, 88, 0.05)', borderRadius: '12px', border: '1px solid rgba(15, 157, 88, 0.2)' }}>
-                                        <h5 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: '#0F9D58' }}>{language === 'ar' ? 'الخطوة الأخيرة: مشاركة الجدول' : 'Final Step: Share Spreadsheet'}</h5>
-                                        <p style={{ margin: '0 0 8px', fontSize: '0.8rem', color: '#E2E8F0', lineHeight: 1.4 }}>
-                                            {language === 'ar' 
-                                                ? 'يرجى مشاركة جدول البيانات الخاص بك مع البريد الإلكتروني التالي (صلاحية محرر):' 
-                                                : 'Please share your Google Sheet with the following email as an Editor:'}
-                                        </p>
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                            <code style={{ flex: 1, background: '#0F172A', padding: '8px', borderRadius: '6px', fontSize: '0.7rem', color: '#22C55E', fontWeight: 700 }}>
-                                                connect-sheets@smart-employees.iam.gserviceaccount.com
-                                            </code>
-                                            <button onClick={() => {
-                                                navigator.clipboard.writeText('connect-sheets@smart-employees.iam.gserviceaccount.com');
-                                                alert(language === 'ar' ? 'تم نسخ البريد!' : 'Email copied!');
-                                            }} style={{ background: '#374151', border: 'none', color: 'white', padding: '0 12px', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer' }}>
-                                                {language === 'ar' ? 'نسخ' : 'Copy'}
+                                        <button 
+                                            onClick={() => { setHelpModalType('sheets'); setShowHelpModal(true); }}
+                                            style={{
+                                                width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(15, 157, 88, 0.1)',
+                                                border: '1px dashed #0F9D58', color: '#0F9D58', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: '1rem'
+                                            }}
+                                        >
+                                            <BookOpen size={16} />
+                                            {language === 'ar' ? 'عرض دليل الإعداد المصبور (خطوة بخطوة)' : 'View Step-by-Step Setup Guide'}
+                                        </button>
+
+                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                                            <button 
+                                                onClick={handleTestSheetsConnection}
+                                                disabled={isTestingSheets}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '10px',
+                                                    borderRadius: '8px',
+                                                    background: 'rgba(16, 185, 129, 0.1)',
+                                                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                                                    color: '#10B981',
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 600,
+                                                    cursor: isTestingSheets ? 'not-allowed' : 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: 8
+                                                }}
+                                            >
+                                                {isTestingSheets ? <Loader size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Zap size={14} />}
+                                                {language === 'ar' ? 'اختبار الربط الآن (إرسال صف تجريبي)' : 'Test Connection Now (Send Test Row)'}
                                             </button>
                                         </div>
                                     </div>
@@ -2033,11 +2539,49 @@ const EntitySetup = () => {
                                                                         )}
                                                                     </div>
                                                                     {f.guide && (
-                                                                        <span
-                                                                            onClick={(e) => { e.stopPropagation(); navigate('/help/integrations'); }}
-                                                                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, color: '#60A5FA', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 500 }}>
-                                                                            <LinkIcon size={12} /> {language === 'ar' ? 'كيف أحصل على هذا المفتاح؟' : 'How to get this key?'}
-                                                                        </span>
+                                                                        <div style={{ marginTop: 8 }}>
+                                                                            <span
+                                                                                onClick={(e) => { 
+                                                                                    e.stopPropagation(); 
+                                                                                    setActiveFieldGuide(activeFieldGuide === f.key ? null : f.key);
+                                                                                }}
+                                                                                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#60A5FA', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}>
+                                                                                <LinkIcon size={12} /> {language === 'ar' ? 'كيف أحصل على هذا المفتاح؟' : 'How to get this key?'}
+                                                                            </span>
+
+                                                                            {activeFieldGuide === f.key && integrationGuides && integrationGuides[f.key] && (
+                                                                                <div className="animate-fade-in" style={{
+                                                                                    marginTop: '10px', padding: '12px', background: 'rgba(30, 41, 59, 0.5)',
+                                                                                    borderRadius: '10px', border: '1px solid rgba(96, 165, 250, 0.2)', fontSize: '0.8rem'
+                                                                                }}>
+                                                                                    <ul style={{ margin: 0, padding: language === 'ar' ? '0 18px 0 0' : '0 0 0 18px', color: '#94A3B8', listStyleType: 'disc' }}>
+                                                                                        {(language === 'ar' ? integrationGuides[f.key].stepsAr : integrationGuides[f.key].stepsEn).map((step, sIdx) => (
+                                                                                            <li key={sIdx} style={{ marginBottom: '6px' }}>{step}</li>
+                                                                                        ))}
+                                                                                    </ul>
+                                                                                    
+                                                                                    <div style={{ marginTop: '12px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                                                                        {integrationGuides[f.key].url && (
+                                                                                            <a href={integrationGuides[f.key].url} target="_blank" rel="noreferrer" style={{
+                                                                                                background: '#3B82F6', color: 'white', textDecoration: 'none', padding: '4px 12px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem'
+                                                                                            }}>
+                                                                                                {language === 'ar' ? 'فتح بوابة Meta' : 'Open Meta Portal'}
+                                                                                            </a>
+                                                                                        )}
+                                                                                        <button 
+                                                                                            onClick={() => {
+                                                                                                const msg = language === 'ar' 
+                                                                                                    ? `أحتاج مساعدة في الحصول على ${f.labelAr}` 
+                                                                                                    : `I need help getting the ${f.labelEn}`;
+                                                                                                window.dispatchEvent(new CustomEvent('open-concierge', { detail: { type: 'support', message: msg } }));
+                                                                                            }}
+                                                                                            style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', color: '#A78BFA', padding: '4px 12px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer' }}>
+                                                                                            {language === 'ar' ? 'اسأل نورة للمساعدة ✨' : 'Ask Noura for help ✨'}
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                             ))
