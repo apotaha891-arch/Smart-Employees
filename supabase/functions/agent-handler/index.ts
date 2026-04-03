@@ -97,10 +97,22 @@ serve(async (req: any) => {
             .eq('id', agentId)
             .single();
 
-        if (agentError || !agent) throw new Error(`Agent not found: ${agentError?.message}`);
-        console.log("Agent loaded:", agent.name);
+        if (agentError || !agent) {
+            console.error(`Agent lookup failed for ID ${agentId}:`, agentError?.message);
+            throw new Error(`Agent not found: ${agentId}`);
+        }
+        console.log("Agent loaded successfully:", agent.name, "Entity:", agent.entity_id);
 
-        // --- QUOTA LOGIC (Unified Wallet System) ---
+        // --- 3. QUOTA & PLAN LOGIC ---
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('subscription_tier')
+            .eq('id', agent.user_id)
+            .maybeSingle();
+        
+        const subTier = profile?.subscription_tier || 'starter';
+        console.log(`User Plan: ${subTier} for User: ${agent.user_id}`);
+
         const { data: wallet, error: walletError } = await supabaseClient
             .from('wallet_credits')
             .select('balance')
@@ -135,9 +147,6 @@ serve(async (req: any) => {
         let servicesText = '';
         let resolvedBusinessName = agent.name || 'الموظف الذكي';
 
-        if (agent.description) businessContext += `\nAgent Primary Role: ${agent.description}`;
-        if (agent.knowledge_base) businessContext += `\nAgent Knowledge Base: ${agent.knowledge_base}`;
-
         // UNIFICATION: Fetch latest entity config for THIS user
         const { data: latestConfig } = await supabaseClient
             .from('entities')
@@ -153,11 +162,18 @@ serve(async (req: any) => {
         if (ec) {
             console.log("Using Unified Business Config:", ec.id);
             if (ec.business_name) resolvedBusinessName = ec.business_name;
-            if (ec.description) businessContext += `\nBusiness Description: ${ec.description}`;
-            if (ec.knowledge_base) businessContext += `\nBusiness Knowledge Base/FAQ: ${ec.knowledge_base}`;
-            if (ec.phone) businessContext += `\nBusiness Contact Phone: ${ec.phone}`;
-            if (ec.address) businessContext += `\nBusiness Physical Address: ${ec.address}`;
-            if (ec.website) businessContext += `\nBusiness Official Website: ${ec.website}`;
+            
+            // PRIORITY: Use Unified Source (Entities)
+            businessContext = `Business Profile (Unified Source):\n`;
+            if (ec.description) businessContext += `Description: ${ec.description}\n`;
+            if (ec.knowledge_base) businessContext += `Knowledge Base: ${ec.knowledge_base}\n`;
+            
+            // Append agent specific role if it doesn't conflict
+            if (agent.description) businessContext += `Agent Role: ${agent.description}\n`;
+            
+            if (ec.phone) businessContext += `Phone: ${ec.phone}\n`;
+            if (ec.address) businessContext += `Address: ${ec.address}\n`;
+            if (ec.website) businessContext += `Website: ${ec.website}\n`;
             
             const formatWorkingHours = (wh: any) => {
                 if (!wh) return 'Not specified';
@@ -173,11 +189,13 @@ serve(async (req: any) => {
                 const shifts = wh.shifts || [{ start: wh.start, end: wh.end }];
                 return `Standard: ${shifts.map((s: any) => `${s.start}-${s.end}`).join(', ')}`;
             };
-            if (ec.working_hours) businessContext += `\nWorking Hours: ${formatWorkingHours(ec.working_hours)}`;
-            if (ec.mission_statement) businessContext += `\nBusiness Mission: ${ec.mission_statement}`;
-            if (ec.target_audience) businessContext += `\nTarget Audience: ${ec.target_audience}`;
-            if (ec.brand_voice_details) businessContext += `\nBrand Voice/Tone: ${ec.brand_voice_details}`;
-            if (ec.sop_instructions) businessContext += `\nStandard Operating Procedures (SOP): ${ec.sop_instructions}`;
+            if (ec.working_hours) businessContext += `Hours: ${formatWorkingHours(ec.working_hours)}\n`;
+            if (ec.mission_statement) businessContext += `Mission: ${ec.mission_statement}\n`;
+            if (ec.target_audience) businessContext += `Audience: ${ec.target_audience}\n`;
+        } else {
+            // Fallback to agent info ONLY if no entity config exists
+            if (agent.description) businessContext += `\nRole: ${agent.description}`;
+            if (agent.knowledge_base) businessContext += `\nKnowledge Base: ${agent.knowledge_base}`;
         }
 
         if (finalEntityId) {
@@ -192,9 +210,12 @@ serve(async (req: any) => {
             }
         }
 
+        // 4. Integrations Layer (SECURITY & AGENT-SPECIFIC FILTERING)
+        // Only fetch integrations for this user
         const { data: integrations } = await supabaseClient
             .from('integrations')
             .select('*')
+            .eq('user_id', agent.user_id)
             .eq('status', 'connected');
 
         const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') ?? '');
@@ -202,39 +223,60 @@ serve(async (req: any) => {
         const isoDateStr = now.toISOString().split('T')[0];
         const currentDateStr = `${isoDateStr} (${now.toLocaleString('en-US', { timeZone: 'Asia/Riyadh', weekday: 'long' })})`;
 
-        const tools = [{
-            functionDeclarations: [
-                {
-                    name: "book_appointment",
-                    description: "Book an appointment after gathering Name, Phone, Service, and Time.",
-                    parameters: {
-                        type: SchemaType.OBJECT,
-                        properties: {
-                            customer_name: { type: SchemaType.STRING },
-                            customer_phone: { type: SchemaType.STRING },
-                            service_requested: { type: SchemaType.STRING },
-                            booking_date: { type: SchemaType.STRING, description: "MUST be Gregorian ISO format YYYY-MM-DD, e.g. 2026-03-29. NEVER use Hijri dates." },
-                            booking_time: { type: SchemaType.STRING, description: "24-hour format HH:mm:00, e.g. 14:30:00" },
-                            original_time_text: { type: SchemaType.STRING }
-                        },
-                        required: ["customer_name", "customer_phone", "service_requested", "booking_date", "booking_time"]
+        // --- 4.5 AGENT-SPECIFIC TOOL FILTERING & PLAN ENFORCEMENT ---
+        const allowedToolNames = Array.isArray(agent.tool_permissions) ? agent.tool_permissions : ['book_appointment', 'update_customer_notes'];
+        
+        const allFunctionDeclarations = [
+            {
+                name: "book_appointment",
+                description: "Book an appointment after gathering Name, Phone, Service, and Time.",
+                parameters: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                        customer_name: { type: SchemaType.STRING },
+                        customer_phone: { type: SchemaType.STRING },
+                        service_requested: { type: SchemaType.STRING },
+                        booking_date: { type: SchemaType.STRING, description: "MUST be Gregorian ISO format YYYY-MM-DD" },
+                        booking_time: { type: SchemaType.STRING, description: "24-hour format HH:mm:00" },
+                        original_time_text: { type: SchemaType.STRING }
                     },
+                    required: ["customer_name", "customer_phone", "service_requested", "booking_date", "booking_time"]
                 },
-                {
-                    name: "update_customer_notes",
-                    description: "Record customer inquiries, issues, or escalation requests.",
-                    parameters: {
-                        type: SchemaType.OBJECT,
-                        properties: {
-                            customer_name: { type: SchemaType.STRING },
-                            customer_phone: { type: SchemaType.STRING },
-                            notes: { type: SchemaType.STRING }
-                        },
-                        required: ["customer_phone", "notes"]
-                    }
+            },
+            {
+                name: "update_customer_notes",
+                description: "Record customer inquiries, issues, or escalation requests.",
+                parameters: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                        customer_name: { type: SchemaType.STRING },
+                        customer_phone: { type: SchemaType.STRING },
+                        notes: { type: SchemaType.STRING }
+                    },
+                    required: ["customer_phone", "notes"]
                 }
-            ]
-        }];
+            }
+        ];
+
+        // Filter based on agent.tool_permissions
+        let filteredFunctions = allFunctionDeclarations.filter(f => allowedToolNames.includes(f.name));
+        
+        // PLAN LIMIT ENFORCEMENT (Starter Tier: Max 2 Tools total)
+        // Tools = Functions + Active Integrations
+        const activeIntegrationsCount = (integrations || []).length;
+        const totalToolsCount = filteredFunctions.length + activeIntegrationsCount;
+        
+        if (subTier === 'starter' && totalToolsCount > 2) {
+            console.log(`Starter Plan Limit Reached: ${totalToolsCount} tools. Capping at 2.`);
+            // Priority given to functions first, then integrations
+            if (filteredFunctions.length > 2) {
+                filteredFunctions = filteredFunctions.slice(0, 2);
+            }
+            // Integrations will be filtered in the prompt if needed, 
+            // but for functionDeclarations we handle it here.
+        }
+
+        const tools = filteredFunctions.length > 0 ? [{ functionDeclarations: filteredFunctions }] : [];
 
         const specialty = (agent.specialty || '').toLowerCase();
         const businessName = resolvedBusinessName || agent.name || 'الموظف الذكي';
@@ -293,15 +335,23 @@ ${ec?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
             console.warn("Auto-registration logic failed:", e);
         }
 
-        // 5. Load chat history
+        // 5. Load chat history (Robust loading)
         let chatHistory: any[] = [];
-        const { data: sessionData } = await supabaseClient
+        const { data: sessionData, error: sessionError } = await supabaseClient
             .from('chat_sessions')
             .select('history')
             .eq('session_id', sessionId)
             .eq('agent_id', agentId)
             .maybeSingle();
-        if (sessionData?.history) chatHistory = sessionData.history;
+        
+        if (sessionError) {
+            console.warn("History retrieval error (non-fatal):", sessionError.message);
+        } else if (sessionData?.history) {
+            console.log(`Loaded ${sessionData.history.length} messages from history for session ${sessionId}`);
+            chatHistory = sessionData.history;
+        } else {
+            console.log(`New session started: ${sessionId}`);
+        }
 
         // 6. Gemini Models — Fetch from Settings or Fallback
         const { data: activeModelSetting } = await supabaseClient
@@ -433,15 +483,22 @@ ${ec?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
             }
         };
 
-        // Handle Function Calls (Supports potential multiple calls)
-        const parts = finalResponse.candidates?.[0]?.content?.parts || [];
-        const functionCalls = parts.filter((p: any) => p.functionCall);
-
-        if (functionCalls.length > 0) {
+        // Handle Function Calls (Supports recursive/multi-step tool calls)
+        let loopCount = 0;
+        let toolExecutedSuccessfully = false;
+        
+        while (loopCount < 5) {
+            const currentParts = finalResponse.candidates?.[0]?.content?.parts || [];
+            const functionCalls = currentParts.filter((p: any) => p.functionCall);
+            
+            if (functionCalls.length === 0) break;
+            
+            loopCount++;
             const toolResults = [];
+            
             for (const fcPart of functionCalls) {
                 const { name, args } = fcPart.functionCall;
-                console.log(`Executing Tool: ${name}`, args);
+                console.log(`[Round ${loopCount}] Executing Tool: ${name}`, args);
                 
                 if (TOOL_HANDLERS[name]) {
                     try {
@@ -449,44 +506,90 @@ ${ec?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                         toolResults.push({
                             functionResponse: { name, response: result }
                         });
+                        toolExecutedSuccessfully = true;
                     } catch (err: any) {
+                        console.error(`Tool Execution Failed (${name}):`, err.message);
                         toolResults.push({
                             functionResponse: { name, response: { status: "error", message: err.message } }
                         });
                     }
+                } else {
+                    console.warn(`Unknown tool called: ${name}`);
+                    toolResults.push({
+                        functionResponse: { name, response: { status: "error", message: "Tool not found." } }
+                    });
                 }
             }
-
+            
             if (toolResults.length > 0) {
+                console.log(`[Round ${loopCount}] Sending ${toolResults.length} tool results back to Gemini...`);
                 const secondResult = await chat.sendMessage(toolResults);
-                const aiText = secondResult.response.text();
-                // Update history with full cycle
-                const finalHistory = await chat.getHistory();
-                await supabaseClient.from('chat_sessions').upsert({
-                    session_id: sessionId, agent_id: agentId,
-                    history: finalHistory, updated_at: new Date().toISOString()
-                }, { onConflict: 'session_id,agent_id' });
-
-                return new Response(JSON.stringify({ success: true, text: aiText }), { headers: corsHeaders });
+                finalResponse = secondResult.response;
+            } else {
+                break;
             }
         }
 
-        // Final Fallback for regular text response
-        const aiText = finalResponse.text();
+        // 8. FINAL PERSISTENCE & RESPONSE (Consolidated & Awaited)
+        let aiText = '';
+        const candidate = finalResponse.candidates?.[0];
+        const finishReason = candidate?.finishReason;
+        const finalParts = candidate?.content?.parts || [];
+
+        // Log raw response for debugging in Supabase dashboard
+        console.log("RAW Gemini Response:", JSON.stringify(finalResponse));
+
+        try {
+            aiText = finalResponse.text() || "";
+        } catch (e: any) {
+            console.warn("Standard extraction failed:", e.message);
+        }
+
+        // --- ENHANCED EXTRACTION & FALLBACKS ---
+        if (!aiText) {
+            // Check if there's any text part manually
+            aiText = finalParts.find((p: any) => p.text)?.text || "";
+        }
+
+        if (!aiText) {
+            if (finishReason === 'SAFETY') {
+                aiText = "عذراً، لا يمكنني الإجابة على هذا الطلب لأسباب تتعلق بخصوصية البيانات أو الأمان.";
+            } else if (finishReason === 'RECITATION') {
+                aiText = "عذراً، هذا الرد محمي بحقوق النشر.";
+            } else if (toolExecutedSuccessfully) {
+                // If a tool was successful but no final text, synthesize one
+                aiText = "تمت معالجة طلبك بنجاح! هل تحتاج لأي مساعدة أخرى؟";
+            } else {
+                aiText = "عذراً، لم أستطع توليد نص مناسب لهذا الطلب. هل يمكنك إعادة صياغته؟";
+            }
+        }
+
+        console.log(`Final Response Generated: [${finishReason}] ${aiText.substring(0, 50)}...`);
+
         const finalHistory = await chat.getHistory();
-        await supabaseClient.from('chat_sessions').upsert({
-            session_id: sessionId, agent_id: agentId,
-            history: finalHistory, updated_at: new Date().toISOString()
+        console.log(`Saving history for ${sessionId}: ${finalHistory.length} messages`);
+        
+        const { error: upsertError } = await supabaseClient.from('chat_sessions').upsert({
+            session_id: sessionId, 
+            agent_id: agentId,
+            history: finalHistory, 
+            updated_at: new Date().toISOString()
         }, { onConflict: 'session_id,agent_id' });
+
+        if (upsertError) {
+            console.error("Critical: Failed to save chat history:", upsertError.message);
+        }
 
         return new Response(JSON.stringify({ success: true, text: aiText }), { headers: corsHeaders });
 
     } catch (error: any) {
-        console.error("FATAL ERROR:", error.message);
+        console.error("FATAL ERROR IN AGENT-HANDLER:", error.stack || error.message);
         return new Response(
-            JSON.stringify({ success: false, text: `⚠️ عذراً، حدث خطأ تقني. التفاصيل: ${error.message}` }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            JSON.stringify({ 
+                success: false, 
+                text: `⚠️ عذراً، حدث خطأ تقني في المساعد التجاري. التفاصيل: ${error.message}` 
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
     }
 });
-

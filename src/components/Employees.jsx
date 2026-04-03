@@ -54,6 +54,7 @@ const Employees = () => {
     const [linkingAgent, setLinkingAgent] = useState(null);
     const [linkToken, setLinkToken] = useState('');
     const [savingLink, setSavingLink] = useState(false);
+    const [userTier, setUserTier] = useState('starter');
     const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
     useEffect(() => { loadSectorAndAgents(); }, []);
@@ -66,12 +67,13 @@ const Employees = () => {
                 // Fetch Sector and Config
                 const [configRes, profileRes] = await Promise.all([
                     supabase.from('entities').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-                    supabase.from('profiles').select('business_type').eq('id', user.id).maybeSingle()
+                    supabase.from('profiles').select('business_type, subscription_tier').eq('id', user.id).maybeSingle()
                 ]);
 
                 const config = configRes.data;
                 const profile = profileRes.data;
 
+                if (profile?.subscription_tier) setUserTier(profile.subscription_tier);
                 if (config) setEntityConfig(config);
                 
                 // Robust sector detection: handle case sensitivity and Arabic values
@@ -162,6 +164,26 @@ const Employees = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("User not authenticated");
+
+            // TOOL LIMIT ENFORCEMENT (Starter Plan)
+            if (userTier === 'starter') {
+                const TOOL_KEYS = ['telegram_token', 'whatsapp_token', 'whatsapp_num', 'google_sheets_id', 'google_calendar_id', 'instagram_token'];
+                let currentToolsCount = 0;
+                TOOL_KEYS.forEach(k => {
+                   if (linkingAgent[k] || entityConfig?.[k]) currentToolsCount++;
+                });
+
+                if (currentToolsCount >= 2 && !linkingAgent.telegram_token && !entityConfig?.telegram_token) {
+                    setStatusMsg({
+                        type: 'error',
+                        text: isAr 
+                            ? '⚠️ لقد وصلت للحد الأقصى للأدوات في الباقة المجانية (أداتين فقط). يرجى الترقية لإضافة المزيد.' 
+                            : '⚠️ Tool limit reached for Starter plan (max 2). Please upgrade for more.'
+                    });
+                    setSavingLink(false);
+                    return;
+                }
+            }
 
             console.log("Employees: Saving link for agent", linkingAgent.id, "with token length:", linkToken.length);
 

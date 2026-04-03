@@ -64,6 +64,7 @@ const EntitySetup = () => {
     const [requestSuccess, setRequestSuccess] = useState(false);
     const [agentId, setAgentId] = useState(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [userTier, setUserTier] = useState('starter'); // Default to starter
     const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
     const [isTestingSheets, setIsTestingSheets] = useState(false);
     const [showHelpModal, setShowHelpModal] = useState(false);
@@ -910,6 +911,39 @@ const EntitySetup = () => {
             handleCustomToolRequest();
             return;
         }
+
+        // TOOL LIMIT ENFORCEMENT (Starter Plan: Max 2 tools)
+        if (userTier === 'starter') {
+            const TOOL_KEYS = ['telegram_token', 'whatsapp_number', 'whatsapp_api_key', 'google_sheets_id', 'google_calendar_id', 'instagram_token'];
+            
+            // Count already connected tools for this agent/entity that are NOT the one being edited
+            let currentToolsCount = 0;
+            TOOL_KEYS.forEach(k => {
+                // If it's already in integrationKeys and NOT being edited in the current draft
+                if (integrationKeys[k] && !Object.keys(integrationDraft).includes(k)) {
+                    currentToolsCount++;
+                }
+            });
+
+            // Count how many NEW tools are in the draft
+            let newToolsInDraft = 0;
+            Object.keys(integrationDraft).forEach(k => {
+                if (TOOL_KEYS.includes(k) && integrationDraft[k]) {
+                    newToolsInDraft++;
+                }
+            });
+
+            if (currentToolsCount + newToolsInDraft > 2) {
+                setStatusMsg({
+                    type: 'error',
+                    text: language === 'ar' 
+                        ? '⚠️ لقد وصلت للحد الأقصى للأدوات في الباقة المجانية (أداتين فقط). يرجى الترقية لإضافة المزيد.' 
+                        : '⚠️ Tool limit reached for Starter plan (max 2). Please upgrade for more.'
+                });
+                return;
+            }
+        }
+
         if (Object.keys(integrationDraft).length === 0) return;
         
         setIntegrationSaving(true);

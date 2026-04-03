@@ -187,6 +187,11 @@ serve(async (req: any) => {
                     const agentData = await agentRes.json();
                     if (agentData.text) {
                         aiReply = agentData.text;
+                    } else if (agentData.success === false) {
+                        aiReply = `⚠️ خطأ في المساعد الذكي: ${agentData.text || 'لم يتم تحديد تفاصيل'}`;
+                    } else {
+                        console.warn("agent-handler returned 200 but no text property found.", agentData);
+                        aiReply = "عذراً، استلمت رداً فارغاً من المساعد. يرجى المحاولة مرة أخرى لاحقاً.";
                     }
                 }
             } catch (fetchErr: any) {
