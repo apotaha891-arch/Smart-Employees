@@ -224,58 +224,7 @@ const Login = () => {
                     </div>
                 ) : (
                     <>
-                        <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-                            <button
-                                onClick={handleGoogleSignIn}
-                                className="btn btn-outline btn-block"
-                                style={{
-                                    padding: '1.25rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '12px',
-                                    background: 'white',
-                                    color: '#1F2937',
-                                    border: '2px solid var(--accent)',
-                                    fontWeight: 800,
-                                    borderRadius: '14px',
-                                    boxShadow: '0 4px 15px var(--accent-soft)',
-                                    transition: 'all 0.3s'
-                                }}
-                                disabled={loading}
-                            >
-                                <FcGoogle size={28} />
-                                <div style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>
-                                    <div style={{ fontSize: '1rem', lineHeight: 1.2 }}>{isSignUp ? t('createGoogleAct') : t('loginGoogleAct')}</div>
-                                    <div style={{ fontSize: '0.65rem', color: '#6B7280', fontWeight: 500, marginTop: '2px' }}>{t('authentication.googleSignRecommendation')}</div>
-                                </div>
-                            </button>
-                            {/* Recommendation Badge */}
-                            <div style={{
-                                position: 'absolute',
-                                top: '-12px',
-                                [language === 'ar' ? 'left' : 'right']: '20px',
-                                background: 'var(--accent)',
-                                color: 'white',
-                                padding: '2px 10px',
-                                borderRadius: '20px',
-                                fontSize: '0.7rem',
-                                fontWeight: 900,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                boxShadow: '0 2px 10px rgba(139, 92, 246, 0.4)',
-                                zIndex: 2
-                            }}>
-                                <Sparkles size={10} /> {language === 'ar' ? 'موصى به' : 'RECOMMENDED'}
-                            </div>
-                        </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#6B7280', fontSize: '0.9rem' }}>
-                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                            <span style={{ padding: '0 1rem' }}>{t('orViaEmail')}</span>
-                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                        </div>
 
                         <form onSubmit={handleSubmit}>
                             {isSignUp && (
