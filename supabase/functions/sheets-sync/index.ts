@@ -1,6 +1,6 @@
 import { serve } from "std/http/server.ts";
 import { createClient } from "supabase";
-import { google } from "googleapis/";
+import { google } from "googleapis";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.time("sheets-sync-init");
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -15,6 +16,7 @@ serve(async (req) => {
 
   try {
     const payload = await req.json();
+    console.log("Processing sheets-sync payload:", payload.type);
 
     // This function is intended to be called by a Supabase Database Webhook (Trigger)
     // Payload structure expected from Supabase Webhook on Insert:
@@ -33,56 +35,105 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // 2. Fetch the Google Sheets Integration for this user
-    const { data: integrations, error: intError } = await supabaseClient
+    // 2. Resolve Spreadsheet ID
+    // Priority: 1. Manual test ID, 2. Passed in record (Easy Sync), 3. Integrations table (OAuth)
+    let spreadsheetId = payload.test_spreadsheet_id || newRecord.google_sheets_id;
+
+    if (!spreadsheetId) {
+      const { data: integrations } = await supabaseClient
+        .from('integrations')
+        .select('credentials')
+        .eq('user_id', ownerUserId)
+        .eq('provider', 'google_sheets')
+        .eq('status', 'connected')
+        .maybeSingle();
+      
+      spreadsheetId = integrations?.credentials?.spreadsheet_id;
+    }
+
+    if (!spreadsheetId) {
+      console.log('No Spreadsheet ID found for user:', ownerUserId);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'لم يتم العثور على معرّف جدول جوجل شيت. يرجى التأكد من حفظ الإعدادات في صفحة الربط.' 
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    let auth: any = null;
+    const { data: googleIntegration } = await supabaseClient
       .from('integrations')
       .select('credentials')
       .eq('user_id', ownerUserId)
-      .eq('provider', 'google_sheets')
+      .eq('provider', 'google')
       .eq('status', 'connected')
-      .single();
+      .maybeSingle();
 
-    if (intError || !integrations || !integrations.credentials) {
-      if (payload.test_spreadsheet_id) {
-        console.log('Using test_spreadsheet_id override');
-      } else {
-        console.log('No active Google Sheets integration found for user:', ownerUserId);
-        return new Response(JSON.stringify({ success: false, error: 'لم يتم العثور على ربط نشط. تأكد من حفظ البيانات أولاً.' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    if (googleIntegration?.credentials?.access_token) {
+      console.log(`Trying OAuth2 Auth for user ${ownerUserId}`);
+      const oauth2Client = new google.auth.OAuth2(
+        Deno.env.get('GOOGLE_CLIENT_ID') || '',
+        Deno.env.get('GOOGLE_CLIENT_SECRET') || ''
+      );
+      oauth2Client.setCredentials({
+        access_token: googleIntegration.credentials.access_token,
+        refresh_token: googleIntegration.credentials.refresh_token,
+      });
+      
+      try {
+        // Proactively test token validity
+        await oauth2Client.getAccessToken();
+        auth = oauth2Client;
+        console.log(`OAuth2 Auth successful for user ${ownerUserId}`);
+      } catch (authErr: any) {
+        console.warn(`OAuth token invalid (${authErr.message}). Falling back to Service Account.`);
+        auth = null;
       }
     }
 
-    const sheetsCreds = integrations?.credentials || {};
-    // Use test_spreadsheet_id if provided (from the UI test button), otherwise use from DB
-    const spreadsheetId = payload.test_spreadsheet_id || sheetsCreds.spreadsheet_id;
-
-    if (!spreadsheetId) {
-      console.log('No Spreadsheet ID specified in credentials.');
-      return new Response(JSON.stringify({ success: false, error: 'معرّف الجدول غير موجود في الإعدادات المحفوظة.' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    if (!auth) {
+      console.log(`Using Service Account Auth for user ${ownerUserId}`);
+      const serviceAccountKeyJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_KEY');
+      if (!serviceAccountKeyJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_KEY not set");
+      
+      const serviceAccountKey = JSON.parse(serviceAccountKeyJson);
+      auth = new google.auth.JWT(
+        serviceAccountKey.client_email,
+        null,
+        serviceAccountKey.private_key,
+        ['https://www.googleapis.com/auth/spreadsheets']
+      );
     }
 
-    // 3. Initialize Google Sheets API using Service Account
-    const serviceAccountKeyJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_KEY');
-    if (!serviceAccountKeyJson) {
-      console.error('GOOGLE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      return new Response(JSON.stringify({ success: false, error: 'SERVER_CONFIG_ERROR: يرجى إعداد مفتاح GOOGLE_SERVICE_ACCOUNT_KEY في إعدادات Supabase.' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    const serviceAccountKey = JSON.parse(serviceAccountKeyJson);
-    const auth = new google.auth.JWT(
-      serviceAccountKey.client_email,
-      null,
-      serviceAccountKey.private_key,
-      ['https://www.googleapis.com/auth/spreadsheets']
-    );
-
-    const sheets = google.sheets({ version: 'v4', auth });
+    let sheets = google.sheets({ version: 'v4', auth });
+    console.timeEnd("sheets-sync-init");
 
     // 4. GET SPREADSHEET METADATA (To find the first sheet name automatically)
     let firstSheetName = 'Sheet1';
+    let spreadsheetData;
+    
     try {
-      const spreadsheetData = await sheets.spreadsheets.get({
-        spreadsheetId: spreadsheetId,
-      });
+      spreadsheetData = await sheets.spreadsheets.get({ spreadsheetId });
+    } catch (metaError: any) {
+      // If OAuth was used and it fails with auth errors, fall back to Service Account and retry
+      if (googleIntegration?.credentials?.access_token && (metaError.message.includes('invalid_client') || metaError.message.includes('invalid_grant') || metaError.message.includes('401'))) {
+         console.warn(`OAuth failed during API call (${metaError.message}). Forcing Service Account fallback.`);
+         const serviceAccountKeyJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_KEY');
+         if (!serviceAccountKeyJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_KEY not set");
+         const serviceAccountKey = JSON.parse(serviceAccountKeyJson);
+         auth = new google.auth.JWT(
+           serviceAccountKey.client_email,
+           null,
+           serviceAccountKey.private_key,
+           ['https://www.googleapis.com/auth/spreadsheets']
+         );
+         sheets = google.sheets({ version: 'v4', auth });
+         spreadsheetData = await sheets.spreadsheets.get({ spreadsheetId }); // Retry
+      } else {
+         throw metaError;
+      }
+    }
+    
+    try {
       firstSheetName = spreadsheetData.data.sheets?.[0]?.properties?.title || 'Sheet1';
       console.log(`Using auto-detected sheet: ${firstSheetName}`);
     } catch (metaError: any) {
@@ -99,9 +150,9 @@ serve(async (req) => {
       newRecord.created_at,
       newRecord.customer_name || 'N/A',
       newRecord.customer_phone || 'N/A',
-      newRecord.service || 'N/A',
-      newRecord.date || 'N/A',
-      newRecord.time || 'N/A',
+      newRecord.service_requested || 'N/A',
+      newRecord.booking_date || 'N/A',
+      newRecord.booking_time || 'N/A',
       newRecord.status || 'pending'
     ];
 

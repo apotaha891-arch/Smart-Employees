@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { GoogleGenerativeAI, SchemaType } from "https://esm.sh/@google/generative-ai@0.21.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2?no-check";
+import { GoogleGenerativeAI, SchemaType } from "https://esm.sh/@google/generative-ai@0.21.0?no-check";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -113,41 +113,11 @@ serve(async (req: any) => {
         const subTier = profile?.subscription_tier || 'starter';
         console.log(`User Plan: ${subTier} for User: ${agent.user_id}`);
 
-        const { data: wallet, error: walletError } = await supabaseClient
-            .from('wallet_credits')
-            .select('balance')
-            .eq('user_id', agent.user_id)
-            .maybeSingle();
-
-        if (walletError) {
-            console.error("Wallet fetch error:", walletError.message);
-        }
-
-        const currentBalance = wallet?.balance ?? 50; // Default if not found
-
-        if (currentBalance <= 0) {
-            return new Response(
-                JSON.stringify({ 
-                    success: false, 
-                    text: "عذراً، لقد استنفد هذا الموظف رصيد المحادثات الخاص به. يرجى من صاحب المنشأة شحن الرصيد لضمان استمرار الخدمة.",
-                    errorCode: 'OUT_OF_CREDITS'
-                }),
-                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
-
-        // Decrement the balance by 1
-        await supabaseClient
-            .from('wallet_credits')
-            .update({ balance: currentBalance - 1 })
-            .eq('user_id', agent.user_id);
-        // --- END QUOTA LOGIC ---
-
         let businessContext = '';
         let servicesText = '';
         let resolvedBusinessName = agent.name || 'الموظف الذكي';
 
-        // UNIFICATION: Fetch latest entity config for THIS user
+        // UNIFICATION: Fetch latest entity config for THIS user (STABLE SCHEMA)
         const { data: latestConfig } = await supabaseClient
             .from('entities')
             .select('*')
@@ -157,7 +127,13 @@ serve(async (req: any) => {
             .maybeSingle();
 
         const ec = latestConfig;
-        const finalEntityId = ec?.id || agent.entity_id;
+        const finalEntityId = ec?.id || agent.salon_config_id || agent.entity_id;
+        
+        // Ensure the agent is linked to this entity if it wasn't already
+        if (ec?.id && agent.entity_id !== ec.id) {
+            console.log(`Agent ${agentId} stale entity_id (${agent.entity_id}) -> Updating to ${ec.id}`);
+            await supabaseClient.from('agents').update({ entity_id: ec.id }).eq('id', agentId);
+        }
 
         if (ec) {
             console.log("Using Unified Business Config:", ec.id);
@@ -224,7 +200,12 @@ serve(async (req: any) => {
         const currentDateStr = `${isoDateStr} (${now.toLocaleString('en-US', { timeZone: 'Asia/Riyadh', weekday: 'long' })})`;
 
         // --- 4.5 AGENT-SPECIFIC TOOL FILTERING & PLAN ENFORCEMENT ---
-        const allowedToolNames = Array.isArray(agent.tool_permissions) ? agent.tool_permissions : ['book_appointment', 'update_customer_notes'];
+        // Ensure that even if tool_permissions is an empty array [], we default to basic tools
+        let allowedToolNames = Array.isArray(agent.tool_permissions) && agent.tool_permissions.length > 0 
+            ? agent.tool_permissions 
+            : ['book_appointment', 'update_customer_notes'];
+        
+        console.info(`Agent ID: ${agentId} | Tier: ${subTier} | Raw Permissions: ${JSON.stringify(agent.tool_permissions)}`);
         
         const allFunctionDeclarations = [
             {
@@ -235,10 +216,10 @@ serve(async (req: any) => {
                     properties: {
                         customer_name: { type: SchemaType.STRING },
                         customer_phone: { type: SchemaType.STRING },
-                        service_requested: { type: SchemaType.STRING },
-                        booking_date: { type: SchemaType.STRING, description: "MUST be Gregorian ISO format YYYY-MM-DD" },
-                        booking_time: { type: SchemaType.STRING, description: "24-hour format HH:mm:00" },
-                        original_time_text: { type: SchemaType.STRING }
+                        service_requested: { type: SchemaType.STRING, description: "The service the customer wants." },
+                        booking_date: { type: SchemaType.STRING, description: "Gregorian date in YYYY-MM-DD format." },
+                        booking_time: { type: SchemaType.STRING, description: "24-hour time in HH:mm:00 format." },
+                        original_time_text: { type: SchemaType.STRING, description: "The time exactly as the customer said it." }
                     },
                     required: ["customer_name", "customer_phone", "service_requested", "booking_date", "booking_time"]
                 },
@@ -300,9 +281,10 @@ CRITICAL DATE RULES:
 RULES:
 1. Identify as ${businessName}.
 2. Always reply in the user's language (Arabic/English).
-3. TO BOOK: You MUST call 'book_appointment' ONLY after gathering: Name, Phone, Service, and Time.
-4. NEVER confirm a booking unless you have successfully called the tool.
-${ec?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the customer: "تم تسجيل حجزك المبدئي بنجاح! سيصلك تأكيد نهائي قريباً." (Your preliminary booking is registered! You will receive a final confirmation soon.)` : ''}
+3. TO BOOK: If the customer provides Name, Phone, Service, and Time, you MUST CALL 'book_appointment' IMMEDIATELY.
+4. Calculate dates relative to Today: ${isoDateStr}.
+5. NEVER confirm a booking without calling the tool first.
+${ec?.booking_requires_confirmation ? `6. IMPORTANT: After booking, tell the customer: "تم تسجيل حجزك المبدئي بنجاح! سيصلك تأكيد نهائي قريباً."` : ''}
 `;
 
         if (isSales) systemInstruction += "\nRole: Sales & Consultation Expert.";
@@ -420,39 +402,104 @@ ${ec?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 }
 
                 const requiresConfirmation = ec?.booking_requires_confirmation ?? false;
-                const { data: newBooking, error: bErr } = await supabaseClient.from('bookings').insert([{
+                
+                // --- SCHEMA RESILIENT BOOKING INSERTION ---
+                const bookingPayload = {
                     agent_id: agentId,
-                    entity_id: finalEntityId,
                     customer_name: args.customer_name,
                     customer_phone: args.customer_phone,
                     service_requested: args.service_requested,
                     booking_date: bookingDate,
                     booking_time: bookingTime,
                     duration_minutes: 60,
-                    status: requiresConfirmation ? 'pending' : 'confirmed',
-                    session_id: sessionId
-                }]).select('id').single();
-                
-                if (bErr) throw bErr;
+                    status: requiresConfirmation ? 'pending' : 'confirmed'
+                };
 
-                // Sync to Customers Table with Full Details
+                let bErr: any = null;
+                let newBooking: any = null;
+
+                // Only use the correct schema (entity_id)
+                let res = await supabaseClient.from('bookings').insert([{ ...bookingPayload, entity_id: finalEntityId }]).select('*').single();
+                
+                newBooking = res.data;
+                bErr = res.error;
+
+                if (bErr) {
+                    console.error("Critical: Booking insertion failed:", bErr.message);
+                    return { status: "error", message: `CRITICAL ERROR (Must inform user): FAILED TO INSERT BOOKING! Tell the user EXACTLY this: "للأسف ظهر خطأ في السيرفر أثناء الحفظ: ${bErr.message}"` };
+                }
+
+                // ─── DUAL INSERTION: CREATE TASK ENTRY FOR DASHBOARD ────────────────
+                // This ensures the dashboard "hears" the new appointment and updates stats.
+                const { error: tErr } = await supabaseClient.from('tasks').insert([{
+                    agent_id: agentId,
+                    task_type: 'booking',
+                    task_data: { 
+                        booking_id: newBooking.id,
+                        customer_name: args.customer_name,
+                        service: args.service_requested,
+                        date: bookingDate,
+                        time: bookingTime
+                    },
+                    completed_at: new Date().toISOString()
+                }]);
+                if (tErr) console.warn("Failed to create task entry, but booking was saved:", tErr.message);
+
+                // Sync to Customers Table (STABLE SCHEMA)
                 const platformPrefix = sessionId.split('_')[0];
                 const platformId = sessionId.split('_')[1];
                 
-                const customerData: any = {
-                    entity_id: finalEntityId,
+                const customerPayload: any = {
                     user_id: agent.user_id,
                     customer_name: args.customer_name,
                     customer_phone: args.customer_phone,
                     last_service_date: bookingDate,
                     updated_at: new Date().toISOString()
                 };
-                if (platformPrefix === 'instagram') customerData.instagram_id = platformId;
-                if (platformPrefix === 'telegram') customerData.telegram_id = platformId;
+                if (platformPrefix === 'instagram') customerPayload.instagram_id = platformId;
+                if (platformPrefix === 'telegram') customerPayload.telegram_id = platformId;
+                const conflictCol = platformPrefix === 'instagram' ? 'instagram_id' : (platformPrefix === 'telegram' ? 'telegram_id' : 'customer_phone');
 
-                await supabaseClient.from('customers').upsert(customerData, { 
-                    onConflict: platformPrefix === 'instagram' ? 'instagram_id' : (platformPrefix === 'telegram' ? 'telegram_id' : 'customer_phone') 
-                });
+                let custRes = await supabaseClient.from('customers').upsert({ ...customerPayload, entity_id: finalEntityId }, { onConflict: conflictCol });
+                if (custRes.error) {
+                     await supabaseClient.from('customers').upsert({ ...customerPayload, salon_config_id: finalEntityId }, { onConflict: conflictCol });
+                }
+ 
+                // TRIGGER SYNC (Async but awaited for log reliability)
+                try {
+                    const functionBaseUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.supabase.co/functions/v1');
+                    const authHeader = `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`;
+                    
+                    if (functionBaseUrl && newBooking) {
+                        console.log("Triggering Integration Syncs for booking:", newBooking.id);
+                        
+                        const syncPayload = { 
+                            type: 'INSERT', 
+                            record: {
+                                ...newBooking,
+                                // Add entity info to help the sync functions find credentials
+                                google_sheets_id: ec?.google_sheets_id,
+                                google_calendar_id: ec?.google_calendar_id
+                            }
+                        };
+
+                        // 1. Sheets Sync
+                        fetch(`${functionBaseUrl}/sheets-sync`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+                            body: JSON.stringify(syncPayload)
+                        }).catch(e => console.error("Sheets Sync Trigger failed:", e.message));
+
+                        // 2. Calendar Sync
+                        fetch(`${functionBaseUrl}/calendar-sync`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+                            body: JSON.stringify(syncPayload)
+                        }).catch(e => console.error("Calendar Sync Trigger failed:", e.message));
+                    }
+                } catch (syncErr: any) {
+                    console.warn("Integration Sync Orchestration Error:", syncErr.message);
+                }
 
                 return { 
                     status: requiresConfirmation ? 'pending_confirmation' : 'confirmed',
@@ -465,20 +512,21 @@ ${ec?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
                 const platformPrefix = sessionId.split('_')[0];
                 const platformId = sessionId.split('_')[1];
 
-                const notesData: any = {
-                    entity_id: finalEntityId,
+                const notesPayload: any = {
                     user_id: agent.user_id,
                     notes: args.notes,
                     customer_phone: args.customer_phone,
                     customer_name: args.customer_name || 'عميل مهتم',
                     updated_at: new Date().toISOString()
                 };
-                if (platformPrefix === 'instagram') notesData.instagram_id = platformId;
-                if (platformPrefix === 'telegram') notesData.telegram_id = platformId;
+                if (platformPrefix === 'instagram') notesPayload.instagram_id = platformId;
+                if (platformPrefix === 'telegram') notesPayload.telegram_id = platformId;
+                const conflictColNotes = platformPrefix === 'instagram' ? 'instagram_id' : (platformPrefix === 'telegram' ? 'telegram_id' : 'customer_phone');
 
-                await supabaseClient.from('customers').upsert(notesData, { 
-                    onConflict: platformPrefix === 'instagram' ? 'instagram_id' : (platformPrefix === 'telegram' ? 'telegram_id' : 'customer_phone') 
-                });
+                let nRes = await supabaseClient.from('customers').upsert({ ...notesPayload, entity_id: finalEntityId }, { onConflict: conflictColNotes });
+                if (nRes.error) {
+                     await supabaseClient.from('customers').upsert({ ...notesPayload, salon_config_id: finalEntityId }, { onConflict: conflictColNotes });
+                }
                 return { status: "success", message: "Customer notes updated." };
             }
         };
@@ -569,15 +617,29 @@ ${ec?.booking_requires_confirmation ? `5. IMPORTANT: After booking, tell the cus
         const finalHistory = await chat.getHistory();
         console.log(`Saving history for ${sessionId}: ${finalHistory.length} messages`);
         
-        const { error: upsertError } = await supabaseClient.from('chat_sessions').upsert({
-            session_id: sessionId, 
-            agent_id: agentId,
-            history: finalHistory, 
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'session_id,agent_id' });
+        // Custom Upsert Logic to avoid the missing 'ON CONFLICT constraint' error!
+        const { data: existingSession } = await supabaseClient
+            .from('chat_sessions')
+            .select('session_id') // Changed from 'id' to 'session_id' as it appears to be the PK
+            .eq('session_id', sessionId)
+            .maybeSingle();
 
-        if (upsertError) {
-            console.error("Critical: Failed to save chat history:", upsertError.message);
+        let sessionSaveErr = null;
+        if (existingSession) {
+             const { error: updErr } = await supabaseClient
+                .from('chat_sessions')
+                .update({ history: finalHistory, agent_id: agentId, updated_at: new Date().toISOString() })
+                .eq('session_id', sessionId); // Update using session_id
+             sessionSaveErr = updErr;
+        } else {
+             const { error: insErr } = await supabaseClient
+                .from('chat_sessions')
+                .insert([{ session_id: sessionId, agent_id: agentId, history: finalHistory, updated_at: new Date().toISOString() }]);
+             sessionSaveErr = insErr;
+        }
+
+        if (sessionSaveErr) {
+            console.error("Critical: Failed to save chat history:", sessionSaveErr.message);
         }
 
         return new Response(JSON.stringify({ success: true, text: aiText }), { headers: corsHeaders });

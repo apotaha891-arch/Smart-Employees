@@ -268,13 +268,21 @@ const EntitySetup = () => {
         }
         
         setIsTestingSheets(true);
+        let timeoutId;
         try {
-            const { data, error } = await supabase.functions.invoke('sheets-sync', {
+            // Use a longer timeout (45s) for initial service initialization (cold starts)
+            const timeoutPromise = new Promise((_, reject) => {
+                timeoutId = setTimeout(() => reject(new Error('Connection timeout (45s). This might be due to a cold start or slow internet. Please try again.')), 45000);
+            });
+
+            const invokePromise = supabase.functions.invoke('sheets-sync', {
                 body: {
                     type: 'INSERT',
                     record: {
                         id: 'test-' + Date.now(),
                         user_id: currentUserId,
+                        entity_id: entityId,
+                        salon_config_id: entityId, // USE STABLE COLUMN NAME
                         customer_name: 'نورة (اختبار الربط) ✨',
                         customer_phone: '12345678',
                         service_requested: 'Test Service / خدمة تجريبية',
@@ -282,10 +290,14 @@ const EntitySetup = () => {
                         booking_time: new Date().toLocaleTimeString(),
                         status: 'test'
                     },
-                    // Special override for test button to use draft ID if DB is not updated yet
                     test_spreadsheet_id: spreadsheetId 
                 }
             });
+
+            const { data, error } = await Promise.race([
+                invokePromise,
+                timeoutPromise
+            ]);
 
             if (error) throw error;
             
@@ -307,6 +319,7 @@ const EntitySetup = () => {
                 text: language === 'ar' ? `❌ فشل الاختبار: ${err.message}` : `❌ Test failed: ${err.message}` 
             });
         } finally {
+            if (timeoutId) clearTimeout(timeoutId);
             setIsTestingSheets(false);
             // Auto hide message after 5 seconds
             setTimeout(() => setStatusMsg({ type: '', text: '' }), 5000);
@@ -319,8 +332,9 @@ const EntitySetup = () => {
         const calendarId = integrationKeys.google_calendar_id || integrationDraft.google_calendar_id || 'primary';
         
         setIsTestingCalendar(true);
+        let calendarTimeoutId;
         try {
-            const { data, error } = await supabase.functions.invoke('calendar-sync', {
+            const invokePromise = supabase.functions.invoke('calendar-sync', {
                 body: {
                     type: 'TEST',
                     calendar_id: calendarId,
@@ -329,16 +343,23 @@ const EntitySetup = () => {
                         summary: 'نورة (اختبار الربط) ✨',
                         description: 'تم إنشاء هذا الحدث لاختبار ربط التقويم مع الموظف الذكي.',
                         start: {
-                            dateTime: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
+                            dateTime: new Date(Date.now() + 3600000).toISOString(),
                             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         },
                         end: {
-                            dateTime: new Date(Date.now() + 7200000).toISOString(), // 2 hours from now
+                            dateTime: new Date(Date.now() + 7200000).toISOString(),
                             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         }
                     }
                 }
             });
+
+            const { data, error } = await Promise.race([
+                invokePromise,
+                new Promise((_, rej) => {
+                    calendarTimeoutId = setTimeout(() => rej(new Error(language === 'ar' ? "انتهت مهلة الاتصال (45 ثانية). يرجى التحقق من الإنترنت." : "Connection timeout (45s). Please check your internet.")), 45000);
+                })
+            ]);
 
             if (error) throw error;
             const result = typeof data === 'string' ? { success: false, error: data } : data;
@@ -358,6 +379,7 @@ const EntitySetup = () => {
                 text: language === 'ar' ? `❌ فشل الاختبار: ${err.message}` : `❌ Test failed: ${err.message}` 
             });
         } finally {
+            if (calendarTimeoutId) clearTimeout(calendarTimeoutId);
             setIsTestingCalendar(false);
             setTimeout(() => setStatusMsg({ type: '', text: '' }), 5000);
         }
@@ -1000,7 +1022,11 @@ const EntitySetup = () => {
                 ]);
                 
                 const telegramRes = await webhookFetch;
-                const telegramData = await telegramRes.json();
+                // Protection against hanging JSON parse
+                const telegramData = await Promise.race([
+                    telegramRes.json(),
+                    new Promise((_, rej) => setTimeout(() => rej(new Error("Telegram API Parse Timeout")), 5000))
+                ]);
                 
                 if (!telegramData.ok) {
                     console.warn("EntitySetup: Webhook Registration Warn:", telegramData.description);

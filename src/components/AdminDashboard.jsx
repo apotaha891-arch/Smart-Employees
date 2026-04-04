@@ -176,6 +176,10 @@ export default function AdminDashboard() {
     const [aSearch, setASearch] = useState('');
     const [aFilter, setAFilter] = useState('');
     const [bSearch, setBSearch] = useState('');
+    
+    // Notification Filters
+    const [notifTypeFilter, setNotifTypeFilter] = useState('');
+    const [notifClientFilter, setNotifClientFilter] = useState('');
 
     const handleExport = (data, fileName) => {
         if (!data || data.length === 0) return flash('⚠️ لا يوجد بيانات للتصدير');
@@ -665,6 +669,12 @@ export default function AdminDashboard() {
 
     const unreadChats = notifications.filter(n => !n.is_read && n.type === 'new_chat').length;
 
+    const filteredNotifications = notifications.filter(n => {
+        const matchesClient = !notifClientFilter || n.user_id === notifClientFilter;
+        const matchesType = !notifTypeFilter || n.type === notifTypeFilter;
+        return matchesClient && matchesType;
+    });
+
     const NAV = [
         { id: 'overview', i: LayoutDashboard, l: t('admin.overview') },
         { id: 'clients', i: Users, l: t('admin.clients') },
@@ -926,9 +936,26 @@ export default function AdminDashboard() {
                 {/* ── NOTIFICATIONS ── */}
                 {tab === 'notifications' && <div>
                     <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 1.25rem' }}>{t('admin.notifications')}</h1>
+                    
+                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                        <select value={notifClientFilter} onChange={e => setNotifClientFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                            <option value="">{isEnglish ? 'All Clients' : 'كل العملاء'}</option>
+                            {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
+                        </select>
+                        <select value={notifTypeFilter} onChange={e => setNotifTypeFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                            <option value="">{isEnglish ? 'All Types' : 'كل الأنواع'}</option>
+                            <option value="new_booking">{isEnglish ? 'New Bookings' : 'حجوزات جديدة'}</option>
+                            <option value="booking_update">{isEnglish ? 'Booking Updates' : 'تحديثات الحجوزات'}</option>
+                            <option value="new_chat">{isEnglish ? 'New Chats' : 'محادثات جديدة'}</option>
+                            <option value="custom_request">{isEnglish ? 'Custom Requests' : 'طلبات مخصصة'}</option>
+                            <option value="wallet">{isEnglish ? 'Wallet Alerts' : 'تنبيهات المحفظة'}</option>
+                            <option value="system">{isEnglish ? 'System Alerts' : 'تنبيهات النظام'}</option>
+                        </select>
+                    </div>
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {notifications.length === 0 ? <Card c={<div style={{ textAlign: 'center', color: '#6B7280', padding: '2rem' }}>{t('admin.noNotifications')}</div>} />
-                        : notifications.map(n => (
+                        {filteredNotifications.length === 0 ? <Card c={<div style={{ textAlign: 'center', color: '#6B7280', padding: '2rem' }}>{t('admin.noNotifications')}</div>} />
+                        : filteredNotifications.map(n => (
                             <Card key={n.id} s={{ background: n.is_read ? '#111827' : 'rgba(139,92,246,0.08)', borderLeft: n.is_read ? '1px solid rgba(255,255,255,0.06)' : '4px solid #8B5CF6' }} c={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={18} color={n.is_read ? '#6B7280' : '#8B5CF6'} /></div>
