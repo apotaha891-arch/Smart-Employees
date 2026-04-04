@@ -267,10 +267,45 @@ serve(async (req: any) => {
         const isHR = ['توظيف', 'hr', 'recruitment'].some(k => specialty.includes(k));
         const isSupport = ['دعم', 'support', 'help'].some(k => specialty.includes(k));
 
+        // --- DEEP PERSONALIZATION: Fetch Existing Customer Context ---
+        let customerContext = '';
+        try {
+            const platformPrefix = sessionId.split('_')[0];
+            const platformId = sessionId.split('_')[1];
+            
+            if (platformId && (platformPrefix === 'telegram' || platformPrefix === 'instagram')) {
+                const searchColumn = platformPrefix === 'telegram' ? 'telegram_id' : 'instagram_id';
+                
+                const { data: existingCustomer } = await supabaseClient
+                    .from('customers')
+                    .select('id, customer_name, metadata, created_at')
+                    .eq('entity_id', finalEntityId)
+                    .eq(searchColumn, platformId)
+                    .maybeSingle();
+
+                if (existingCustomer) {
+                    const knownName = existingCustomer.customer_name && existingCustomer.customer_name !== 'عميل محتمل' ? existingCustomer.customer_name : '';
+                    const hasNotes = existingCustomer.metadata?.notes;
+                    const lastService = existingCustomer.metadata?.last_service;
+
+                    customerContext = `\n[CUSTOMER RECOGNITION SYSTEM: ACTIVATED]`;
+                    if (knownName) customerContext += `\n- The person talking to you is a returning customer named: ${knownName}`;
+                    if (lastService) customerContext += `\n- In their last visit, they requested: ${lastService}`;
+                    if (hasNotes) customerContext += `\n- Critical Past Notes to remember: ${hasNotes}`;
+                    if (knownName || lastService) {
+                         customerContext += `\n-> INSTRUCTION: Welcome them back like a loyal friend. If they want to book, proactively suggest their usual service if it makes sense!`;
+                    }
+                    customerContext += `\n`;
+                }
+            }
+        } catch (err) {
+            console.warn("Personalization error ignored:", err);
+        }
+
         let systemInstruction = `
 You are a Professional Assistant at ${businessName}.
 Today's date (Gregorian): ${isoDateStr} ${currentDateStr}
-${businessContext}${servicesText}
+${businessContext}${servicesText}${customerContext}
 
 CRITICAL DATE RULES:
 - ALWAYS use Gregorian calendar dates in YYYY-MM-DD format (e.g., ${isoDateStr}).

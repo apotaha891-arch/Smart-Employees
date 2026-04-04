@@ -19,13 +19,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 // ==================== AUTHENTICATION ====================
 
-export const signUp = async (email, password, fullName) => {
+export const signUp = async (email, password, fullName, isAgency = false) => {
     try {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
-                data: { full_name: fullName }
+                data: { full_name: fullName, is_agency: isAgency }
             }
         });
         if (error) throw error;

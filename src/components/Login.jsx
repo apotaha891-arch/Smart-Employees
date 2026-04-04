@@ -9,12 +9,13 @@ import { Sparkles, Mail, CheckCircle, Eye, EyeOff, Key } from 'lucide-react';
 // Helper: get role and sector from DB
 const getUserDestination = async (userId) => {
     const [{ data: profile }, { data: config }] = await Promise.all([
-        supabase.from('profiles').select('role').eq('id', userId).maybeSingle(),
+        supabase.from('profiles').select('role, is_agency').eq('id', userId).maybeSingle(),
         supabase.from('entities').select('business_type').eq('user_id', userId).not('business_type', 'is', null).limit(1).maybeSingle()
     ]);
     const isAdmin = profile?.role === 'admin';
+    const isAgency = profile?.is_agency === true;
     const hasSector = !!config?.business_type;
-    return { isAdmin, hasSector };
+    return { isAdmin, isAgency, hasSector };
 };
 
 const Login = () => {
@@ -27,6 +28,7 @@ const Login = () => {
     const [recoveryEmail, setRecoveryEmail] = useState('');
     const [recoverySuccess, setRecoverySuccess] = useState(false);
     const [fullName, setFullName] = useState('');
+    const [accountType, setAccountType] = useState('business'); // 'business' or 'agency'
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [signUpSuccess, setSignUpSuccess] = useState(false);
@@ -41,10 +43,16 @@ const Login = () => {
             } else if (userRole === 'customer') {
                 supabase.auth.getUser().then(({ data: { user } }) => {
                     if (user) {
-                        supabase.from('entities').select('business_type').eq('user_id', user.id).not('business_type', 'is', null).limit(1).maybeSingle()
-                            .then(({ data }) => {
-                                navigate(location.state?.redirectTo || (data?.business_type ? '/dashboard' : '/onboarding'), { replace: true });
-                            });
+                        supabase.from('profiles').select('is_agency').eq('id', user.id).maybeSingle().then(({ data: profData }) => {
+                            if (profData?.is_agency) {
+                                navigate('/agency', { replace: true });
+                            } else {
+                                supabase.from('entities').select('business_type').eq('user_id', user.id).not('business_type', 'is', null).limit(1).maybeSingle()
+                                    .then(({ data }) => {
+                                        navigate(location.state?.redirectTo || (data?.business_type ? '/dashboard' : '/onboarding'), { replace: true });
+                                    });
+                            }
+                        });
                     }
                 });
             }
@@ -61,7 +69,7 @@ const Login = () => {
         setError(null);
 
         const result = isSignUp
-            ? await signUp(email, password, fullName)
+            ? await signUp(email, password, fullName, accountType === 'agency')
             : await signIn(email, password);
 
         if (result.success) {
@@ -72,9 +80,11 @@ const Login = () => {
             }
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { isAdmin, hasSector } = await getUserDestination(user.id);
+                const { isAdmin, isAgency, hasSector } = await getUserDestination(user.id);
                 if (isAdmin) {
                     navigate('/admin');
+                } else if (isAgency) {
+                    navigate('/agency');
                 } else {
                     navigate(location.state?.redirectTo || (hasSector ? '/dashboard' : '/onboarding'), { state: location.state });
                 }
@@ -269,16 +279,31 @@ const Login = () => {
 
                         <form onSubmit={handleSubmit}>
                             {isSignUp && (
-                                <div className="mb-md">
-                                    <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('fullName')}</label>
-                                    <input
-                                        type="text"
-                                        className="input-field"
-                                        value={fullName}
-                                        onChange={(e) => setFullName(e.target.value)}
-                                        required
-                                    />
-                                </div>
+                                <>
+                                    <div className="mb-md">
+                                        <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('fullName')}</label>
+                                        <input
+                                            type="text"
+                                            className="input-field"
+                                            value={fullName}
+                                            onChange={(e) => setFullName(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-md">
+                                        <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left', marginBottom: '8px', display: 'block' }}>{language === 'ar' ? 'نوع الحساب' : 'Account Type'}</label>
+                                        <div style={{ display: 'flex', gap: '1rem' }}>
+                                            <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '10px', border: `1px solid ${accountType === 'business' ? 'var(--accent)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '8px', background: accountType === 'business' ? 'rgba(139,92,246,0.1)' : 'transparent', transition: 'all 0.2s' }}>
+                                                <input type="radio" name="accountType" value="business" checked={accountType === 'business'} onChange={() => setAccountType('business')} style={{ accentColor: 'var(--accent)' }} />
+                                                <span style={{ fontSize: '0.85rem' }}>{language === 'ar' ? 'صاحب منشأة' : 'Business Owner'}</span>
+                                            </label>
+                                            <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '10px', border: `1px solid ${accountType === 'agency' ? 'var(--accent)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '8px', background: accountType === 'agency' ? 'rgba(139,92,246,0.1)' : 'transparent', transition: 'all 0.2s' }}>
+                                                <input type="radio" name="accountType" value="agency" checked={accountType === 'agency'} onChange={() => setAccountType('agency')} style={{ accentColor: 'var(--accent)' }} />
+                                                <span style={{ fontSize: '0.85rem' }}>{language === 'ar' ? 'مدير الوكالات' : 'Agency Manager'}</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </>
                             )}
                             <div className="mb-md">
                                 <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{t('workEmail')}</label>

@@ -43,6 +43,7 @@ import TermsOfService from './components/TermsOfService';
 import BlogList from './components/BlogList';
 import BlogPost from './components/BlogPost';
 import Footer from './components/Footer';
+import AgencyDashboard from './components/AgencyDashboard';
 
 // Create AuthProvider
 const AuthProvider = createAuthProvider();
@@ -66,7 +67,7 @@ function AppContent() {
     const { isAuthenticated } = useAuth();
     
     // Routes that ALWAYS use the Dashboard Layout
-    const alwaysDashboardRoutes = ['/dashboard', '/setup', '/entity-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
+    const alwaysDashboardRoutes = ['/dashboard', '/agency', '/setup', '/entity-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
     
     // Routes that use Dashboard Layout ONLY when logged in
     const hybridRoutes = ['/templates', '/interview', '/pricing'];
@@ -99,6 +100,16 @@ function AppContent() {
                     element={
                         <ProtectedRoute requiredRole="admin">
                             <AdminDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* ============ AGENCY PROTECTED ROUTES ============ */}
+                <Route
+                    path="/agency"
+                    element={
+                        <ProtectedRoute requiredRole="customer">
+                            <AgencyDashboard />
                         </ProtectedRoute>
                     }
                 />
