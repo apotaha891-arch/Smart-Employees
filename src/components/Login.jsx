@@ -331,6 +331,31 @@ const Login = () => {
                                 {loading ? t('verifying') : (isSignUp ? t('createCorpAct') : t('enterCenter'))}
                             </button>
                         </form>
+
+                        <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#4B5563' }}>
+                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }}></div>
+                            <span style={{ padding: '0 1rem', fontSize: '0.8rem' }}>{language === 'ar' ? 'أو عبر' : 'OR'}</span>
+                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }}></div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleGoogleSignIn}
+                            disabled={loading}
+                            className="btn btn-secondary btn-block"
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: '10px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                padding: '0.875rem'
+                            }}
+                        >
+                            <FcGoogle size={20} />
+                            <span>{language === 'ar' ? 'المتابعة عبر Google' : 'Continue with Google'}</span>
+                        </button>
                     </>
                 )}
 
