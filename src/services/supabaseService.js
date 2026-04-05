@@ -25,7 +25,8 @@ export const signUp = async (email, password, fullName, isAgency = false) => {
             email,
             password,
             options: {
-                data: { full_name: fullName, is_agency: isAgency }
+                data: { full_name: fullName, is_agency: isAgency },
+                emailRedirectTo: `${window.location.origin}/dashboard`
             }
         });
         if (error) throw error;
@@ -139,6 +140,22 @@ export const updatePassword = async (newPassword) => {
         return { success: true, data };
     } catch (error) {
         console.error("SupabaseService: Update password exception:", error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const resendConfirmationEmail = async (email) => {
+    try {
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email,
+            options: {
+                emailRedirectTo: `${window.location.origin}/dashboard`
+            }
+        });
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
         return { success: false, error: error.message };
     }
 };

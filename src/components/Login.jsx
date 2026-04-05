@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { signIn, signUp, signInWithGoogle, sendPasswordResetEmail, supabase } from '../services/supabaseService';
+import { signIn, signUp, signInWithGoogle, sendPasswordResetEmail, resendConfirmationEmail, supabase } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
 import { useLanguage } from '../LanguageContext';
@@ -30,6 +30,8 @@ const Login = () => {
     const [fullName, setFullName] = useState('');
     const [accountType, setAccountType] = useState('business'); // 'business' or 'agency'
     const [loading, setLoading] = useState(false);
+    const [resendLoading, setResendLoading] = useState(false);
+    const [resendSuccess, setResendSuccess] = useState(false);
     const [error, setError] = useState(null);
     const [signUpSuccess, setSignUpSuccess] = useState(false);
     const { t, language } = useLanguage();
@@ -127,6 +129,18 @@ const Login = () => {
         setLoading(false);
     };
 
+    const handleResend = async () => {
+        setResendLoading(true);
+        setError(null);
+        const result = await resendConfirmationEmail(email);
+        if (result.success) {
+            setResendSuccess(true);
+        } else {
+            setError(result.error);
+        }
+        setResendLoading(false);
+    };
+
     return (
         <div className="container py-xl flex-center" style={{ minHeight: '80vh', maxWidth: '480px', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
             <div className="card shadow-premium animate-fade-in" style={{ width: '100%', border: '1px solid var(--accent-border)' }}>
@@ -150,6 +164,22 @@ const Login = () => {
                 {error && (
                     <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', textAlign: 'center', fontSize: '0.9rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
                         {error}
+                        {!isSignUp && error.includes(language === 'ar' ? 'يرجى تفعيل بريدك' : 'confirm your email') && (
+                            <div style={{ marginTop: '0.75rem' }}>
+                                {resendSuccess ? (
+                                    <span style={{ color: '#10B981', fontWeight: 600 }}>{language === 'ar' ? '✓ تم إرسال الرابط مجدداً!' : '✓ Link resent successfully!'}</span>
+                                ) : (
+                                    <button 
+                                        onClick={handleResend}
+                                        disabled={resendLoading}
+                                        className="btn btn-secondary btn-sm"
+                                        style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444' }}
+                                    >
+                                        {resendLoading ? (language === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (language === 'ar' ? 'إعادة إرسال الرابط' : 'Resend Link')}
+                                    </button>
+                                )}
+                            </div>
+                        )}
                         {!isSignUp && error.includes('Invalid login credentials') && (
                             <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#9CA3AF' }}>
                                 {t('activateEmailNote')}
