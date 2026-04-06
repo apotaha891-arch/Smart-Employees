@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getCurrentUser, getProfile, getWalletBalance, getServices, getIntegrations, getUserEntities } from '../services/supabaseService';
-import { Link } from 'react-router-dom';
+import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getProfile, getWalletBalance, getServices, getIntegrations, getUserEntities } from '../services/supabaseService';
+import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 import LowCreditModal from './LowCreditModal';
 import * as XLSX from 'xlsx';
 import { Bot, Zap, BookOpen, Activity, Wallet, Target, ChevronLeft, ChevronRight, MessageSquare, TrendingUp, Calendar, Users } from 'lucide-react';
 
 const Dashboard = () => {
     const { t, language } = useLanguage();
+    const navigate = useNavigate();
+    const { user: contextUser, isImpersonating, isAgency } = useAuth(); // Use context user (supports impersonation)
 
     const [tasks, setTasks] = useState([]);
     const [stats, setStats] = useState({
@@ -43,63 +46,58 @@ const Dashboard = () => {
 
     const loadDashboardData = async () => {
         setIsLoading(true);
-
         try {
-            // Get User and Profile
-            const { user } = await getCurrentUser();
-            if (user) {
-                const profileResult = await getProfile(user.id);
-                if (profileResult.success) {
-                    const profileData = profileResult.data || { total_credits: 0, credits_used: 0, subscription_tier: '' };
+            // Use AuthContext user — supports impersonation correctly
+            const user = contextUser;
+            if (!user?.id) { navigate('/login'); return; }
 
-                    const balanceResult = await getWalletBalance(user.id);
-                    if (balanceResult.success) {
-                        profileData.wallet_balance = balanceResult.balance;
+            const profileResult = await getProfile(user.id);
+            if (profileResult.success) {
+                const profileData = profileResult.data || { total_credits: 0, credits_used: 0, subscription_tier: '' };
+
+                const balanceResult = await getWalletBalance(user.id);
+                if (balanceResult.success) profileData.wallet_balance = balanceResult.balance;
+
+                setProfile(profileData);
+
+                const entitiesResult = await getUserEntities(user.id);
+
+                // Redirect to setup only if not an agency and not impersonating
+                if (entitiesResult.success && (!entitiesResult.data || entitiesResult.data.length === 0)) {
+                    if (!isAgency && !isImpersonating) {
+                        navigate('/entity-setup');
+                        return;
                     }
+                }
 
-                    setProfile(profileData);
-                    
-                    // Fetch services for the mission checklist
-                    const entitiesResult = await getUserEntities(user.id);
-                    const entityId = entitiesResult.success && entitiesResult.data?.[0]?.id;
-                    if (entityId) {
-                        const servicesResult = await getServices(entityId);
-                        if (servicesResult.success) setServices(servicesResult.data);
-                    }
+                const entityId = entitiesResult.success && entitiesResult.data?.[0]?.id;
+                if (entityId) {
+                    const servicesResult = await getServices(entityId);
+                    if (servicesResult.success) setServices(servicesResult.data);
+                }
 
-                    // Fetch integrations to check connection status
-                    const integrationsResult = await getIntegrations(user.id);
-                    if (integrationsResult.success) setIntegrations(integrationsResult.data);
+                const integrationsResult = await getIntegrations(user.id);
+                if (integrationsResult.success) setIntegrations(integrationsResult.data);
 
-                    // Show modal if credits are low (< 10) and not unlimited
-                    const remaining = (profileData.total_credits || 0) - (profileData.credits_used || 0);
-                    if (remaining < 10 && remaining > 0 && profileData.subscription_tier !== 'enterprise') {
-                        // Check if we already showed it this session
-                        if (!sessionStorage.getItem('lowCreditAlertShown')) {
-                            setShowLowCreditModal(true);
-                        }
-                    }
+                const remaining = (profileData.total_credits || 0) - (profileData.credits_used || 0);
+                if (remaining < 10 && remaining > 0 && profileData.subscription_tier !== 'enterprise') {
+                    if (!sessionStorage.getItem('lowCreditAlertShown')) setShowLowCreditModal(true);
                 }
             }
 
-            // Load tasks
             const tasksResult = await getTasks(agentId, 50);
-            if (tasksResult.success) {
-                setTasks(tasksResult.data);
-            }
+            if (tasksResult.success) setTasks(tasksResult.data);
 
-            // Load stats
             if (agentId) {
                 const statsResult = await getTaskStats(agentId);
-                if (statsResult.success) {
-                    setStats(statsResult.data);
-                }
+                if (statsResult.success) setStats(statsResult.data);
             }
         } catch (error) {
             console.error('Load dashboard data error:', error);
         } finally {
             setIsLoading(false);
         }
+
     };
 
     const exportToExcel = () => {

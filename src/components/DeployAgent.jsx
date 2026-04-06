@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { Bot, CheckCircle2, MessageCircle, Send, Instagram, Zap, Headphones, Settings, ShieldCheck, CreditCard, Loader2, Globe, X } from 'lucide-react';
-import { supabase, getAgentApps, submitCustomRequest } from '../services/supabaseService';
+import { supabase, getAgentApps, submitCustomRequest, deductCredits, getBillingRates } from '../services/supabaseService';
+import { useAuth } from '../context/AuthContext';
 import { agentService } from '../services/agentService';
 
 const IntegrationsAddons = () => {
@@ -10,6 +11,7 @@ const IntegrationsAddons = () => {
     const isArabic = language === 'ar';
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     // Data passed from InterviewRoom
     const agentData = location.state?.template || { title: 'موظف ذكي', specialty: 'تخصص عام' };
@@ -29,6 +31,7 @@ const IntegrationsAddons = () => {
     const [customFormStatus, setCustomFormStatus] = useState('idle'); // idle, loading, success, error
 
     // Platform Configuration States
+    const [billingRates, setBillingRates] = useState(null);
     const [telegramToken, setTelegramToken] = useState('');
     const [whatsappSettings, setWhatsappSettings] = useState({
         token: '',
@@ -38,15 +41,22 @@ const IntegrationsAddons = () => {
 
     useEffect(() => {
         const fetchAddons = async () => {
-            const res = await getAgentApps();
-            if (res.success && res.data && res.data.length > 0) {
-                setDbAddons(res.data);
+            const [appsRes, ratesRes] = await Promise.all([
+                getAgentApps(),
+                getBillingRates()
+            ]);
+            
+            if (ratesRes.success) setBillingRates(ratesRes.data);
+
+            if (appsRes.success && appsRes.data && appsRes.data.length > 0) {
+                setDbAddons(appsRes.data);
             } else {
                 // Fallback if DB fetch fails or returns empty
+                const rates = ratesRes.data?.tool_setup_fees || {};
                 setDbAddons([
-                    { id: 'whatsapp', type: 'whatsapp', name_ar: 'واتساب', name_en: 'WhatsApp', description_ar: 'ربط الموظف برقم واتساب.', description_en: 'Connect to WhatsApp', price: 250 },
-                    { id: 'telegram', type: 'telegram', name_ar: 'تيليجرام', name_en: 'Telegram', description_ar: 'بناء بوت تيليجرام.', description_en: 'Telegram Bot', price: 100 },
-                    { id: 'instagram', type: 'instagram', name_ar: 'انستجرام', name_en: 'Instagram', description_ar: 'الرد على الرسائل الخاصة.', description_en: 'Instagram DMs', price: 200 }
+                    { id: 'whatsapp', type: 'whatsapp', name_ar: 'واتساب', name_en: 'WhatsApp', description_ar: 'ربط الموظف برقم واتساب.', description_en: 'Connect to WhatsApp', price: rates.whatsapp_byot || 500 },
+                    { id: 'telegram', type: 'telegram', name_ar: 'تيليجرام', name_en: 'Telegram', description_ar: 'بناء بوت تيليجرام.', description_en: 'Telegram Bot', price: rates.telegram || 250 },
+                    { id: 'instagram', type: 'instagram', name_ar: 'انستجرام', name_en: 'Instagram', description_ar: 'الرد على الرسائل الخاصة.', description_en: 'Instagram DMs', price: rates.instagram || 1000 }
                 ]);
             }
         };
@@ -73,8 +83,41 @@ const IntegrationsAddons = () => {
     const handleDeploy = async () => {
         setStatus('loading');
         const currentAgentId = location.state?.agentId || localStorage.getItem('currentAgentId');
+        if (!user?.id) { setStatus('idle'); return; }
 
         try {
+            // 1. Calculate and Deduct Fees
+            const setupFees = billingRates?.tool_setup_fees || {};
+            let totalSetupCost = 0;
+            
+            // Calculate total based on active addons
+            if (activeAddons.includes('telegram')) totalSetupCost += setupFees.telegram || 250;
+            if (activeAddons.includes('whatsapp')) {
+                // If they provided credentials, it's BYOT, otherwise it's Managed (or just a placeholder)
+                const isByot = whatsappSettings.token || whatsappSettings.phoneNumberId;
+                totalSetupCost += isByot ? (setupFees.whatsapp_byot || 500) : (setupFees.whatsapp_managed || 2000);
+            }
+            if (activeAddons.includes('instagram')) totalSetupCost += setupFees.instagram || 1000;
+
+            if (totalSetupCost > 0) {
+                const deduction = await deductCredits(
+                    user.id, 
+                    totalSetupCost, 
+                    'رسوم تأسيس وربط قنوات تواصل', 
+                    'multiple', 
+                    { platforms: activeAddons, agent_id: currentAgentId }
+                );
+
+                if (!deduction.success) {
+                    alert(isArabic 
+                        ? `رصيدك غير كافٍ لتأسيس هذه القنوات. التكلفة: ${totalSetupCost} نقطة.` 
+                        : `Insufficient credits for channel setup. Total cost: ${totalSetupCost} credits.`);
+                    setStatus('idle');
+                    navigate('/pricing');
+                    return;
+                }
+            }
+
             if (currentAgentId) {
                 let updatedName = agentName;
                 const platformNames = [];
@@ -227,7 +270,15 @@ const IntegrationsAddons = () => {
                             const addonIcon = getAppIcon(addon.type, isActive ? 'white' : addonColor);
                             const title = isArabic ? (addon.name_ar || addon.name || addon.type) : (addon.name_en || addon.name || addon.type);
                             const desc = isArabic ? (addon.description_ar || addon.description) : (addon.description_en || addon.description);
-                            const priceFormat = isArabic ? `${addon.price || 0} نقطة/شهرياً` : `${addon.price || 0} Credits/mo`;
+                            
+                            // Use dynamic rates from billingRates if available
+                            const rates = billingRates?.tool_setup_fees || {};
+                            let setupPrice = addon.price || 0;
+                            if (addon.type === 'telegram') setupPrice = rates.telegram || 250;
+                            if (addon.type === 'whatsapp') setupPrice = rates.whatsapp_byot || 500;
+                            if (addon.type === 'instagram') setupPrice = rates.instagram || 1000;
+
+                            const priceFormat = isArabic ? `${setupPrice} نقطة (رسوم ربط)` : `${setupPrice} Credits (Setup Fee)`;
 
                             return (
                                 <div

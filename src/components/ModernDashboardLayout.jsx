@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Store, Users, User, Settings, LogOut,
     Bell, Search, Menu, X, ChevronLeft, CreditCard, Calendar,
-    BarChart3, Lock, Zap, Bot, UserCheck, HelpCircle, MessageSquare, Puzzle
+    BarChart3, Lock, Zap, Bot, UserCheck, HelpCircle, MessageSquare, Puzzle, ShieldCheck, ArrowLeft, Plus
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -15,36 +15,89 @@ const ModernDashboardLayout = ({ children }) => {
     const { t, language, toggleLanguage } = useLanguage();
     const location = useLocation();
     const navigate = useNavigate();
-    const { isAdmin, isCustomer } = useAuth();
+    const { user, realUser, isAdmin, isCustomer, isAgency, isImpersonating, stopImpersonating } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [userData, setUserData] = useState({ name: t('loadingFallback'), email: '', business_name: '' });
+    const [balance, setBalance] = useState(0);
 
     useEffect(() => {
         fetchUser();
-    }, []);
+        fetchBalance();
+
+        // Subscribe to balance changes
+        if (user?.id) {
+            const channel = supabase
+                .channel(`wallet_changes_${user.id}`)
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'wallet_credits',
+                    filter: `user_id=eq.${user.id}`
+                }, (payload) => {
+                    if (payload.new && typeof payload.new.balance === 'number') {
+                        setBalance(payload.new.balance);
+                    }
+                })
+                .subscribe();
+            
+            return () => { supabase.removeChannel(channel); };
+        }
+    }, [user?.id]); // Re-fetch when user changes (supports impersonation switching)
+
+    const fetchBalance = async () => {
+        if (!user?.id) return;
+        try {
+            // 1. Try unified wallet first
+            const { data: walletData, error: walletError } = await supabase
+                .from('wallet_credits')
+                .select('balance')
+                .eq('user_id', user.id)
+                .maybeSingle();
+            
+            if (walletData) {
+                setBalance(walletData.balance);
+                return;
+            }
+
+            // 2. Fallback to profiles (Legacy) if no wallet exists yet
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('total_credits')
+                .eq('id', user.id)
+                .maybeSingle();
+
+            if (profileData && profileData.total_credits !== undefined) {
+                setBalance(profileData.total_credits);
+            } else {
+                setBalance(0);
+            }
+        } catch (err) {
+            console.error('Error fetching balance:', err);
+            setBalance(0);
+        }
+    };
 
     const fetchUser = async () => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                // Fetch latest entity config and profile
-                const [configRes, profileRes] = await Promise.all([
-                    supabase.from('entities').select('business_type').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-                    getProfile(user.id)
-                ]);
+            // Use user from AuthContext — correctly reflects impersonated client
+            const activeUserId = user?.id;
+            if (!activeUserId) return;
 
-                const config = configRes.data;
-                const profile = profileRes.data;
-                const bizType = config?.business_type || profile?.business_type || '';
-                const bizName = profile?.business_name || (language === 'ar' ? 'منشأتي' : 'My Business');
+            const [configRes, profileRes] = await Promise.all([
+                supabase.from('entities').select('business_type, business_name').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+                getProfile(activeUserId)
+            ]);
 
-                setUserData({
-                    name: user.user_metadata?.full_name || user.email.split('@')[0],
-                    email: user.email,
-                    business_name: bizName,
-                    business_type: bizType
-                });
-            }
+            const config = configRes.data;
+            const profile = profileRes.data;
+            const bizName = config?.business_name || profile?.business_name || (language === 'ar' ? 'منشأتي' : 'My Business');
+
+            setUserData({
+                name: user.user_metadata?.full_name || user.full_name || user.email?.split('@')[0] || 'مستخدم',
+                email: user.email || '',
+                business_name: bizName,
+                business_type: config?.business_type || profile?.business_type || ''
+            });
         } catch (error) {
             console.error('Error fetching user:', error);
         }
@@ -59,6 +112,12 @@ const ModernDashboardLayout = ({ children }) => {
 
     // Customer Navigation Items
     const customerNavItems = [
+        ...(isAgency ? [{ 
+            icon: ShieldCheck, 
+            label: language === 'ar' ? 'لوحة الوكالة' : 'Agency Panel', 
+            path: '/agency',
+            style: { borderBottom: '1px solid rgba(139, 92, 246, 0.2)', marginBottom: '0.5rem', paddingBottom: '1rem' }
+        }] : []),
         { icon: LayoutDashboard, label: language === 'ar' ? 'نظرة عامة' : 'Overview', path: '/dashboard' },
         { icon: Bot, label: language === 'ar' ? 'الفريق الرقمي' : 'Digital Team', path: '/agents' },
 
@@ -91,9 +150,53 @@ const ModernDashboardLayout = ({ children }) => {
     const navItems = isAdmin ? adminNavItems : customerNavItems;
 
     return (
-        <div className="dashboard-container" style={{ display: 'flex', height: 'calc(100vh - 74px)', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr', flexDirection: 'row', overflow: 'hidden' }}>
+        <div className="dashboard-container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 74px)', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr', overflow: 'hidden' }}>
 
-            {/* Sidebar */}
+            {/* ── Impersonation Banner ── */}
+            {isImpersonating && (
+                <div style={{
+                    background: 'linear-gradient(135deg, #7C3AED, #4F46E5)',
+                    padding: '10px 2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    zIndex: 200,
+                    flexShrink: 0
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <ShieldCheck size={16} />
+                        <span>
+                            {language === 'ar'
+                                ? `أنت تدير الآن: ${userData.business_name || user?.email}`
+                                : `Managing: ${userData.business_name || user?.email}`
+                            }
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => { stopImpersonating(); navigate('/agency'); }}
+                        style={{
+                            background: 'rgba(255,255,255,0.15)',
+                            border: '1px solid rgba(255,255,255,0.3)',
+                            borderRadius: '8px',
+                            color: 'white',
+                            padding: '6px 14px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontWeight: 700,
+                            fontSize: '0.8rem'
+                        }}
+                    >
+                        <ArrowLeft size={14} />
+                        {language === 'ar' ? 'العودة للوكالة' : 'Back to Agency'}
+                    </button>
+                </div>
+            )}
+
+            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
             <aside className="shift-sidebar" style={{ width: isSidebarOpen ? '280px' : '80px', display: 'flex', flexDirection: 'column', background: '#111827', borderRight: language === 'ar' ? 'none' : '1px solid rgba(255,255,255,0.05)', borderLeft: language === 'ar' ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'width 0.3s', overflowY: 'auto', flexShrink: 0 }}>
                 {/* Logo Area */}
                 <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -144,7 +247,7 @@ const ModernDashboardLayout = ({ children }) => {
                             const active = isActive(path);
 
                             return (
-                                <li key={path + idx} style={{ marginBottom: '0.25rem' }}>
+                                <li key={path + idx} style={{ marginBottom: '0.25rem', ...(item.style || {}) }}>
                                     <Link to={path} style={{
                                         display: 'flex', alignItems: 'center', gap: '1rem',
                                         padding: '12px 16px',
@@ -255,7 +358,36 @@ const ModernDashboardLayout = ({ children }) => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                        {/* Compact Balance Display */}
+                        {!isAdmin && (
+                            <div 
+                                onClick={() => navigate('/pricing')}
+                                style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '10px', 
+                                    background: 'rgba(139, 92, 246, 0.1)', 
+                                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                                    padding: '6px 14px',
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <Zap size={16} color="#8B5CF6" fill="#8B5CF6" />
+                                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'white' }}>{balance.toLocaleString()}</span>
+                                    <span style={{ fontSize: '0.65rem', color: '#8B5CF6', fontWeight: 600, textTransform: 'uppercase' }}>{language === 'ar' ? 'نقطة' : 'Credits'}</span>
+                                </div>
+                                <div style={{ marginLeft: language === 'ar' ? 0 : 4, marginRight: language === 'ar' ? 4 : 0, padding: 4, background: '#8B5CF6', borderRadius: 6, display: 'flex' }}>
+                                    <Plus size={12} color="white" strokeWidth={3} />
+                                </div>
+                            </div>
+                        )}
+                        
+                        <NotificationCenter userId={user?.id} />
+
                         {/* Language Toggle */}
                         <button
                             onClick={toggleLanguage}
@@ -287,6 +419,7 @@ const ModernDashboardLayout = ({ children }) => {
                     {children}
                 </div>
             </main>
+            </div>
         </div>
     );
 };

@@ -93,7 +93,12 @@ const Login = () => {
             }
         } else {
             // Handle unconfirmed email error specifically
-            if (result.error?.includes('Email not confirmed')) {
+            console.error("Auth Error Details:", result.error);
+            const isUnconfirmed = result.error?.toLowerCase().includes('confirm') || 
+                                 result.error?.includes('يرجى تفعيل بريدك') ||
+                                 result.error?.toLowerCase().includes('not confirmed');
+
+            if (isUnconfirmed) {
                 setError(language === 'ar' ? 'يرجى تفعيل بريدك الإلكتروني أولاً. تم إرسال رابط التفعيل مسبقاً.' : 'Please confirm your email first. A confirmation link was sent to your inbox.');
             } else if (result.error?.includes('rate limit exceeded')) {
                 setError(language === 'ar' 
@@ -120,7 +125,11 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        const result = await sendPasswordResetEmail(recoveryEmail);
+        // Add a timeout to prevent indefinite hanging (increased to 60s for stability)
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Password update timed out (60s). Check your connection.')), 60000)
+        );
+        const result = await Promise.race([sendPasswordResetEmail(recoveryEmail), timeoutPromise]).catch(err => ({ success: false, error: err.message }));
         if (result.success) {
             setRecoverySuccess(true);
         } else {

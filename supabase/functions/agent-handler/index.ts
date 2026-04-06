@@ -677,6 +677,25 @@ ${ec?.booking_requires_confirmation ? `6. IMPORTANT: After booking, tell the cus
             console.error("Critical: Failed to save chat history:", sessionSaveErr.message);
         }
 
+        // --- 9. DASHBOARD ACTIVITY LOGGING ---
+        // Ensure every message is recorded in the tasks table so the dashboard shows activity
+        try {
+            await supabaseClient.from('tasks').insert([{
+                agent_id: agentId,
+                task_type: 'interact',
+                task_data: { 
+                    message: message,
+                    reply: aiText,
+                    sessionId: sessionId,
+                    channel: sessionId.startsWith('telegram') ? 'telegram' : 'web'
+                },
+                completed_at: new Date().toISOString()
+            }]);
+            console.log("Activity logged to tasks table ✅");
+        } catch (taskErr: any) {
+            console.warn("Failed to log activity task (non-fatal):", taskErr.message);
+        }
+
         return new Response(JSON.stringify({ success: true, text: aiText }), { headers: corsHeaders });
 
     } catch (error: any) {

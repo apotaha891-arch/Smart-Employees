@@ -11,64 +11,92 @@ export const useAuth = () => {
 
 // Read role from app_metadata (set in auth.users via SQL — never blocked by RLS)
 // Falls back to profiles table, then defaults to 'customer'
-const getRoleFromUser = async (authUser) => {
-    if (!authUser) return null;
+const getAuthDetails = async (authUser) => {
+    if (!authUser) return { role: null, isAgency: false };
 
-    // 1. JWT app_metadata (set via admin actions/SQL directly)
-    if (authUser.app_metadata?.role) return authUser.app_metadata.role;
-
-    // 2. JWT user_metadata
-    if (authUser.user_metadata?.role) return authUser.user_metadata.role;
-
-    // 3. Profiles table with short retries (to allow trigger to fire)
-    let attempts = 0;
-    while (attempts < 3) {
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', authUser.id)
-                .maybeSingle();
-            if (data?.role) return data.role;
-            if (error) throw error;
-        } catch { /* wait & retry */ }
-        attempts++;
-        await new Promise(r => setTimeout(r, 500 * attempts));
+    // Fast-path: JWT app_metadata has is_agency=true explicitly
+    // (only trust this when it's explicitly true, not just because role is set)
+    if (authUser.app_metadata?.is_agency === true) {
+        return { 
+            role: authUser.app_metadata.role || 'customer', 
+            isAgency: true 
+        };
     }
 
-    return 'customer';
+    // PRIMARY SOURCE: Always verify is_agency from the database
+    // This is the authoritative source and cannot be fooled by stale JWT metadata
+    try {
+        const { data } = await supabase
+            .from('profiles')
+            .select('role, is_agency')
+            .eq('id', authUser.id)
+            .maybeSingle();
+        
+        if (data) {
+            return { 
+                role: data.role || 'customer', 
+                isAgency: !!data.is_agency 
+            };
+        }
+    } catch (e) {
+        console.warn("Auth DB check failed, using JWT fallback:", e.message);
+    }
+
+    // Last fallback: user_metadata
+    if (authUser.user_metadata?.is_agency === true) {
+        return { role: 'customer', isAgency: true };
+    }
+
+    return { role: 'customer', isAgency: false };
 };
 
 export const createAuthProvider = () => {
     return function AuthProvider({ children }) {
         const [user, setUser] = useState(null);
         const [userRole, setUserRole] = useState(null);
+        const [isAgency, setIsAgency] = useState(false);
         const [loading, setLoading] = useState(true);
+        
+        // Impersonation state
+        const [impersonatedUser, setImpersonatedUser] = useState(() => {
+            const saved = sessionStorage.getItem('impersonated_user');
+            return saved ? JSON.parse(saved) : null;
+        });
 
         useEffect(() => {
             let cancelled = false;
 
-            // onAuthStateChange fires immediately with INITIAL_SESSION
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(
-                async (_event, session) => {
-                    const authUser = session?.user ?? null;
-                    if (cancelled) return;
+            const initializeAuth = async (session) => {
+                const authUser = session?.user ?? null;
+                if (cancelled) return;
 
-                    // Prevent redundant state updates if user ID is the same
-                    setUser(prev => {
-                        if (prev?.id === authUser?.id) return prev;
-                        return authUser;
-                    });
-                    
-                    const role = await getRoleFromUser(authUser);
+                setUser(authUser);
+                
+                if (authUser) {
+                    const { role, isAgency } = await getAuthDetails(authUser);
                     if (!cancelled) {
                         setUserRole(role);
+                        setIsAgency(isAgency);
                         setLoading(false);
                     }
+                } else {
+                    setUserRole(null);
+                    setIsAgency(false);
+                    setLoading(false);
+                }
+            };
+
+            // Get initial session
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                initializeAuth(session);
+            });
+
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(
+                async (_event, session) => {
+                    initializeAuth(session);
                 }
             );
 
-            // Safety net: if onAuthStateChange never fires, unblock after 5s
             const fallback = setTimeout(() => {
                 if (!cancelled) setLoading(false);
             }, 5000);
@@ -80,14 +108,35 @@ export const createAuthProvider = () => {
             };
         }, []);
 
+        const impersonateUser = (targetUser) => {
+            setImpersonatedUser(targetUser);
+            sessionStorage.setItem('impersonated_user', JSON.stringify(targetUser));
+        };
+
+        const stopImpersonating = () => {
+            setImpersonatedUser(null);
+            sessionStorage.removeItem('impersonated_user');
+        };
+
+        // The effective user is either the impersonated one or the real logged-in one
+        const activeUser = impersonatedUser || user;
+
         return (
             <AuthContext.Provider value={{
-                user,
+                user: activeUser,         // Impersonated client OR real agency
+                realUser: user,           // Always the real logged-in agency
                 userRole,
                 loading,
                 isAdmin: userRole === 'admin',
                 isCustomer: userRole === 'customer',
+                // When impersonating: isAgency = false (treat as regular customer)
+                // This prevents routing from redirecting the client back to /agency
+                isAgency: impersonatedUser ? false : isAgency,
+                realIsAgency: isAgency,   // The real agency status, always
                 isAuthenticated: !!user,
+                isImpersonating: !!impersonatedUser,
+                impersonateUser,
+                stopImpersonating
             }}>
                 {children}
             </AuthContext.Provider>

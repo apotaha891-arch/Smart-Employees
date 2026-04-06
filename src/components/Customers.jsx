@@ -1,31 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { Users, Plus, Download, Filter } from 'lucide-react';
 import { supabase, getCustomers, upsertCustomer } from '../services/supabaseService';
 import CustomersTable from './CustomersTable';
 
 const Customers = () => {
     const { t } = useLanguage();
+    const { user: contextUser } = useAuth(); // Use AuthContext — respects impersonation
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [entityId, setEntityId] = useState(null);
     const [error, setError] = useState(null);
 
+    // Re-run when impersonated user changes
     useEffect(() => {
-        fetchInitialData();
-    }, []);
+        if (contextUser?.id) fetchInitialData();
+    }, [contextUser?.id]);
 
     const fetchInitialData = async () => {
         try {
             setLoading(true);
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) { setError(t('mustLogin')); setLoading(false); return; }
+            // Use contextUser — correctly reflects impersonated client
+            const userId = contextUser?.id;
+            if (!userId) { setError(t('mustLogin')); setLoading(false); return; }
 
-            // Get most recent entity config (don't filter by is_active)
+            // Get most recent entity config for THIS client only
             const { data: config } = await supabase
                 .from('entities')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
@@ -35,9 +39,8 @@ const Customers = () => {
                 const result = await getCustomers(config.id);
                 setCustomers(result.data || []);
             } else {
-                // Fallback — show all customers
-                const { data: all } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
-                setCustomers(all || []);
+                // No entity for this client — show empty list (NOT all customers!)
+                setCustomers([]);
             }
         } catch (err) {
             console.error('Error fetching customers:', err);

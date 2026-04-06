@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase, getProfile, getUserAgentCount } from '../services/supabaseService';
+import { supabase, getProfile, getUserAgentCount, deductCredits, getBillingRates } from '../services/supabaseService';
 import { getPlatformSettings } from '../services/adminService';
 import {
     Bot, ArrowRight, ArrowLeft, Check,
     Calendar, TrendingUp, MessageCircle, Users, Mail
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const ROLE_LABELS = {
@@ -64,6 +65,7 @@ const ROLE_META = {
 const HireAgent = () => {
     const navigate = useNavigate();
     const { t, language } = useLanguage();
+    const { user: contextUser } = useAuth(); // Impersonation-aware user
     const isAr = language === 'ar';
 
     const [step, setStep] = useState(1); // 1=pick role, 2=fill details
@@ -76,11 +78,18 @@ const HireAgent = () => {
     const [maxTools, setMaxTools] = useState(2); // default 2 tools for starter plan
     const [agentsLimit, setAgentsLimit] = useState(1); // default 1 agent for starter plan
     const [currentAgents, setCurrentAgents] = useState(0);
+    const [billingRates, setBillingRates] = useState(null);
 
     useEffect(() => {
         (async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
+            if (!contextUser?.id) return;
+
+            const user = contextUser;
+            try {
+                // Fetch Billing Rates
+                const ratesRes = await getBillingRates();
+                if (ratesRes.success) setBillingRates(ratesRes.data);
+
                 const { data } = await supabase
                     .from('entities')
                     .select('agent_name, business_type')
@@ -121,25 +130,34 @@ const HireAgent = () => {
                 if (countRes.success) {
                     setCurrentAgents(countRes.count);
                 }
-
-            } else {
+            } catch (err) {
+                console.error("HireAgent: Initialization error:", err);
                 setEntityReady(false);
             }
         })();
-    }, []);
+    }, [contextUser?.id]);
 
     const handleSave = async () => {
         if (!form.name || !selected || form.platforms.length === 0) return;
         setSaving(true);
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error(isAr ? 'يجب تسجيل الدخول أولاً' : 'Auth required');
+            const user = contextUser;
+            if (!user?.id) throw new Error(isAr ? 'يجب تسجيل الدخول أولاً' : 'Auth required');
 
-            // Final safety check for limits
-            if (currentAgents >= agentsLimit) {
+            // 1. Credit Check & Deduction
+            const hireFee = billingRates?.agent_provision_fee || 1000;
+            const deduction = await deductCredits(
+                user.id, 
+                hireFee, 
+                'إضافة موظف رقمي جديد', 
+                'internal', 
+                { agent_role: selected, agent_name: form.name }
+            );
+
+            if (!deduction.success) {
                 alert(isAr 
-                    ? `لقد وصلت للحد الأقصى لباقة منشأتك الحالي (${agentsLimit} موظفين). يرجى تقديم طلب ترقية لتوظيف المزيد.` 
-                    : `You have reached the maximum agent limit for your plan (${agentsLimit} agents). Please upgrade to hire more.`);
+                    ? `عذراً! رصيدك غير كافٍ لتوظيف هذا الموظف. يتطلب الأمر ${hireFee} نقطة ورصيدك الحالي هو ${deduction.current_balance || 0} نقطة.` 
+                    : `Insufficient credits! This hire costs ${hireFee} and you have ${deduction.current_balance || 0} points.`);
                 setSaving(false);
                 navigate('/pricing');
                 return;
@@ -357,6 +375,10 @@ const HireAgent = () => {
                                                     {isAr ? meta.titleAr : meta.titleEn}
                                                 </span>
                                                 {Icon && <Icon size={14} color={v?.color} />}
+                                                {/* Price Tag */}
+                                                <div style={{ marginLeft: isAr ? 0 : 'auto', marginRight: isAr ? 'auto' : 0, padding: '4px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', fontSize: '0.75rem', fontWeight: 700, border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                                    {billingRates?.agent_provision_fee || 1000} {isAr ? 'نقطة' : 'Pts'}
+                                                </div>
                                             </div>
                                             <div style={{ color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 10, lineHeight: 1.5 }}>
                                                 {isAr ? meta.descAr : meta.descEn}
@@ -512,17 +534,24 @@ const HireAgent = () => {
                                     fontSize: '1rem',
                                     cursor: !form.name ? 'not-allowed' : 'pointer',
                                     display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: 8,
+                                    gap: 1,
                                     transition: 'all 0.2s',
                                     marginTop: 8,
                                 }}
                             >
-                                {saving
-                                    ? (isAr ? '⏳ جاري التوظيف...' : '⏳ Hiring...')
-                                    : (isAr ? `✅ توظيف ${meta.titleAr}` : `✅ Hire ${meta.titleEn}`)
-                                }
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    {saving
+                                        ? <div style={{ width: 14, height: 14, border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+                                        : (isAr ? 'تأكيد التوظيف' : 'Confirm Hire')}
+                                </div>
+                                {!saving && form.name && (
+                                    <div style={{ fontSize: '0.65rem', opacity: 0.9, fontWeight: 500 }}>
+                                        {isAr ? `سيتم خصم ${billingRates?.agent_provision_fee || 1000} نقطة من محفظتك` : `Costs ${billingRates?.agent_provision_fee || 1000} credits`}
+                                    </div>
+                                )}
                             </button>
                         </div>
                     </div>

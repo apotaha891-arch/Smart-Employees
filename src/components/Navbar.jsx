@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, signOut, supabase } from '../services/supabaseService';
+import { getCurrentUser, signOut, supabase, resendConfirmationEmail } from '../services/supabaseService';
+import { useAuth } from '../context/AuthContext';
 import { Smartphone, Briefcase, Globe, LayoutDashboard } from 'lucide-react';
 
 const Navbar = () => {
     const { t, language, toggleLanguage } = useLanguage();
     const location = useLocation();
     const navigate = useNavigate();
+    const { isAgency } = useAuth();
     const [user, setUser] = useState(null);
 
     useEffect(() => {
@@ -79,9 +81,9 @@ const Navbar = () => {
                     </li>
                     {user && (
                         <li>
-                            <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Link to={isAgency ? "/agency" : "/dashboard"} className={`nav-link ${isActive(isAgency ? '/agency' : '/dashboard') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <LayoutDashboard size={18} />
-                                <span>{t('nav.dashboard')}</span>
+                                <span>{isAgency ? (language === 'ar' ? 'مركز الوكالة' : 'Agency Panel') : t('nav.dashboard')}</span>
                             </Link>
                         </li>
                     )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { 
     getCurrentUser, getProfile, getWalletBalance, saveEntityConfig, 
     activateEntityAgent, getServices, addService, updateService, 
@@ -18,6 +19,7 @@ import ServicesTable from './ServicesTable';
 
 const EntitySetup = () => {
     const hasInitialized = useRef(false);
+    const { user: contextUser } = useAuth(); // Use AuthContext user (supports impersonation)
     console.info("EntitySetup: Loaded (v3-stability-fix). Status Banner ready.");
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const { t, language } = useLanguage();
@@ -450,7 +452,8 @@ const EntitySetup = () => {
             phone: extractedProfile.phone || prev.phone,
             address: extractedProfile.address || prev.address,
             website: extractedProfile.website || prev.website,
-            knowledge_base: extractedProfile.knowledgeBase || prev.knowledge_base,
+            knowledge_base: (extractedProfile.knowledgeBase || prev.knowledge_base) + 
+                           (extractedProfile.services ? `\n\nOFFICIAL SERVICES:\n${extractedProfile.services}` : ''),
             mission_statement: extractedProfile.mission_statement || prev.mission_statement,
             target_audience: extractedProfile.target_audience || prev.target_audience,
             brand_voice_details: extractedProfile.brand_voice || prev.brand_voice_details,
@@ -462,6 +465,7 @@ const EntitySetup = () => {
             const { user } = await getCurrentUser();
             if (!user) throw new Error('Auth required');
             const configResult = await saveEntityConfig({
+                id: entityId, // IMPORTANT: Maintain existing ID if possible
                 user_id: user.id,
                 agent_name: extractedProfile.businessName,
                 specialty: extractedProfile.businessType,
@@ -469,7 +473,9 @@ const EntitySetup = () => {
                 phone: extractedProfile.phone,
                 address: extractedProfile.address,
                 website: extractedProfile.website,
-                knowledge_base: extractedProfile.knowledgeBase,
+                // Combine knowledge base with services for the AI to read immediately
+                knowledge_base: (extractedProfile.knowledgeBase || '') + 
+                               (extractedProfile.services ? `\n\nOFFICIAL SERVICES:\n${extractedProfile.services}` : ''),
                 mission_statement: extractedProfile.mission_statement,
                 target_audience: extractedProfile.target_audience,
                 brand_voice_details: extractedProfile.brand_voice,
@@ -483,8 +489,9 @@ const EntitySetup = () => {
             setAiUrlsList([]);
             
             // If we have an agentId, sync it immediately to avoid losing the reference
-            if (agentId) {
-                await updateAgent(agentId, {
+            const currentAgentId = agentId || localStorage.getItem('currentAgentId');
+            if (currentAgentId) {
+                await updateAgent(currentAgentId, {
                     name: extractedProfile.businessName,
                     specialty: extractedProfile.businessType,
                     entity_id: configResult.data.id
@@ -501,18 +508,26 @@ const EntitySetup = () => {
 
 
     useEffect(() => {
+        // Reset init flag when user changes (e.g., agency switches between clients)
+        hasInitialized.current = false;
+    }, [contextUser?.id]);
+
+    useEffect(() => {
         // Guard to prevent infinite re-initialization loops
         if (hasInitialized.current) return;
+        // Wait until we have a user from AuthContext
+        if (!contextUser?.id) return;
         
         const checkUser = async () => {
             let configs = null;
-            const { data: { session } } = await supabase.auth.getSession();
-            const user = session?.user;
+            // Use contextUser from AuthContext — correctly reflects impersonated client
+            const user = contextUser;
             
             if (user) {
                 console.info("EntitySetup: [INIT] Starting initialization for user", user.id);
                 hasInitialized.current = true;
                 setCurrentUserId(user.id);
+
 
                 // Priority 1: Fetch the global/latest entities as baseline
                 const { data: globalConfigs, error: globalError } = await supabase
@@ -682,7 +697,7 @@ const EntitySetup = () => {
             console.error("EntitySetup: Initialization error:", err);
             setStatusMsg({ type: 'error', text: isAr ? '❌ فشل تحميل البيانات.' : '❌ Failed to load data.' });
         });
-    }, [location.search]);
+    }, [location.search, contextUser?.id]);
 
     // Load Integrations and Handle OAuth Redirect
     useEffect(() => {
@@ -2405,7 +2420,11 @@ const EntitySetup = () => {
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.25rem' }}>
                                     {CARDS.map(card => {
                                         const isOpen = expandedIntegration === card.id;
-                                        const isConnected = card.fields.length > 0 ? card.fields.some(f => !!integrationKeys[f.key]) : !!integrationKeys[`oauth_${card.id}`];
+                                        const isConnected = card.id === 'website'
+                                            ? !!agentId  // Website widget is "connected" only when an agent exists
+                                            : card.fields.length > 0 
+                                                ? card.fields.some(f => f.key !== 'website' && !!integrationKeys[f.key]) 
+                                                : !!integrationKeys[`oauth_${card.id}`];
                                         const cardColor = card.color;
 
                                         return (

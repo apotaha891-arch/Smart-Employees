@@ -17,7 +17,12 @@ BEGIN
     COALESCE((new.raw_user_meta_data->>'is_agency')::boolean, false)
   )
   ON CONFLICT (id) DO UPDATE 
-  SET is_agency = COALESCE((new.raw_user_meta_data->>'is_agency')::boolean, EXCLUDED.is_agency);
+  SET 
+    full_name = EXCLUDED.full_name,
+    is_agency = CASE 
+                  WHEN profiles.is_agency = true THEN true 
+                  ELSE COALESCE((new.raw_user_meta_data->>'is_agency')::boolean, EXCLUDED.is_agency)
+                END;
   
   RETURN new;
 END;

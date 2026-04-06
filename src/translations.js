@@ -65,6 +65,9 @@ export const translations = {
             platformName: "منصة 24Shift"
         },
         points: "نقطة",
+        systemStatus: {
+            loading: "جاري التحميل..."
+        },
 
         // Navigation
         nav: {
@@ -745,6 +748,9 @@ export const translations = {
         brand: {
             name: "24Shift",
             platformName: "24Shift Platform"
+        },
+        systemStatus: {
+            loading: "Loading..."
         },
 
         // Home Page Sections

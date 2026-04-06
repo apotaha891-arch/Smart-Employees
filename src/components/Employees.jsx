@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseService';
 import { Bot, Plus, Calendar, MessageCircle, TrendingUp, Users, Mail, Power, Settings, Link as LinkIcon, X, AlertCircle, CheckCircle2, Box, ArrowRight, Trash2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
@@ -41,6 +42,7 @@ const Employees = () => {
     const { t, language } = useLanguage();
     const isAr = language === 'ar';
     const navigate = useNavigate();
+    const { user: contextUser } = useAuth(); // Use AuthContext — respects impersonation
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userSector, setUserSector] = useState('general');
@@ -57,12 +59,16 @@ const Employees = () => {
     const [userTier, setUserTier] = useState('starter');
     const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
-    useEffect(() => { loadSectorAndAgents(); }, []);
+    // Re-run when impersonated user changes
+    useEffect(() => { 
+        if (contextUser?.id) loadSectorAndAgents(); 
+    }, [contextUser?.id]);
 
     const loadSectorAndAgents = async () => {
         setLoading(true);
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            // Use contextUser — correctly reflects impersonated client
+            const user = contextUser;
             if (user) {
                 // Fetch Sector and Config
                 const [configRes, profileRes] = await Promise.all([

@@ -96,6 +96,17 @@ export const signOut = async () => {
 
 export const getCurrentUser = async () => {
     try {
+        // IMPERSONATION: Check if agency is managing a client
+        // This makes ALL components impersonation-aware without individual changes
+        const impersonatedRaw = sessionStorage.getItem('impersonated_user');
+        if (impersonatedRaw) {
+            const impersonatedUser = JSON.parse(impersonatedRaw);
+            if (impersonatedUser?.id) {
+                return { success: true, user: impersonatedUser };
+            }
+        }
+        
+        // Normal flow: return the real authenticated user
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) throw error;
         return { success: true, user };
@@ -121,9 +132,9 @@ export const sendPasswordResetEmail = async (email) => {
 export const updatePassword = async (newPassword) => {
     try {
         console.log("SupabaseService: Updating password...");
-        // Add a timeout to prevent indefinite hanging
+        // Add a timeout to prevent indefinite hanging (increased to 60s for stability)
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Password update timed out (30s). Check your connection.')), 30000)
+            setTimeout(() => reject(new Error('Password update timed out (60s). Check your connection.')), 60000)
         );
 
         const updatePromise = supabase.auth.updateUser({
@@ -365,37 +376,29 @@ export const getAgentApps = async () => {
 
 export const createAgent = async (agentData) => {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Use getCurrentUser to support impersonation
+        const { user } = await getCurrentUser();
         if (!user) throw new Error("User not authenticated");
 
         const { data, error } = await supabase
             .from('agents')
-            .insert([
-                {
-                    name: agentData.name || 'AI Agent',
-                    specialty: agentData.specialty || 'General',
-                    avatar: agentData.avatar || '👩',
-                    business_type: agentData.business_type || null,
-                    platform: agentData.platform || (agentData.metadata?.platforms ? agentData.metadata.platforms.join(',') : null),
-                    status: 'active',
-                    user_id: user.id
-                }
-            ])
+            .insert([{
+                name: agentData.name || 'AI Agent',
+                specialty: agentData.specialty || 'General',
+                avatar: agentData.avatar || '👩',
+                business_type: agentData.business_type || null,
+                platform: agentData.platform || (agentData.metadata?.platforms ? agentData.metadata.platforms.join(',') : null),
+                status: 'active',
+                user_id: user.id
+            }])
             .select()
             .single();
 
         if (error) throw error;
-
-        return {
-            success: true,
-            data: data,
-        };
+        return { success: true, data };
     } catch (error) {
         console.error('Create Agent Error:', error);
-        return {
-            success: false,
-            error: error.message,
-        };
+        return { success: false, error: error.message };
     }
 };
 
@@ -425,7 +428,8 @@ export const updateAgent = async (agentId, agentData) => {
 
 export const getAgents = async () => {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Use getCurrentUser to support impersonation
+        const { user } = await getCurrentUser();
         if (!user) throw new Error("Not authenticated");
 
         const { data, error } = await supabase
@@ -435,17 +439,10 @@ export const getAgents = async () => {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-
-        return {
-            success: true,
-            data: data,
-        };
+        return { success: true, data };
     } catch (error) {
         console.error('Get Agents Error:', error);
-        return {
-            success: false,
-            error: error.message,
-        };
+        return { success: false, error: error.message };
     }
 };
 
@@ -1257,6 +1254,49 @@ export const getUserAgentCount = async (userId) => {
         return { success: true, count: count || 0 };
     } catch (error) {
         console.error('getUserAgentCount error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// ==================== UNIFIED BILLING & CREDITS ====================
+
+/**
+ * Deducts credits from user wallet using the unified RPC.
+ * This handles balance checking and ledger logging in one transaction.
+ */
+export const deductCredits = async (userId, amount, reason, platform = null, metadata = {}) => {
+    try {
+        const { data, error } = await supabase.rpc('deduct_wallet_credits', {
+            p_user_id: userId,
+            p_amount: amount,
+            p_reason: reason,
+            p_platform: platform,
+            p_metadata: metadata
+        });
+
+        if (error) throw error;
+        return data; // returns { success: boolean, remaining_balance: number, error?: string }
+    } catch (error) {
+        console.error('deductCredits service error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Fetches the current billing rates from platform settings.
+ */
+export const getBillingRates = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('platform_settings')
+            .select('value')
+            .eq('key', 'billing_rates')
+            .maybeSingle();
+
+        if (error) throw error;
+        return { success: true, data: data?.value };
+    } catch (error) {
+        console.error('getBillingRates service error:', error);
         return { success: false, error: error.message };
     }
 };

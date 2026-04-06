@@ -7,13 +7,16 @@ import ManusHero from './ManusHero';
 
 const Pricing = () => {
     const location = useLocation();
+    const { t, language } = useLanguage();
     const navigate = useNavigate();
+    const pricingPlans = t('pricingPlans');
 
     const isHiringFlow = location.state?.fromInterview;
     const businessRules = location.state?.businessRules || null;
     const template = location.state?.template || null;
 
     const [billingCycle, setBillingCycle] = useState('monthly');
+    const [viewMode, setViewMode] = useState('customer'); // 'customer' or 'agency'
     const [userPlan, setUserPlan] = useState('free');
     const [currentUserId, setCurrentUserId] = useState(null);
 
@@ -26,6 +29,10 @@ const Pricing = () => {
                 if (profileResult.success && profileResult.data) {
                     const plan = profileResult.data.subscription_tier || profileResult.data.subscription_plan || 'free';
                     setUserPlan(plan.toLowerCase());
+                    // If user is already an agency, show agency plans by default
+                    if (profileResult.data.is_agency) {
+                        setViewMode('agency');
+                    }
                 }
             }
         };
@@ -239,14 +246,6 @@ const Pricing = () => {
         return dbPlan && dbPlan[field] !== undefined ? dbPlan[field] : fallback;
     };
 
-    const addons = [
-        { id: 'addon_1k', credits: getPlanValue('addon_1k', 'credits', 1000), price: getPlanValue('addon_1k', 'monthlyPrice', 10) },
-        { id: 'addon_5k', credits: getPlanValue('addon_5k', 'credits', 5000), price: getPlanValue('addon_5k', 'monthlyPrice', 35) }
-    ];
-
-    const { t, language } = useLanguage();
-    const pricingPlans = t('pricingPlans');
-
     const plans = [
         {
             id: 'starter',
@@ -307,6 +306,69 @@ const Pricing = () => {
         }
     ];
 
+    const addons = [
+        { id: 'addon_1k', credits: getPlanValue('addon_1k', 'credits', 1000), price: getPlanValue('addon_1k', 'monthlyPrice', 10) },
+        { id: 'addon_5k', credits: getPlanValue('addon_5k', 'credits', 5000), price: getPlanValue('addon_5k', 'monthlyPrice', 35) }
+    ];
+
+    const agencyPlans = [
+        {
+            id: 'agency_silver',
+            name: language === 'ar' ? 'الوكالة الفضية' : 'Silver Agency',
+            icon: <Shield size={28} color="#94A3B8" />,
+            monthlyPrice: 299,
+            yearlyPrice: 239,
+            description: language === 'ar' ? 'البداية المثالية للوكالات المتوسطة' : 'Perfect start for mid-sized agencies',
+            features: [
+                `${language === 'ar' ? '5 حسابات منشآت' : '5 Sub-accounts'}`,
+                `50,000 ${language === 'ar' ? 'نقطة رصيد إجمالية' : 'Total Credit Pool'}`,
+                language === 'ar' ? 'لوحة تحكم إدارية للوكالة' : 'Master Agency Dashboard',
+                language === 'ar' ? 'توزيع الرصيد يدوياً' : 'Manual Credit Distribution',
+                language === 'ar' ? 'دعم فني أولوية' : 'Priority Tech Support'
+            ],
+            cta: language === 'ar' ? 'اشترك كوكالة فضية' : 'Join as Silver Agency',
+            color: '#94A3B8'
+        },
+        {
+            id: 'agency_gold',
+            name: language === 'ar' ? 'الوكالة الذهبية' : 'Gold Agency',
+            icon: <Crown size={28} color="#F59E0B" />,
+            monthlyPrice: 799,
+            yearlyPrice: 639,
+            description: language === 'ar' ? 'للشركات والمكاتب ذات النمو السريع' : 'For fast-growing agencies & firms',
+            features: [
+                `${language === 'ar' ? '20 حساب منشأة' : '20 Sub-accounts'}`,
+                `250,000 ${language === 'ar' ? 'نقطة رصيد إجمالية' : 'Total Credit Pool'}`,
+                language === 'ar' ? 'لوحة تحكم كاملة' : 'Master Agency Dashboard',
+                language === 'ar' ? 'توزيع الرصيد يدوياً' : 'Manual Credit Distribution',
+                language === 'ar' ? 'دعم فني مخصص (VIP)' : 'Dedicated VIP Support',
+                language === 'ar' ? 'أولوية في تحديثات النظام' : 'Early access to updates'
+            ],
+            cta: language === 'ar' ? 'اشترك كوكالة ذهبية' : 'Join as Gold Agency',
+            popular: true,
+            color: '#F59E0B'
+        },
+        {
+            id: 'agency_platinum',
+            name: language === 'ar' ? 'الوكالة البلاتينية' : 'Platinum Agency',
+            icon: <ShieldCheck size={28} color="#A78BFA" />,
+            monthlyPrice: 1499,
+            yearlyPrice: 1199,
+            description: language === 'ar' ? 'حلول ضخمة للمنظمات التي لا تعرف الحدود' : 'Unlimited solutions for large organizations',
+            features: [
+                `${language === 'ar' ? '50 حساب منشأة' : '50 Sub-accounts'}`,
+                `1,000,000 ${language === 'ar' ? 'نقطة رصيد إجمالية' : 'Total Credit Pool'}`,
+                language === 'ar' ? 'لوحة تحكم متفوقة' : 'Enterprise Agency Panel',
+                language === 'ar' ? 'API وصول خاص (قريباً)' : 'Private API Access (Soon)',
+                language === 'ar' ? 'إدارة حساب مخصص' : 'Dedicated Account Manager'
+            ],
+            cta: language === 'ar' ? 'تواصل معنا (بلاتينيوم)' : 'Contact Sales (Platinum)',
+            color: '#A78BFA'
+        }
+    ];
+
+    const currentPlans = viewMode === 'agency' ? agencyPlans : plans;
+
     return (
         <div className="bg-light" style={{ paddingTop: '8rem', paddingBottom: '6rem', minHeight: '100vh', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
             <div className="container">
@@ -314,13 +376,17 @@ const Pricing = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', alignItems: 'center', marginBottom: '4rem' }}>
                         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
                             <div className="badge badge-success mb-md" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6', padding: '0.6rem 1.75rem', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                                {language === 'ar' ? 'استثمار ذكي لمستقبل منشأتك' : 'Smart Investment for Your Business'}
+                                {viewMode === 'agency' ? (language === 'ar' ? 'حلول الوكالات وإعادة البيع' : 'Agency Reseller Solutions') : (language === 'ar' ? 'استثمار ذكي لمستقبل منشأتك' : 'Smart Investment for Your Business')}
                             </div>
                             <h2 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1.5rem', color: 'var(--primary)', lineHeight: 1.2 }}>
-                                {language === 'ar' ? 'موظف لا ينام، بتكلفة لا تقارن.' : 'An Employee Who Never Sleeps, at an Unbeatable Cost.'}
+                                {viewMode === 'agency' 
+                                    ? (language === 'ar' ? 'كن شريكنا، وقدم خدمة AI لعملائك.' : 'Partner with us, Provide AI for your clients.')
+                                    : (language === 'ar' ? 'موظف لا ينام، بتكلفة لا تقارن.' : 'An Employee Who Never Sleeps, at an Unbeatable Cost.')}
                             </h2>
                             <p className="text-secondary" style={{ fontSize: '1.25rem', lineHeight: 1.7, fontWeight: 500, margin: '0' }}>
-                                {language === 'ar' ? 'تخيل موظفاً يرد على عملائك فيตี3 فجراً، يغلق الصفقات، ويحجز المواعيد بلباقة تامة، بدون إجازات أو أخطاء وبجزء بسيط من تكلفة الموظف التقليدي.' : 'Imagine an employee replying to your customers at 3 AM, closing deals, and booking appointments politely, with no days off or errors, at a fraction of the cost.'}
+                                {viewMode === 'agency'
+                                    ? (language === 'ar' ? 'سواء كنت وكالة تسويق أو شركة تقنية، قم بتوزيع الرصيد وإدارة عملائك من لوحة تحكم واحدة وبسهولة تامة.' : 'Whether you are a marketing agency or a tech firm, distribute credits and manage your clients from a single central dashboard.')
+                                    : (language === 'ar' ? 'تخيل موظفاً يرد على عملائك فيตี3 فجراً، يغلق الصفقات، ويحجز المواعيد بلباقة تامة، بدون إجازات أو أخطاء وبجزء بسيط من تكلفة الموظف التقليدي.' : 'Imagine an employee replying to your customers at 3 AM, closing deals, and booking appointments politely, with no days off or errors, at a fraction of the cost.')}
                             </p>
                         </div>
 
@@ -406,62 +472,114 @@ const Pricing = () => {
                 {/* Manus Inspiration Layout */}
                 <ManusHero />
 
-                {/* Billing Toggle */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '1rem',
-                    margin: '0 auto 4rem',
-                    background: 'rgba(255,255,255,0.03)',
-                    padding: '0.5rem',
-                    borderRadius: '20px',
-                    width: 'fit-content',
-                    border: '1px solid rgba(255,255,255,0.05)'
-                }}>
-                    <button
-                        onClick={() => setBillingCycle('monthly')}
-                        style={{
-                            padding: '1rem 2rem',
-                            borderRadius: '16px',
-                            border: 'none',
-                            background: billingCycle === 'monthly' ? '#8B5CF6' : 'transparent',
-                            color: billingCycle === 'monthly' ? '#FFF' : '#A1A1AA',
-                            fontWeight: 800,
-                            fontSize: '1.05rem',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s'
-                        }}
-                    >
-                        {t('payMonthly')}
-                    </button>
-                    <button
-                        onClick={() => setBillingCycle('yearly')}
-                        style={{
-                            padding: '1rem 2rem',
-                            borderRadius: '16px',
-                            border: 'none',
-                            background: billingCycle === 'yearly' ? '#8B5CF6' : 'transparent',
-                            color: billingCycle === 'yearly' ? '#FFF' : '#A1A1AA',
-                            fontWeight: 800,
-                            fontSize: '1.05rem',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem'
-                        }}
-                    >
-                        {t('payYearly')}
-                        <span style={{
-                            background: billingCycle === 'yearly' ? 'white' : 'rgba(139, 92, 246, 0.15)',
-                            color: billingCycle === 'yearly' ? '#8B5CF6' : '#8B5CF6',
-                            padding: '0.3rem 0.7rem',
-                            borderRadius: '10px',
-                            fontSize: '0.8rem',
-                            fontWeight: 900
-                        }}>{t('save20')}</span>
-                    </button>
+                 {/* Role Toggle & Billing Cycle */}
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', marginBottom: '4rem' }}>
+                    {/* View Mode Toggle */}
+                    <div style={{
+                        display: 'flex',
+                        background: 'rgba(255,255,255,0.03)',
+                        padding: '0.4rem',
+                        borderRadius: '24px',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        position: 'relative',
+                        width: 'fit-content'
+                    }}>
+                        <button
+                            onClick={() => setViewMode('customer')}
+                            style={{
+                                padding: '0.8rem 2rem',
+                                borderRadius: '18px',
+                                border: 'none',
+                                background: viewMode === 'customer' ? '#1E293B' : 'transparent',
+                                color: viewMode === 'customer' ? 'white' : '#9CA3AF',
+                                fontWeight: 800,
+                                fontSize: '0.95rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s',
+                                zIndex: 2
+                            }}
+                        >
+                            {language === 'ar' ? 'للمنشآت' : 'Individual Business'}
+                        </button>
+                        <button
+                            onClick={() => setViewMode('agency')}
+                            style={{
+                                padding: '0.8rem 2rem',
+                                borderRadius: '18px',
+                                border: 'none',
+                                background: viewMode === 'agency' ? 'linear-gradient(135deg, #8B5CF6, #3B82F6)' : 'transparent',
+                                color: viewMode === 'agency' ? 'white' : '#9CA3AF',
+                                fontWeight: 800,
+                                fontSize: '0.95rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s',
+                                zIndex: 2,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <ShieldCheck size={18} />
+                            {language === 'ar' ? 'للوكالات' : 'For Agencies'}
+                        </button>
+                    </div>
+
+                    {/* Billing Cycle */}
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '1rem',
+                        background: 'rgba(255,255,255,0.03)',
+                        padding: '0.5rem',
+                        borderRadius: '20px',
+                        width: 'fit-content',
+                        border: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                        <button
+                            onClick={() => setBillingCycle('monthly')}
+                            style={{
+                                padding: '1rem 2rem',
+                                borderRadius: '16px',
+                                border: 'none',
+                                background: billingCycle === 'monthly' ? '#8B5CF6' : 'transparent',
+                                color: billingCycle === 'monthly' ? '#FFF' : '#A1A1AA',
+                                fontWeight: 800,
+                                fontSize: '1.05rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s'
+                            }}
+                        >
+                            {t('payMonthly')}
+                        </button>
+                        <button
+                            onClick={() => setBillingCycle('yearly')}
+                            style={{
+                                padding: '1rem 2rem',
+                                borderRadius: '16px',
+                                border: 'none',
+                                background: billingCycle === 'yearly' ? '#8B5CF6' : 'transparent',
+                                color: billingCycle === 'yearly' ? '#FFF' : '#A1A1AA',
+                                fontWeight: 800,
+                                fontSize: '1.05rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem'
+                            }}
+                        >
+                            {t('payYearly')}
+                            <span style={{
+                                background: billingCycle === 'yearly' ? 'white' : 'rgba(139, 92, 246, 0.15)',
+                                color: billingCycle === 'yearly' ? '#8B5CF6' : '#8B5CF6',
+                                padding: '0.3rem 0.7rem',
+                                borderRadius: '10px',
+                                fontSize: '0.8rem',
+                                fontWeight: 900
+                            }}>{t('save20')}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -473,7 +591,7 @@ const Pricing = () => {
                 maxWidth: '1200px',
                 margin: '0 auto'
             }}>
-                {plans.map((plan) => {
+                {currentPlans.map((plan) => {
                     const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
                     return (
                         <div

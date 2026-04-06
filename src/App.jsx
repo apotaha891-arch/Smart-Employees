@@ -11,7 +11,7 @@ function ScrollToTop() {
 }
 import { LanguageProvider } from './LanguageContext';
 import { createAuthProvider, useAuth } from './context/AuthContext';
-import ProtectedRoute from './components/shared/ProtectedRoute';
+import ProtectedRoute, { AgencyRoute } from './components/shared/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import AgentTemplates from './components/AgentTemplates';
@@ -105,12 +105,13 @@ function AppContent() {
                 />
 
                 {/* ============ AGENCY PROTECTED ROUTES ============ */}
+                {/* AgencyRoute is a strict guard - only is_agency=true users can enter */}
                 <Route
                     path="/agency"
                     element={
-                        <ProtectedRoute requiredRole="customer">
+                        <AgencyRoute>
                             <AgencyDashboard />
-                        </ProtectedRoute>
+                        </AgencyRoute>
                     }
                 />
 

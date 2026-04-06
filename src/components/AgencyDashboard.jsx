@@ -3,10 +3,12 @@ import { supabase } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
-import { Users, Plus, Key, Wallet, ArrowRight, Settings, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Users, Plus, Key, Wallet, ArrowRight, Settings, ExternalLink, ShieldCheck, LayoutDashboard } from 'lucide-react';
 
 const AgencyDashboard = () => {
-    const { user } = useAuth();
+    const { user, realUser, impersonateUser, isImpersonating } = useAuth();
+    // Always use the REAL agency user ID for data fetching, never the impersonated client
+    const agencyUserId = realUser?.id || user?.id;
     const navigate = useNavigate();
     const { t, language } = useLanguage();
     const isEnglish = language === 'en';
@@ -21,7 +23,7 @@ const AgencyDashboard = () => {
     const [showTopUp, setShowTopUp] = useState(null); // hold client object
 
     // Form states
-    const [newClient, setNewClient] = useState({ businessName: '', email: '', password: '' });
+    const [newClient, setNewClient] = useState({ businessName: '', email: '', password: '', businessType: 'general', phone: '' });
     const [topUpAmount, setTopUpAmount] = useState(1000);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState('');
@@ -34,21 +36,63 @@ const AgencyDashboard = () => {
     const fetchAgencyData = async () => {
         try {
             setLoading(true);
-            const [{ data: prof }, { data: pClients }, { data: wallet }] = await Promise.all([
-                supabase.from('profiles').select('*').eq('id', user.id).single(),
-                supabase.from('profiles').select('id, email, full_name, created_at, entities(business_name, id), wallet_credits(balance)').eq('agency_id', user.id),
-                supabase.from('wallet_credits').select('balance').eq('user_id', user.id).maybeSingle()
-            ]);
+            setError('');
+            
+            const currentUserId = agencyUserId; // Always the real agency, not impersonated
+            if (!currentUserId) return;
 
+            // 1. Fetch agency profile (basic info for stats)
+            const { data: prof } = await supabase
+                .from('profiles')
+                .select('agency_max_clients, is_agency')
+                .eq('id', currentUserId)
+                .maybeSingle();
+
+            if (prof && !prof.is_agency) {
+                console.warn("Note: is_agency is false in profiles - but continuing to fetch clients via RPC");
+            }
+
+            // 2. Use RPC to bypass RLS entirely (like AdminDashboard does)
+            const { data: clientsData, error: rpcError } = await supabase
+                .rpc('get_agency_clients', { p_agency_id: currentUserId });
+
+            if (rpcError) {
+                console.error("RPC Error:", rpcError.message);
+                // Fallback: direct query 
+                const { data: fallbackClients } = await supabase
+                    .from('profiles')
+                    .select('id, email, full_name, phone, business_name, business_type, created_at')
+                    .eq('agency_id', currentUserId);
+                
+                const enriched = await Promise.all((fallbackClients || []).map(async (c) => {
+                    const [eRes, wRes] = await Promise.all([
+                        supabase.from('entities').select('id, business_name').eq('user_id', c.id).maybeSingle(),
+                        supabase.from('wallet_credits').select('balance').eq('user_id', c.id).maybeSingle()
+                    ]);
+                    return { ...c, entity_id: eRes.data?.id, entity_business_name: eRes.data?.business_name || c.business_name, wallet_balance: wRes.data?.balance || 0 };
+                }));
+                setClients(enriched || []);
+                setStats({ totalClients: enriched?.length || 0, maxClients: prof?.agency_max_clients || 100, walletBalance: 0 });
+                return;
+            }
+
+            // 3. Fetch agency own wallet
+            const { data: wallet } = await supabase
+                .from('wallet_credits')
+                .select('balance')
+                .eq('user_id', currentUserId)
+                .maybeSingle();
+
+            setClients(clientsData || []);
             setStats({
-                totalClients: pClients?.length || 0,
-                maxClients: prof?.agency_max_clients || 0,
+                totalClients: clientsData?.length || 0,
+                maxClients: prof?.agency_max_clients || 100,
                 walletBalance: wallet?.balance || 0
             });
 
-            setClients(pClients || []);
         } catch (err) {
-            console.error("Failed to fetch agency data:", err);
+            console.error("fetchAgencyData Error:", err);
+            setError(err.message);
         } finally {
             setLoading(false);
         }
@@ -59,30 +103,44 @@ const AgencyDashboard = () => {
         setActionLoading(true);
         setError('');
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            const res = await fetch('https://dydflepcfdrlslpxapqo.supabase.co/functions/v1/agency-manager', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({
+            const { data, error: functionError } = await supabase.functions.invoke('agency-manager', {
+                body: {
                     action: 'create_sub_account',
                     email: newClient.email,
                     password: newClient.password,
-                    businessName: newClient.businessName
-                })
+                    businessName: newClient.businessName,
+                    businessType: newClient.businessType,
+                    phone: newClient.phone
+                }
             });
 
-            const result = await res.json();
-            if (!res.ok) throw new Error(result.error);
+            if (functionError) {
+                console.error("DIAGNOSTIC - Function Invoke Error:", functionError);
+                let actualErrorMessage = functionError.message;
+                
+                if (functionError.context) {
+                    try {
+                        // Clone the response so we can read it safely without locking the stream
+                        const clonedContext = functionError.context.clone();
+                        const ctxText = await clonedContext.json();
+                        actualErrorMessage = ctxText.error || ctxText.message || functionError.message;
+                    } catch (e) {
+                         // Ignore JSON parse errors
+                    }
+                }
+                throw new Error(actualErrorMessage);
+            }
+            if (data?.error) {
+                console.error("DIAGNOSTIC - Data Error from Function:", data.error);
+                throw new Error(data.error);
+            }
             
             setShowAddClient(false);
             setNewClient({ businessName: '', email: '', password: '' });
             fetchAgencyData(); // Refresh list
         } catch (err) {
-            setError(err.message);
+            console.error("DIAGNOSTIC - Create Client Catch Block:", err);
+            setError(err.message || 'An error occurred while creating the client.');
         } finally {
             setActionLoading(false);
         }
@@ -123,12 +181,18 @@ const AgencyDashboard = () => {
                     </div>
                     <div>
                         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: 'white' }}>{isEnglish ? 'Agency Manager' : 'مدير الوكالة'}</h1>
-                        <p style={{ color: '#9CA3AF', margin: 0, fontSize: '0.85rem', marginTop: '4px' }}>B2B2B Dashboard</p>
+                        <p style={{ color: '#9CA3AF', margin: 0, fontSize: '0.75rem', marginTop: '4px' }}>
+                            B2B2B Dashboard &nbsp;|&nbsp;
+                            <span style={{ color: '#8B5CF6', fontFamily: 'monospace' }}>
+                                ID: {user?.id?.substring(0, 8)}...
+                            </span>
+                            {error && <span style={{ color: '#EF4444', marginRight: '8px' }}>⚠️ {isEnglish ? 'Check Account' : 'تحقق من الحساب'}</span>}
+                        </p>
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button onClick={() => navigate('/dashboard')} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Settings size={16} /> {isEnglish ? 'My Account Settings' : 'إعدادات حسابي'}
+                    <button onClick={() => navigate('/dashboard')} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderColor: 'rgba(255,255,255,0.1)' }}>
+                        <LayoutDashboard size={16} /> {isEnglish ? 'My Business View' : 'عرض منشأتي الخاصة'}
                     </button>
                 </div>
             </header>
@@ -174,19 +238,33 @@ const AgencyDashboard = () => {
                             ) : clients.map(client => (
                                 <tr key={client.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                     <td style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>
-                                        {client.entities?.[0]?.business_name || 'N/A'}
+                                        {/* Support both RPC flat format and old nested format */}
+                                        {client.entity_business_name || client.entities?.[0]?.business_name || client.business_name || 'N/A'}
                                     </td>
                                     <td style={{ padding: '1rem 1.5rem', color: '#9CA3AF', fontSize: '0.9rem' }}>{client.email}</td>
                                     <td style={{ padding: '1rem 1.5rem' }}>
                                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', padding: '4px 10px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700 }}>
-                                            {client.wallet_credits?.[0]?.balance || 0}
+                                            {/* Support both RPC flat format and old nested format */}
+                                            {client.wallet_balance ?? client.wallet_credits?.[0]?.balance ?? 0}
                                         </div>
                                     </td>
                                     <td style={{ padding: '1rem 1.5rem', display: 'flex', gap: '10px', justifyContent: 'center' }}>
                                         <button onClick={() => setShowTopUp(client)} className="btn btn-outline btn-sm" style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <Wallet size={14} /> {isEnglish ? 'Top-up' : 'شحن المحفظة'}
                                         </button>
-                                        <button onClick={() => alert('Future Feature: Auto-Login via secure token override!')} className="btn btn-primary btn-sm" style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <button 
+                                            onClick={() => {
+                                                impersonateUser({
+                                                    id: client.id,
+                                                    email: client.email,
+                                                    full_name: client.full_name,
+                                                    is_impersonated: true
+                                                });
+                                                navigate('/dashboard');
+                                            }} 
+                                            className="btn btn-primary btn-sm" 
+                                            style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                        >
                                             <ExternalLink size={14} /> {isEnglish ? 'Manage Dashboard' : 'التحكم كعميل'}
                                         </button>
                                     </td>
@@ -209,19 +287,34 @@ const AgencyDashboard = () => {
                         <form onSubmit={handleCreateClient}>
                             <div className="mb-md">
                                 <label className="label">{isEnglish ? 'Business / Salon Name' : 'اسم المنشأة'}</label>
-                                <input required type="text" className="input-field" value={newClient.businessName} onChange={e => setNewClient({...newClient, businessName: e.target.value})} />
+                                <input required type="text" className="input-field" value={newClient.businessName} onChange={e => setNewClient({...newClient, businessName: e.target.value})} placeholder="e.g. My Awesome Salon" />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div>
+                                    <label className="label">{isEnglish ? 'Sector' : 'نوع النشاط'}</label>
+                                    <select className="input-field" value={newClient.businessType} onChange={e => setNewClient({...newClient, businessType: e.target.value})}>
+                                        <option value="general">{isEnglish ? 'General' : 'نشاط عام'}</option>
+                                        <option value="salon">{isEnglish ? 'Beauty & Salon' : 'صالون وجمال'}</option>
+                                        <option value="dental">{isEnglish ? 'Medical/Dental' : 'مركز طبي/أسنان'}</option>
+                                        <option value="law_firm">{isEnglish ? 'Law Firm' : 'مكتب محاماة'}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="label">{isEnglish ? 'Phone' : 'رقم الهاتف'}</label>
+                                    <input required type="tel" className="input-field" value={newClient.phone} onChange={e => setNewClient({...newClient, phone: e.target.value})} placeholder="966..." />
+                                </div>
                             </div>
                             <div className="mb-md">
-                                <label className="label">{isEnglish ? 'Email (Login)' : 'البريد الإلكتروني'}</label>
-                                <input required type="email" className="input-field" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} />
+                                <label className="label">{isEnglish ? 'Email (Login)' : 'البريد الإلكتروني للعميل'}</label>
+                                <input required type="email" className="input-field" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} placeholder="client@example.com" />
                             </div>
                             <div className="mb-xl">
                                 <label className="label">{isEnglish ? 'Password' : 'كلمة المرور'}</label>
-                                <input required type="password" minLength={6} className="input-field" value={newClient.password} onChange={e => setNewClient({...newClient, password: e.target.value})} />
+                                <input required type="password" minLength={6} className="input-field" value={newClient.password} onChange={e => setNewClient({...newClient, password: e.target.value})} placeholder="••••••••" />
                             </div>
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowAddClient(false)}>{isEnglish ? 'Cancel' : 'إلغاء'}</button>
-                                <button type="submit" className={`btn btn-primary ${actionLoading ? 'loading' : ''}`} style={{ flex: 1 }} disabled={actionLoading}>{isEnglish ? 'Create' : 'إنشاء'}</button>
+                                <button type="submit" className={`btn btn-primary ${actionLoading ? 'loading' : ''}`} style={{ flex: 1 }} disabled={actionLoading}>{isEnglish ? 'Create & Setup' : 'إنشاء وجدولة'}</button>
                             </div>
                         </form>
                     </div>

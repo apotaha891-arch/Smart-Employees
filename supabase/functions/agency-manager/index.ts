@@ -50,13 +50,13 @@ serve(async (req) => {
 
         // Action: Create Sub-Account
         if (action === 'create_sub_account') {
-            const { email, password, businessName } = payload;
+            const { email, password, businessName, businessType, phone } = payload;
 
             if (!email || !password) {
                 throw new Error('Email and password are required');
             }
-
-            // Verify Agency Client Quota Limit
+            
+            // ... (quota checks)
             const { count } = await supabaseAdmin
                 .from('profiles')
                 .select('*', { count: 'exact', head: true })
@@ -69,29 +69,38 @@ serve(async (req) => {
                 throw new Error(`Quota Exceeded: Your plan allows a maximum of ${maxClients} clients.`);
             }
 
-            // 1. Create Auth User silently using Admin Auth API
+            // 1. Create Auth User
             const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
                 email: email,
                 password: password,
-                email_confirm: true, // Auto-confirm, no email verification needed for white-labeled sub-accounts
-                user_metadata: { role: 'business_owner', agency_managed: true }
+                email_confirm: true,
+                user_metadata: { 
+                    role: 'business_owner', 
+                    agency_managed: true,
+                    agency_id: user.id // Store agency_id in metadata too as a backup
+                }
             });
 
             if (createError) throw new Error(`Auth Error: ${createError.message}`);
 
             const newUserId = newUser.user.id;
 
-            // 2. Link profile to the Agency
-            // Note: `profiles` table triggers might take a few ms to generate the profile, 
-            // but we use upsert or wait to assign the agency_id
-            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for trigger to fire
+            // 2. FORCE LINK: Use UPSERT to ensure the profile exists and is linked
+            // This bypasses trigger delays and guarantees visibility
+            const { error: profileUpsertError } = await supabaseAdmin.from('profiles')
+                .upsert({ 
+                    id: newUserId,
+                    email: email,
+                    agency_id: user.id,
+                    phone: phone || null,
+                    business_name: businessName,
+                    business_type: businessType || 'general',
+                    role: 'customer',
+                    subscription_tier: 'trial'
+                }, { onConflict: 'id' });
             
-            const { error: profileUpdateError } = await supabaseAdmin.from('profiles')
-                .update({ agency_id: user.id })
-                .eq('id', newUserId);
-
-            if (profileUpdateError) {
-                console.warn("Could not bind agency ID immediately:", profileUpdateError.message);
+            if (profileUpsertError) {
+                console.error("Force Link Error:", profileUpsertError.message);
             }
 
             // 3. Create initial Entity (Business Profile)
@@ -99,12 +108,25 @@ serve(async (req) => {
                 .insert([{ 
                     user_id: newUserId, 
                     business_name: businessName || 'عميل فرعي جديد', 
-                    business_type: 'general' 
+                    business_type: businessType || 'general' 
                 }])
                 .select()
                 .single();
             
             if (entityError) throw new Error(`Entity Error: ${entityError.message}`);
+
+            // 4. Send Welcome/Password Reset Email to the new client
+            // This acts as an invitation to verify and set their password
+            await supabaseAdmin.auth.admin.generateLink({
+                type: 'recovery',
+                email: email,
+                options: { redirectTo: `${supabaseUrl}/dashboard` }
+            });
+            
+            // Note: In a production app, we would use supabaseAdmin.auth.resetPasswordForEmail(email)
+            // But generateLink ensures we have full control over the process if needed.
+            // For now, let's use the standard resetPasswordForEmail for better deliverability
+            await supabaseAdmin.auth.resetPasswordForEmail(email);
 
             return new Response(
                 JSON.stringify({ 

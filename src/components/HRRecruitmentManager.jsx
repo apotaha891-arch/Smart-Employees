@@ -1,25 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { Users, UserPlus, Search, Briefcase, Star, FileText, CheckCircle, XCircle, Clock, MapPin } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabaseService';
+import { Users, UserPlus, Briefcase, Star, FileText, CheckCircle, XCircle, Clock, Search } from 'lucide-react';
 
 const HRRecruitmentManager = () => {
     const { t, language } = useLanguage();
     const isAr = language === 'ar';
+    const { user: contextUser } = useAuth(); // Respects impersonation
     const [candidates, setCandidates] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [entityId, setEntityId] = useState(null);
+    const [stats, setStats] = useState({ new: 0, interviews: 0, offers: 0, hired: 0 });
 
+    // Re-run when user changes (impersonation support)
     useEffect(() => {
-        // Mock candidates for HR CRM
-        setTimeout(() => {
-            setCandidates([
-                { id: 1, name: 'Laila Mansour', role: 'Digital Marketing', stage: 'Interview', score: 92, appliedAt: '2026-03-07', experience: '5 years' },
-                { id: 2, name: 'Khaled Omar', role: 'Software Engineer', stage: 'Screening', score: 78, appliedAt: '2026-03-08', experience: '3 years' },
-                { id: 3, name: 'Noura Salem', role: 'Accountant', stage: 'Hired', score: 88, appliedAt: '2026-02-28', experience: '7 years' },
-                { id: 4, name: 'Yousef Hassan', role: 'Sales Lead', stage: 'Rejected', score: 45, appliedAt: '2026-03-01', experience: '1 year' },
-            ]);
+        if (contextUser?.id) loadData();
+    }, [contextUser?.id]);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const userId = contextUser?.id;
+            if (!userId) return;
+
+            // Get entity for this user
+            const { data: entity } = await supabase
+                .from('entities')
+                .select('id')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            const eid = entity?.id;
+            setEntityId(eid);
+
+            if (!eid) {
+                setCandidates([]);
+                setLoading(false);
+                return;
+            }
+
+            // Fetch job applications for this entity only
+            const { data: apps, error } = await supabase
+                .from('job_applications')
+                .select('*')
+                .eq('entity_id', eid)
+                .order('created_at', { ascending: false });
+
+            if (error && error.code !== 'PGRST116' && !error.message.includes('does not exist')) {
+                console.error('HR: Error fetching applications:', error);
+            }
+
+            const list = apps || [];
+            setCandidates(list);
+
+            // Compute real stats
+            setStats({
+                new: list.filter(a => a.stage === 'Screening' || a.stage === 'New').length,
+                interviews: list.filter(a => a.stage === 'Interview').length,
+                offers: list.filter(a => a.stage === 'Offer').length,
+                hired: list.filter(a => a.stage === 'Hired').length,
+            });
+        } catch (err) {
+            console.error('HR: Unexpected error:', err);
+        } finally {
             setLoading(false);
-        }, 1000);
-    }, []);
+        }
+    };
 
     const getStageStyle = (stage) => {
         switch (stage) {
@@ -46,13 +95,13 @@ const HRRecruitmentManager = () => {
                 </button>
             </div>
 
-            {/* Pipeline Overview */}
+            {/* Pipeline Stats — computed from real data */}
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                 {[
-                    { label: isAr ? 'المتقدمين الجدد' : 'New Applicants', count: 24, color: '#3B82F6' },
-                    { label: isAr ? 'المقابلات' : 'Interviews', count: 8, color: '#8B5CF6' },
-                    { label: isAr ? 'العروض المرسلة' : 'Offers Sent', count: 3, color: '#F59E0B' },
-                    { label: isAr ? 'الموظفين الجدد' : 'New Hires', count: 12, color: '#10B981' },
+                    { label: isAr ? 'المتقدمين الجدد' : 'New Applicants', count: stats.new, color: '#3B82F6' },
+                    { label: isAr ? 'المقابلات' : 'Interviews', count: stats.interviews, color: '#8B5CF6' },
+                    { label: isAr ? 'العروض المرسلة' : 'Offers Sent', count: stats.offers, color: '#F59E0B' },
+                    { label: isAr ? 'الموظفين الجدد' : 'New Hires', count: stats.hired, color: '#10B981' },
                 ].map((step, idx) => (
                     <div key={idx} style={{ flex: 1, minWidth: '180px', background: '#111827', padding: '1.5rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ fontSize: '0.85rem', color: '#9CA3AF', marginBottom: '0.75rem' }}>{step.label}</div>
@@ -63,54 +112,68 @@ const HRRecruitmentManager = () => {
             </div>
 
             {/* Candidate List */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, min-grow(300px, 1fr))', gap: '1.5rem' }}>
-                {loading ? (
-                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>{isAr ? 'جاري تحليل السير الذاتية...' : 'Analyzing resumes...'}</div>
-                ) : candidates.map(candidate => {
-                    const stage = getStageStyle(candidate.stage);
-                    return (
-                        <div key={candidate.id} className="card shadow-premium" style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-                                <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: '#1F2937', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}>
-                                    <Users size={24} />
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>
+                    {isAr ? 'جاري تحميل البيانات...' : 'Loading data...'}
+                </div>
+            ) : candidates.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '4rem', background: '#111827', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+                    <div style={{ width: '72px', height: '72px', background: 'rgba(139,92,246,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#8B5CF6' }}>
+                        <Users size={36} />
+                    </div>
+                    <h3 style={{ color: 'white', fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                        {isAr ? 'لا يوجد متقدمون بعد' : 'No applicants yet'}
+                    </h3>
+                    <p style={{ color: '#6B7280', fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto' }}>
+                        {isAr 
+                            ? 'أشهر وظيفتك الأولى لتبدأ باستقبال الطلبات وتتبع المقابلات الذكية.'
+                            : 'Post your first job to start receiving applications and track AI-powered interviews.'}
+                    </p>
+                </div>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                    {candidates.map(candidate => {
+                        const stage = getStageStyle(candidate.stage);
+                        const StageIcon = stage.icon;
+                        return (
+                            <div key={candidate.id} className="card shadow-premium" style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                                    <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: '#1F2937', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}>
+                                        <Users size={24} />
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(139,92,246,0.1)', color: '#A78BFA', padding: '2px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
+                                        <Star size={12} fill="#A78BFA" /> {candidate.score || 0}%
+                                    </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(139, 92, 246, 0.1)', color: '#A78BFA', padding: '2px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
-                                        <Star size={12} fill="#A78BFA" /> {candidate.score}%
+                                <h3 style={{ color: 'white', fontWeight: 800, marginBottom: '0.25rem' }}>{candidate.name}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                                    <Briefcase size={14} /> {candidate.role || candidate.job_title}
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                    <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>
+                                        <div style={{ marginBottom: '2px' }}>{isAr ? 'الخبرة' : 'Exp'}</div>
+                                        <div style={{ color: '#E5E7EB', fontWeight: 600 }}>{candidate.experience || '—'}</div>
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>
+                                        <div style={{ marginBottom: '2px' }}>{isAr ? 'تاريخ التقديم' : 'Applied'}</div>
+                                        <div style={{ color: '#E5E7EB', fontWeight: 600 }}>{new Date(candidate.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <StageIcon size={16} color={stage.text} />
+                                        <span style={{ color: stage.text, fontSize: '0.85rem', fontWeight: 700 }}>{candidate.stage}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button style={{ background: 'rgba(255,255,255,0.03)', border: 'none', color: '#9CA3AF', padding: '8px', borderRadius: '8px', cursor: 'pointer' }}><FileText size={18} /></button>
+                                        <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>{isAr ? 'عرض' : 'View'}</button>
                                     </div>
                                 </div>
                             </div>
-
-                            <h3 style={{ color: 'white', fontWeight: 800, marginBottom: '0.25rem' }}>{candidate.name}</h3>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                                <Briefcase size={14} /> {candidate.role}
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                                <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>
-                                    <div style={{ marginBottom: '2px' }}>{isAr ? 'الخبرة' : 'Exp'}</div>
-                                    <div style={{ color: '#E5E7EB', fontWeight: 600 }}>{candidate.experience}</div>
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>
-                                    <div style={{ marginBottom: '2px' }}>{isAr ? 'تاريخ التقديم' : 'Applied'}</div>
-                                    <div style={{ color: '#E5E7EB', fontWeight: 600 }}>{new Date(candidate.appliedAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <stage.icon size={16} color={stage.text} />
-                                    <span style={{ color: stage.text, fontSize: '0.85rem', fontWeight: 700 }}>{candidate.stage}</span>
-                                </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button style={{ background: 'rgba(255,255,255,0.03)', border: 'none', color: '#9CA3AF', padding: '8px', borderRadius: '8px', cursor: 'pointer' }}><FileText size={18} /></button>
-                                    <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>{isAr ? 'عرض' : 'View'}</button>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 };

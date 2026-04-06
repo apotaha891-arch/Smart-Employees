@@ -1,28 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { supabase } from '../services/supabaseService';
+import { useAuth } from '../context/AuthContext';
+import { supabase, getCurrentUser } from '../services/supabaseService';
 import { MessageSquare, Plus, Search, Filter, AlertCircle, CheckCircle2, Clock, Inbox, Reply, ExternalLink, Bot, MessageCircle } from 'lucide-react';
-import * as adminService from '../services/adminService';
-import { getCurrentUser } from '../services/supabaseService';
 
 const SupportTicketManager = () => {
     const { t, language } = useLanguage();
     const isAr = language === 'ar';
+    const { user: contextUser } = useAuth(); // Use AuthContext — respects impersonation
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState('open'); // open, closed, all
+    const [tab, setTab] = useState('open');
     const [showCreate, setShowCreate] = useState(false);
     const [newTicket, setNewTicket] = useState({ title: '', description: '', priority: 'medium', category: 'General' });
 
+    // Re-run when tab or user changes
     useEffect(() => {
-        fetchTickets();
-    }, [tab]);
+        if (contextUser?.id) fetchTickets();
+    }, [tab, contextUser?.id]);
 
     const fetchTickets = async () => {
         setLoading(true);
         try {
-            const data = await adminService.getAllTickets();
-            
+            // Filter by user_id — each client only sees THEIR tickets
+            let query = supabase
+                .from('support_tickets')
+                .select('*')
+                .eq('user_id', contextUser.id)
+                .order('created_at', { ascending: false });
+
+            const { data, error } = await query;
+            if (error) throw error;
+
             let filtered = data || [];
             if (tab === 'open') filtered = filtered.filter(t => t.status === 'open');
             else if (tab === 'closed') filtered = filtered.filter(t => t.status === 'closed');
@@ -86,19 +95,25 @@ const SupportTicketManager = () => {
                 </div>
             </div>
 
-            {/* Quick Stats */}
+            {/* Quick Stats — computed from real data */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
                 <div style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                    <div style={{ color: '#3B82F6', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>12</div>
+                    <div style={{ color: '#3B82F6', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>
+                        {tickets.filter(t => t.status === 'open').length}
+                    </div>
                     <div style={{ color: 'white', fontWeight: 600 }}>{isAr ? 'تذاكر مفتوحة' : 'Open Tickets'}</div>
                 </div>
                 <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                    <div style={{ color: '#F59E0B', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>4</div>
+                    <div style={{ color: '#F59E0B', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>
+                        {tickets.filter(t => t.status === 'open' && t.priority === 'high').length}
+                    </div>
                     <div style={{ color: 'white', fontWeight: 600 }}>{isAr ? 'بانتظار الرد' : 'Pending Response'}</div>
                 </div>
                 <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                    <div style={{ color: '#10B981', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>142</div>
-                    <div style={{ color: 'white', fontWeight: 600 }}>{isAr ? 'حلت هذا الشهر' : 'Resolved this month'}</div>
+                    <div style={{ color: '#10B981', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>
+                        {tickets.filter(t => t.status === 'closed').length}
+                    </div>
+                    <div style={{ color: 'white', fontWeight: 600 }}>{isAr ? 'تذاكر مغلقة' : 'Resolved Tickets'}</div>
                 </div>
             </div>
 

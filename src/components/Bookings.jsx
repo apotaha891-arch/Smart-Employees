@@ -1,51 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { getBookings, updateBooking, cancelBooking, getCurrentUser, supabase } from '../services/supabaseService';
+import { useAuth } from '../context/AuthContext';
+import { updateBooking, cancelBooking, supabase } from '../services/supabaseService';
 import { Calendar, Clock, User, Phone, CheckCircle, XCircle, AlertCircle, Filter } from 'lucide-react';
 
 const Bookings = () => {
     const { t } = useLanguage();
+    const { user: contextUser } = useAuth(); // Use AuthContext — respects impersonation
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [entityId, setEntityId] = useState(null);
-    const [agentIds, setAgentIds] = useState([]);
     const [filters, setFilters] = useState({
         status: '',
         date: '',
         phone: ''
     });
 
+    // Re-run when impersonated user changes
     useEffect(() => {
-        loadUserAndBookings();
-    }, []);
+        if (contextUser?.id) {
+            loadUserAndBookings();
+        }
+    }, [contextUser?.id]);
 
     useEffect(() => {
-        if (agentIds.length > 0) {
+        if (entityId) {
             loadBookings();
         }
-    }, [agentIds, filters]);
+    }, [entityId, filters]);
 
     const loadUserAndBookings = async () => {
         try {
-            const { user } = await getCurrentUser();
-            if (!user) return;
+            // Use contextUser.id — correctly reflects impersonated client
+            const userId = contextUser?.id;
+            if (!userId) return;
 
-            // Get entity id
-            const { data: configs } = await supabase
+            // Get entity for THIS specific user only (not all entities!)
+            const { data: entity } = await supabase
                 .from('entities')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
-            if (configs) setEntityId(configs.id);
 
-            // Directly load all agents regardless of linkage (needed to set agentIds)
-            const { data: allAgents } = await supabase.from('agents').select('id');
-            const ids = allAgents?.map(a => a.id) ?? [];
-            setAgentIds(ids.length > 0 ? ids : ['__none__']); // trigger useEffect
+            if (entity?.id) {
+                setEntityId(entity.id);
+            } else {
+                // No entity found for this client — show empty bookings
+                setBookings([]);
+                setLoading(false);
+            }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error loading user/entity:', error);
             setLoading(false);
         }
     };
@@ -53,10 +60,11 @@ const Bookings = () => {
     const loadBookings = async () => {
         setLoading(true);
         try {
-            // Fetch all bookings — agent_id present OR null (seeded data)
+            // CRITICAL: Filter by entity_id — only show bookings for THIS client
             let query = supabase
                 .from('bookings')
                 .select('*')
+                .eq('entity_id', entityId) // ← isolates data per client
                 .order('booking_date', { ascending: false })
                 .order('booking_time', { ascending: true });
 
