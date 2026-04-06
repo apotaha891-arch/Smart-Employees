@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { signOut } from '../services/supabaseService';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import AdminBlogManager from './AdminBlogManager';
 import { REALISTIC_AVATARS, getRealisticAvatar } from '../utils/avatars';
 
@@ -136,6 +137,13 @@ export default function AdminDashboard() {
     const [clientKeys, setClientKeys] = useState({});
     const [logs, setLogs] = useState([]);
     const [logParams, setLogParams] = useState({ category: '', level: '', limit: 50 });
+    const { 
+        user: authUser, 
+        userRole, 
+        isAdmin, 
+        isAuthenticated, 
+        impersonateUser 
+    } = useAuth();
     const [templates, setTemplates] = useState([]);
     const [endCustomers, setEndCustomers] = useState([]);
     const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '👩' });
@@ -503,20 +511,19 @@ export default function AdminDashboard() {
         if (!email || email === '—') return flash('❌ لا يتوفر بريد إلكتروني صالح لهذا العميل!');
         setSaving(true);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-support`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-                body: JSON.stringify({ targetEmail: email })
-            });
-            const d = await res.json();
-            if (d.error) throw new Error(d.error);
-            if (d.magicLink) {
-                flash('✅ جاري الدخول لحساب العميل في نافذة جديدة...');
-                setTimeout(() => window.open(d.magicLink, '_blank'), 1000);
-            }
+            // Find client in state
+            const targetClient = clients.find(c => c.email === email);
+            if (!targetClient) throw new Error('تعذر العثور على بروفايل العميل');
+
+            // 1. Logic check: If the user role is admin, let them jump directly.
+            // 2. Impersonate!
+            impersonateUser(targetClient);
+            
+            // 3. Navigate to Dashboard
+            flash(`🚀 تم الدخول كدعم فني لـ: ${targetClient.business_name || targetClient.full_name}`);
+            setTimeout(() => navigate('/dashboard'), 500);
         } catch (e) {
-            flash('❌ حدث خطأ ⛑️ هل فعلت الدالة؟ ' + e.message);
+            flash('❌ فشل الدخول كدعم فني: ' + e.message);
         }
         setSaving(false);
     };

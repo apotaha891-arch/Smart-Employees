@@ -239,23 +239,9 @@ serve(async (req: any) => {
             }
         ];
 
-        // Filter based on agent.tool_permissions
-        let filteredFunctions = allFunctionDeclarations.filter(f => allowedToolNames.includes(f.name));
-        
-        // PLAN LIMIT ENFORCEMENT (Starter Tier: Max 2 Tools total)
-        // Tools = Functions + Active Integrations
-        const activeIntegrationsCount = (integrations || []).length;
-        const totalToolsCount = filteredFunctions.length + activeIntegrationsCount;
-        
-        if (subTier === 'starter' && totalToolsCount > 2) {
-            console.log(`Starter Plan Limit Reached: ${totalToolsCount} tools. Capping at 2.`);
-            // Priority given to functions first, then integrations
-            if (filteredFunctions.length > 2) {
-                filteredFunctions = filteredFunctions.slice(0, 2);
-            }
-            // Integrations will be filtered in the prompt if needed, 
-            // but for functionDeclarations we handle it here.
-        }
+        // PLAN LIMIT ENFORCEMENT: [REMOVED/LEGACY]
+        // Now using points system. No need to cap at 2 for 'starter'.
+        const filteredFunctions = allFunctionDeclarations.filter(f => allowedToolNames.includes(f.name));
 
         const tools = filteredFunctions.length > 0 ? [{ functionDeclarations: filteredFunctions }] : [];
 
@@ -412,6 +398,33 @@ ${ec?.booking_requires_confirmation ? `6. IMPORTANT: After booking, tell the cus
         }
 
         if (!finalResponse) throw new Error(`All models failed: ${lastModelError}`);
+
+        // --- 6.5 CREDIT DEDUCTION (UNIFIED PRICING) ---
+        // Every successful AI response generation costs credits to the business owner.
+        try {
+            console.log(`Deducting message credit for User: ${agent.user_id}...`);
+            const { data: deduction, error: deductErr } = await supabaseClient.rpc('deduct_wallet_credits', {
+                p_user_id: agent.user_id,
+                p_amount: 1, // Change this if you have dynamic rates
+                p_reason: 'تم الرد عبر الموظف الرقمي',
+                p_platform: sessionId.startsWith('telegram') ? 'telegram' : sessionId.startsWith('whatsapp') ? 'whatsapp' : 'web',
+                p_metadata: { agent_id: agentId, session_id: sessionId }
+            });
+
+            if (deductErr || !deduction?.success) {
+                console.warn("Credit deduction failed:", deductErr?.message || deduction?.error);
+                // Return a polite message indicating service suspension
+                return new Response(JSON.stringify({ 
+                    success: false, 
+                    text: "عذراً، أرغب بمساعدتك لكن رصيد المحادثات في هذا المتجر انتهى. يرجى التواصل مع الإدارة للتعبئة للمتابعة. 🙏" 
+                }), { headers: corsHeaders });
+            }
+            console.log("Credit deducted successfully. Remaining:", deduction.remaining_balance);
+        } catch (e: any) {
+            console.error("Credit workflow error:", e.message);
+            // In case of a hard error in deduction service, we might choose to fail-safe (not block user)
+            // but for now, we enforce the rule.
+        }
 
         // 7. TOOL DISPATCHER (SCALABLE ARCHITECTURE)
         const TOOL_HANDLERS: any = {

@@ -256,12 +256,12 @@ const Pricing = () => {
             trialPrice: getPlanValue('starter', 'trialPrice', 20),
             description: pricingPlans?.starter?.description || '',
             features: [
-                `${getPlanValue('starter', 'credits', 2000)} ${language === 'ar' ? 'نقطة (محادثة) شهرياً' : 'conversations/month'}`,
-                `${getPlanValue('starter', 'agentsLimit', 1)} ${language === 'ar' ? 'موظف ذكي مخصص' : 'dedicated smart employee'}`,
-                `${getPlanValue('starter', 'toolsLimit', 2)} ${language === 'ar' ? 'قنوات ربط' : 'integrations'}`,
-                language === 'ar' ? 'استجابة سريعة جداً' : 'Lightning fast response',
-                language === 'ar' ? 'تدريب مخصص' : 'Custom AI training',
-                language === 'ar' ? 'تقارير متقدمة' : 'Advanced analytics'
+                `${getPlanValue('starter', 'credits', 2000)} ${language === 'ar' ? 'نقطة (رصيد عمليات) شهرياً' : 'ops units/month'}`,
+                language === 'ar' ? 'توظيف موظفين إضافيين بالنقاط' : 'Hire extra agents with points',
+                language === 'ar' ? 'ربط قنوات غير محدودة (WA/TG)' : 'Unlimited integrations (WA/TG)',
+                language === 'ar' ? 'استجابة ذكية فائقة السرعة' : 'Lightning fast AI response',
+                language === 'ar' ? 'تدريب مخصص لقاعدة البيانات' : 'Custom knowledge training',
+                language === 'ar' ? 'تقارير أداء متقدمة' : 'Advanced analytics'
             ],
             cta: pricingPlans?.starter?.cta || '',
             trialText: pricingPlans?.starter?.trialText?.replace(/\d+\$/, `${getPlanValue('starter', 'trialPrice', 20)}$`) || '',
@@ -278,12 +278,12 @@ const Pricing = () => {
             trialPrice: getPlanValue('pro', 'trialPrice', 45),
             description: pricingPlans?.pro?.description || '',
             features: [
-                `${getPlanValue('pro', 'credits', 5000)} ${language === 'ar' ? 'نقطة (محادثة) شهرياً' : 'conversations/month'}`,
-                `${getPlanValue('pro', 'agentsLimit', 2)} ${language === 'ar' ? 'موظفين مخصصين' : 'dedicated employees'}`,
-                `${getPlanValue('pro', 'toolsLimit', 3)} ${language === 'ar' ? 'قنوات ربط لكل موظف' : 'integrations per employee'}`,
-                language === 'ar' ? 'استجابة سريعة جداً' : 'Lightning fast response',
-                language === 'ar' ? 'تدريب مخصص' : 'Custom AI training',
-                language === 'ar' ? 'تقارير متقدمة' : 'Advanced analytics'
+                `${getPlanValue('pro', 'credits', 5000)} ${language === 'ar' ? 'نقطة (رصيد عمليات) شهرياً' : 'ops units/month'}`,
+                language === 'ar' ? 'توسع لا محدود للموظفين والأدوات' : 'Unlimited scaling (Agents & Tools)',
+                language === 'ar' ? 'أولوية الدعم والتدريب المتقدم' : 'Priority support & training',
+                language === 'ar' ? 'استجابة ذكية فائقة السرعة' : 'Lightning fast AI response',
+                language === 'ar' ? 'تحليلات عميقة لنمو الأعمال' : 'Deep growth analytics',
+                language === 'ar' ? 'خصومات حصرية على شحن النقاط' : 'Exclusive refill discounts'
             ],
             cta: pricingPlans?.pro?.cta || '',
             trialText: pricingPlans?.pro?.trialText?.replace(/\d+\$/, `${getPlanValue('pro', 'trialPrice', 45)}$`) || '',
@@ -320,11 +320,11 @@ const Pricing = () => {
             yearlyPrice: 239,
             description: language === 'ar' ? 'البداية المثالية للوكالات المتوسطة' : 'Perfect start for mid-sized agencies',
             features: [
-                `${language === 'ar' ? '5 حسابات منشآت' : '5 Sub-accounts'}`,
-                `50,000 ${language === 'ar' ? 'نقطة رصيد إجمالية' : 'Total Credit Pool'}`,
+                `${language === 'ar' ? 'إدارة حتى 5 حسابات منشآت' : 'Manage up to 5 sub-accounts'}`,
+                `50,000 ${language === 'ar' ? 'نقطة رصيد مرنة للحسابات' : 'Flexible Credit Pool'}`,
                 language === 'ar' ? 'لوحة تحكم إدارية للوكالة' : 'Master Agency Dashboard',
-                language === 'ar' ? 'توزيع الرصيد يدوياً' : 'Manual Credit Distribution',
-                language === 'ar' ? 'دعم فني أولوية' : 'Priority Tech Support'
+                language === 'ar' ? 'توزيع الرصيد بحرية كاملة' : 'Free Credit distribution',
+                language === 'ar' ? 'دعم فني أولوية للوكلاء' : 'Priority Agent Support'
             ],
             cta: language === 'ar' ? 'اشترك كوكالة فضية' : 'Join as Silver Agency',
             color: '#94A3B8'
@@ -337,10 +337,10 @@ const Pricing = () => {
             yearlyPrice: 639,
             description: language === 'ar' ? 'للشركات والمكاتب ذات النمو السريع' : 'For fast-growing agencies & firms',
             features: [
-                `${language === 'ar' ? '20 حساب منشأة' : '20 Sub-accounts'}`,
-                `250,000 ${language === 'ar' ? 'نقطة رصيد إجمالية' : 'Total Credit Pool'}`,
-                language === 'ar' ? 'لوحة تحكم كاملة' : 'Master Agency Dashboard',
-                language === 'ar' ? 'توزيع الرصيد يدوياً' : 'Manual Credit Distribution',
+                `${language === 'ar' ? 'إدارة حتى 20 حساب منشأة' : 'Manage up to 20 sub-accounts'}`,
+                `250,000 ${language === 'ar' ? 'نقطة رصيد مرنة للنمو' : 'Flexible Growth Credits'}`,
+                language === 'ar' ? 'لوحة تحكم كاملة وشاملة' : 'Full Master Dashboard',
+                language === 'ar' ? 'توزع ذكي وتلقائي للرصيد' : 'Smart Credit Distribution',
                 language === 'ar' ? 'دعم فني مخصص (VIP)' : 'Dedicated VIP Support',
                 language === 'ar' ? 'أولوية في تحديثات النظام' : 'Early access to updates'
             ],

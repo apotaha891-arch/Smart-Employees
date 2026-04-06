@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabaseService';
 
 export const ProtectedRoute = ({ children, requiredRole = null }) => {
-    const { user, userRole, loading, isAuthenticated } = useAuth();
+    const { user, userRole, loading, isAuthenticated, isImpersonating } = useAuth();
 
     if (loading) {
         return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -18,6 +18,11 @@ export const ProtectedRoute = ({ children, requiredRole = null }) => {
 
     // If a specific role is required, check if user has it
     if (requiredRole && userRole !== requiredRole) {
+        // If it's an admin in impersonation mode, allow entry to client dashboard
+        if (userRole === 'admin' && isImpersonating) {
+            return children;
+        }
+
         if (userRole === 'admin') {
             return <Navigate to="/admin" replace />;
         } else {
@@ -30,25 +35,20 @@ export const ProtectedRoute = ({ children, requiredRole = null }) => {
 
 /**
  * AgencyRoute: Strict guard that directly verifies agency status from DB.
- * Does NOT rely on AuthContext isAgency (which can have race conditions).
- * Performs its own fresh database check every time.
  */
 export const AgencyRoute = ({ children }) => {
     const { user, realUser, loading: authLoading, isAuthenticated, isImpersonating, stopImpersonating } = useAuth();
     const [agencyVerified, setAgencyVerified] = useState(null);
 
-    // Always use the REAL user ID, never the impersonated client
+    // Always use the REAL user ID
     const agencyUserId = realUser?.id || user?.id;
 
     useEffect(() => {
-        // ONLY stop stale impersonation when ENTERING the agency panel (mount only).
-        // Do NOT watch isImpersonating changes — that would cancel impersonation
-        // immediately when the agency clicks "Manage as Client"!
         if (isImpersonating) {
             console.log('AgencyRoute: Clearing stale impersonation on mount');
             stopImpersonating();
         }
-    }, []); // ← Empty deps: runs ONCE on mount only
+    }, []);
 
     useEffect(() => {
         if (!agencyUserId) {
@@ -56,7 +56,6 @@ export const AgencyRoute = ({ children }) => {
             return;
         }
 
-        // Direct DB check using REAL user ID
         supabase
             .from('profiles')
             .select('is_agency')
@@ -64,12 +63,9 @@ export const AgencyRoute = ({ children }) => {
             .maybeSingle()
             .then(({ data, error }) => {
                 if (error) {
-                    console.error('AgencyRoute DB check error:', error.message);
                     setAgencyVerified(false);
                 } else {
-                    const result = !!data?.is_agency;
-                    console.log(`AgencyRoute: DB check → is_agency=${result} for ${agencyUserId}`);
-                    setAgencyVerified(result);
+                    setAgencyVerified(!!data?.is_agency);
                 }
             });
     }, [agencyUserId]);
@@ -96,7 +92,6 @@ export const AgencyRoute = ({ children }) => {
     if (!isAuthenticated) return <Navigate to="/login" replace />;
 
     if (!agencyVerified) {
-        console.warn(`AgencyRoute: Denied — user ${agencyUserId} is not an agency`);
         return <Navigate to="/dashboard" replace />;
     }
 

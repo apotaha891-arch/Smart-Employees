@@ -161,6 +161,21 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
         setMessages(newMessages);
         setInput('');
         setIsLoading(true);
+        
+        // ── 1. Credit Check & Deduction ──
+        if (user) {
+            const { deductCredits } = await import('../services/supabaseService');
+            const deduction = await deductCredits(user.id, 1, 'استشارة ذكية (نورة)', 'concierge');
+            
+            if (!deduction.success) {
+                const errorMsg = language === 'ar' 
+                    ? 'عذراً، رصيدك غير كافٍ. يرجى شحن المحفظة للمتابعة.' 
+                    : 'Insufficient credits. Please recharge your wallet to continue.';
+                setMessages(prev => [...prev, { role: 'agent', content: errorMsg }]);
+                setIsLoading(false);
+                return;
+            }
+        }
 
         const response = await sendMessage(input, 'concierge');
         if (response.success) {

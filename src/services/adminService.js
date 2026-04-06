@@ -47,21 +47,26 @@ export const changeClientIdentity = async (clientId, isAgency, agencyId = null) 
 };
 
 export const getAllEndCustomers = async () => {
-    // End customers are people who booked or interacted with agents
-    // Try admin RPC first
-    const { data: rpcData, error: rpcErr } = await supabase.rpc('get_admin_end_customers');
-    if (!rpcErr && rpcData) return rpcData;
+    try {
+        // Try admin RPC first
+        const { data: rpcData, error: rpcErr } = await supabase.rpc('get_admin_end_customers');
+        if (!rpcErr && rpcData) return rpcData;
 
-    console.warn('get_admin_end_customers RPC failed, using fallback:', rpcErr?.message);
-    // Fallback: direct table access (works if user is authorized as admin)
-    const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(300);
-    
-    if (error) console.error('Error fetching end customers:', error.message);
-    return data || [];
+        if (rpcErr) console.warn('get_admin_end_customers RPC failed, using fallback:', rpcErr.message);
+
+        // Fallback: direct table access
+        const { data, error } = await supabase
+            .from('customers')
+            .select('id, customer_name, customer_phone, entity_id, created_at')
+            .order('created_at', { ascending: false })
+            .limit(500);
+        
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        console.error('Error in getAllEndCustomers:', e.message);
+        return [];
+    }
 };
 
 export const getAllAgents = async () => {
@@ -417,4 +422,3 @@ export const sendCustomerMessage = async (params) => {
         return { success: false, error: error.message };
     }
 };
-

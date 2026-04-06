@@ -83,7 +83,7 @@ const Employees = () => {
                 if (config) setEntityConfig(config);
                 
                 // Robust sector detection: handle case sensitivity and Arabic values
-                let rawSector = (config?.business_type || profile?.business_type || 'general').toLowerCase();
+                let rawSector = (config?.business_type || config?.specialty || profile?.business_type || 'general').toLowerCase();
                 
                 // Prioritize exact matches if they exist
                 if (SECTOR_LABELS[rawSector]) {

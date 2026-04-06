@@ -54,7 +54,6 @@ const ROLE_META = {
     email: {
         emoji: '📧',
         titleAr: 'منسق البريد الإلكتروني', titleEn: 'Email Coordinator',
-        descAr: 'يصيغ رسائل احترافية وينسق المواعيد.',
         descEn: 'Drafts professional emails and coordinates meetings via mail.',
         skills: ['صياغة رسائل', 'تلخيص مراسلات', 'تنسيق اجتماعات'],
         skillsEn: ['Email Drafts', 'Thread Summary', 'Meeting Coordination'],
@@ -75,39 +74,40 @@ const HireAgent = () => {
     const [done, setDone] = useState(false);
     const [sector, setSector] = useState('telecom_it');
     const [entityReady, setEntityReady] = useState(null); // null=checking, true=ready, false=not set
-    const [maxTools, setMaxTools] = useState(2); // default 2 tools for starter plan
-    const [agentsLimit, setAgentsLimit] = useState(1); // default 1 agent for starter plan
+    const [maxTools, setMaxTools] = useState(2); 
+    const [agentsLimit, setAgentsLimit] = useState(1); 
     const [currentAgents, setCurrentAgents] = useState(0);
     const [billingRates, setBillingRates] = useState(null);
 
     useEffect(() => {
-        (async () => {
+        const init = async () => {
             if (!contextUser?.id) return;
 
-            const user = contextUser;
             try {
-                // Fetch Billing Rates
+                // 1. Fetch Billing Rates
                 const ratesRes = await getBillingRates();
                 if (ratesRes.success) setBillingRates(ratesRes.data);
 
-                const { data } = await supabase
+                // 2. Check if Entity exists for this user
+                const { data: entityData } = await supabase
                     .from('entities')
                     .select('agent_name, business_type')
-                    .eq('user_id', user.id)
+                    .eq('user_id', contextUser.id)
                     .order('created_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
-                if (data?.agent_name) {
-                    setSector(data.business_type || 'general');
+
+                if (entityData?.agent_name) {
+                    setSector(entityData.business_type || 'general');
                     setEntityReady(true);
                 } else {
                     setEntityReady(false);
                 }
-                // check user tier
-                const profileResult = await getProfile(user.id);
+
+                // 3. Check user tier and set limits (Soft limits for UI)
+                const profileResult = await getProfile(contextUser.id);
                 const tier = profileResult.data?.subscription_plan || 'starter';
 
-                // Fetch dynamic limits from platform settings
                 try {
                     const pricingData = await getPlatformSettings('pricing_plans');
                     if (pricingData) {
@@ -125,8 +125,8 @@ const HireAgent = () => {
                     else { setMaxTools(2); setAgentsLimit(1); }
                 }
 
-                // Count existing agents
-                const countRes = await getUserAgentCount(user.id);
+                // 4. Count existing agents
+                const countRes = await getUserAgentCount(contextUser.id);
                 if (countRes.success) {
                     setCurrentAgents(countRes.count);
                 }
@@ -134,7 +134,9 @@ const HireAgent = () => {
                 console.error("HireAgent: Initialization error:", err);
                 setEntityReady(false);
             }
-        })();
+        };
+
+        init();
     }, [contextUser?.id]);
 
     const handleSave = async () => {
@@ -309,13 +311,13 @@ const HireAgent = () => {
                 </div>
             </div>
 
-            {/* ── Limit Warning Banner ── */}
+            {/* ── Limit Info Banner (Soft Warning) ── */}
             {currentAgents >= agentsLimit && (
                 <div style={{ 
                     marginBottom: '1.5rem', 
                     padding: '1.25rem', 
-                    background: 'rgba(239, 68, 68, 0.1)', 
-                    border: '1px solid rgba(239, 68, 68, 0.2)', 
+                    background: 'rgba(139, 92, 246, 0.1)', 
+                    border: '1px solid rgba(139, 92, 246, 0.2)', 
                     borderRadius: '14px',
                     display: 'flex',
                     alignItems: 'center',
@@ -323,25 +325,25 @@ const HireAgent = () => {
                     gap: '1rem'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444' }}>
-                            ⚠️
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(139, 92, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8B5CF6' }}>
+                            💡
                         </div>
                         <div>
-                            <div style={{ fontWeight: 700, color: '#FCA5A5', fontSize: '0.95rem' }}>
-                                {isAr ? 'وصلت للحد الأقصى للموظفين' : 'Agent Limit Reached'}
+                            <div style={{ fontWeight: 700, color: '#DDD6FE', fontSize: '0.95rem' }}>
+                                {isAr ? 'توظيف خارج الباقة (نظام النقاط)' : 'Off-Plan Hiring (Points System)'}
                             </div>
                             <div style={{ color: '#9CA3AF', fontSize: '0.8rem', marginTop: '2px' }}>
                                 {isAr 
-                                    ? `باقتك الحالية تسمح بـ ${agentsLimit} موظف فقط. لديك حالياً ${currentAgents} موظفين نشطين.` 
-                                    : `Your current plan allows for ${agentsLimit} agents. You already have ${currentAgents} active agents.`}
+                                    ? `لقد استهلكت حصة باقتك الموفرة (${agentsLimit} موظفين). يمكنك توظيف المزيد الآن مقابل خصم النقاط من محفظتك مباشرة.` 
+                                    : `You have used your plan quota (${agentsLimit} agents). You can hire more now by deducting points from your wallet.`}
                             </div>
                         </div>
                     </div>
                     <button 
-                        onClick={() => navigate('/pricing')}
-                        style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#EF4444', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+                        onClick={() => navigate('/wallet')}
+                        style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#8B5CF6', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
                     >
-                        {isAr ? 'ترقية الآن' : 'Upgrade Now'}
+                        {isAr ? 'اشحن رصيدك' : 'Top up Wallet'}
                     </button>
                 </div>
             )}
@@ -483,7 +485,7 @@ const HireAgent = () => {
                                         { id: 'calendar', icon: '📅', label: isAr ? 'تقويم جوجل' : 'Google Calendar' },
                                     ].map(tool => {
                                         const isSelected = form.platforms.includes(tool.id);
-                                        const isDisabled = !isSelected && form.platforms.length >= maxTools;
+                                        const isDisabled = false;
                                         return (
                                             <div
                                                 key={tool.id}
@@ -516,9 +518,11 @@ const HireAgent = () => {
                                         );
                                     })}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '6px' }}>
-                                    {isAr ? 'سقف المنصات مرتبط بخطتك الحالية (الأساسية=2، البرو=3، انتربرايز=5).' : 'Tools limit is tied to your subscription (Starter=2, Pro=3, Ent=5).'}
-                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#8B5CF6', marginTop: '6px', fontWeight: 600 }}>
+                                     {isAr 
+                                        ? `ملاحظة: الأدوات الإضافية (أكثر من ${maxTools}) قد تتطلب رسوم نقاط إضافية عند التأسيس.` 
+                                        : `Note: Extra tools (beyond ${maxTools}) may require additional point fees during setup.`}
+                                 </div>
                             </div>
 
                             <button

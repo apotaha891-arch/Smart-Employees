@@ -838,6 +838,7 @@ const EntitySetup = () => {
                 user_id: user.id,
                 agent_name: formData.businessName,
                 specialty: formData.businessType,
+                business_type: formData.businessType,
                 description: formData.description || null,
                 phone: formData.phone || null,
                 address: formData.address || null,

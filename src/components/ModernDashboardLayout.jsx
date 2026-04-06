@@ -146,7 +146,7 @@ const ModernDashboardLayout = ({ children }) => {
         { icon: Settings, label: t('settingsLabel'), path: '/admin/settings' },
     ];
 
-    // Select nav items based on role
+    // Select nav items based on role (AuthContext now swaps this during impersonation)
     const navItems = isAdmin ? adminNavItems : customerNavItems;
 
     return (
@@ -155,43 +155,40 @@ const ModernDashboardLayout = ({ children }) => {
             {/* ── Impersonation Banner ── */}
             {isImpersonating && (
                 <div style={{
-                    background: 'linear-gradient(135deg, #7C3AED, #4F46E5)',
-                    padding: '10px 2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    background: 'linear-gradient(90deg, #8B5CF6, #EC4899)',
+                    color: 'white',
+                    padding: '8px 20px',
+                    textAlign: 'center',
                     fontSize: '0.85rem',
-                    fontWeight: 600,
-                    zIndex: 200,
-                    flexShrink: 0
+                    fontWeight: 700,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '15px',
+                    zIndex: 9999,
+                    position: 'sticky',
+                    top: 0,
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <ShieldCheck size={16} />
-                        <span>
-                            {language === 'ar'
-                                ? `أنت تدير الآن: ${userData.business_name || user?.email}`
-                                : `Managing: ${userData.business_name || user?.email}`
-                            }
-                        </span>
-                    </div>
-                    <button
-                        onClick={() => { stopImpersonating(); navigate('/agency'); }}
+                    <span>{language === 'ar' ? `⚠️ أنت تتصفح كدعم فني للحساب: ${userData.business_name || user?.email}` : `⚠️ You are browsing as support for: ${userData.business_name || user?.email}`}</span>
+                    <button 
+                        onClick={() => {
+                            stopImpersonating();
+                            window.location.href = '/admin';
+                        }}
                         style={{
-                            background: 'rgba(255,255,255,0.15)',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            borderRadius: '8px',
-                            color: 'white',
-                            padding: '6px 14px',
+                            background: 'white',
+                            color: '#8B5CF6',
+                            border: 'none',
+                            borderRadius: '20px',
+                            padding: '4px 12px',
                             cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            fontWeight: 700,
-                            fontSize: '0.8rem'
+                            fontSize: '0.75rem',
+                            fontWeight: 800,
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
                         }}
                     >
-                        <ArrowLeft size={14} />
-                        {language === 'ar' ? 'العودة للوكالة' : 'Back to Agency'}
+                        {language === 'ar' ? 'الخروج والعودة للأدمن' : 'Exit and return to Admin'}
                     </button>
                 </div>
             )}

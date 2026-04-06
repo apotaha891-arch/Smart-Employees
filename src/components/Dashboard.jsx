@@ -275,36 +275,56 @@ const Dashboard = () => {
 
                 </div>
 
-                {/* Promotional / Comparison Section */}
+                {/* Scaling & Credit Info Section */}
                 <div style={{ marginTop: '2.5rem' }}>
-                    <div className="card" style={{ padding: '2rem', background: 'linear-gradient(135deg, #1E1B4B 0%, #0B0F19 100%)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '24px', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, right: 0, width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)', zIndex: 0 }}></div>
+                    <div className="card" style={{ padding: '2.5rem', background: 'linear-gradient(135deg, #1E1B4B 0%, #0B0F19 100%)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '24px', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, width: '250px', height: '250px', background: 'radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%)', zIndex: 0 }}></div>
                         
-                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center' }}>
-                            <div style={{ flex: '1 1 300px' }}>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>
-                                    {language === 'ar' ? '🚀 ضاعف إنتاجيتك مع الباقة المتقدمة' : '🚀 Maximize Productivity with Pro Plan'}
+                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', gap: '3rem', alignItems: 'center' }}>
+                            <div style={{ flex: '1 1 400px' }}>
+                                <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white', marginBottom: '1.2rem' }}>
+                                    {language === 'ar' ? '🚀 نظام التوسع المرن والقائم على النقاط' : '🚀 Flexible Point-Based Scaling System'}
                                 </h2>
-                                <p style={{ color: '#A1A1AA', fontSize: '1rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                                    {language === 'ar' ? 'انتقل إلى عالم الاحتراف واحصل على سعة محادثات أكبر، موظفين إثنين، ودعم فني متقدم بأفضل قيمة مقابل سعر.' : 'Go professional and get higher credit limits, two agents, and advanced support at the best value.'}
+                                <p style={{ color: '#A1A1AA', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                                    {language === 'ar' 
+                                        ? 'لم تعد مقيداً بحدود الباقة الثابتة. الآن، رصيدك من النقاط هو محرك نموك. يمكنك توظيف المزيد من الموظفين الرقميين أو ربط أدوات إضافية في أي وقت مقابل خصم من رصيدك الموحد.' 
+                                        : 'You are no longer limited by fixed plan constraints. Your credit balance is now your growth engine. Hire more digital employees or link extra tools anytime by deducting from your unified balance.'}
                                 </p>
-                                <Link to="/pricing" className="btn btn-primary" style={{ padding: '0.75rem 1.75rem', borderRadius: '12px' }}>
-                                    {language === 'ar' ? 'ترقية حسابي الآن' : 'Upgrade My Account Now'}
-                                </Link>
+                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                    <Link to="/pricing" className="btn btn-primary" style={{ padding: '0.85rem 2rem', borderRadius: '14px', fontWeight: 800 }}>
+                                        {language === 'ar' ? 'تعزيز رصيد النقاط' : 'Power Up Credits'}
+                                    </Link>
+                                    <Link to="/templates" className="btn" style={{ padding: '0.85rem 2rem', borderRadius: '14px', fontWeight: 800, background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        {language === 'ar' ? 'توظيف موظف إضافي' : 'Hire Extra Agent'}
+                                    </Link>
+                                </div>
                             </div>
                             
-                            <div style={{ flex: '1 1 400px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <div style={{ color: '#06B6D4', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '8px' }}>{language === 'ar' ? 'الأساسية' : 'Starter'}</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'white' }}>2,000 pts</div>
-                                    <div style={{ fontSize: '0.8rem', color: '#6B7280', marginTop: '4px' }}>1 {language === 'ar' ? 'موظف' : 'Agent'} | 2 {language === 'ar' ? 'أدوات' : 'Tools'}</div>
+                            <div style={{ flex: '1 1 350px' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                                    <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)', fontWeight: 800, color: '#A78BFA', textAlign: 'center' }}>
+                                        {language === 'ar' ? 'دليل استهلاك النقاط' : 'Credit Consumption Guide'}
+                                    </div>
+                                    <div style={{ padding: '1rem' }}>
+                                        {[
+                                            { label: language === 'ar' ? 'كل رسالة ذكية (AI Message)' : 'AI Interaction', cost: '1 pt', icon: <Bot size={14} /> },
+                                            { label: language === 'ar' ? 'توظيف موظف رقمي جديد' : 'New Agent Provision', cost: '1,000 pts', icon: <Users size={14} /> },
+                                            { label: language === 'ar' ? 'ربط أداة جديدة (WA/TG)' : 'Tool Integration', cost: '250 - 2k pts', icon: <Zap size={14} /> },
+                                            { label: language === 'ar' ? 'رسالة واتساب واردة/صادرة' : 'WhatsApp In/Out', cost: '1 pt', icon: <MessageSquare size={14} /> },
+                                        ].map((item, i) => (
+                                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0.5rem', borderBottom: i === 3 ? 'none' : '1px solid rgba(255,255,255,0.03)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#E4E4E7', fontSize: '0.9rem' }}>
+                                                    <span style={{ color: '#8B5CF6' }}>{item.icon}</span>
+                                                    {item.label}
+                                                </div>
+                                                <div style={{ fontWeight: 800, color: 'white', fontSize: '1rem' }}>{item.cost}</div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                                <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '1.5rem', borderRadius: '18px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
-                                    <div style={{ color: '#A78BFA', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '8px' }}>{language === 'ar' ? 'المتقدمة' : 'Pro'}</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'white' }}>5,000 pts</div>
-                                    <div style={{ fontSize: '0.8rem', color: '#A78BFA', marginTop: '4px', fontWeight: 600 }}>2 {language === 'ar' ? 'موظف' : 'Agents'} | 3 {language === 'ar' ? 'أدوات' : 'Tools'}</div>
-                                    <div style={{ fontSize: '0.7rem', color: '#10B981', marginTop: '4px', fontWeight: 800 }}>+ {language === 'ar' ? 'تدريب مخصص' : 'Custom Training'}</div>
-                                </div>
+                                <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.8rem', marginTop: '1rem' }}>
+                                    {language === 'ar' ? '* قد تختلف الأسعار بناءً على نوع الأداة أو حجم البيانات' : '* Rates may vary based on tool type or data volume'}
+                                </p>
                             </div>
                         </div>
                     </div>

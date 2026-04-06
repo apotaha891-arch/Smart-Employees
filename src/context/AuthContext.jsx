@@ -118,19 +118,21 @@ export const createAuthProvider = () => {
             sessionStorage.removeItem('impersonated_user');
         };
 
-        // The effective user is either the impersonated one or the real logged-in one
+        // The effective user and roles
         const activeUser = impersonatedUser || user;
+        const effectiveRole = impersonatedUser ? 'customer' : userRole;
 
         return (
             <AuthContext.Provider value={{
                 user: activeUser,         // Impersonated client OR real agency
                 realUser: user,           // Always the real logged-in agency
-                userRole,
+                userRole: effectiveRole,  // Effective role: 'customer' during support
+                realUserRole: userRole,   // The real admin/agency role
                 loading,
-                isAdmin: userRole === 'admin',
-                isCustomer: userRole === 'customer',
+                isAdmin: effectiveRole === 'admin',
+                realIsAdmin: userRole === 'admin',
+                isCustomer: effectiveRole === 'customer',
                 // When impersonating: isAgency = false (treat as regular customer)
-                // This prevents routing from redirecting the client back to /agency
                 isAgency: impersonatedUser ? false : isAgency,
                 realIsAgency: isAgency,   // The real agency status, always
                 isAuthenticated: !!user,
