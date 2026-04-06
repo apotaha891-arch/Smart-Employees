@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
     Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
     LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
-    Search, Download, Newspaper, Megaphone
+    Search, Download, Newspaper, Megaphone, Settings
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -646,8 +646,15 @@ export default function AdminDashboard() {
     // Filtering Logic
     const filteredClients = (clients || []).filter(c => {
         const matchesSearch = (c.full_name || '').toLowerCase().includes(cSearch.toLowerCase()) || 
+                             (c.business_name || '').toLowerCase().includes(cSearch.toLowerCase()) ||
                              (c.email || '').toLowerCase().includes(cSearch.toLowerCase());
-        const matchesFilter = !cFilter || c.id === cFilter;
+        
+        let matchesFilter = true;
+        if (cFilter === 'agencies') matchesFilter = c.is_agency;
+        else if (cFilter === 'independent') matchesFilter = !c.is_agency && !c.agency_id;
+        else if (cFilter === 'sub-accounts') matchesFilter = !c.is_agency && !!c.agency_id;
+        else if (cFilter) matchesFilter = c.id === cFilter;
+        
         return matchesSearch && matchesFilter;
     });
 
@@ -801,30 +808,80 @@ export default function AdminDashboard() {
                             </div>
                             <Btn onClick={() => handleExport(filteredClients, 'clients')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />تصدير Excel</Btn>
                         </div>
+                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', overflowX: 'auto', paddingBottom: '10px' }}>
+                            {[
+                                { id: '', l: 'الكل', c: '#9CA3AF' },
+                                { id: 'agencies', l: 'الوكالات 🤝', c: '#8B5CF6' },
+                                { id: 'independent', l: 'منشآت مستقلة 🏢', c: '#10B981' },
+                                { id: 'sub-accounts', l: 'عملاء تابعين 👤', c: '#3B82F6' }
+                            ].map(f => (
+                                <button key={f.id} onClick={() => setCFilter(f.id)} style={{ 
+                                    padding: '8px 16px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.05)',
+                                    background: cFilter === f.id ? f.c : 'transparent',
+                                    color: cFilter === f.id ? 'white' : '#9CA3AF',
+                                    fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
+                                }}>{f.l}</button>
+                            ))}
+                        </div>
+
                         <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
                             <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                {[t('admin.clients'), t('home.sectorTitle'), t('admin.agents'), t('nav.pricing'), t('admin.clientDetails')].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>{t('admin.clients')}</th>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>النوع / التبيعة</th>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>الموارد (موظفة/طلب)</th>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>الرصيد / الباقة</th>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>{t('admin.clientDetails')}</th>
                             </tr></thead>
                             <tbody>
-                                {filteredClients.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد عملاء مطابقين للبحث</td></tr>
+                                {filteredClients.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد بيانات مطابقة</td></tr>
                                     : filteredClients.map(c => {
-                                        const normalizeSectorKey = (bt) => {
-                                            if (!bt) return 'general';
-                                            const map = { 'beauty-salon': 'beauty', 'medical-clinic': 'medical', 'dental-receptionist': 'medical', 'restaurant-reservations': 'restaurant', 'real-estate-marketing': 'real_estate', 'gym-coordinator': 'call_center', 'support-agent': 'call_center', 'sales-lead-gen': 'retail_ecommerce' };
-                                            return map[bt] || bt;
-                                        };
-                                        const sec = sectors[normalizeSectorKey(c.business_type)] || { l: c.business_type || '—', e: '🏢' };
+                                        const isAgency = c.is_agency;
+                                        const isSubAccount = !!c.agency_id;
                                         const plan = PLANS[c.subscription_tier || 'basic'] || PLANS.basic;
-                                        return <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: selClient?.id === c.id ? 'rgba(139,92,246,0.06)' : 'transparent' }}>
-                                            <td style={{ padding: '0.75rem 0.9rem' }}><div style={{ fontWeight: 700, color: 'white', fontSize: '0.84rem' }}>{c.full_name || '—'}</div><div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{c.email}</div></td>
-                                            <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF', fontSize: '0.82rem' }}>{sec.e} {sec.l}</td>
-                                            <td style={{ padding: '0.75rem 0.9rem' }}><span style={{ background: '#8B5CF620', color: '#A78BFA', padding: '1px 8px', borderRadius: '99px', fontSize: '0.73rem' }}>{cl(c.id).length} موظفة</span></td>
-                                            <td style={{ padding: '0.75rem 0.9rem' }}><select value={c.subscription_tier || 'basic'} onChange={e => updateClientPlan(c.id, e.target.value)} style={{ background: plan.bg, color: plan.t, border: 'none', borderRadius: '6px', padding: '2px 8px', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer' }}>
-                                                {Object.entries(PLANS).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
-                                            </select></td>
-                                            <td style={{ padding: '0.75rem 0.9rem', display: 'flex', gap: '6px' }}>
-                                                <button onClick={() => setSelClient(selClient?.id === c.id ? null : c)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px' }}><Eye size={12} />{isEnglish ? 'View' : 'عرض'}</button>
-                                                <button onClick={() => remoteLogin(c.email)} disabled={saving} style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px', opacity: saving ? 0.5 : 1 }}><LogOut size={12} style={{ transform: isRtl ? 'rotate(180deg)' : 'none' }} />{isEnglish ? 'Support Login' : 'دعم المالك'}</button>
+                                        
+                                        // Visual Type configuration
+                                        const typeInfo = isAgency ? { l: 'وكالة نشطة', c: '#8B5CF6', e: '🤝' } 
+                                                       : (isSubAccount ? { l: `تابع لـ ${c.agency_name || 'وكالة'}`, c: '#3B82F6', e: '👤' } 
+                                                       : { l: 'منشأة مستقلة', c: '#10B981', e: '🏢' });
+
+                                        return <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }}>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ fontWeight: 800, color: 'white', fontSize: '0.86rem' }}>{c.business_name && c.business_name !== '—' ? c.business_name : (c.full_name || '—')}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{c.email}</div>
+                                                <div style={{ fontSize: '0.65rem', color: '#4B5563', marginTop: '2px' }}>ID: {c.id.slice(0,8)}</div>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: typeInfo.c, fontWeight: 700, fontSize: '0.75rem' }}>
+                                                    <span>{typeInfo.e}</span>
+                                                    <span>{typeInfo.l}</span>
+                                                </div>
+                                                <div style={{ fontSize: '0.68rem', color: '#6B7280', marginTop: '3px' }}>{sectors[c.business_type]?.l || 'قطاع عام'}</div>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ display: 'flex', gap: '6px' }}>
+                                                    <div style={{ background: 'rgba(139,92,246,0.08)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(139,92,246,0.1)' }}>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#A78BFA', textAlign: 'center' }}>{c.agents_count || 0}</div>
+                                                        <div style={{ fontSize: '0.55rem', color: '#6B7280', textTransform: 'uppercase' }}>موظفة</div>
+                                                    </div>
+                                                    <div style={{ background: 'rgba(59,130,246,0.08)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.1)' }}>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#60A5FA', textAlign: 'center' }}>{c.bookings_count || 0}</div>
+                                                        <div style={{ fontSize: '0.55rem', color: '#6B7280', textTransform: 'uppercase' }}>طلب</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ color: '#FCD34D', fontWeight: 900, fontSize: '0.95rem', marginBottom: '2px' }}>
+                                                    {(c.wallet_balance || 0).toLocaleString()} <span style={{ fontSize: '0.6rem', color: '#9CA3AF' }}>نقطة</span>
+                                                </div>
+                                                <select value={c.subscription_tier || 'basic'} onChange={e => updateClientPlan(c.id, e.target.value)} style={{ background: plan.bg, color: plan.t, border: 'none', borderRadius: '6px', padding: '1px 7px', fontWeight: 700, fontSize: '0.7rem', cursor: 'pointer' }}>
+                                                    {Object.entries(PLANS).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
+                                                </select>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ display: 'flex', gap: '5px' }}>
+                                                    <button onClick={() => setSelClient(c)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', transition: '0.2s' }} title="إدارة مفصلة"><Settings size={14} /></button>
+                                                    <button onClick={() => remoteLogin(c.email)} style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer' }} title="دخول الدعم"><LogOut size={14} style={{ transform: isRtl ? 'rotate(180deg)' : 'none' }} /></button>
+                                                </div>
                                             </td>
                                         </tr>;
                                     })}
@@ -832,37 +889,82 @@ export default function AdminDashboard() {
                         </table>} />
                     </div>
                     {/* Client panel */}
-                    {selClient && <div style={{ width: '300px', flexShrink: 0 }}>
+                    {selClient && <div style={{ width: '340px', flexShrink: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
-                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.95rem' }}>🔍 {t('admin.clientDetails')}</div>
-                            <button onClick={() => setSelClient(null)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }}><X size={16} /></button>
+                            <div style={{ fontWeight: 900, color: 'white', fontSize: '1rem' }}>⚙️ إدارة التحكم الكامل</div>
+                            <button onClick={() => setSelClient(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#6B7280', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={16} /></button>
                         </div>
-                        <Card s={{ marginBottom: '0.75rem' }} c={<>
-                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.88rem' }}>{selClient.full_name || '—'}</div>
-                            <div style={{ color: '#6B7280', fontSize: '0.75rem' }}>{selClient.email}</div>
+                        
+                        {/* Profile Summary */}
+                        <Card s={{ marginBottom: '1rem', border: '1px solid rgba(139,92,246,0.2)' }} c={<>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg,#8B5CF6,#3B82F6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                                    {selClient.is_agency ? '🤝' : '🏢'}
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: 900, color: 'white', fontSize: '0.9rem' }}>{selClient.business_name || selClient.full_name}</div>
+                                    <div style={{ color: '#9CA3AF', fontSize: '0.72rem' }}>{selClient.email}</div>
+                                </div>
+                            </div>
                         </>} />
-                        <div style={{ color: '#9CA3AF', fontSize: '0.73rem', fontWeight: 600, marginBottom: '5px' }}>الموظفات ({cl(selClient.id).length})</div>
-                        {cl(selClient.id).slice(0, 4).map(a => {
-                            const roleLabel = roles[a.specialty]?.l || a.specialty;
-                            return <Card key={a.id} s={{ marginBottom: '5px', padding: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} c={<>
-                                <div><div style={{ color: 'white', fontSize: '0.8rem', fontWeight: 600 }}>{a.name}</div><div style={{ color: '#6B7280', fontSize: '0.7rem' }}>{roleLabel}</div></div>
-                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: a.status === 'active' ? '#10B981' : '#374151' }} />
-                            </>} />;
-                        })}
-                        <div style={{ color: '#9CA3AF', fontSize: '0.73rem', fontWeight: 600, marginTop: '0.7rem', marginBottom: '5px' }}>آخر الحجوزات ({bl(selClient.id).length})</div>
-                        {bl(selClient.id).slice(0, 3).map(b => {
-                            const sc = STATUSES[b.status] || STATUSES.pending; return <Card key={b.id} s={{ marginBottom: '5px', padding: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} c={<>
-                                <div><div style={{ color: 'white', fontSize: '0.78rem' }}>{b.customer_name || '—'}</div><div style={{ color: '#6B7280', fontSize: '0.7rem' }}>{b.booking_date}</div></div>
-                                <span style={{ background: sc.bg, color: sc.t, padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{sc.l}</span>
-                            </>} />;
-                        })}
-                        <div style={{ color: '#9CA3AF', fontSize: '0.73rem', fontWeight: 600, marginTop: '0.7rem', marginBottom: '5px' }}>🔑 {isEnglish ? 'Integration Keys' : 'مفاتيح الربط'}</div>
+
+                        {/* Identity Controls */}
+                        <div style={{ color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>إعدادات الهوية والتبيعة</div>
+                        <Card s={{ marginBottom: '1rem' }} c={<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '4px' }}>نوع الحساب الرئيسي</label>
+                                <div style={{ display: 'flex', background: '#111827', borderRadius: '8px', padding: '3px' }}>
+                                    <button onClick={() => adminService.changeClientIdentity(selClient.id, true).then(load)} 
+                                        style={{ flex: 1, padding: '6px', borderRadius: '6px', border: 'none', background: selClient.is_agency ? '#8B5CF6' : 'transparent', color: selClient.is_agency ? 'white' : '#6B7280', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>وكالة</button>
+                                    <button onClick={() => adminService.changeClientIdentity(selClient.id, false).then(load)} 
+                                        style={{ flex: 1, padding: '6px', borderRadius: '6px', border: 'none', background: !selClient.is_agency ? '#10B981' : 'transparent', color: !selClient.is_agency ? 'white' : '#6B7280', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>عميل مباشر</button>
+                                </div>
+                            </div>
+
+                            {!selClient.is_agency && (
+                                <div>
+                                    <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '4px' }}>التبعية (الوكالة الأم)</label>
+                                    <select 
+                                        value={selClient.agency_id || ''} 
+                                        onChange={(e) => adminService.changeClientIdentity(selClient.id, false, e.target.value === '' ? null : e.target.value).then(load)}
+                                        style={{ width: '100%', padding: '8px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.75rem' }}
+                                    >
+                                        <option value="">— منشأة مستقلة (بدون وكالة) —</option>
+                                        {clients.filter(x => x.is_agency && x.id !== selClient.id).map(a => (
+                                            <option key={a.id} value={a.id}>وكالة: {a.business_name || a.full_name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>} />
+
+                        {/* Financials */}
+                        <div style={{ color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>إدارة الرصيد (المحفظة)</div>
+                        <Card s={{ marginBottom: '1rem', border: '1px solid rgba(252,211,77,0.2)' }} c={<>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                <div style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>الرصيد الحالي:</div>
+                                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FCD34D' }}>{selClient.wallet_balance || 0} <small style={{ fontSize: '0.6rem' }}>نقطة</small></div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                                <button onClick={() => {
+                                    const amt = prompt('أدخل عدد النقاط للإضافة (+):');
+                                    if(amt) supabase.rpc('transfer_wallet_credits', { p_client_id: selClient.id, p_amount: parseInt(amt) }).then(load);
+                                }} style={{ flex: 1, background: '#10B98120', color: '#10B981', border: '1px solid #10B98130', borderRadius: '7px', padding: '8px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>+ إضافة رصيد</button>
+                                <button onClick={() => {
+                                    const amt = prompt('أدخل عدد النقاط للخصم (-):');
+                                    if(amt) supabase.rpc('deduct_wallet_credits', { p_client_id: selClient.id, p_amount: parseInt(amt) }).then(load);
+                                }} style={{ flex: 1, background: '#EF444420', color: '#EF4444', border: '1px solid #EF444430', borderRadius: '7px', padding: '8px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>- خصم رصيد</button>
+                            </div>
+                        </>} />
+
+                        {/* Integration Keys */}
+                        <div style={{ color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>🔑 مفاتيح الربط البرمجية</div>
                         <Card c={<>
-                            {[['telegram_token', 'Telegram Token'], ['whatsapp_number', isEnglish ? 'WhatsApp Number' : 'رقم WhatsApp'], ['whatsapp_api_key', 'WhatsApp Key']].map(([f, l]) => <div key={f} style={{ marginBottom: '0.6rem' }}>
+                            {[['telegram_token', 'Telegram Token'], ['whatsapp_number', 'رقم WhatsApp'], ['whatsapp_api_key', 'WhatsApp Key']].map(([f, l]) => <div key={f} style={{ marginBottom: '0.6rem' }}>
                                 <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '3px' }}>{l}</label>
                                 <Input type={f.includes('token') || f.includes('key') ? 'password' : 'text'} value={clientKeys[selClient.id]?.[f] || ''} placeholder="—" onChange={e => setClientKeys(p => ({ ...p, [selClient.id]: { ...(p[selClient.id] || {}), [f]: e.target.value } }))} />
                             </div>)}
-                            <Btn onClick={() => saveClientKey(selClient.id)} style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}><Key size={13} />{t('admin.saveKeys')}</Btn>
+                            <Btn onClick={() => saveClientKey(selClient.id)} style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}><Key size={13} />حفظ التغييرات</Btn>
                         </>} />
                     </div>}
                 </div>}

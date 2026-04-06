@@ -59,7 +59,7 @@ export const signInWithGoogle = async () => {
                     access_type: 'offline',
                     prompt: 'consent',
                 },
-                redirectTo: `${window.location.origin}/dashboard`,
+                redirectTo: `${window.location.origin}/`,
             },
         });
         if (error) throw error;
@@ -74,7 +74,7 @@ export const signInWithApple = async () => {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'apple',
             options: {
-                redirectTo: `${window.location.origin}/dashboard`,
+                redirectTo: `${window.location.origin}/`,
             },
         });
         if (error) throw error;

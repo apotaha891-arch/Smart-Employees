@@ -173,25 +173,27 @@ const Login = () => {
                 {error && (
                     <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', textAlign: 'center', fontSize: '0.9rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
                         {error}
-                        {!isSignUp && error.includes(language === 'ar' ? 'يرجى تفعيل بريدك' : 'confirm your email') && (
-                            <div style={{ marginTop: '0.75rem' }}>
+                        
+                        {/* Auto-detect unconfirmed error to show Resend Link */}
+                        {(error.toLowerCase().includes('confirm') || error.includes('موثق') || error.includes('تفعيل')) && (
+                            <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(239, 68, 68, 0.2)' }}>
                                 {resendSuccess ? (
-                                    <span style={{ color: '#10B981', fontWeight: 600 }}>{language === 'ar' ? '✓ تم إرسال الرابط مجدداً!' : '✓ Link resent successfully!'}</span>
+                                    <span style={{ color: '#10B981', fontWeight: 700 }}>{language === 'ar' ? '✓ تم إرسال الرابط بنجاح! تفقد بريدك.' : '✓ Confirmation sent! Check your inbox.'}</span>
                                 ) : (
-                                    <button 
-                                        onClick={handleResend}
-                                        disabled={resendLoading}
-                                        className="btn btn-secondary btn-sm"
-                                        style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444' }}
-                                    >
-                                        {resendLoading ? (language === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (language === 'ar' ? 'إعادة إرسال الرابط' : 'Resend Link')}
-                                    </button>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                                        <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: 0 }}>
+                                            {language === 'ar' ? 'تبدو أن حسابك بحاجة لتفعيل. هل تريد إرسال الرابط مرة أخرى؟' : 'Your account needs activation. Resend link?'}
+                                        </p>
+                                        <button 
+                                            onClick={handleResend}
+                                            disabled={resendLoading}
+                                            className="btn btn-sm"
+                                            style={{ background: '#EF4444', color: 'white', borderRadius: '8px', padding: '5px 15px', fontSize: '0.75rem', border: 'none', cursor: 'pointer', fontWeight: 700 }}
+                                        >
+                                            {resendLoading ? (language === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (language === 'ar' ? 'إرسال رابط التفعيل الآن' : 'Resend Activation Now')}
+                                        </button>
+                                    </div>
                                 )}
-                            </div>
-                        )}
-                        {!isSignUp && error.includes('Invalid login credentials') && (
-                            <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#9CA3AF' }}>
-                                {t('activateEmailNote')}
                             </div>
                         )}
                     </div>

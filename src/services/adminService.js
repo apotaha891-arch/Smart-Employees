@@ -4,26 +4,46 @@ import { supabase } from './supabaseService';
 // These RPCs verify the caller is admin via app_metadata inside the DB function.
 
 export const getAllCustomers = async () => {
-    // Try admin RPC first (bypasses RLS)
-    const { data: rpcData, error: rpcErr } = await supabase.rpc('get_admin_clients');
+    // Try the new ENHANCED admin RPC first (v2)
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('get_admin_clients_v2');
     if (!rpcErr && rpcData) return rpcData;
 
     if (rpcErr) { 
-        console.warn('get_admin_clients RPC failed:', rpcErr.message, '— trying fallback to profiles');
+        console.warn('get_admin_clients_v2 RPC failed, trying v1:', rpcErr.message);
     }
 
-    // Fallback: profiles table (works if user is authorized as admin)
+    // Attempt v1 fallback
+    const { data: v1Data, error: v1Err } = await supabase.rpc('get_admin_clients');
+    if (!v1Err && v1Data) return v1Data;
+
+    // Fallback: profiles table
     const { data: profiles, error: profErr } = await supabase
         .from('profiles')
-        .select('id, full_name, email, subscription_tier, created_at, business_name, business_type')
+        .select('id, full_name, email, subscription_tier, created_at, business_name, business_type, is_agency, agency_id')
         .order('created_at', { ascending: false });
 
     if (profErr) {
         console.error('profiles fallback failed:', profErr.message);
-        throw new Error('تعذر الوصول لبيانات العملاء. يرجى التأكد من صلاحيات الأدمن أو تشغيل كود SQL المطلوب.');
+        throw new Error('تعذر الوصول لبيانات العملاء.');
     }
 
     return profiles || [];
+};
+
+export const changeClientIdentity = async (clientId, isAgency, agencyId = null) => {
+    const { error } = await supabase.rpc('admin_change_client_identity', { 
+        p_client_id: clientId, 
+        p_is_agency: isAgency, 
+        p_agency_id: agencyId 
+    });
+    if (error) {
+        console.warn('admin_change_client_identity RPC failed, trying direct update:', error.message);
+        await supabase.from('profiles').update({ 
+            is_agency: isAgency, 
+            agency_id: agencyId 
+        }).eq('id', clientId);
+    }
+    return true;
 };
 
 export const getAllEndCustomers = async () => {
