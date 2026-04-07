@@ -42,8 +42,8 @@ const Pricing = () => {
     const [loadingPlan, setLoadingPlan] = useState(null);
 
     const handleSelectPlan = async (plan) => {
-        // Skip checkout for Enterprise (Contact Sales) - Accessible to both Guests and Users
-        if (plan.id === 'enterprise') {
+        // Skip checkout for Enterprise/Elite/Custom (Contact Sales) - Accessible to both Guests and Users
+        if (plan.id === 'enterprise' || plan.id === 'agency_platinum' || plan.id === 'elite') {
             // Open Noura Chat with special 'elite' context
             window.dispatchEvent(new CustomEvent('open-concierge', { detail: { type: 'elite' } }));
             return;
@@ -251,9 +251,9 @@ const Pricing = () => {
             id: 'starter',
             name: pricingPlans?.starter?.name || 'Starter',
             icon: <Zap size={28} color="#10B981" />,
-            monthlyPrice: getPlanValue('starter', 'monthlyPrice', 39),
-            yearlyPrice: getPlanValue('starter', 'yearlyPrice', 31),
-            trialPrice: getPlanValue('starter', 'trialPrice', 20),
+            monthlyPrice: getPlanValue('starter', 'monthlyPrice', 20),
+            yearlyPrice: getPlanValue('starter', 'yearlyPrice', 16),
+            trialPrice: getPlanValue('starter', 'trialPrice', 15),
             description: pricingPlans?.starter?.description || '',
             features: [
                 `${getPlanValue('starter', 'credits', 2000)} ${language === 'ar' ? 'نقطة (رصيد عمليات) شهرياً' : 'ops units/month'}`,
@@ -264,7 +264,7 @@ const Pricing = () => {
                 language === 'ar' ? 'تقارير أداء متقدمة' : 'Advanced analytics'
             ],
             cta: pricingPlans?.starter?.cta || '',
-            trialText: pricingPlans?.starter?.trialText?.replace(/\d+\$/, `${getPlanValue('starter', 'trialPrice', 20)}$`) || '',
+            trialText: pricingPlans?.starter?.trialText?.replace(/\d+\$/, `${getPlanValue('starter', 'trialPrice', 15)}$`) || '',
             periodStr: pricingPlans?.starter?.periodStr || '',
             popular: false,
             color: '#10B981'
@@ -273,9 +273,9 @@ const Pricing = () => {
             id: 'pro',
             name: pricingPlans?.pro?.name || 'Pro',
             icon: <Star size={28} color="#8B5CF6" />,
-            monthlyPrice: getPlanValue('pro', 'monthlyPrice', 69),
-            yearlyPrice: getPlanValue('pro', 'yearlyPrice', 55),
-            trialPrice: getPlanValue('pro', 'trialPrice', 45),
+            monthlyPrice: getPlanValue('pro', 'monthlyPrice', 40),
+            yearlyPrice: getPlanValue('pro', 'yearlyPrice', 32),
+            trialPrice: getPlanValue('pro', 'trialPrice', 30),
             description: pricingPlans?.pro?.description || '',
             features: [
                 `${getPlanValue('pro', 'credits', 5000)} ${language === 'ar' ? 'نقطة (رصيد عمليات) شهرياً' : 'ops units/month'}`,
@@ -286,7 +286,7 @@ const Pricing = () => {
                 language === 'ar' ? 'خصومات حصرية على شحن النقاط' : 'Exclusive refill discounts'
             ],
             cta: pricingPlans?.pro?.cta || '',
-            trialText: pricingPlans?.pro?.trialText?.replace(/\d+\$/, `${getPlanValue('pro', 'trialPrice', 45)}$`) || '',
+            trialText: pricingPlans?.pro?.trialText?.replace(/\d+\$/, `${getPlanValue('pro', 'trialPrice', 30)}$`) || '',
             periodStr: pricingPlans?.pro?.periodStr || '',
             popular: true,
             color: '#8B5CF6'
@@ -316,12 +316,12 @@ const Pricing = () => {
             id: 'agency_silver',
             name: language === 'ar' ? 'الوكالة الفضية' : 'Silver Agency',
             icon: <Shield size={28} color="#94A3B8" />,
-            monthlyPrice: 299,
-            yearlyPrice: 239,
+            monthlyPrice: 80,
+            yearlyPrice: 64,
             description: language === 'ar' ? 'البداية المثالية للوكالات المتوسطة' : 'Perfect start for mid-sized agencies',
             features: [
                 `${language === 'ar' ? 'إدارة حتى 5 حسابات منشآت' : 'Manage up to 5 sub-accounts'}`,
-                `50,000 ${language === 'ar' ? 'نقطة رصيد مرنة للحسابات' : 'Flexible Credit Pool'}`,
+                `12,000 ${language === 'ar' ? 'نقطة رصيد مرنة للحسابات' : 'Flexible Credit Pool'}`,
                 language === 'ar' ? 'لوحة تحكم إدارية للوكالة' : 'Master Agency Dashboard',
                 language === 'ar' ? 'توزيع الرصيد بحرية كاملة' : 'Free Credit distribution',
                 language === 'ar' ? 'دعم فني أولوية للوكلاء' : 'Priority Agent Support'
@@ -333,12 +333,12 @@ const Pricing = () => {
             id: 'agency_gold',
             name: language === 'ar' ? 'الوكالة الذهبية' : 'Gold Agency',
             icon: <Crown size={28} color="#F59E0B" />,
-            monthlyPrice: 799,
-            yearlyPrice: 639,
+            monthlyPrice: 200,
+            yearlyPrice: 160,
             description: language === 'ar' ? 'للشركات والمكاتب ذات النمو السريع' : 'For fast-growing agencies & firms',
             features: [
                 `${language === 'ar' ? 'إدارة حتى 20 حساب منشأة' : 'Manage up to 20 sub-accounts'}`,
-                `250,000 ${language === 'ar' ? 'نقطة رصيد مرنة للنمو' : 'Flexible Growth Credits'}`,
+                `40,000 ${language === 'ar' ? 'نقطة رصيد مرنة للنمو' : 'Flexible Growth Credits'}`,
                 language === 'ar' ? 'لوحة تحكم كاملة وشاملة' : 'Full Master Dashboard',
                 language === 'ar' ? 'توزع ذكي وتلقائي للرصيد' : 'Smart Credit Distribution',
                 language === 'ar' ? 'دعم فني مخصص (VIP)' : 'Dedicated VIP Support',
@@ -350,19 +350,19 @@ const Pricing = () => {
         },
         {
             id: 'agency_platinum',
-            name: language === 'ar' ? 'الوكالة البلاتينية' : 'Platinum Agency',
+            name: language === 'ar' ? 'باقة وكالة مخصصة' : 'Custom Agency Plan',
             icon: <ShieldCheck size={28} color="#A78BFA" />,
-            monthlyPrice: 1499,
-            yearlyPrice: 1199,
+            monthlyPrice: 0,
+            yearlyPrice: 0,
             description: language === 'ar' ? 'حلول ضخمة للمنظمات التي لا تعرف الحدود' : 'Unlimited solutions for large organizations',
             features: [
-                `${language === 'ar' ? '50 حساب منشأة' : '50 Sub-accounts'}`,
-                `1,000,000 ${language === 'ar' ? 'نقطة رصيد إجمالية' : 'Total Credit Pool'}`,
-                language === 'ar' ? 'لوحة تحكم متفوقة' : 'Enterprise Agency Panel',
-                language === 'ar' ? 'API وصول خاص (قريباً)' : 'Private API Access (Soon)',
+                `${language === 'ar' ? 'تخصيص حسابات المنشآت' : 'Custom Sub-accounts'}`,
+                `${language === 'ar' ? 'تخصيص رصيد بحسب حجم العمل' : 'Tailored Credit Pool'}`,
+                language === 'ar' ? 'لوحة تحكم متفوقة بلس' : 'Elite Agency Panel',
+                language === 'ar' ? 'API وصول خاص' : 'Private API Access',
                 language === 'ar' ? 'إدارة حساب مخصص' : 'Dedicated Account Manager'
             ],
-            cta: language === 'ar' ? 'تواصل معنا (بلاتينيوم)' : 'Contact Sales (Platinum)',
+            cta: language === 'ar' ? 'تحدث مع المستشارة (بلاتينيوم)' : 'Talk to Noura (Platinum)',
             color: '#A78BFA'
         }
     ];

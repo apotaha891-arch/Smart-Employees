@@ -421,6 +421,42 @@ Your tone of voice and persona must be: ${toneDescription[adminTone || targetTem
         setShowSetup(false);
     };
 
+    const handleSkipInterview = () => {
+        const activeAgentMap = getAgentMap(isArabic);
+        const selectedAgent = activeAgentMap[setupConfig.agentType] || activeAgentMap['support-agent'];
+
+        const skipTemplate = {
+            id: setupConfig.agentType,
+            title: selectedAgent.title,
+            specialty: selectedAgent.specialty,
+            services: selectedAgent.services,
+            workingHours: { start: '09:00', end: '22:00' },
+            appointmentDuration: 30,
+            tone: setupConfig.tone,
+            detectedIndustry: setupConfig.industry,
+            industry: setupConfig.industry
+        };
+
+        const mockRules = {
+            businessName: profile?.business_name || (isArabic ? 'منشأتي الذكية' : 'My Smart Business'),
+            businessType: setupConfig.industry,
+            specialty: selectedAgent.title,
+            tone: setupConfig.tone
+        };
+
+        localStorage.setItem('pendingBusinessRules', JSON.stringify(mockRules));
+        localStorage.setItem('pendingAgentTemplate', JSON.stringify(skipTemplate));
+
+        navigate('/pricing', {
+            state: {
+                businessRules: mockRules,
+                template: skipTemplate,
+                fromInterview: true,
+                skipped: true
+            }
+        });
+    };
+
     const handleSendMessage = async (e, directMessage = null) => {
         if (e) e.preventDefault();
 
@@ -728,6 +764,18 @@ Your tone of voice and persona must be: ${toneDescription[adminTone || targetTem
                                 }}
                             >
                                 {t('prepareCandidateBtn')}
+                            </button>
+
+                            <button
+                                onClick={handleSkipInterview}
+                                style={{
+                                    width: '100%', padding: '14px', background: 'rgba(255,255,255,0.03)', color: '#A78BFA',
+                                    borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', marginTop: '0.25rem', border: '1px dashed rgba(167, 139, 250, 0.3)', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                }}
+                            >
+                                <Zap size={16} />
+                                {isArabic ? 'تجاوز المقابلة (للمشتركين القدامى)' : 'Skip Interview (Old Customers)'}
                             </button>
 
                             {localStorage.getItem('agentTemplate') && (

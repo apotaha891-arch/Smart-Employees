@@ -498,7 +498,7 @@ export const translations = {
         pricingPlans: {
             starter: {
                 name: 'الباقة الأساسية',
-                description: 'مثالية للمشاريع الناشئة التي تبحث عن أتمتة مرنة ونمو متدرج بالنقاط.',
+                description: 'مثالية للمشاريع الناشئة التي تبحث عن أتمتة ذكية بتكلفة اقتصادية.',
                 features: [
                     '2000 نقطة (رصيد عمليات) شهرياً',
                     'إمكانية توظيف موظفين إضافيين بالنقاط',
@@ -507,7 +507,7 @@ export const translations = {
                     'نقاط إضافية متاحة للشحن في أي وقت'
                 ],
                 cta: 'اشترك الآن',
-                trialText: 'تجربة 3 شهور: 20$/شهرياً!',
+                trialText: 'العرض الحالي: 20$/شهرياً!',
                 periodStr: 'شهر'
             },
             pro: {
@@ -520,8 +520,8 @@ export const translations = {
                     'تقارير تحليلية عميقة للأداء والنمو',
                     'خصم خاص على شحن النقاط الإضافية'
                 ],
-                cta: 'ابدأ التجربة المخفضة',
-                trialText: 'تجربة 3 شهور: 45$/شهرياً!',
+                cta: 'ابدأ التجربة الآن',
+                trialText: 'العرض الحالي: 40$/شهرياً!',
                 periodStr: 'شهر'
             },
             enterprise: {
@@ -535,7 +535,7 @@ export const translations = {
                     'تدريب ومسارات عمل مخصصة',
                     'مدير حساب شخصي مخصص'
                 ],
-                cta: 'تواصل مع المبيعات'
+                cta: 'تحدث مع المستشارة نورا'
             }
         },
 
@@ -1159,44 +1159,44 @@ export const translations = {
         pricingPlans: {
             starter: {
                 name: 'Starter Plan',
-                description: 'Perfect for startups looking for simple automation and basic coverage.',
+                description: 'Ideal for startups looking for smart automation at an affordable cost.',
                 features: [
-                    'One dedicated smart employee',
-                    'Two integrations (e.g., Telegram, WhatsApp)',
-                    '2000 conversations/month',
-                    'Extra integration for $20',
-                    'Extra employee for $70'
+                    '2000 points (operations balance) monthly',
+                    'Ability to hire additional agents with points',
+                    'Unlimited channel integration (WA/TG)',
+                    'Premium email support',
+                    'Additional points refill available anytime'
                 ],
                 cta: 'Subscribe Now',
-                trialText: '3-Month Trial: $49/mo!',
+                trialText: 'Current Offer: 20$/month!',
                 periodStr: 'month'
             },
             pro: {
                 name: 'Pro Plan',
-                description: 'The best choice for medium businesses to significantly boost efficiency.',
+                description: 'The professional choice for businesses scaling fast with full resource control.',
                 features: [
-                    'Two dedicated employees',
-                    '3 integrations per employee',
-                    '5000 conversations/month',
-                    'Extra integration for $15',
-                    'Extra employee for $49'
+                    '5000 points (operations balance) monthly',
+                    'Unlimited scaling for agents & tools via points',
+                    'Priority support & advanced training',
+                    'Deep performance & growth reports',
+                    'Exclusive point refill discounts'
                 ],
-                cta: 'Start Discounted Trial',
-                trialText: '3-Month Trial: $45/mo!',
+                cta: 'Start Pro Trial',
+                trialText: 'Current Offer: 40$/month!',
                 periodStr: 'month'
             },
             enterprise: {
-                name: 'Enterprise Plan',
-                description: 'For companies seeking total control and fully engineered custom solutions.',
+                name: 'Elite Plan',
+                description: 'For companies seeking total control and fully custom engineering solutions.',
                 features: [
                     'Unlimited AI employees',
-                    'Unlimited integration channels',
+                    'Unlimited connection channels',
                     'Complex conversation routing to human support',
-                    'Custom API connections to ERP and clinic systems',
-                    'Customized workflow training',
-                    'Dedicated personal account manager'
+                    'Custom API integration with ERP/Clinics',
+                    'Custom training & workflows',
+                    'Dedicated Account Manager'
                 ],
-                cta: 'Contact Sales'
+                cta: 'Talk to Noura Concierge'
             }
         },
 
