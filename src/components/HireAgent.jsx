@@ -78,6 +78,7 @@ const HireAgent = () => {
     const [agentsLimit, setAgentsLimit] = useState(1); 
     const [currentAgents, setCurrentAgents] = useState(0);
     const [billingRates, setBillingRates] = useState(null);
+    const [walletBalance, setWalletBalance] = useState(0);
 
     useEffect(() => {
         const init = async () => {
@@ -129,6 +130,13 @@ const HireAgent = () => {
                 const countRes = await getUserAgentCount(contextUser.id);
                 if (countRes.success) {
                     setCurrentAgents(countRes.count);
+                }
+
+                // 5. Fetch Wallet Balance
+                const { getWalletBalance } = await import('../services/supabaseService');
+                const walletRes = await getWalletBalance(contextUser.id);
+                if (walletRes.success) {
+                    setWalletBalance(walletRes.balance);
                 }
             } catch (err) {
                 console.error("HireAgent: Initialization error:", err);
@@ -336,15 +344,21 @@ const HireAgent = () => {
                                 {isAr 
                                     ? `لقد استهلكت حصة باقتك الموفرة (${agentsLimit} موظفين). يمكنك توظيف المزيد الآن مقابل خصم النقاط من محفظتك مباشرة.` 
                                     : `You have used your plan quota (${agentsLimit} agents). You can hire more now by deducting points from your wallet.`}
+                                <span style={{ display: 'block', marginTop: '4px', color: '#10B981', fontWeight: 600 }}>
+                                    {isAr ? `رصيدك الحالي: ${walletBalance} نقطة` : `Your Current Balance: ${walletBalance} Pts`}
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <button 
-                        onClick={() => navigate('/wallet')}
-                        style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#8B5CF6', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
-                    >
-                        {isAr ? 'اشحن رصيدك' : 'Top up Wallet'}
-                    </button>
+                    
+                    {walletBalance < (billingRates?.agent_provision_fee || 1000) && (
+                        <button 
+                            onClick={() => navigate('/pricing')}
+                            style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: '#8B5CF6', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                        >
+                            {isAr ? 'اشحن رصيدك' : 'Top up Wallet'}
+                        </button>
+                    )}
                 </div>
             )}
 
