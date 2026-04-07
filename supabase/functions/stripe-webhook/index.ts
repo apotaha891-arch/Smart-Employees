@@ -40,23 +40,23 @@ serve(async (req: any) => {
         if (userId && planId) {
           if (paymentType === 'refill') {
             const refillAmount = planId === 'addon_1k' ? 1000 : 5000;
-            const { data: profile } = await supabase.from('profiles').select('message_limit').eq('id', userId).single();
-            const newLimit = (profile?.message_limit || 0) + refillAmount;
-            
-            await supabase.from('profiles').update({ message_limit: newLimit }).eq('id', userId);
+            // Use the new RPC to add to topup_balance (legacy message_limit sync kept for safety)
+            await supabase.rpc('fn_add_topup_credits', { p_user_id: userId, p_amount: refillAmount });
             console.log(`Refill successful: Added ${refillAmount} to user ${userId}`);
           } else {
-            const limit = planId === 'starter' ? 2000 : 5000;
-            const { error } = await supabase
+            // New subscription start: Call renewal RPC to initialize package credits
+            await supabase.rpc('fn_renew_user_subscription', { 
+              p_user_id: userId, 
+              p_plan_id: planId 
+            });
+            
+            // Link Stripe Subscription ID to profile
+            await supabase
               .from('profiles')
-              .update({
-                subscription_plan: planId,
-                message_limit: limit,
-                stripe_subscription_id: session.subscription
-              })
+              .update({ stripe_subscription_id: session.subscription })
               .eq('id', userId);
-
-            if (error) console.error("Error updating profile: ", error);
+            
+            console.log(`New subscription started for ${userId}: ${planId}`);
           }
         }
         break;
@@ -66,7 +66,7 @@ serve(async (req: any) => {
         const invoice = event.data.object;
         const subscriptionId = invoice.subscription;
 
-        // We need to look up which user owns this subscription and reset their limit
+        // We need to look up which user owns this subscription and renew their package
         if (subscriptionId) {
           const { data: profile } = await supabase
             .from('profiles')
@@ -75,8 +75,12 @@ serve(async (req: any) => {
             .single();
 
           if (profile) {
-            const limit = profile.subscription_plan === 'starter' ? 2000 : 5000;
-            await supabase.from('profiles').update({ message_limit: limit }).eq('id', profile.id);
+            // CALL RENEWAL RPC: Reset package credits to quota, keep topup
+            await supabase.rpc('fn_renew_user_subscription', { 
+              p_user_id: profile.id, 
+              p_plan_id: profile.subscription_plan 
+            });
+            console.log(`Monthly renewal successful for user ${profile.id} on plan ${profile.subscription_plan}`);
           }
         }
         break;
@@ -86,8 +90,19 @@ serve(async (req: any) => {
         const subscription = event.data.object;
         await supabase
           .from('profiles')
-          .update({ subscription_plan: 'free_tier', message_limit: 0 })
+          .update({ subscription_plan: 'free_tier' })
           .eq('stripe_subscription_id', subscription.id);
+        
+        // Optionally reset package_balance to 0 in wallet_credits
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('stripe_subscription_id', subscription.id)
+          .single();
+        
+        if (profile) {
+          await supabase.from('wallet_credits').update({ package_balance: 0 }).eq('user_id', profile.id);
+        }
         break;
       }
       default:

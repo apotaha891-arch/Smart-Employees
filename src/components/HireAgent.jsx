@@ -79,6 +79,8 @@ const HireAgent = () => {
     const [currentAgents, setCurrentAgents] = useState(0);
     const [billingRates, setBillingRates] = useState(null);
     const [walletBalance, setWalletBalance] = useState(0);
+    const [packageBalance, setPackageBalance] = useState(0);
+    const [topupBalance, setTopupBalance] = useState(0);
 
     useEffect(() => {
         const init = async () => {
@@ -132,11 +134,13 @@ const HireAgent = () => {
                     setCurrentAgents(countRes.count);
                 }
 
-                // 5. Fetch Wallet Balance
+                // 5. Fetch Wallet Balance (Buckets)
                 const { getWalletBalance } = await import('../services/supabaseService');
                 const walletRes = await getWalletBalance(contextUser.id);
                 if (walletRes.success) {
                     setWalletBalance(walletRes.balance);
+                    setPackageBalance(walletRes.package_balance || 0);
+                    setTopupBalance(walletRes.topup_balance || 0);
                 }
             } catch (err) {
                 console.error("HireAgent: Initialization error:", err);
@@ -155,19 +159,31 @@ const HireAgent = () => {
             if (!user?.id) throw new Error(isAr ? 'يجب تسجيل الدخول أولاً' : 'Auth required');
 
             // 1. Credit Check & Deduction
-            const hireFee = billingRates?.agent_provision_fee || 1000;
+            // Logic: Base fee (1000) + Tool fees (Tlg=0, Others=150 each)
+            const baseFee = billingRates?.agent_provision_fee || 1000;
+            const toolFees = form.platforms.reduce((acc, p) => {
+                if (p === 'telegram') return acc;
+                return acc + 150;
+            }, 0);
+            const totalHireFee = baseFee + toolFees;
+
             const deduction = await deductCredits(
                 user.id, 
-                hireFee, 
-                'إضافة موظف رقمي جديد', 
+                totalHireFee, 
+                isAr ? `إعداد موظف رقمي: ${form.name} (${selected})` : `Setup fee for agent: ${form.name}`, 
                 'internal', 
-                { agent_role: selected, agent_name: form.name }
+                { 
+                    agent_role: selected, 
+                    agent_name: form.name, 
+                    tools: form.platforms,
+                    deduction_type: 'setup' // RESTRICT TO PACKAGE BALANCE
+                }
             );
 
             if (!deduction.success) {
                 alert(isAr 
-                    ? `عذراً! رصيدك غير كافٍ لتوظيف هذا الموظف. يتطلب الأمر ${hireFee} نقطة ورصيدك الحالي هو ${deduction.current_balance || 0} نقطة.` 
-                    : `Insufficient credits! This hire costs ${hireFee} and you have ${deduction.current_balance || 0} points.`);
+                    ? `عذراً! رصيدك غير كافٍ. اجمالي التكلفة ${totalHireFee} نقطة ورصيدك الحالي هو ${walletBalance} نقطة.` 
+                    : `Insufficient credits! Total cost ${totalHireFee} and you have ${walletBalance} points.`);
                 setSaving(false);
                 navigate('/pricing');
                 return;
@@ -319,48 +335,57 @@ const HireAgent = () => {
                 </div>
             </div>
 
-            {/* ── Limit Info Banner (Soft Warning) ── */}
+            {/* ── Limit Info Banner (Flexible Points Info) ── */}
             {currentAgents >= agentsLimit && (
                 <div style={{ 
                     marginBottom: '1.5rem', 
                     padding: '1.25rem', 
-                    background: 'rgba(139, 92, 246, 0.1)', 
-                    border: '1px solid rgba(139, 92, 246, 0.2)', 
-                    borderRadius: '14px',
+                    background: 'rgba(59, 130, 246, 0.08)', 
+                    border: '1px solid rgba(59, 130, 246, 0.2)', 
+                    borderRadius: '16px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: '1rem'
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(139, 92, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8B5CF6' }}>
-                            💡
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60A5FA', fontSize: '1.25rem' }}>
+                            ✨
                         </div>
                         <div>
-                            <div style={{ fontWeight: 700, color: '#DDD6FE', fontSize: '0.95rem' }}>
-                                {isAr ? 'توظيف خارج الباقة (نظام النقاط)' : 'Off-Plan Hiring (Points System)'}
+                            <div style={{ fontWeight: 700, color: '#BFDBFE', fontSize: '1rem' }}>
+                                {isAr ? 'التوظيف بنظام النقاط المرن' : 'Flexible Points-Based Hiring'}
                             </div>
-                            <div style={{ color: '#9CA3AF', fontSize: '0.8rem', marginTop: '2px' }}>
+                            <div style={{ color: '#94A3B8', fontSize: '0.85rem', marginTop: '3px', lineHeight: 1.5 }}>
                                 {isAr 
-                                    ? `لقد استهلكت حصة باقتك الموفرة (${agentsLimit} موظفين). يمكنك توظيف المزيد الآن مقابل خصم النقاط من محفظتك مباشرة.` 
-                                    : `You have used your plan quota (${agentsLimit} agents). You can hire more now by deducting points from your wallet.`}
-                                <span style={{ display: 'block', marginTop: '4px', color: '#10B981', fontWeight: 600 }}>
-                                    {isAr ? `رصيدك الحالي: ${walletBalance} نقطة` : `Your Current Balance: ${walletBalance} Pts`}
-                                </span>
+                                    ? `لقد استفدت من كافة مقاعد باقتك الحالية. يمكنك الآن توظيف المزيد مقابل "رسوم إعداد لمرة واحدة" ثم الدفع حسب الاستهلاك من نقاطك.` 
+                                    : `You've used all seats in your current plan. You can hire more now with a "one-time setup fee" and then pay-as-you-go from your points.`}
+                                
+                                <div style={{ marginTop: '5px', color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <Check size={14} />
+                                    {isAr ? `رصيد باقتك المتوفر: ${packageBalance} نقطة` : `Package balance: ${packageBalance} Pts`}
+                                </div>
+
+                                {packageBalance < 1000 && (
+                                    <div style={{ marginTop: '4px', color: '#FACC15', fontWeight: 600, fontSize: '0.75rem' }}>
+                                        {isAr ? '⚠️ ملاحظة: رصيد الشحن مخصص للمحادثات فقط. يلزم رصيد باقة للتوظيف.' : '⚠️ Note: Top-up credits are for chat usage only. Package credits required for hiring.'}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                     
-                    {walletBalance < (billingRates?.agent_provision_fee || 1000) && (
+                    {packageBalance < 1000 && (
                         <button 
                             onClick={() => navigate('/pricing')}
-                            style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: '#8B5CF6', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                            style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#3B82F6', color: 'white', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
                         >
-                            {isAr ? 'اشحن رصيدك' : 'Top up Wallet'}
+                            {isAr ? 'اشترك لتفعيل التوظيف' : 'Subscribe to Hire'}
                         </button>
                     )}
                 </div>
             )}
+
 
             {/* ── Step 1: Choose Role ── */}
             {step === 1 && (
@@ -565,11 +590,18 @@ const HireAgent = () => {
                                         ? <div style={{ width: 14, height: 14, border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
                                         : (isAr ? 'تأكيد التوظيف' : 'Confirm Hire')}
                                 </div>
-                                {!saving && form.name && (
-                                    <div style={{ fontSize: '0.65rem', opacity: 0.9, fontWeight: 500 }}>
-                                        {isAr ? `سيتم خصم ${billingRates?.agent_provision_fee || 1000} نقطة من محفظتك` : `Costs ${billingRates?.agent_provision_fee || 1000} credits`}
-                                    </div>
-                                )}
+                                {!saving && form.name && (() => {
+                                    const base = billingRates?.agent_provision_fee || 1000;
+                                    const tools = form.platforms.reduce((acc, p) => (p === 'telegram' ? acc : acc + 150), 0);
+                                    const total = base + tools;
+                                    const canAfford = packageBalance >= total;
+                                    return (
+                                        <div style={{ fontSize: '0.65rem', opacity: 0.9, fontWeight: 500, color: canAfford ? 'white' : '#FDA4AF' }}>
+                                            {isAr ? `رسوم إعداد لمرة واحدة: ${total} نقطة` : `One-time setup fee: ${total} credits`}
+                                            {!canAfford && (isAr ? ' (رصيد باقة غير كافٍ)' : ' (Insufficient package credits)')}
+                                        </div>
+                                    );
+                                })()}
                             </button>
                         </div>
                     </div>

@@ -19,6 +19,10 @@ const ModernDashboardLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [userData, setUserData] = useState({ name: t('loadingFallback'), email: '', business_name: '' });
     const [balance, setBalance] = useState(0);
+    const [packageBalance, setPackageBalance] = useState(0);
+    const [topupBalance, setTopupBalance] = useState(0);
+    const [renewalDate, setRenewalDate] = useState(null);
+    const [showBreakdown, setShowBreakdown] = useState(false);
 
     useEffect(() => {
         fetchUser();
@@ -34,8 +38,10 @@ const ModernDashboardLayout = ({ children }) => {
                     table: 'wallet_credits',
                     filter: `user_id=eq.${user.id}`
                 }, (payload) => {
-                    if (payload.new && typeof payload.new.balance === 'number') {
-                        setBalance(payload.new.balance);
+                    if (payload.new) {
+                        if (typeof payload.new.balance === 'number') setBalance(payload.new.balance);
+                        if (typeof payload.new.package_balance === 'number') setPackageBalance(payload.new.package_balance);
+                        if (typeof payload.new.topup_balance === 'number') setTopupBalance(payload.new.topup_balance);
                     }
                 })
                 .subscribe();
@@ -47,29 +53,32 @@ const ModernDashboardLayout = ({ children }) => {
     const fetchBalance = async () => {
         if (!user?.id) return;
         try {
-            // 1. Try unified wallet first
+            // 1. Try unified wallet first (Fetch buckets)
             const { data: walletData, error: walletError } = await supabase
                 .from('wallet_credits')
-                .select('balance')
+                .select('balance, package_balance, topup_balance')
                 .eq('user_id', user.id)
                 .maybeSingle();
             
             if (walletData) {
-                setBalance(walletData.balance);
-                return;
+                setBalance(walletData.balance || 0);
+                setPackageBalance(walletData.package_balance || 0);
+                setTopupBalance(walletData.topup_balance || 0);
             }
 
-            // 2. Fallback to profiles (Legacy) if no wallet exists yet
+            // 2. Fetch Renewal Date from profile
             const { data: profileData } = await supabase
                 .from('profiles')
-                .select('total_credits')
+                .select('subscription_period_end, total_credits')
                 .eq('id', user.id)
                 .maybeSingle();
 
-            if (profileData && profileData.total_credits !== undefined) {
-                setBalance(profileData.total_credits);
-            } else {
-                setBalance(0);
+            if (profileData) {
+                setRenewalDate(profileData.subscription_period_end);
+                // Fallback for legacy balance if wallet record is missing entirely
+                if (!walletData && profileData.total_credits !== undefined) {
+                    setBalance(profileData.total_credits);
+                }
             }
         } catch (err) {
             console.error('Error fetching balance:', err);
@@ -358,28 +367,68 @@ const ModernDashboardLayout = ({ children }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                         {/* Compact Balance Display */}
                         {!isAdmin && (
-                            <div 
-                                onClick={() => navigate('/pricing')}
-                                style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '10px', 
-                                    background: 'rgba(139, 92, 246, 0.1)', 
-                                    border: '1px solid rgba(139, 92, 246, 0.2)',
-                                    padding: '6px 14px',
-                                    borderRadius: '12px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                <Zap size={16} color="#8B5CF6" fill="#8B5CF6" />
-                                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'white' }}>{balance.toLocaleString()}</span>
-                                    <span style={{ fontSize: '0.65rem', color: '#8B5CF6', fontWeight: 600, textTransform: 'uppercase' }}>{language === 'ar' ? 'نقطة' : 'Credits'}</span>
+                            <div style={{ position: 'relative' }}>
+                                <div 
+                                    onClick={() => navigate('/pricing')}
+                                    onMouseEnter={() => setShowBreakdown(true)}
+                                    onMouseLeave={() => setShowBreakdown(false)}
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '10px', 
+                                        background: 'rgba(139, 92, 246, 0.1)', 
+                                        border: '1px solid rgba(139, 92, 246, 0.2)',
+                                        padding: '6px 14px',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        zIndex: 10
+                                    }}
+                                >
+                                    <Zap size={16} color="#8B5CF6" fill="#8B5CF6" />
+                                    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'white' }}>{balance.toLocaleString()}</span>
+                                        <span style={{ fontSize: '0.65rem', color: '#8B5CF6', fontWeight: 600, textTransform: 'uppercase' }}>{language === 'ar' ? 'نقطة' : 'Credits'}</span>
+                                    </div>
+                                    <div style={{ marginLeft: language === 'ar' ? 0 : 4, marginRight: language === 'ar' ? 4 : 0, padding: 4, background: '#8B5CF6', borderRadius: 6, display: 'flex' }}>
+                                        <Plus size={12} color="white" strokeWidth={3} />
+                                    </div>
                                 </div>
-                                <div style={{ marginLeft: language === 'ar' ? 0 : 4, marginRight: language === 'ar' ? 4 : 0, padding: 4, background: '#8B5CF6', borderRadius: 6, display: 'flex' }}>
-                                    <Plus size={12} color="white" strokeWidth={3} />
-                                </div>
+
+                                {/* Credit Breakdown Tooltip */}
+                                {showBreakdown && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '110%',
+                                        [language === 'ar' ? 'right' : 'left']: 0,
+                                        width: '240px',
+                                        background: '#1F2937',
+                                        border: '1px solid rgba(139, 92, 246, 0.3)',
+                                        borderRadius: '12px',
+                                        padding: '12px',
+                                        boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                                        zIndex: 1000,
+                                        fontSize: '0.8rem'
+                                    }}>
+                                        <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', fontWeight: 700, color: '#A78BFA' }}>
+                                            {language === 'ar' ? 'تفاصيل الرصيد' : 'Credits Breakdown'}
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                            <span style={{ color: '#9CA3AF' }}>{language === 'ar' ? 'رصيد الباقة:' : 'Package Plan:'}</span>
+                                            <span style={{ fontWeight: 600 }}>{packageBalance.toLocaleString()}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                            <span style={{ color: '#9CA3AF' }}>{language === 'ar' ? 'رصيد الشحن:' : 'Top-up Credits:'}</span>
+                                            <span style={{ fontWeight: 600, color: '#10B981' }}>{topupBalance.toLocaleString()}</span>
+                                        </div>
+                                        {renewalDate && (
+                                            <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', color: '#8B5CF6', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                <Calendar size={12} />
+                                                <span>{language === 'ar' ? `التجديد القادم: ${new Date(renewalDate).toLocaleDateString('ar-EG')}` : `Next Renewal: ${new Date(renewalDate).toLocaleDateString()}`}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                         
