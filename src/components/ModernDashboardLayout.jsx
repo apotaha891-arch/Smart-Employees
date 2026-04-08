@@ -32,9 +32,9 @@ const ModernDashboardLayout = ({ children }) => {
         if (user?.id) {
             const channel = supabase
                 .channel(`wallet_changes_${user.id}`)
-                .on('postgres_changes', { 
-                    event: '*', 
-                    schema: 'public', 
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
                     table: 'wallet_credits',
                     filter: `user_id=eq.${user.id}`
                 }, (payload) => {
@@ -45,7 +45,7 @@ const ModernDashboardLayout = ({ children }) => {
                     }
                 })
                 .subscribe();
-            
+
             return () => { supabase.removeChannel(channel); };
         }
     }, [user?.id]); // Re-fetch when user changes (supports impersonation switching)
@@ -53,156 +53,165 @@ const ModernDashboardLayout = ({ children }) => {
     const fetchBalance = async () => {
         if (!user?.id) return;
         try {
-            // 1. Try unified wallet first (Fetch buckets)
-            const { data: walletData, error: walletError } = await supabase
-                .from('wallet_credits')
-                .select('balance, package_balance, topup_balance')
-                .eq('user_id', user.id)
-                .maybeSingle();
-            
-            if (walletData) {
-                setBalance(walletData.balance || 0);
-                setPackageBalance(walletData.package_balance || 0);
-                setTopupBalance(walletData.topup_balance || 0);
-            }
+            console.log("Header Balance Sync - User ID:", user.id);
 
-            // 2. Fetch Renewal Date from profile
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('subscription_period_end, total_credits')
-                .eq('id', user.id)
-                .maybeSingle();
+            // Use SECURITY DEFINER RPC — bypasses RLS for Admin impersonation.
+            // Direct table queries are blocked when Admin reads another user's wallet.
+            const { data, error } = await supabase.rpc('get_user_wallet_balance', { p_user_id: user.id });
 
-            if (profileData) {
-                setRenewalDate(profileData.subscription_period_end);
-                // Fallback for legacy balance if wallet record is missing entirely
-                if (!walletData && profileData.total_credits !== undefined) {
-                    setBalance(profileData.total_credits);
+            if (!error && data?.success) {
+                setBalance(data.balance || 0);
+                setPackageBalance(data.package_balance || 0);
+                setTopupBalance(data.topup_balance || 0);
+            } else {
+                // Fallback: direct query (works for non-admin users reading their own data)
+                const { data: walletData } = await supabase
+                    .from('wallet_credits')
+                    .select('balance, package_balance, topup_balance')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
+                if (walletData) {
+                    const total = walletData.balance || ((walletData.package_balance || 0) + (walletData.topup_balance || 0));
+                    setBalance(total);
+                    setPackageBalance(walletData.package_balance || 0);
+                    setTopupBalance(walletData.topup_balance || 0);
                 }
             }
+
+            // Renewal date (profile read — RLS allows own data)
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('subscription_period_end')
+                .eq('id', user.id)
+                .maybeSingle();
+            if (profileData?.subscription_period_end) setRenewalDate(profileData.subscription_period_end);
+
         } catch (err) {
-            console.error('Error fetching balance:', err);
+            console.error('fetchBalance fatal error:', err);
             setBalance(0);
         }
     };
 
-    const fetchUser = async () => {
-        try {
-            // Use user from AuthContext — correctly reflects impersonated client
-            const activeUserId = user?.id;
-            if (!activeUserId) return;
 
-            const [configRes, profileRes] = await Promise.all([
-                supabase.from('entities').select('business_type, business_name').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-                getProfile(activeUserId)
-            ]);
+const fetchUser = async () => {
+    try {
+        // Use user from AuthContext — correctly reflects impersonated client
+        const activeUserId = user?.id;
+        if (!activeUserId) return;
 
-            const config = configRes.data;
-            const profile = profileRes.data;
-            const bizName = config?.business_name || profile?.business_name || (language === 'ar' ? 'منشأتي' : 'My Business');
+        const [configRes, profileRes] = await Promise.all([
+            supabase.from('entities').select('business_type, business_name').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+            getProfile(activeUserId)
+        ]);
 
-            setUserData({
-                name: user.user_metadata?.full_name || user.full_name || user.email?.split('@')[0] || 'مستخدم',
-                email: user.email || '',
-                business_name: bizName,
-                business_type: config?.business_type || profile?.business_type || ''
-            });
-        } catch (error) {
-            console.error('Error fetching user:', error);
-        }
-    };
+        const config = configRes.data;
+        const profile = profileRes.data;
+        
+        // Priority: Config Name > Profile Name > Context metadata > Fallback
+        const bizName = config?.business_name || profile?.business_name || user?.user_metadata?.business_name || (language === 'ar' ? 'منشأتي' : 'My Business');
 
-    const handleLogout = async () => {
-        await signOut();
-        navigate('/');
-    };
+        setUserData({
+            name: bizName,
+            email: user.email || '',
+            business_name: bizName,
+            business_type: config?.business_type || profile?.business_type || ''
+        });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+    }
+};
 
-    const isActive = (path) => location.pathname === path;
+const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+};
 
-    // Customer Navigation Items
-    const customerNavItems = [
-        ...(isAgency ? [{ 
-            icon: ShieldCheck, 
-            label: language === 'ar' ? 'لوحة الوكالة' : 'Agency Panel', 
-            path: '/agency',
-            style: { borderBottom: '1px solid rgba(139, 92, 246, 0.2)', marginBottom: '0.5rem', paddingBottom: '1rem' }
-        }] : []),
-        { icon: LayoutDashboard, label: language === 'ar' ? 'نظرة عامة' : 'Overview', path: '/dashboard' },
-        { icon: Bot, label: language === 'ar' ? 'الفريق الرقمي' : 'Digital Team', path: '/agents' },
+const isActive = (path) => location.pathname === path;
 
-        { type: 'title', label: language === 'ar' ? 'نظام CRM المتكامل' : 'CRM & Operations' },
-        { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Reservations', path: '/bookings' },
-        { icon: Zap, label: language === 'ar' ? 'المبيعات والعملاء' : 'Leads & Sales', path: '/sales' },
-        { icon: MessageSquare, label: language === 'ar' ? 'مركز الدعم' : 'Support Tickets', path: '/support' },
-        { icon: UserCheck, label: language === 'ar' ? 'التوظيف (HR)' : 'Recruitment (HR)', path: '/hr' },
-        { icon: Users, label: language === 'ar' ? 'قاعدة العملاء' : 'Customer Base', path: '/customers' },
+// Customer Navigation Items
+const customerNavItems = [
+    ...(isAgency ? [{
+        icon: ShieldCheck,
+        label: language === 'ar' ? 'لوحة الوكالة' : 'Agency Panel',
+        path: '/agency',
+        style: { borderBottom: '1px solid rgba(139, 92, 246, 0.2)', marginBottom: '0.5rem', paddingBottom: '1rem' }
+    }] : []),
+    { icon: LayoutDashboard, label: language === 'ar' ? 'نظرة عامة' : 'Overview', path: '/dashboard' },
+    { icon: Bot, label: language === 'ar' ? 'الفريق الرقمي' : 'Digital Team', path: '/agents' },
 
-        { type: 'title', label: language === 'ar' ? 'الحساب والإعدادات' : 'Account & Config' },
-        { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/entity-setup' },
-        { icon: Puzzle, label: language === 'ar' ? 'أدوات الربط والمنصات' : 'Tools & Connections', path: '/entity-setup?tab=integrations' },
-        { icon: CreditCard, label: language === 'ar' ? 'الأسعار والفوترة' : 'Pricing & Billing', path: '/pricing' },
-        { icon: HelpCircle, label: language === 'ar' ? 'مركز المساعدة' : 'Help Center', path: '/help' },
-    ];
+    { type: 'title', label: language === 'ar' ? 'نظام CRM المتكامل' : 'CRM & Operations' },
+    { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Reservations', path: '/bookings' },
+    { icon: Zap, label: language === 'ar' ? 'المبيعات والعملاء' : 'Leads & Sales', path: '/sales' },
+    { icon: MessageSquare, label: language === 'ar' ? 'مركز الدعم' : 'Support Tickets', path: '/support' },
+    { icon: UserCheck, label: language === 'ar' ? 'التوظيف (HR)' : 'Recruitment (HR)', path: '/hr' },
+    { icon: Users, label: language === 'ar' ? 'قاعدة العملاء' : 'Customer Base', path: '/customers' },
 
-    // Admin Navigation Items
-    const adminNavItems = [
-        { icon: LayoutDashboard, label: t('dashboardLabel'), path: '/admin' },
-        { icon: Users, label: t('usersLabel'), path: '/admin/users' },
-        { icon: Store, label: t('storesLabel'), path: '/admin/stores' },
-        { icon: BarChart3, label: t('analyticsLabel'), path: '/admin/analytics' },
-        { icon: Zap, label: t('automationLabel'), path: '/admin/automation' },
-        { icon: Lock, label: t('securityLabel'), path: '/admin/security' },
-        { icon: Settings, label: t('settingsLabel'), path: '/admin/settings' },
-    ];
+    { type: 'title', label: language === 'ar' ? 'الحساب والإعدادات' : 'Account & Config' },
+    { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/entity-setup' },
+    { icon: Puzzle, label: language === 'ar' ? 'أدوات الربط والمنصات' : 'Tools & Connections', path: '/entity-setup?tab=integrations' },
+    { icon: CreditCard, label: language === 'ar' ? 'الأسعار والفوترة' : 'Pricing & Billing', path: '/pricing' },
+    { icon: HelpCircle, label: language === 'ar' ? 'مركز المساعدة' : 'Help Center', path: '/help' },
+];
 
-    // Select nav items based on role (AuthContext now swaps this during impersonation)
-    const navItems = isAdmin ? adminNavItems : customerNavItems;
+// Admin Navigation Items
+const adminNavItems = [
+    { icon: LayoutDashboard, label: t('dashboardLabel'), path: '/admin' },
+    { icon: Users, label: t('usersLabel'), path: '/admin/users' },
+    { icon: Store, label: t('storesLabel'), path: '/admin/stores' },
+    { icon: BarChart3, label: t('analyticsLabel'), path: '/admin/analytics' },
+    { icon: Zap, label: t('automationLabel'), path: '/admin/automation' },
+    { icon: Lock, label: t('securityLabel'), path: '/admin/security' },
+    { icon: Settings, label: t('settingsLabel'), path: '/admin/settings' },
+];
 
-    return (
-        <div className="dashboard-container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 74px)', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr', overflow: 'hidden' }}>
+// Select nav items based on role (AuthContext now swaps this during impersonation)
+const navItems = isAdmin ? adminNavItems : customerNavItems;
 
-            {/* ── Impersonation Banner ── */}
-            {isImpersonating && (
-                <div style={{
-                    background: 'linear-gradient(90deg, #8B5CF6, #EC4899)',
-                    color: 'white',
-                    padding: '8px 20px',
-                    textAlign: 'center',
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '15px',
-                    zIndex: 9999,
-                    position: 'sticky',
-                    top: 0,
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
-                }}>
-                    <span>{language === 'ar' ? `⚠️ أنت تتصفح كدعم فني للحساب: ${userData.business_name || user?.email}` : `⚠️ You are browsing as support for: ${userData.business_name || user?.email}`}</span>
-                    <button 
-                        onClick={() => {
-                            stopImpersonating();
-                            window.location.href = '/admin';
-                        }}
-                        style={{
-                            background: 'white',
-                            color: '#8B5CF6',
-                            border: 'none',
-                            borderRadius: '20px',
-                            padding: '4px 12px',
-                            cursor: 'pointer',
-                            fontSize: '0.75rem',
-                            fontWeight: 800,
-                            boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                        }}
-                    >
-                        {language === 'ar' ? 'الخروج والعودة للأدمن' : 'Exit and return to Admin'}
-                    </button>
-                </div>
-            )}
+return (
+    <div className="dashboard-container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 74px)', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr', overflow: 'hidden' }}>
 
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* ── Impersonation Banner ── */}
+        {isImpersonating && (
+            <div style={{
+                background: 'linear-gradient(90deg, #8B5CF6, #EC4899)',
+                color: 'white',
+                padding: '8px 20px',
+                textAlign: 'center',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '15px',
+                zIndex: 9999,
+                position: 'sticky',
+                top: 0,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+            }}>
+                <span>{language === 'ar' ? `⚠️ أنت تتصفح كدعم فني للحساب: ${userData.business_name || user?.email}` : `⚠️ You are browsing as support for: ${userData.business_name || user?.email}`}</span>
+                <button
+                    onClick={() => {
+                        stopImpersonating();
+                        window.location.href = '/admin';
+                    }}
+                    style={{
+                        background: 'white',
+                        color: '#8B5CF6',
+                        border: 'none',
+                        borderRadius: '20px',
+                        padding: '4px 12px',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                    }}
+                >
+                    {language === 'ar' ? 'الخروج والعودة للأدمن' : 'Exit and return to Admin'}
+                </button>
+            </div>
+        )}
+
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
             <aside className="shift-sidebar" style={{ width: isSidebarOpen ? '280px' : '80px', display: 'flex', flexDirection: 'column', background: '#111827', borderRight: language === 'ar' ? 'none' : '1px solid rgba(255,255,255,0.05)', borderLeft: language === 'ar' ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'width 0.3s', overflowY: 'auto', flexShrink: 0 }}>
                 {/* Logo Area */}
                 <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -356,10 +365,10 @@ const ModernDashboardLayout = ({ children }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
                         <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
                             <Search size={16} style={{ position: 'absolute', top: '50%', [language === 'ar' ? 'right' : 'left']: '12px', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
-                            <input 
-                                type="text" 
-                                placeholder={language === 'ar' ? 'بحث...' : 'Search...'} 
-                                style={{ width: '100%', padding: language === 'ar' ? '8px 36px 8px 12px' : '8px 12px 8px 36px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white', fontSize: '0.85rem' }} 
+                            <input
+                                type="text"
+                                placeholder={language === 'ar' ? 'بحث...' : 'Search...'}
+                                style={{ width: '100%', padding: language === 'ar' ? '8px 36px 8px 12px' : '8px 12px 8px 36px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white', fontSize: '0.85rem' }}
                             />
                         </div>
                     </div>
@@ -368,15 +377,15 @@ const ModernDashboardLayout = ({ children }) => {
                         {/* Compact Balance Display */}
                         {!isAdmin && (
                             <div style={{ position: 'relative' }}>
-                                <div 
+                                <div
                                     onClick={() => navigate('/pricing')}
                                     onMouseEnter={() => setShowBreakdown(true)}
                                     onMouseLeave={() => setShowBreakdown(false)}
-                                    style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: '10px', 
-                                        background: 'rgba(139, 92, 246, 0.1)', 
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        background: 'rgba(139, 92, 246, 0.1)',
                                         border: '1px solid rgba(139, 92, 246, 0.2)',
                                         padding: '6px 14px',
                                         borderRadius: '12px',
@@ -431,7 +440,7 @@ const ModernDashboardLayout = ({ children }) => {
                                 )}
                             </div>
                         )}
-                        
+
                         <NotificationCenter userId={user?.id} />
 
                         {/* Language Toggle */}
@@ -465,9 +474,9 @@ const ModernDashboardLayout = ({ children }) => {
                     {children}
                 </div>
             </main>
-            </div>
         </div>
-    );
+    </div>
+);
 };
 
 export default ModernDashboardLayout;

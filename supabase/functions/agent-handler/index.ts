@@ -127,16 +127,12 @@ serve(async (req: any) => {
             .maybeSingle();
 
         const ec = latestConfig;
-        const finalEntityId = ec?.id || agent.salon_config_id || agent.entity_id;
+        const finalEntityId = ec?.id || agent.entity_id;
         
-        // Ensure the agent is linked to this entity if it wasn't already
-        if (ec?.id && agent.entity_id !== ec.id) {
-            console.log(`Agent ${agentId} stale entity_id (${agent.entity_id}) -> Updating to ${ec.id}`);
-            await supabaseClient.from('agents').update({ entity_id: ec.id }).eq('id', agentId);
-        }
+        console.log(`Resource Resolution: EntityID=${finalEntityId} | UserID=${agent.user_id}`);
 
         if (ec) {
-            console.log("Using Unified Business Config:", ec.id);
+            console.log("Using Resolved Entity Business Name:", ec.business_name);
             if (ec.business_name) resolvedBusinessName = ec.business_name;
             
             // PRIORITY: Use Unified Source (Entities)
@@ -302,10 +298,11 @@ CRITICAL DATE RULES:
 RULES:
 1. Identify as ${businessName}.
 2. Always reply in the user's language (Arabic/English).
-3. TO BOOK: If the customer provides Name, Phone, Service, and Time, you MUST CALL 'book_appointment' IMMEDIATELY.
-4. Calculate dates relative to Today: ${isoDateStr}.
-5. NEVER confirm a booking without calling the tool first.
-${ec?.booking_requires_confirmation ? `6. IMPORTANT: After booking, tell the customer: "تم تسجيل حجزك المبدئي بنجاح! سيصلك تأكيد نهائي قريباً."` : ''}
+3. TO BOOK: Gather Name, Phone, Service, and Time. You MUST CALL 'book_appointment' and WAIT for the tool's response before confirming to the customer.
+4. [CRITICAL TRUTH] If a tool call (booking/notes) returns an error, NEVER tell the user it succeeded. Explain the issue politely.
+5. Only confirm success to the user AFTER the tool response confirms it.
+6. Calculate dates relative to Today: ${isoDateStr}.
+${ec?.booking_requires_confirmation ? `7. After a SUCCESSFUL booking tool call, tell the customer: "تم تسجيل حجزك المبدئي بنجاح! سيصلك تأكيد نهائي قريباً."` : ''}
 `;
 
         if (isSales) systemInstruction += "\nRole: Sales & Consultation Expert.";
@@ -466,7 +463,13 @@ ${ec?.booking_requires_confirmation ? `6. IMPORTANT: After booking, tell the cus
                 let bErr: any = null;
                 let newBooking: any = null;
 
+                if (!finalEntityId) {
+                    console.error("Critical: No EntityID resolved for user", agent.user_id);
+                    return { status: "error", message: "تعذر إتمام الحجز لعدم وجود ملف منشأة نشط. يرجى التواصل مع الدعم." };
+                }
+
                 // Only use the correct schema (entity_id)
+                console.log(`Inserting booking for Entity: ${finalEntityId}`);
                 let res = await supabaseClient.from('bookings').insert([{ ...bookingPayload, entity_id: finalEntityId }]).select('*').single();
                 
                 newBooking = res.data;
@@ -474,7 +477,7 @@ ${ec?.booking_requires_confirmation ? `6. IMPORTANT: After booking, tell the cus
 
                 if (bErr) {
                     console.error("Critical: Booking insertion failed:", bErr.message);
-                    return { status: "error", message: `CRITICAL ERROR (Must inform user): FAILED TO INSERT BOOKING! Tell the user EXACTLY this: "للأسف ظهر خطأ في السيرفر أثناء الحفظ: ${bErr.message}"` };
+                    return { status: "error", message: `فشل تسجيل الحجز في الأنظمة: ${bErr.message}` };
                 }
 
                 // ─── DUAL INSERTION: CREATE TASK ENTRY FOR DASHBOARD ────────────────

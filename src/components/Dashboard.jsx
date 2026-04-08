@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getProfile, getWalletBalance, getServices, getIntegrations, getUserEntities } from '../services/supabaseService';
+import { getTasks, getTaskStats, subscribeToTasks, unsubscribeFromTasks, getProfile, getWalletBalance, getServices, getIntegrations, getUserEntities, supabase } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import LowCreditModal from './LowCreditModal';
@@ -55,8 +55,26 @@ const Dashboard = () => {
             if (profileResult.success) {
                 const profileData = profileResult.data || { total_credits: 0, credits_used: 0, subscription_tier: '' };
 
-                const balanceResult = await getWalletBalance(user.id);
-                if (balanceResult.success) profileData.wallet_balance = balanceResult.balance;
+                // RESILIENT FETCH: Try RPC first (bypasses RLS for admin), then direct query
+                try {
+                    const balanceResult = await getWalletBalance(user.id);
+                    if (balanceResult.success && balanceResult.balance > 0) {
+                        profileData.wallet_balance = balanceResult.balance;
+                    } else {
+                        // Direct fallback — works for regular users (own data, no RLS block)
+                        const { data: walletData } = await supabase
+                            .from('wallet_credits')
+                            .select('balance, package_balance, topup_balance')
+                            .eq('user_id', user.id)
+                            .maybeSingle();
+                        if (walletData) {
+                            profileData.wallet_balance = walletData.balance ||
+                                (walletData.package_balance || 0) + (walletData.topup_balance || 0);
+                        }
+                    }
+                } catch (balErr) {
+                    console.warn('Balance fetch error (non-critical):', balErr);
+                }
 
                 setProfile(profileData);
 
@@ -79,7 +97,8 @@ const Dashboard = () => {
                 const integrationsResult = await getIntegrations(user.id);
                 if (integrationsResult.success) setIntegrations(integrationsResult.data);
 
-                const remaining = (profileData.total_credits || 0) - (profileData.credits_used || 0);
+                const remaining = profileData.wallet_balance !== undefined ? profileData.wallet_balance : ((profileData.total_credits || 0) - (profileData.credits_used || 0));
+                
                 if (remaining < 10 && remaining > 0 && profileData.subscription_tier !== 'enterprise') {
                     if (!sessionStorage.getItem('lowCreditAlertShown')) setShowLowCreditModal(true);
                 }

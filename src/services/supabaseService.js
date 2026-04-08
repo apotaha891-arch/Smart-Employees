@@ -792,14 +792,15 @@ export const getProfile = async (userId) => {
 
 export const getWalletBalance = async (userId) => {
     try {
-        const { data, error } = await supabase
-            .from('wallet_credits')
-            .select('balance')
-            .eq('user_id', userId)
-            .maybeSingle();
+        const { data, error } = await supabase.rpc('get_user_wallet_balance', { p_user_id: userId });
 
         if (error) throw error;
-        return { success: true, balance: data?.balance || 0 };
+        return { 
+            success: true, 
+            balance: data?.balance || 0,
+            package_balance: data?.package_balance || 0,
+            topup_balance: data?.topup_balance || 0
+        };
     } catch (error) {
         console.error('Error fetching wallet balance:', error);
         return { success: false, balance: 0, error: error.message };
