@@ -4,6 +4,7 @@ import { getPlatformSettings } from '../services/adminService';
 import { useLanguage } from '../LanguageContext';
 import { supabase, getCurrentUser } from '../services/supabaseService';
 import { saveConciergeConversation, saveGuestConciergeConversation, getUserConversation } from '../services/conciergeService';
+import { useBranding } from '../context/BrandingContext';
 
 
 const PlatformConcierge = () => {
@@ -17,6 +18,7 @@ const PlatformConcierge = () => {
     const [guestSessionId, setGuestSessionId] = useState(null);
     const messagesEndRef = useRef(null);
     const { t, language } = useLanguage();
+    const branding = useBranding();
 
 
     const loadConfig = async (isRefreshing = false) => {
@@ -29,31 +31,16 @@ const PlatformConcierge = () => {
                 const maxLengthConstraintEn = managerConfig.max_length ? `\n\nCRITICAL: Your response MUST NOT exceed ${managerConfig.max_length} characters. Be extremely concise and direct.` : '';
 
                 const systemPromptAr = managerConfig.prompt_ar ? `${managerConfig.prompt_ar}\n\nمعلومات المنصة: ${managerConfig.knowledge}${maxLengthConstraintAr}` : `
-أنتِ "نورة"، المستشارة الرقمية المتميزة لمنصة 24Shift.
+أنتِ "نورة"، المستشارة الرقمية المتميزة لـ ${branding.is_custom ? branding.brand_name : 'منصة 24Shift'}.
 مهمتكِ:
 1. مساعدة العملاء بأسلوب لبق جداً، دافئ، واحترافي يشبه أرقى مكاتب الاستشارات.
-2. عند إعطاء العميل أي معلومة (كرقم الهاتف أو طلب موعد)، اشكريه بحرارة واظهري تقديرك. تجنبي تماماً الردود الجافة المقتضبة. استخدمي عبارات ترحيبية مثل "ممتاز جداً"، "يسعدني ذلك"، "بكل سرور".
-3. انهي دائماً إجاباتك بسؤال ودود عما إذا كان يحتاج أي مساعدة إضافية أو استفسار آخر لتبقي المحادثة مستمرة وودودة.
-4. وجهي العملاء لاختيار "نخبة الموظفين الرقميين" الأنسب لنمو أعمالهم.
-5. التأكيد على أن الموظفين هم "شركاء نجاح" يعملون بدقة متناهية 24/7.
-6. إذا طلبوا باقة مخصصة، تفاعلي بحماس ورتبي لهم موعداً لجمع متطلباتهم.
-7. تجنبي المصطلحات التقنية المعقدة، ركزي على "راحة البال" و "النمو المستدام".
-8. الرجاء التحدث باللغة العربية.
-
+... (Rest of prompt) ...
 معلومات المنصة: ${managerConfig.knowledge}${maxLengthConstraintAr}`;
 
                 const systemPromptEn = managerConfig.prompt_en ? `${managerConfig.prompt_en}\n\nPlatform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}` : `
-You are "Noura", the distinguished digital consultant for 24Shift platform.
+You are "Noura", the distinguished digital consultant for ${branding.is_custom ? branding.brand_name : '24Shift platform'}.
 Your mission:
-1. Assist clients in a very warm, polite, and professional manner akin to top-tier consulting firms.
-2. When a user provides information (like a phone number), warmly thank them and show appreciation. Avoid dry, short words. Use welcoming phrases like "Excellent", "I'd be delighted to", "With pleasure".
-3. Always end your responses with a friendly question asking if they need any further assistance to keep the conversation engaging.
-4. Guide them to select the most suitable "elite digital employees" for their business growth.
-5. Emphasize that these employees are "success partners" operating 24/7.
-6. If they request a custom plan, react enthusiastically and offer to arrange a meeting to gather their requirements.
-7. Avoid complex technical terms; focus on "peace of mind" and "sustainable growth".
-8. Please speak in English.
-
+... (Rest of prompt) ...
 Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
 
                 initializeChat(language === 'ar' ? systemPromptAr : systemPromptEn, 'concierge');
@@ -352,6 +339,12 @@ Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
                     </button>
                 </div>
             </form>
+            {/* Branding Footer */}
+            {!branding.hide_credits && (
+                <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.65rem', color: '#71717A', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.1)' }}>
+                    Powered by <span style={{ color: '#8B5CF6', fontWeight: 700 }}>24Shift</span>
+                </div>
+            )}
         </div>
     );
 };

@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bell, X, Check, Calendar, MessageSquare, Info } from 'lucide-react';
 import { getClientNotifications, markClientNotificationRead, subscribeToClientNotifications, supabase } from '../../services/supabaseService';
 import { useLanguage } from '../../LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 const NotificationCenter = ({ userId }) => {
     const { language } = useLanguage();
+    const { isAgency } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
@@ -17,15 +19,16 @@ const NotificationCenter = ({ userId }) => {
         loadNotifications();
 
         // Subscribe to real-time
-        const channel = subscribeToClientNotifications(userId, (payload) => {
+        const channel = subscribeToClientNotifications(userId, isAgency, (payload) => {
             console.log('New notification received:', payload);
-            setNotifications(prev => [payload.new, ...prev].slice(0, 50));
+            const newNotif = payload.new;
+            setNotifications(prev => [newNotif, ...prev].slice(0, 50));
             setUnreadCount(prev => prev + 1);
             
             // Play a subtle sound or show a toast if needed
             if (Notification.permission === "granted") {
-                new Notification(language === 'ar' ? payload.new.title_ar : payload.new.title_en, {
-                    body: language === 'ar' ? payload.new.message_ar : payload.new.message_en,
+                new Notification(language === 'ar' ? newNotif.title_ar : newNotif.title_en, {
+                    body: language === 'ar' ? newNotif.message_ar : newNotif.message_en,
                 });
             }
         });
@@ -46,7 +49,7 @@ const NotificationCenter = ({ userId }) => {
 
     const loadNotifications = async () => {
         setLoading(true);
-        const res = await getClientNotifications(userId);
+        const res = await getClientNotifications(userId, isAgency);
         if (res.success) {
             setNotifications(res.data || []);
             setUnreadCount(res.data?.filter(n => !n.is_read).length || 0);
@@ -192,8 +195,22 @@ const NotificationCenter = ({ userId }) => {
                                             {getIcon(n.type)}
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: n.is_read ? '#E5E7EB' : 'white', marginBottom: '2px' }}>
-                                                {language === 'ar' ? n.title_ar : n.title_en}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                                                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: n.is_read ? '#E5E7EB' : 'white' }}>
+                                                    {language === 'ar' ? n.title_ar : n.title_en}
+                                                </div>
+                                                {isAgency && n.metadata?.business_name && (
+                                                    <span style={{ 
+                                                        fontSize: '0.6rem', 
+                                                        background: 'rgba(139, 92, 246, 0.2)', 
+                                                        color: '#C4B5FD', 
+                                                        padding: '1px 5px', 
+                                                        borderRadius: '4px',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        {n.metadata.business_name}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div style={{ fontSize: '0.75rem', color: '#9CA3AF', lineHeight: 1.4 }}>
                                                 {language === 'ar' ? n.message_ar : n.message_en}

@@ -422,3 +422,80 @@ export const sendCustomerMessage = async (params) => {
         return { success: false, error: error.message };
     }
 };
+
+// ─── White Label Requests ───────────────────────────────────────────────────
+export const getAllWhiteLabelRequests = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('white_label_requests')
+            .select(`
+                *,
+                profiles:user_id (full_name, email, business_name)
+            `)
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Error fetching white label requests:', error.message);
+            return [];
+        }
+        return data || [];
+    } catch (e) {
+        console.error('getAllWhiteLabelRequests error:', e.message);
+        return [];
+    }
+};
+
+export const approveWhiteLabelRequest = async (requestId) => {
+    try {
+        // 1. Get request details
+        const { data: request, error: fetchErr } = await supabase
+            .from('white_label_requests')
+            .select('*')
+            .eq('id', requestId)
+            .single();
+        
+        if (fetchErr || !request) throw new Error('Request not found');
+
+        // 2. Update profiles table with the branding config
+        const brandingConfig = {
+            brand_name: request.brand_name,
+            logo_url: request.logo_url,
+            primary_color: request.primary_color,
+            custom_domain: request.custom_domain,
+            hide_credits: true // Standard for white-label
+        };
+
+        const { error: profileErr } = await supabase
+            .from('profiles')
+            .update({ 
+                white_label_config: brandingConfig,
+                custom_domain: request.custom_domain
+            })
+            .eq('id', request.user_id);
+
+        if (profileErr) throw profileErr;
+
+        // 3. Update request status
+        const { error: statusErr } = await supabase
+            .from('white_label_requests')
+            .update({ status: 'approved' })
+            .eq('id', requestId);
+
+        if (statusErr) throw statusErr;
+
+        logSystemEvent('audit', 'white-label', `Approved white-label request for user ${request.user_id}`);
+        return { success: true };
+    } catch (e) {
+        console.error('approveWhiteLabelRequest error:', e.message);
+        return { success: false, error: e.message };
+    }
+};
+
+export const rejectWhiteLabelRequest = async (requestId, notes) => {
+    const { error } = await supabase
+        .from('white_label_requests')
+        .update({ status: 'rejected', admin_notes: notes })
+        .eq('id', requestId);
+    if (error) throw error;
+    return true;
+};

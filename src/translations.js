@@ -61,8 +61,8 @@ export const translations = {
         },
         // Branding
         brand: {
-            name: "24Shift",
-            platformName: "منصة 24Shift"
+            name: "Smart Employees",
+            platformName: "منصتنا الذكية"
         },
         points: "نقطة",
         systemStatus: {
@@ -92,7 +92,7 @@ export const translations = {
 
         // Home Page Sections
         home: {
-            platformName: "منصة 24Shift",
+            platformName: "المنصة الذكية",
             sectorTitle: "اختر قطاع عملك",
             general: "عام",
             medical: "طبي",
@@ -107,7 +107,7 @@ export const translations = {
             eliteSolutionsFor: "حلول النخبة لقطاع {industry}",
             startInterview: "قابل موظفك الآن",
             viewDashboard: "لوحة المتابعة",
-            strategicTeam: "فريق 24Shift الاستراتيجي",
+            strategicTeam: "فريق الخبراء الاستراتيجي",
             insightsTitle: "رؤى مخصصة لنمو القطاع",
             insightsSubtitle: "حلول استراتيجية صُممت خصيصاً لتناسب احتياجات عملائك",
             accuracyLabel: "دقة في فهم متطلبات العملاء",
@@ -127,7 +127,7 @@ export const translations = {
             ctaTelecom: "قد ثورة الاتصالات عبر حلول تقنية ذكية تسبق تطلعات المشتركين.",
             ctaButton: "تحدث مع مرشحك الأول الآن",
             videoTitle: "استكشف مستقبل أعمالك في دقيقتين",
-            videoSubtitle: "شاهد كيف تقوم منصة 24Shift بتحويل منشأتك إلى خلية نحل رقمية فائقة الذكاء"
+            videoSubtitle: "شاهد كيف تقوم منصتنا بتحويل منشأتك إلى خلية نحل رقمية فائقة الذكاء"
         },
 
         // Agent Templates Page
@@ -746,8 +746,8 @@ export const translations = {
 
         // Branding
         brand: {
-            name: "24Shift",
-            platformName: "24Shift Platform"
+            name: "Smart Employees",
+            platformName: "Smart Platform"
         },
         systemStatus: {
             loading: "Loading..."
@@ -770,7 +770,7 @@ export const translations = {
             eliteSolutionsFor: "Elite Solutions for {industry}",
             startInterview: "Start Interview",
             viewDashboard: "View Dashboard",
-            strategicTeam: "24Shift Strategic Team",
+            strategicTeam: "Platform Strategic Team",
             insightsTitle: "Customized Insights for Your Industry Growth",
             insightsSubtitle: "Strategic solutions tailored to meet your customer needs",
             accuracyLabel: "Accuracy in Understanding Customer Requirements",

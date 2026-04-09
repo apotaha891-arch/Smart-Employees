@@ -78,6 +78,16 @@ serve(async (req: any) => {
     } else if (planId === 'addon_5k') {
       priceId = Deno.env.get('STRIPE_PRICE_ADDON_5K') || '';
       mode = 'payment';
+    } else if (planId === 'agency_white_label') {
+      // 1. Try to fetch dynamic price from DB first
+      const { data: dbSetting } = await supabaseAdmin
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'agency_white_label_price_id')
+        .maybeSingle();
+      
+      priceId = dbSetting?.value || Deno.env.get('STRIPE_PRICE_WHITE_LABEL') || '';
+      mode = 'subscription';
     } else {
       throw new Error(`Invalid Plan: ${planId}`);
     }
@@ -97,7 +107,7 @@ serve(async (req: any) => {
       metadata: {
         supabase_user_id: user.id,
         plan_id: planId,
-        payment_type: isAddon ? 'refill' : 'subscription'
+        payment_type: planId === 'agency_white_label' ? 'white_label' : (isAddon ? 'refill' : 'subscription')
       }
     };
 

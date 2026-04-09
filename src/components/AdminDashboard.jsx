@@ -704,6 +704,7 @@ export default function AdminDashboard() {
         { id: 'subscribers', i: Mail, l: t('admin.subscribers') },
         { id: 'marketing', i: Megaphone, l: isEnglish ? 'Broadcasting' : 'البث المباشر' },
         { id: 'custom-requests', i: Zap, l: isEnglish ? 'Custom Requests' : 'طلبات التوظيف', badge: customRequests.filter(r => r.status === 'pending').length },
+        { id: 'white-label-requests', i: Globe, l: isEnglish ? 'White-Label Requests' : 'طلبات الهوية', badge: 0 },
     ];
 
     if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />{t('admin.loading')}</div>;
@@ -1766,7 +1767,187 @@ export default function AdminDashboard() {
                 {/* ── SUBSCRIBERS ── */}
                 {tab === 'subscribers' && <NewsletterSubscribers />}
 
+
+                {/* ── WHITE LABEL REQUESTS ── */}
+                {tab === 'white-label-requests' && (
+                    <WhiteLabelManager 
+                        isEnglish={isEnglish} 
+                        flash={flash} 
+                        fetchData={load}
+                    />
+                )}
             </main >
         </div >
     );
 }
+
+const WhiteLabelManager = ({ isEnglish, flash, fetchData }) => {
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(null);
+
+    const loadRequests = async () => {
+        setLoading(true);
+        try {
+            const data = await adminService.getAllWhiteLabelRequests();
+            setRequests(data);
+        } catch (e) {
+            flash('Error loading requests: ' + e.message);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        loadRequests();
+    }, []);
+
+    const handleApprove = async (id) => {
+        if (!confirm(isEnglish ? 'Approve this branding request?' : 'هل أنت متأكد من اعتماد هذه الهوية؟')) return;
+        setActionLoading(id);
+        const res = await adminService.approveWhiteLabelRequest(id);
+        if (res.success) {
+            flash(isEnglish ? 'Branding approved! Profile updated.' : 'تم اعتماد الهوية وتحديث البروفايل بنجاح!');
+            loadRequests();
+            fetchData();
+        } else {
+            flash('Error: ' + res.error);
+        }
+        setActionLoading(null);
+    };
+
+    const handleReject = async (id) => {
+        const notes = prompt(isEnglish ? 'Reason for rejection:' : 'سبب الرفض:');
+        if (notes === null) return;
+        setActionLoading(id);
+        try {
+            await adminService.rejectWhiteLabelRequest(id, notes);
+            flash(isEnglish ? 'Request rejected' : 'تم رفض الطلب');
+            loadRequests();
+        } catch (e) {
+            flash('Error: ' + e.message);
+        }
+        setActionLoading(null);
+    };
+
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>
+                        {isEnglish ? 'White-Label Branding Requests' : 'طلبات الهوية المخصصة'}
+                    </h1>
+                    <p style={{ color: '#6B7280', fontSize: '0.85rem', marginTop: '4px' }}>
+                        {isEnglish ? 'Manage agency requests for custom platform branding' : 'إدارة طلبات الوكلاء للحصول على حقوق الملكية الخاصة للعلامة التجارية'}
+                    </p>
+                </div>
+                <button onClick={loadRequests} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', padding: '10px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+                </button>
+            </div>
+
+            <Card s={{ padding: 0, overflow: 'hidden' }} c={
+                loading ? <div style={{ padding: '3rem', textAlign: 'center' }}><RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 10px' }} /> {isEnglish ? 'Loading requests...' : 'جاري تحميل الطلبات...'}</div> :
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
+                        <thead>
+                            <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'AGENCY' : 'الوكالة'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'BRANDING' : 'تفاصيل الهوية'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'DOMAIN' : 'النطاق'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'STATUS' : 'الحالة'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700, textAlign: 'center' }}>{isEnglish ? 'ACTIONS' : 'الإجراءات'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {requests.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} style={{ padding: '4rem', textAlign: 'center' }}>
+                                        <div style={{ color: '#4B5563', fontSize: '0.9rem' }}>{isEnglish ? 'No requests found' : 'لا توجد طلبات حالياً'}</div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                requests.map(req => (
+                                    <tr key={req.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontWeight: 700, color: 'white' }}>{req.profiles?.business_name || req.profiles?.full_name || '—'}</div>
+                                            <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{req.profiles?.email}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: req.primary_color || '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    {req.logo_url && <img src={req.logo_url} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />}
+                                                </div>
+                                                <div style={{ fontWeight: 600, color: '#E5E7EB' }}>{req.brand_name}</div>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontSize: '0.85rem', color: '#9CA3AF', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Globe size={14} />
+                                                {req.custom_domain || '—'}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{ 
+                                                padding: '4px 10px', 
+                                                borderRadius: '20px', 
+                                                fontSize: '0.7rem', 
+                                                fontWeight: 700,
+                                                background: req.status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : (req.status === 'rejected' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)'),
+                                                color: req.status === 'approved' ? '#10B981' : (req.status === 'rejected' ? '#EF4444' : '#F59E0B')
+                                            }}>
+                                                {req.status === 'approved' ? (isEnglish ? 'Approved' : 'تم الاعتماد') : (req.status === 'rejected' ? (isEnglish ? 'Rejected' : 'مرفوض') : (isEnglish ? 'Pending' : 'قيد الانتظار'))}
+                                            </span>
+                                            {req.rejection_notes && req.status === 'rejected' && (
+                                                <div style={{ fontSize: '0.65rem', color: '#EF4444', marginTop: '4px', maxWidth: '150px' }}>
+                                                    {isEnglish ? 'Notes: ' : 'ملاحظات: '}{req.rejection_notes}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                                {req.status === 'pending' && (
+                                                    <>
+                                                        <Btn 
+                                                            disabled={actionLoading === req.id}
+                                                            onClick={() => handleApprove(req.id)}
+                                                            color="#10B981"
+                                                            style={{ padding: '6px 12px' }}
+                                                        >
+                                                            {actionLoading === req.id ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />}
+                                                            {isEnglish ? 'Approve' : 'اعتماد'}
+                                                        </Btn>
+                                                        <button 
+                                                            disabled={actionLoading === req.id}
+                                                            onClick={() => handleReject(req.id)}
+                                                            style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#EF4444', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}
+                                                        >
+                                                            <X size={14} />
+                                                            {isEnglish ? 'Reject' : 'رفض'}
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {req.status === 'approved' && (
+                                                    <span style={{ color: '#10B981', fontSize: '0.75rem', fontWeight: 700 }}>✓ {isEnglish ? 'ACTIVE' : 'نشط'}</span>
+                                                )}
+                                                {req.status === 'rejected' && (
+                                                    <Btn 
+                                                        onClick={() => handleApprove(req.id)}
+                                                        color="#6B7280"
+                                                        style={{ padding: '4px 8px', fontSize: '0.7rem' }}
+                                                    >
+                                                        {isEnglish ? 'Re-Approve' : 'إعادة اعتماد'}
+                                                    </Btn>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            } />
+        </div>
+    );
+};
+

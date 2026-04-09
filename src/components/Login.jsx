@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { signIn, signUp, signInWithGoogle, sendPasswordResetEmail, resendConfirmationEmail, supabase } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
+import { useBranding } from '../context/BrandingContext';
 import { FcGoogle } from 'react-icons/fc';
 import { useLanguage } from '../LanguageContext';
 import { Sparkles, Mail, CheckCircle, Eye, EyeOff, Key } from 'lucide-react';
@@ -20,6 +21,7 @@ const getUserDestination = async (userId) => {
 
 const Login = () => {
     const { isAuthenticated, userRole, loading: authLoading } = useAuth();
+    const branding = useBranding();
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -155,18 +157,27 @@ const Login = () => {
             <div className="card shadow-premium animate-fade-in" style={{ width: '100%', border: '1px solid var(--accent-border)' }}>
                 <div className="text-center mb-2xl">
                     <div style={{
-                        width: '60px',
-                        height: '60px',
-                        background: 'var(--accent)',
+                        width: '80px',
+                        height: '80px',
+                        background: branding.logo_url ? 'transparent' : 'var(--accent)',
                         borderRadius: '16px',
                         margin: '0 auto 1.5rem',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '2rem',
-                        boxShadow: '0 0 30px var(--accent-soft)'
-                    }}>✦</div>
-                    <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>{isSignUp ? t('joinElite') : t('leadershipGate')}</h2>
+                        fontSize: '2.5rem',
+                        boxShadow: branding.logo_url ? 'none' : '0 0 30px var(--accent-soft)',
+                        overflow: 'hidden'
+                    }}>
+                        {branding.logo_url ? (
+                            <img src={branding.logo_url} alt={branding.brand_name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ) : '✦'}
+                    </div>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>
+                        {isSignUp 
+                            ? (language === 'en' ? `Join ${branding.brand_name}` : `انضم إلى ${branding.brand_name}`) 
+                            : (language === 'en' ? `${branding.brand_name} Gateway` : `بوابة ${branding.brand_name}`)}
+                    </h2>
                     <p style={{ color: 'var(--text-secondary)' }}>{t('loginWelcome')}</p>
                 </div>
 

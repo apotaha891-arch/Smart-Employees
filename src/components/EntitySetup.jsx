@@ -19,7 +19,8 @@ import ServicesTable from './ServicesTable';
 
 const EntitySetup = () => {
     const hasInitialized = useRef(false);
-    const { user: contextUser } = useAuth(); // Use AuthContext user (supports impersonation)
+    const { user: contextUser, isImpersonating, realUser } = useAuth(); // Use AuthContext user (supports impersonation)
+    const isAgencyAdmin = realUser?.is_agency === true;
     console.info("EntitySetup: Loaded (v3-stability-fix). Status Banner ready.");
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const { t, language } = useLanguage();
@@ -1319,6 +1320,34 @@ const EntitySetup = () => {
     return (
         <div className="fade-in" dir={language === 'ar' ? 'rtl' : 'ltr'} style={{ textAlign: language === 'ar' ? 'right' : 'left', color: 'white', position: 'relative', minHeight: '100vh' }}>
             {renderHelpModal()}
+            
+            {/* Agency Self-Edit Warning Guardrail */}
+            {isAgencyAdmin && !isImpersonating && (
+                <div style={{
+                    background: 'rgba(245, 158, 11, 0.1)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    padding: '1rem 1.5rem',
+                    borderRadius: '16px',
+                    marginBottom: '1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    color: '#F59E0B',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}>
+                    <AlertCircle size={24} />
+                    <div style={{ flex: 1 }}>
+                        <span style={{ fontWeight: 800, display: 'block', fontSize: '1rem' }}>
+                            {language === 'ar' ? '⚠️ تنبيه: أنت تعدل ملف وكالتك الشخصي' : '⚠️ Warning: You are editing your Agency Profile'}
+                        </span>
+                        <span style={{ fontSize: '0.85rem', opacity: 0.9 }}>
+                            {language === 'ar' 
+                                ? 'هذه البيانات تخص حسابك كوكالة (سولانا). إذا كنت تريد إعداد منشأة لعميل، يرجى الذهاب للوحة الوكالة واختيار "التحكم كعميل".' 
+                                : 'These details belong to your Agency account. To setup a client business, go to Agency Dashboard and click "Manage as Client".'}
+                        </span>
+                    </div>
+                </div>
+            )}
             
             {/* Global Status Banner - TOP of Setup Page (Sticky) */}
             {statusMsg.text && (

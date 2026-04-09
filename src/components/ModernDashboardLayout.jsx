@@ -8,6 +8,7 @@ import {
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { signOut, supabase, getProfile } from '../services/supabaseService';
+import { useBranding } from '../context/BrandingContext';
 import NotificationCenter from './shared/NotificationCenter';
 import { Globe } from 'lucide-react';
 
@@ -16,6 +17,7 @@ const ModernDashboardLayout = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, realUser, isAdmin, isCustomer, isAgency, isImpersonating, stopImpersonating } = useAuth();
+    const branding = useBranding();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [userData, setUserData] = useState({ name: t('loadingFallback'), email: '', business_name: '' });
     const [balance, setBalance] = useState(0);
@@ -188,11 +190,19 @@ return (
                 top: 0,
                 boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
             }}>
-                <span>{language === 'ar' ? `⚠️ أنت تتصفح كدعم فني للحساب: ${userData.business_name || user?.email}` : `⚠️ You are browsing as support for: ${userData.business_name || user?.email}`}</span>
+                <span>
+                    {language === 'ar' 
+                        ? (realUser?.is_agency 
+                            ? `🤝 وضع الشريك: أنت تتحكم حالياً كعميل في [${userData.business_name || user?.email}]` 
+                            : `🛡️ وضع الدعم: أنت تتحكم حالياً كأدمن في [${userData.business_name || user?.email}]`)
+                        : (realUser?.is_agency 
+                            ? `🤝 Partner Mode: Managing [${userData.business_name || user?.email}]` 
+                            : `🛡️ Admin Support: Managing [${userData.business_name || user?.email}]`)}
+                </span>
                 <button
                     onClick={() => {
                         stopImpersonating();
-                        window.location.href = '/admin';
+                        window.location.href = realUser?.is_agency ? '/agency-dashboard' : '/admin';
                     }}
                     style={{
                         background: 'white',
@@ -206,29 +216,54 @@ return (
                         boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
                     }}
                 >
-                    {language === 'ar' ? 'الخروج والعودة للأدمن' : 'Exit and return to Admin'}
+                    {language === 'ar' 
+                        ? (realUser?.is_agency ? 'الخروج والعودة لمركز الوكالة' : 'الخروج والعودة للأدمن') 
+                        : (realUser?.is_agency ? 'Exit and return to Agency Center' : 'Exit and return to Admin')}
                 </button>
             </div>
         )}
 
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-            <aside className="shift-sidebar" style={{ width: isSidebarOpen ? '280px' : '80px', display: 'flex', flexDirection: 'column', background: '#111827', borderRight: language === 'ar' ? 'none' : '1px solid rgba(255,255,255,0.05)', borderLeft: language === 'ar' ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'width 0.3s', overflowY: 'auto', flexShrink: 0 }}>
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
+            <aside className="shift-sidebar" style={{ 
+                width: isSidebarOpen ? '280px' : '80px', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                background: '#111827', 
+                borderRight: language === 'ar' ? 'none' : '1px solid rgba(255,255,255,0.05)', 
+                borderLeft: language === 'ar' ? '1px solid rgba(255,255,255,0.05)' : 'none', 
+                transition: 'width 0.3s', 
+                overflowY: 'auto', 
+                flexShrink: 0,
+                zIndex: 50 // Ensure it stays above main if anything weird happens
+            }}>
                 {/* Logo Area */}
-                <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
+                <div style={{ 
+                    padding: '1.5rem', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    flexDirection: language === 'ar' ? 'row-reverse' : 'row' // Ensure button and logo swap correctly in RTL
+                }}>
+                    <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', minWidth: 0 }}>
                         <div style={{
                             width: '40px', height: '40px',
-                            background: isAdmin ? 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)' : 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
+                            background: branding.logo_url && branding.logo_url !== '/logo.png' ? 'rgba(255,255,255,0.05)' : (isAdmin ? 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)' : 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)'),
                             borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', fontSize: '1.2rem', fontWeight: '900'
+                            color: 'white', fontSize: '1.2rem', fontWeight: '900', overflow: 'hidden', flexShrink: 0
                         }}>
-                            {isAdmin ? '24' : (userData.business_name ? userData.business_name.substring(0, 2).toUpperCase() : 'C')}
+                            {branding.logo_url && branding.logo_url !== '/logo.png' ? (
+                                <img src={branding.logo_url} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            ) : (
+                                isAdmin ? '24' : (userData.business_name ? userData.business_name.substring(0, 2).toUpperCase() : 'C')
+                            )}
                         </div>
-                        {isSidebarOpen && <span style={{ fontSize: '1.2rem', fontWeight: 900, background: 'linear-gradient(90deg, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>
-                            {isAdmin ? '24Shift' : (userData.business_name || t('nav.dashboard'))}
-                        </span>}
+                        {isSidebarOpen && (!branding.logo_url || branding.logo_url === '/logo.png') && (
+                            <span style={{ fontSize: '1.2rem', fontWeight: 900, background: '#fff', letterSpacing: '0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px', color: 'white' }}>
+                                {branding.is_custom ? branding.brand_name : (isAdmin ? '24Shift' : '24SHIFT')}
+                            </span>
+                        )}
                     </Link>
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '0.5rem' }}>
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '0.5rem', display: 'flex' }}>
                         <Menu size={20} />
                     </button>
                 </div>
@@ -310,6 +345,24 @@ return (
                             </div>
                         )}
                     </div>
+                    {!branding.hide_credits && (
+                        <div style={{ 
+                            padding: '10px', 
+                            textAlign: 'center', 
+                            fontSize: '0.7rem', 
+                            color: '#4B5563',
+                            background: 'rgba(255,255,255,0.02)',
+                            borderRadius: '12px',
+                            marginBottom: '1rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '5px'
+                        }}>
+                            <span>Powered by</span>
+                            <span style={{ color: '#8B5CF6', fontWeight: 700 }}>24Shift</span>
+                        </div>
+                    )}
                     <button
                         onClick={handleLogout}
                         className="btn-logout"
@@ -339,10 +392,8 @@ return (
             {/* Main Content Area */}
             <main style={{
                 flex: 1,
-                /* explicitly shrink the main area so it ends where the sidebar begins; this
-                   avoids a visible padding gap while still preventing overlap */
-                width: `calc(100% - ${isSidebarOpen ? '280px' : '80px'})`,
-                transition: 'width 0.3s ease',
+                minWidth: 0, // CRITICAL: prevents flex child from expanding beyond parent
+                transition: 'all 0.3s ease',
                 background: '#0B0F19',
                 height: '100%',
                 display: 'flex',

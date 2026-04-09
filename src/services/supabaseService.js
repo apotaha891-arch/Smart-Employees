@@ -1200,12 +1200,21 @@ export const cancelBooking = async (bookingId) => {
 
 // ==================== CLIENT NOTIFICATIONS ====================
 
-export const getClientNotifications = async (userId) => {
+export const getClientNotifications = async (userId, isAgency = false) => {
     try {
-        const { data, error } = await supabase
+        let query = supabase
             .from('client_notifications')
-            .select('*')
-            .eq('user_id', userId)
+            .select('*');
+
+        if (isAgency) {
+            // If agency, get all notifications for their clients
+            query = query.eq('agency_id', userId);
+        } else {
+            // Normal client view
+            query = query.eq('user_id', userId);
+        }
+
+        const { data, error } = await query
             .order('created_at', { ascending: false })
             .limit(50);
         
@@ -1232,14 +1241,16 @@ export const markClientNotificationRead = async (id) => {
     }
 };
 
-export const subscribeToClientNotifications = (userId, callback) => {
+export const subscribeToClientNotifications = (userId, isAgency = false, callback) => {
+    const filter = isAgency ? `agency_id=eq.${userId}` : `user_id=eq.${userId}`;
+    
     return supabase
         .channel(`client_notifications_${userId}`)
         .on('postgres_changes', { 
             event: 'INSERT', 
             schema: 'public', 
             table: 'client_notifications',
-            filter: `user_id=eq.${userId}` 
+            filter: filter 
         }, callback)
         .subscribe();
 };
@@ -1298,6 +1309,101 @@ export const getBillingRates = async () => {
         return { success: true, data: data?.value };
     } catch (error) {
         console.error('getBillingRates service error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// ==================== STORAGE & ASSETS ====================
+
+/**
+ * Uploads an agency logo to the 'agency_branding' bucket.
+ * Returns the public URL on success.
+ */
+export const uploadAgencyLogo = async (userId, file) => {
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/logo_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `logos/${fileName}`;
+
+        // 1. Upload file
+        const { error: uploadError } = await supabase.storage
+            .from('agency_branding')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: true
+            });
+
+        if (uploadError) throw uploadError;
+
+        // 2. Get public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('agency_branding')
+            .getPublicUrl(filePath);
+
+        return { success: true, url: publicUrl };
+    } catch (error) {
+        console.error('uploadAgencyLogo error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// ==================== WHITE LABEL REQUESTS ====================
+
+export const getWhiteLabelRequest = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('white_label_requests')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
+        
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('getWhiteLabelRequest error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const submitWhiteLabelRequest = async (userId, requestData) => {
+    try {
+        // Check if one already exists
+        const { data: existing } = await supabase
+            .from('white_label_requests')
+            .select('id, status')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (existing) {
+            // Update only if pending or rejected
+            if (existing.status === 'approved') throw new Error("Request already approved");
+            const { data, error } = await supabase
+                .from('white_label_requests')
+                .update({
+                    ...requestData,
+                    status: 'pending',
+                    updated_at: new Date()
+                })
+                .eq('id', existing.id)
+                .select()
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        } else {
+            const { data, error } = await supabase
+                .from('white_label_requests')
+                .insert([{
+                    user_id: userId,
+                    ...requestData,
+                    status: 'pending'
+                }])
+                .select()
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        }
+    } catch (error) {
+        console.error('submitWhiteLabelRequest error:', error);
         return { success: false, error: error.message };
     }
 };

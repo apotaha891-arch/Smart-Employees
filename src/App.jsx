@@ -11,6 +11,7 @@ function ScrollToTop() {
 }
 import { LanguageProvider } from './LanguageContext';
 import { createAuthProvider, useAuth } from './context/AuthContext';
+import { BrandingProvider } from './context/BrandingContext';
 import ProtectedRoute, { AgencyRoute } from './components/shared/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -53,10 +54,12 @@ function App() {
     return (
         <LanguageProvider>
             <AuthProvider>
-                <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                    <ScrollToTop />
-                    <AppContent />
-                </Router>
+                <BrandingProvider>
+                    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                        <ScrollToTop />
+                        <AppContent />
+                    </Router>
+                </BrandingProvider>
             </AuthProvider>
         </LanguageProvider>
     );

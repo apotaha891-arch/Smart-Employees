@@ -45,18 +45,29 @@ serve(async (req: any) => {
             console.log(`Refill successful: Added ${refillAmount} to user ${userId}`);
           } else {
             // New subscription start: Call renewal RPC to initialize package credits
-            await supabase.rpc('fn_renew_user_subscription', { 
-              p_user_id: userId, 
-              p_plan_id: planId 
-            });
-            
-            // Link Stripe Subscription ID to profile
-            await supabase
-              .from('profiles')
-              .update({ stripe_subscription_id: session.subscription })
-              .eq('id', userId);
-            
-            console.log(`New subscription started for ${userId}: ${planId}`);
+            if (paymentType === 'white_label') {
+                await supabase
+                  .from('profiles')
+                  .update({ 
+                    is_white_label_paid: true,
+                    white_label_sub_id: session.subscription 
+                  })
+                  .eq('id', userId);
+                console.log(`White label activated for agency: ${userId}`);
+            } else {
+                await supabase.rpc('fn_renew_user_subscription', { 
+                  p_user_id: userId, 
+                  p_plan_id: planId 
+                });
+                
+                // Link Stripe Subscription ID to profile
+                await supabase
+                  .from('profiles')
+                  .update({ stripe_subscription_id: session.subscription })
+                  .eq('id', userId);
+                
+                console.log(`New subscription started for ${userId}: ${planId}`);
+            }
           }
         }
         break;
@@ -102,6 +113,25 @@ serve(async (req: any) => {
         
         if (profile) {
           await supabase.from('wallet_credits').update({ package_balance: 0 }).eq('user_id', profile.id);
+        }
+
+        // Handle White Label cancellation specifically
+        const { data: wlProfile } = await supabase
+          .from('profiles')
+          .select('id, white_label_config')
+          .eq('white_label_sub_id', subscription.id)
+          .single();
+        
+        if (wlProfile) {
+          await supabase
+            .from('profiles')
+            .update({ 
+              is_white_label_paid: false, 
+              white_label_sub_id: null,
+              white_label_config: { ...wlProfile.white_label_config, hide_credits: false } 
+            })
+            .eq('id', wlProfile.id);
+          console.log(`White label deactivated for user ${wlProfile.id} due to subscription deletion.`);
         }
         break;
       }

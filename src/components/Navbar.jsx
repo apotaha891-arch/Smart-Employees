@@ -3,13 +3,15 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { getCurrentUser, signOut, supabase, resendConfirmationEmail } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
-import { Smartphone, Briefcase, Globe, LayoutDashboard } from 'lucide-react';
+import { Smartphone, Briefcase, Globe, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { useBranding } from '../context/BrandingContext';
 
 const Navbar = () => {
     const { t, language, toggleLanguage } = useLanguage();
     const location = useLocation();
     const navigate = useNavigate();
-    const { isAgency } = useAuth();
+    const { isAgency, isAdmin } = useAuth();
+    const branding = useBranding();
     const [user, setUser] = useState(null);
 
     useEffect(() => {
@@ -38,47 +40,41 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="container nav-content">
                 <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-                    {language === 'ar' ? (
-                        <>
-                            <span style={{
-                                fontFamily: "'Montserrat', 'Inter', sans-serif",
-                                fontWeight: 900,
-                                fontSize: '1.6rem',
-                                textTransform: 'uppercase',
-                                background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                letterSpacing: '1.5px'
-                            }}>24SHIFT</span>
-                            <img src="/logo.png" alt="24Shift" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
-                        </>
-                    ) : (
-                        <>
-                            <img src="/logo.png" alt="24Shift" style={{ height: '55px', objectFit: 'contain', borderRadius: '14px', overflow: 'hidden' }} />
-                            <span style={{
-                                fontFamily: "'Montserrat', 'Inter', sans-serif",
-                                fontWeight: 900,
-                                fontSize: '1.6rem',
-                                textTransform: 'uppercase',
-                                background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                letterSpacing: '1.5px'
-                            }}>24SHIFT</span>
-                        </>
+                    <img 
+                        src={branding.logo_url} 
+                        alt={branding.brand_name} 
+                        style={{ height: '48px', maxWidth: '280px', objectFit: 'contain', borderRadius: '8px' }} 
+                    />
+                    {(!branding.logo_url || branding.logo_url === '/logo.png') && (
+                        <span style={{
+                            fontFamily: "'Montserrat', 'Inter', sans-serif",
+                            fontWeight: 900,
+                            fontSize: '1.6rem',
+                            textTransform: 'uppercase',
+                            background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '1.5px'
+                        }}>
+                            {branding.brand_name || '24SHIFT'}
+                        </span>
                     )}
                 </Link>
 
                 <ul className="nav-links">
-                    <li>
-                        <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>{t('nav.home')}</Link>
-                    </li>
-                    <li>
-                        <Link to="/pricing" className={`nav-link ${isActive('/pricing') ? 'active' : ''}`}>{t('nav.pricing')}</Link>
-                    </li>
-                    <li>
-                        <Link to="/blog" className={`nav-link ${isActive('/blog') ? 'active' : ''}`}>{t('nav.blog')}</Link>
-                    </li>
+                    {!branding.is_custom && (
+                        <>
+                            <li>
+                                <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>{t('nav.home')}</Link>
+                            </li>
+                            <li>
+                                <Link to="/pricing" className={`nav-link ${isActive('/pricing') ? 'active' : ''}`}>{t('nav.pricing')}</Link>
+                            </li>
+                            <li>
+                                <Link to="/blog" className={`nav-link ${isActive('/blog') ? 'active' : ''}`}>{t('nav.blog')}</Link>
+                            </li>
+                        </>
+                    )}
                     {user && (
                         <li>
                             <Link to={isAgency ? "/agency" : "/dashboard"} className={`nav-link ${isActive(isAgency ? '/agency' : '/dashboard') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

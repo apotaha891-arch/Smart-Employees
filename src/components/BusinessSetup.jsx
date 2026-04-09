@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, updateAgent, getProfile, invokeMultiFileWorkflow } from '../services/supabaseService';
-import { Upload, Link as LinkIcon, Sparkles, X, FileText, Loader } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { getCurrentUser, updateAgent, getProfile, invokeMultiFileWorkflow, supabase } from '../services/supabaseService';
+import { Upload, Link as LinkIcon, Sparkles, X, FileText, Loader, AlertCircle } from 'lucide-react';
 
 const BusinessSetup = () => {
     const { t, language } = useLanguage();
+    const { isImpersonating, realUser } = useAuth();
+    const isAgencyAdmin = realUser?.is_agency === true;
     const [formData, setFormData] = useState({
         business_name: '',
         business_type: '',
@@ -183,6 +185,36 @@ const BusinessSetup = () => {
 
     return (
         <div className="container py-xl animate-fade-in" style={{ paddingBottom: '6rem' }} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+            
+            {/* Agency Self-Edit Warning Guardrail */}
+            {isAgencyAdmin && !isImpersonating && (
+                <div style={{
+                    background: 'rgba(245, 158, 11, 0.1)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    padding: '1.5rem 2rem',
+                    borderRadius: '20px',
+                    marginBottom: '2.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1.25rem',
+                    color: '#F59E0B',
+                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.2)',
+                    textAlign: language === 'ar' ? 'right' : 'left'
+                }}>
+                    <AlertCircle size={32} />
+                    <div style={{ flex: 1 }}>
+                        <span style={{ fontWeight: 900, display: 'block', fontSize: '1.1rem', marginBottom: '4px' }}>
+                            {language === 'ar' ? '⚠️ تنبيه: إعدادات وكالتك الخاصة' : '⚠️ Warning: Agency Core Setup'}
+                        </span>
+                        <span style={{ fontSize: '0.95rem', opacity: 0.9, lineHeight: 1.5 }}>
+                            {language === 'ar' 
+                                ? 'أنت الآن تقوم بتعديل البيانات الأساسية لوكالة (Solana). إذا كنت تريد تهيئة موظف لعميل معين، يرجى القيام بذلك من خلال "التحكم كعميل" في لوحة الوكالة.' 
+                                : 'You are currently configuring settings for your own Agency (Solana). To set up an agent for a client, please use "Manage as Client" from the Agency Dashboard.'}
+                        </span>
+                    </div>
+                </div>
+            )}
+
             <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1rem', background: 'linear-gradient(to bottom, #FFF, #52525B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                     {language === 'ar' ? 'الإعدادات العامة للمنشأة' : 'Business General Setup'}
