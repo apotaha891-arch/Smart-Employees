@@ -293,6 +293,44 @@ const Dashboard = () => {
                     </div>
 
                 </div>
+                
+                {/* Stage 1 -> Agent Upgrade CTA (Only for non-agencies) */}
+                {!isAgency && !isImpersonating && (
+                    <div style={{ marginTop: '2.5rem' }}>
+                        <div className="card" style={{ 
+                            padding: '2rem', 
+                            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%)', 
+                            border: '1px solid rgba(139, 92, 246, 0.3)', 
+                            borderRadius: '24px', 
+                            display: 'flex', 
+                            flexWrap: 'wrap', 
+                            alignItems: 'center', 
+                            gap: '2rem',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{ flex: '1 1 400px', position: 'relative', zIndex: 1 }}>
+                                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>
+                                    {t('upgrade.becomeAgentTitle')}
+                                </h2>
+                                <p style={{ color: '#E5E7EB', fontSize: '1rem', lineHeight: 1.6, marginBottom: '0' }}>
+                                    {t('upgrade.becomeAgentDesc')}
+                                </p>
+                            </div>
+                            <div style={{ flex: '0 0 auto', position: 'relative', zIndex: 1 }}>
+                                <button 
+                                    onClick={() => alert(language === 'ar' ? 'جاري تحويلك لبوابة الدفع...' : 'Redirecting to payment gateway...')} 
+                                    className="btn btn-primary" 
+                                    style={{ padding: '0.9rem 2rem', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 800, boxShadow: '0 8px 16px rgba(139, 92, 246, 0.3)' }}
+                                >
+                                    <Zap size={20} /> {t('upgrade.becomeAgentBtn')}
+                                </button>
+                            </div>
+                            {/* Decorative element */}
+                            <Target size={180} style={{ position: 'absolute', right: '-40px', bottom: '-40px', color: 'rgba(139, 92, 246, 0.05)', transform: 'rotate(-15deg)', pointerEvents: 'none' }} />
+                        </div>
+                    </div>
+                )}
 
                 {/* Scaling & Credit Info Section */}
                 <div style={{ marginTop: '2.5rem' }}>

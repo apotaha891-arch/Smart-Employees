@@ -61,8 +61,16 @@ export const translations = {
         },
         // Branding
         brand: {
-            name: "Smart Employees",
-            platformName: "منصتنا الذكية"
+            name: "24Shift",
+            platformName: "منصة 24Shift"
+        },
+        upgrade: {
+            becomeAgentTitle: "🚀 ابدأ وكالتك الخاصة اليوم",
+            becomeAgentDesc: "حول اشتراكك إلى وكالة توزيع معتمدة. ابنِ قاعدة عملائك، وأدر حساباتهم، واحصل على هوية White-label احترافية.",
+            becomeAgentBtn: "الترقية لوكيل معتمد (20$)",
+            unlockWhiteLabelTitle: "✨ فعل مويت لابل (White-Label)",
+            unlockWhiteLabelDesc: "ارفع سقف الاحترافية. استبدل شعار 24Shift بشعارك الخاص وفعل نطاقك (Domain) لتبهر عملاءك.",
+            unlockWhiteLabelBtn: "تفعيل الهوية الخاصة (50$)"
         },
         points: "نقطة",
         systemStatus: {
@@ -92,7 +100,7 @@ export const translations = {
 
         // Home Page Sections
         home: {
-            platformName: "المنصة الذكية",
+            platformName: "منصة 24Shift",
             sectorTitle: "اختر قطاع عملك",
             general: "عام",
             medical: "طبي",
@@ -107,7 +115,7 @@ export const translations = {
             eliteSolutionsFor: "حلول النخبة لقطاع {industry}",
             startInterview: "قابل موظفك الآن",
             viewDashboard: "لوحة المتابعة",
-            strategicTeam: "فريق الخبراء الاستراتيجي",
+            strategicTeam: "فريق 24Shift الاستراتيجي",
             insightsTitle: "رؤى مخصصة لنمو القطاع",
             insightsSubtitle: "حلول استراتيجية صُممت خصيصاً لتناسب احتياجات عملائك",
             accuracyLabel: "دقة في فهم متطلبات العملاء",
@@ -127,7 +135,7 @@ export const translations = {
             ctaTelecom: "قد ثورة الاتصالات عبر حلول تقنية ذكية تسبق تطلعات المشتركين.",
             ctaButton: "تحدث مع مرشحك الأول الآن",
             videoTitle: "استكشف مستقبل أعمالك في دقيقتين",
-            videoSubtitle: "شاهد كيف تقوم منصتنا بتحويل منشأتك إلى خلية نحل رقمية فائقة الذكاء"
+            videoSubtitle: "شاهد كيف تقوم منصة 24Shift بتحويل منشأتك إلى خلية نحل رقمية فائقة الذكاء"
         },
 
         // Agent Templates Page
@@ -746,8 +754,16 @@ export const translations = {
 
         // Branding
         brand: {
-            name: "Smart Employees",
-            platformName: "Smart Platform"
+            name: "24Shift",
+            platformName: "24Shift Platform"
+        },
+        upgrade: {
+            becomeAgentTitle: "🚀 Start Your Own Agency",
+            becomeAgentDesc: "Convert your account into a certified reselling agency. Build your client base, manage accounts, and unlock white-labeling.",
+            becomeAgentBtn: "Become a Certified Agent ($20)",
+            unlockWhiteLabelTitle: "✨ Unlock White-Label",
+            unlockWhiteLabelDesc: "Level up your professionalism. Replace our branding with your logo and link your custom domain.",
+            unlockWhiteLabelBtn: "Unlock White-Label ($50)"
         },
         systemStatus: {
             loading: "Loading..."
@@ -770,7 +786,7 @@ export const translations = {
             eliteSolutionsFor: "Elite Solutions for {industry}",
             startInterview: "Start Interview",
             viewDashboard: "View Dashboard",
-            strategicTeam: "Platform Strategic Team",
+            strategicTeam: "24Shift Strategic Team",
             insightsTitle: "Customized Insights for Your Industry Growth",
             insightsSubtitle: "Strategic solutions tailored to meet your customer needs",
             accuracyLabel: "Accuracy in Understanding Customer Requirements",

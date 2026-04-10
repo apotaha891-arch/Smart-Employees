@@ -26,6 +26,12 @@ CREATE POLICY "Anyone can insert logs" ON system_logs
     FOR INSERT WITH CHECK ( true );
 
 -- 2. Initialize Platform Settings with Dynamic Constants
+CREATE TABLE IF NOT EXISTS platform_settings (
+    key TEXT PRIMARY KEY,
+    value JSONB,
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Sectors Configuration
 INSERT INTO platform_settings (key, value)
 VALUES ('system_sectors', '{

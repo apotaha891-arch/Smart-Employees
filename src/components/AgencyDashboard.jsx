@@ -419,15 +419,76 @@ const AgencyDashboard = () => {
 
                 {/* Branding Settings Section */}
                 <div style={{ marginTop: '3rem', background: '#111827', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(139,92,246,0.2)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
-                        <Palette size={24} color="#8B5CF6" />
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{isEnglish ? 'Identity & Branding' : 'الهوية والعلامة التجارية'}</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <Palette size={24} color="#8B5CF6" />
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{isEnglish ? 'Identity & Branding' : 'الهوية والعلامة التجارية'}</h2>
+                        </div>
+                        {isWhiteLabelPaid && brandingRequest && (
+                            <div style={{ 
+                                padding: '6px 16px', 
+                                borderRadius: '20px', 
+                                fontSize: '0.85rem', 
+                                fontWeight: 700,
+                                background: brandingRequest.status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : brandingRequest.status === 'rejected' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                color: brandingRequest.status === 'approved' ? '#10B981' : brandingRequest.status === 'rejected' ? '#EF4444' : '#F59E0B',
+                                border: '1px solid currentColor'
+                            }}>
+                                {brandingRequest.status === 'approved' ? (isEnglish ? '✓ Approved & Live' : '✓ معتمد ونشط') : 
+                                 brandingRequest.status === 'rejected' ? (isEnglish ? '✕ Rejected' : '✕ تم الرفض') : 
+                                 (isEnglish ? '⏳ Under Review' : '⏳ قيد المراجعة')}
+                            </div>
+                        )}
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-                        {/* Configuration Form */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                            {/* 1. Agency Core Profile (The fix for the name) */}
+                    {!isWhiteLabelPaid ? (
+                        /* Stage 3 Upgrade Wall */
+                        <div style={{ 
+                            background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)', 
+                            padding: '3rem 2rem', 
+                            borderRadius: '20px', 
+                            border: '1px solid rgba(236, 72, 153, 0.3)', 
+                            textAlign: 'center',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '1.5rem'
+                        }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(236, 72, 153, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EC4899' }}>
+                                <Zap size={40} />
+                            </div>
+                            <div>
+                                <h3 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white', marginBottom: '0.5rem' }}>{t('upgrade.unlockWhiteLabelTitle')}</h3>
+                                <p style={{ color: '#9CA3AF', maxWidth: '600px', lineHeight: 1.6 }}>{t('upgrade.unlockWhiteLabelDesc')}</p>
+                            </div>
+                            <button 
+                                onClick={handleWhiteLabelPayment} 
+                                disabled={actionLoading}
+                                className="btn btn-primary" 
+                                style={{ padding: '1rem 3rem', borderRadius: '16px', fontSize: '1.1rem', fontWeight: 800, background: 'linear-gradient(to right, #EC4899, #8B5CF6)', border: 'none' }}
+                            >
+                                {actionLoading ? <div className="loading-spinner-sm"></div> : t('upgrade.unlockWhiteLabelBtn')}
+                            </button>
+                        </div>
+                    ) : (
+                        /* Branding Form (Visible if paid) */
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                            {/* Configuration Form */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                {brandingRequest?.status === 'rejected' && brandingRequest.admin_notes && (
+                                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '12px', color: '#EF4444', fontSize: '0.9rem' }}>
+                                        <strong>{isEnglish ? 'Admin Feedback:' : 'ملاحظات الإدارة:'}</strong> {brandingRequest.admin_notes}
+                                    </div>
+                                )}
+                                
+                                {brandingRequest?.status === 'pending' && (
+                                    <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '1rem', borderRadius: '12px', color: '#F59E0B', fontSize: '0.9rem' }}>
+                                        {isEnglish ? 'Your request is being reviewed. Settings are locked.' : 'طلبك قيد المراجعة حالياً. الحقول مغلقة مؤقتاً.'}
+                                    </div>
+                                )}
+
+                                {/* 1. Agency Core Profile */}
+                                <fieldset disabled={brandingRequest?.status === 'pending'} style={{ border: 'none', padding: 0, margin: 0 }}>
                             <form onSubmit={handleUpdateAgencyProfile} style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#8B5CF6', marginBottom: '1rem', textTransform: 'uppercase' }}>
                                     {isEnglish ? 'Agency Internal Profile' : 'الملف الشخصي للوكالة'}
@@ -549,10 +610,16 @@ const AgencyDashboard = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <button type="submit" className={`btn btn-primary ${actionLoading ? 'loading' : ''}`} style={{ width: '100%' }} disabled={actionLoading}>
-                                    {isEnglish ? 'Update Platform Branding' : 'تحديث هوية المنصة'}
+                                <button 
+                                    type="submit" 
+                                    className={`btn btn-primary ${requestLoading ? 'loading' : ''}`} 
+                                    style={{ width: '100%' }} 
+                                    disabled={requestLoading || brandingRequest?.status === 'pending'}
+                                >
+                                    {brandingRequest?.status === 'approved' ? (isEnglish ? 'Update Live Branding' : 'تحديث الهوية النشطة') : (isEnglish ? 'Submit for Review' : 'إرسال للمراجعة')}
                                 </button>
                             </form>
+                            </fieldset>
                         </div>
 
                         {/* Preview Card */}
@@ -574,13 +641,13 @@ const AgencyDashboard = () => {
                             <div style={{ marginTop: 'auto', background: '#18181B', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', boxShadow: '0 -10px 25px -5px rgba(0,0,0,0.1)' }}>
                                 <div style={{ fontSize: '0.75rem', color: '#E4E4E7', marginBottom: '10px' }}>{isEnglish ? 'Chatting with Assistant...' : 'تحدث مع المساعد الذكي...'}</div>
                                 <div style={{ fontSize: '0.65rem', color: '#71717A', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px', fontWeight: 500 }}>
-                                    {isEnglish ? 'Powered by' : 'بدعم من'} <span style={{ color: brandingConfig.primary_color || '#8B5CF6' }}>{brandingConfig.brand_name || (isEnglish ? 'Smart Platform' : 'منصتنا الذكية')}</span>
+                                {isEnglish ? 'Powered by' : 'بدعم من'} <span style={{ color: brandingConfig.primary_color || '#8B5CF6' }}>{brandingConfig.brand_name || (isEnglish ? 'Smart Platform' : 'منصتنا الذكية')}</span>
                                 </div>
                             </div>
                         </div>
-
                     </div>
-                </div>
+                )}
+            </div>
 
                 {/* --- Help Modal: Custom Domain --- */}
                 {showDomainHelp && (

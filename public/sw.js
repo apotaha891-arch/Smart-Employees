@@ -33,6 +33,14 @@ self.addEventListener('fetch', (event) => {
   // Cache-first for static assets
   const url = new URL(event.request.url);
   
+  // Bypass Service Worker for Vite internal development requests and external resources
+  if (url.pathname.startsWith('/@vite') || 
+      url.pathname.startsWith('/src') || 
+      url.pathname.startsWith('/node_modules') ||
+      url.hostname !== self.location.hostname) {
+    return;
+  }
+
   if (ASSETS_TO_CACHE.includes(url.pathname)) {
     event.respondWith(
       caches.match(event.request).then((response) => {
@@ -42,7 +50,9 @@ self.addEventListener('fetch', (event) => {
   } else {
     event.respondWith(
       fetch(event.request).catch(() => {
-        return caches.match(event.request);
+        return caches.match(event.request).then(response => {
+          return response || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+        });
       })
     );
   }
