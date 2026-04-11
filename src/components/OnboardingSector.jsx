@@ -35,7 +35,7 @@ const OnboardingSector = () => {
                 }
             }
 
-            const { data, error } = await supabase.from('platform_settings').select('value').eq('key', 'system_sectors').maybeSingle();
+            const { data, error } = await supabase.from('system_settings').select('value').eq('key', 'system_sectors').maybeSingle();
             if (data?.value) {
                 const list = Object.entries(data.value)
                     .filter(([_, v]) => v.on !== false)

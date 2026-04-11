@@ -31,10 +31,8 @@ CREATE POLICY "Users can create their own requests" ON white_label_requests
 DROP POLICY IF EXISTS "Admins can manage all requests" ON white_label_requests;
 CREATE POLICY "Admins can manage all requests" ON white_label_requests
     FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM profiles 
-            WHERE id = auth.uid() AND is_admin = true
-        )
+        (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
+        OR (auth.jwt() ->> 'email') IN ('tayaran442000@gmail.com', 'sabah@gajha.com')
     );
 
 -- Trigger for updated_at

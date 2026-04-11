@@ -24,10 +24,9 @@ export const BrandingProvider = ({ children }) => {
             const sessionUserId = user?.id || (await supabase.auth.getUser()).data.user?.id;
 
             // Call our unified RPC
-            // We pass domain (Level 2) and user.id (Level 1)
+            // We only pass p_domain (Level 2). p_user_id (Level 1) is now disabled.
             const { data, error } = await supabase.rpc('get_branding_config', {
-                p_domain: isLocal ? '' : domain, // Ignore localhost for domain resolution
-                p_user_id: sessionUserId || null
+                p_domain: isLocal ? '' : domain
             });
 
             if (error) throw error;

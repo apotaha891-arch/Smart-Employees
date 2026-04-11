@@ -45,6 +45,8 @@ import BlogList from './components/BlogList';
 import BlogPost from './components/BlogPost';
 import Footer from './components/Footer';
 import AgencyDashboard from './components/AgencyDashboard';
+import OpportunityLanding from './components/academy/OpportunityLanding';
+import TrainingBag from './components/academy/TrainingBag';
 
 // Create AuthProvider
 const AuthProvider = createAuthProvider();
@@ -77,9 +79,11 @@ function AppContent() {
     
     const isDashboard = alwaysDashboardRoutes.includes(location.pathname) || (hybridRoutes.includes(location.pathname) && isAuthenticated);
 
+    const isAcademy = location.pathname.startsWith('/opportunity') || location.pathname.startsWith('/academy');
+    
     return (
         <div className="App">
-            <Navbar />
+            {!isAcademy && <Navbar />}
 
             <Routes>
                 {/* ============ PUBLIC ROUTES ============ */}
@@ -96,6 +100,9 @@ function AppContent() {
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/blog" element={<BlogList />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/opportunity" element={<OpportunityLanding />} />
+                <Route path="/academy" element={<TrainingBag />} />
+                <Route path="/academy/bag" element={<TrainingBag />} />
 
                 {/* ============ ADMIN PROTECTED ROUTES ============ */}
                 <Route
@@ -232,7 +239,7 @@ function AppContent() {
                 />
             </Routes>
 
-            {!isDashboard && <Footer />}
+            {!isDashboard && !isAcademy && <Footer />}
             <PlatformConcierge />
         </div>
     );

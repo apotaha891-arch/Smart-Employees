@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
     Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
     LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
-    Search, Download, Newspaper, Megaphone, Settings
+    Search, Download, Newspaper, Megaphone, Settings, Star, BookOpen, ArrowRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -117,6 +117,11 @@ export default function AdminDashboard() {
     const [selChat, setSelChat] = useState(null);
     const [notifications, setNotifications] = useState([]);
     const [customRequests, setCustomRequests] = useState([]);
+    
+    // Academy & Affiliates State
+    const [academyLeads, setAcademyLeads] = useState([]);
+    const [affiliates, setAffiliates] = useState([]);
+    const [academyLoading, setAcademyLoading] = useState(false);
 
     // Generate dynamic PLANS mapping from pricing state
     const PLANS = useMemo(() => {
@@ -531,8 +536,148 @@ export default function AdminDashboard() {
     const cl = (uid) => agents.filter(a => a.user_id === uid || a.entity_id === clients.find(c => c.id === uid)?.entityId);
     const bl = (uid) => bookings.filter(b => b.user_id === uid || b.entity_id === clients.find(c => c.id === uid)?.entityId);
 
+    useEffect(() => {
+        if (tab === 'academy') {
+            loadAcademyData();
+        }
+    }, [tab]);
+
+    const loadAcademyData = async () => {
+        setAcademyLoading(true);
+        try {
+            const [leadsData, affsData] = await Promise.all([
+                adminService.getAllAcademyLeads(),
+                adminService.getAllAffiliates()
+            ]);
+            setAcademyLeads(leadsData);
+            setAffiliates(affsData);
+        } catch (e) {
+            console.error('Error loading academy data:', e);
+        } finally {
+            setAcademyLoading(false);
+        }
+    };
+
+    const handleGrantAcademyAccess = async (leadId) => {
+        if (!confirm(isEnglish ? 'Grant full access to this lead?' : 'هل تريد منح الوصول الكامل لهذا العميل؟')) return;
+        const ok = await adminService.updateAcademyLeadStatus(leadId, 'paid');
+        if (ok) {
+            setAcademyLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: 'paid' } : l));
+            setMsg(isEnglish ? 'Access granted!' : 'تم منح الوصول بنجاح!');
+        }
+    };
+
+    const AcademyView = () => (
+        <div className="animate-fade-in" style={{ padding: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h1 style={{ fontSize: '1.8rem', fontWeight: 950, color: 'white', margin: 0 }}>{isEnglish ? 'Academy & Affiliates' : 'الأكاديمية والمسوقين'}</h1>
+                <Btn onClick={loadAcademyData} disabled={academyLoading}><RefreshCw size={16} className={academyLoading ? 'animate-spin' : ''} /> {isEnglish ? 'Refresh' : 'تحديث'}</Btn>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+                <StatCard icon={Users} label={isEnglish ? 'Academy Leads' : 'عملاء الأكاديمية'} value={academyLeads.length} color="#8B5CF6" />
+                <StatCard icon={Zap} label={isEnglish ? 'Active Affiliates' : 'المسوقين النشطين'} value={affiliates.length} color="#10B981" />
+            </div>
+
+            {/* Leads Table */}
+            <div style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Star size={20} color="#F59E0B" /> {isEnglish ? 'Academy Leads' : 'طلبات الحقيبة التدريبية'}</h2>
+                <Card s={{ padding: 0, overflow: 'hidden' }} c={
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Name' : 'الاسم'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Contact' : 'التواصل'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Referrer' : 'المسوق'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Status' : 'الحالة'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Actions' : 'إجراءات'}</th>
+                            </tr></thead>
+                            <tbody>
+                                {academyLeads.length === 0 ? <tr><td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: '#4B5563' }}>{isEnglish ? 'No leads found' : 'لا يوجد طلبات حالياً'}</td></tr> :
+                                academyLeads.map(l => (
+                                    <tr key={l.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontWeight: 700, color: 'white' }}>{l.full_name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{l.user_type} • {l.industry}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontSize: '0.85rem' }}>{l.whatsapp}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{l.email}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            {l.referrer_code ? (
+                                                <div style={{ color: '#10B981', fontWeight: 600, fontSize: '0.85rem' }}>{l.referrer_code} <span style={{ fontSize: '0.7rem', color: '#4B5563' }}>({l.referrer_name})</span></div>
+                                            ) : <span style={{ color: '#4B5563', fontSize: '0.8rem' }}>Direct</span>}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{ 
+                                                padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800,
+                                                background: l.status === 'paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                                color: l.status === 'paid' ? '#10B981' : '#F59E0B',
+                                                textTransform: 'uppercase'
+                                            }}>
+                                                {l.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            {l.status !== 'paid' && (
+                                                <Btn onClick={() => handleGrantAcademyAccess(l.id)} color="#10B981" style={{ padding: '6px 12px' }}><Check size={14} /> {isEnglish ? 'Grant Access' : 'منح الوصول'}</Btn>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                } />
+            </div>
+
+            {/* Affiliates Table */}
+            <div>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Zap size={20} color="#10B981" /> {isEnglish ? 'Affiliate Partners' : 'شركاء التسويق بالعمولة'}</h2>
+                <Card s={{ padding: 0, overflow: 'hidden' }} c={
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Partner' : 'الشريك'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Ref Code' : 'كود الإحالة'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Total Commission' : 'إجمالي العمولات'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Status' : 'الحالة'}</th>
+                            </tr></thead>
+                            <tbody>
+                                {affiliates.length === 0 ? <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: '#4B5563' }}>{isEnglish ? 'No affiliates registered' : 'لا يوجد مسوقين حالياً'}</td></tr> :
+                                affiliates.map(a => (
+                                    <tr key={a.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontWeight: 700, color: 'white' }}>{a.profiles?.full_name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{a.profiles?.email}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <code style={{ padding: '4px 8px', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.1)', color: '#A78BFA', fontWeight: 800 }}>{a.affiliate_code}</code>
+                                        </td>
+                                        <td style={{ padding: '1rem', fontWeight: 700, color: 'white' }}>${a.commission_rate_fixed}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{ 
+                                                display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem',
+                                                color: a.status === 'active' ? '#10B981' : '#EF4444' 
+                                            }}>
+                                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: a.status === 'active' ? '#10B981' : '#EF4444' }} />
+                                                {a.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                } />
+            </div>
+        </div>
+    );
+
     const MarketingManager = () => {
         const [targetEntity, setTargetEntity] = useState('');
+        const [broadcasting, setBroadcasting] = useState(false);
         const [broadcastTitle, setBroadcastTitle] = useState('');
         const [broadcastText, setBroadcastText] = useState('');
         const [sending, setSending] = useState(false);
@@ -703,6 +848,7 @@ export default function AdminDashboard() {
         { id: 'ai-settings', i: Bot, l: t('admin.aiSettings') },
         { id: 'subscribers', i: Mail, l: t('admin.subscribers') },
         { id: 'marketing', i: Megaphone, l: isEnglish ? 'Broadcasting' : 'البث المباشر' },
+        { id: 'academy', i: Star, l: isEnglish ? 'Academy Leads' : 'طلبات الأكاديمية' },
         { id: 'custom-requests', i: Zap, l: isEnglish ? 'Custom Requests' : 'طلبات التوظيف', badge: customRequests.filter(r => r.status === 'pending').length },
         { id: 'white-label-requests', i: Globe, l: isEnglish ? 'White-Label Requests' : 'طلبات الهوية', badge: 0 },
     ];
@@ -735,6 +881,32 @@ export default function AdminDashboard() {
                     <div><div style={{ fontWeight: 900, fontSize: '0.95rem', background: 'linear-gradient(90deg,#fff,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{t('brand.name')}</div>
                         <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 700 }}>⚡ ADMIN</div></div>
                 </div>
+
+                {/* Direct Academy Bag Link for Admin */}
+                <div style={{ padding: '0.6rem' }}>
+                    <button 
+                        onClick={() => window.open('/academy/bag', '_blank')}
+                        style={{ 
+                            width: '100%', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '9px', 
+                            padding: '12px 11px', 
+                            borderRadius: '12px', 
+                            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2))', 
+                            color: '#A78BFA', 
+                            border: '1px solid rgba(139, 92, 246, 0.3)', 
+                            cursor: 'pointer', 
+                            fontWeight: 800, 
+                            fontSize: '0.85rem' 
+                        }}
+                    >
+                        <BookOpen size={16} />
+                        <span>{isEnglish ? 'View Training Bag' : 'دخول الحقيبة التدريبية'}</span>
+                        <ArrowRight size={14} style={{ marginLeft: isRtl ? 0 : 'auto', marginRight: isRtl ? 'auto' : 0 }} />
+                    </button>
+                </div>
+
                 <nav style={{ flex: 1, padding: '0.6rem', overflowY: 'auto' }}>
                     {NAV.map(({ id, i: Icon, l, badge }) => {
                         const a = tab === id; return (
@@ -1758,15 +1930,17 @@ export default function AdminDashboard() {
                     </div>
                 }
 
+                {/* ── ACADEMY ── */}
+                {tab === 'academy' && <AcademyView />}
+
+                {/* ── NEWSLETTERS ── */}
+                {tab === 'newsletters' && <NewsletterSubscribers />}
+
                 {/* ── BLOG ── */}
                 {tab === 'blog' && <AdminBlogManager />}
 
                 {/* ── BROADCASTING ── */}
                 {tab === 'marketing' && <MarketingManager />}
-
-                {/* ── SUBSCRIBERS ── */}
-                {tab === 'subscribers' && <NewsletterSubscribers />}
-
 
                 {/* ── WHITE LABEL REQUESTS ── */}
                 {tab === 'white-label-requests' && (

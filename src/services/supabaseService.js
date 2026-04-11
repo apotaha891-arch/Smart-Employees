@@ -357,7 +357,7 @@ export const getPublicTemplates = async () => {
 export const getAgentApps = async () => {
     try {
         const { data, error } = await supabase
-            .from('platform_settings')
+            .from('system_settings')
             .select('settings')
             .eq('key', 'agent_apps')
             .single();

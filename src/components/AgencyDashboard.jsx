@@ -3,7 +3,7 @@ import { supabase, uploadAgencyLogo } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
-import { Users, Plus, Key, Wallet, ArrowRight, Settings, ExternalLink, ShieldCheck, LayoutDashboard, Palette, ImagePlus, Globe, UploadCloud, CheckCircle2 } from 'lucide-react';
+import { Users, Plus, Key, Wallet, ArrowRight, Settings, ExternalLink, ShieldCheck, LayoutDashboard, Palette, ImagePlus, Globe, UploadCloud, CheckCircle2, Zap } from 'lucide-react';
 
 const AgencyDashboard = () => {
     const { user, realUser, impersonateUser, isImpersonating } = useAuth();
@@ -357,7 +357,7 @@ const AgencyDashboard = () => {
                         <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'white' }}>
                             {stats.totalClients} <span style={{ fontSize: '1rem', color: '#6B7280' }}>/ {stats.maxClients === 0 ? '∞' : stats.maxClients}</span>
                         </div>
-                        <button onClick={() => setShowAddClient(true)} className="btn btn-primary btn-sm mt-md" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <button onClick={() => { setError(''); setShowAddClient(true); }} className="btn btn-primary btn-sm mt-md" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                             <Plus size={16} /> {isEnglish ? 'Create New Sub-Account' : 'إنشاء حساب فرعي جديد'}
                         </button>
                     </div>
@@ -377,14 +377,15 @@ const AgencyDashboard = () => {
                         </thead>
                         <tbody>
                             {clients.length === 0 ? (
-                                <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: '#6B7280' }}>{isEnglish ? 'No clients yet. Create one above!' : 'لا يوجد عملاء حتى الآن. أنشئ حساباً جديداً من الأعلى!'}</td></tr>
+                                <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: '#6B7280' }}>{isEnglish ? 'No clients yet. Create one above!' : 'لا يوجد عملاء حتى الآن. أنشئ حساباً جديداً من الأعلى!'}</td></tr>
                             ) : clients.map(client => (
                                 <tr key={client.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <td style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>
-                                        {/* Support both RPC flat format and old nested format */}
-                                        {client.entity_business_name || client.entities?.[0]?.business_name || client.business_name || 'N/A'}
+                                    <td style={{ padding: '1rem' }}>
+                                        <div style={{ fontWeight: 800, color: 'white' }}>
+                                            {client.entity_business_name || client.entities?.[0]?.business_name || client.business_name || (client.full_name || client.email)}
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{client.email}</div>
                                     </td>
-                                    <td style={{ padding: '1rem 1.5rem', color: '#9CA3AF', fontSize: '0.9rem' }}>{client.email}</td>
                                     <td style={{ padding: '1rem 1.5rem' }}>
                                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', padding: '4px 10px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700 }}>
                                             {/* Support both RPC flat format and old nested format */}
@@ -392,7 +393,7 @@ const AgencyDashboard = () => {
                                         </div>
                                     </td>
                                     <td style={{ padding: '1rem 1.5rem', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                                        <button onClick={() => setShowTopUp(client)} className="btn btn-outline btn-sm" style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <button onClick={() => { setError(''); setShowTopUp(client); }} className="btn btn-outline btn-sm" style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <Wallet size={14} /> {isEnglish ? 'Top-up' : 'شحن المحفظة'}
                                         </button>
                                         <button 
@@ -422,7 +423,7 @@ const AgencyDashboard = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem', justifyContent: 'space-between', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <Palette size={24} color="#8B5CF6" />
-                            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{isEnglish ? 'Identity & Branding' : 'الهوية والعلامة التجارية'}</h2>
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{isEnglish ? 'White-Label Request Form' : 'نموذج طلب الهوية الخاصة'}</h2>
                         </div>
                         {isWhiteLabelPaid && brandingRequest && (
                             <div style={{ 
@@ -481,11 +482,12 @@ const AgencyDashboard = () => {
                                     </div>
                                 )}
                                 
-                                {brandingRequest?.status === 'pending' && (
-                                    <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '1rem', borderRadius: '12px', color: '#F59E0B', fontSize: '0.9rem' }}>
-                                        {isEnglish ? 'Your request is being reviewed. Settings are locked.' : 'طلبك قيد المراجعة حالياً. الحقول مغلقة مؤقتاً.'}
-                                    </div>
-                                )}
+                                 <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '1.25rem', borderRadius: '16px', color: '#A78BFA', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.5 }}>
+                                    <strong>💡 {isEnglish ? 'Separate Instance Model:' : 'نظام النسخة المستقلة:'}</strong><br/>
+                                    {isEnglish 
+                                        ? 'These settings are for your custom white-label instance. Changing them will not affect the main 24Shift dashboard, as your brand will live on its own separate domain/copy once approved.' 
+                                        : 'هذه الإعدادات مخصصة لنسختك المستقلة تماماً. تعديلها لن يؤثر على منصة 24شفت الرئيسية، حيث ستعمل علامتك التجارية على نطاق (Domain) ونظام مستقل خاص بك فور الاعتماد.'}
+                                </div>
 
                                 {/* 1. Agency Core Profile */}
                                 <fieldset disabled={brandingRequest?.status === 'pending'} style={{ border: 'none', padding: 0, margin: 0 }}>
@@ -755,7 +757,7 @@ const AgencyDashboard = () => {
                                 <input required type="password" minLength={6} className="input-field" value={newClient.password} onChange={e => setNewClient({...newClient, password: e.target.value})} placeholder="••••••••" />
                             </div>
                             <div style={{ display: 'flex', gap: '10px' }}>
-                                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowAddClient(false)}>{isEnglish ? 'Cancel' : 'إلغاء'}</button>
+                                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => { setError(''); setShowAddClient(false); }}>{isEnglish ? 'Cancel' : 'إلغاء'}</button>
                                 <button type="submit" className={`btn btn-primary ${actionLoading ? 'loading' : ''}`} style={{ flex: 1 }} disabled={actionLoading}>{isEnglish ? 'Create & Setup' : 'إنشاء وجدولة'}</button>
                             </div>
                         </form>
@@ -778,7 +780,7 @@ const AgencyDashboard = () => {
                                 <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: '8px' }}>Your current balance: {stats.walletBalance}</div>
                             </div>
                             <div style={{ display: 'flex', gap: '10px' }}>
-                                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowTopUp(null)}>{isEnglish ? 'Cancel' : 'إلغاء'}</button>
+                                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => { setError(''); setShowTopUp(null); }}>{isEnglish ? 'Cancel' : 'إلغاء'}</button>
                                 <button type="submit" className={`btn btn-primary ${actionLoading ? 'loading' : ''}`} style={{ flex: 1 }} disabled={actionLoading}>{isEnglish ? 'Transfer' : 'تحويل'}</button>
                             </div>
                         </form>

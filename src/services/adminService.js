@@ -107,7 +107,7 @@ export const updateClientPlan = async (clientId, plan) => {
 export const getPlatformSettings = async (key) => {
     try {
         const { data, error } = await supabase
-            .from('platform_settings')
+            .from('system_settings')
             .select('value')
             .eq('key', key)
             .maybeSingle();
@@ -122,7 +122,7 @@ export const getPlatformSettings = async (key) => {
 export const updatePlatformSettings = async (key, value) => {
     try {
         const { error } = await supabase
-            .from('platform_settings')
+            .from('system_settings')
             .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
         if (error) throw error;
         logSystemEvent('audit', 'system', `Updated platform setting: ${key}`);
@@ -169,14 +169,14 @@ export const deleteTemplate = async (id) => {
 
 // ─── All Settings ─────────────────────────────────────────────────────────────
 export const getAllSettings = async () => {
-    const { data, error } = await supabase.from('platform_settings').select('*').order('key');
+    const { data, error } = await supabase.from('system_settings').select('*').order('key');
     if (error) return [];
     return data || [];
 };
 
 export const saveSetting = async (key, value) => {
     const { data, error } = await supabase
-        .from('platform_settings')
+        .from('system_settings')
         .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
         .select().maybeSingle();
     if (error) throw error;
@@ -184,7 +184,7 @@ export const saveSetting = async (key, value) => {
 };
 
 export const deleteSetting = async (key) => {
-    const { error } = await supabase.from('platform_settings').delete().eq('key', key);
+    const { error } = await supabase.from('system_settings').delete().eq('key', key);
     if (error) throw error;
     return true;
 };
@@ -430,7 +430,7 @@ export const getAllWhiteLabelRequests = async () => {
             .from('white_label_requests')
             .select(`
                 *,
-                profiles:user_id (full_name, email, business_name)
+                profiles(full_name, email, business_name)
             `)
             .order('created_at', { ascending: false });
         
@@ -498,4 +498,64 @@ export const rejectWhiteLabelRequest = async (requestId, notes) => {
         .eq('id', requestId);
     if (error) throw error;
     return true;
+};
+
+// ─── Academy & Affiliates ──────────────────────────────────────────────────
+export const getAllAcademyLeads = async () => {
+    try {
+        const { data, error } = await supabase.rpc('get_admin_academy_leads');
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        console.error('getAllAcademyLeads error:', e.message);
+        // Fallback to table query if RPC fails
+        const { data } = await supabase.from('academy_leads').select('*').order('created_at', { ascending: false });
+        return data || [];
+    }
+};
+
+export const updateAcademyLeadStatus = async (leadId, status) => {
+    try {
+        const { error } = await supabase
+            .from('academy_leads')
+            .update({ status, updated_at: new Date().toISOString() })
+            .eq('id', leadId);
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error('updateAcademyLeadStatus error:', e.message);
+        return false;
+    }
+};
+
+export const getAllAffiliates = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('academy_affiliates')
+            .select(`
+                *,
+                profiles(id, full_name, email)
+            `)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        console.error('getAllAffiliates error:', e.message);
+        return [];
+    }
+};
+
+export const createAffiliate = async (userId, code) => {
+    try {
+        const { data, error } = await supabase
+            .from('academy_affiliates')
+            .insert([{ user_id: userId, affiliate_code: code || 'AUTO' }])
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        console.error('createAffiliate error:', e.message);
+        throw e;
+    }
 };

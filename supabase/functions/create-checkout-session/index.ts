@@ -88,6 +88,9 @@ serve(async (req: any) => {
       
       priceId = dbSetting?.value || Deno.env.get('STRIPE_PRICE_WHITE_LABEL') || '';
       mode = 'subscription';
+    } else if (planId === 'academy_access') {
+      priceId = Deno.env.get('STRIPE_PRICE_ACADEMY') || '';
+      mode = 'payment';
     } else {
       throw new Error(`Invalid Plan: ${planId}`);
     }
