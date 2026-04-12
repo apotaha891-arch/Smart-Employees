@@ -112,7 +112,6 @@ const OpportunityLanding = () => {
                 if (affData) referrerId = affData.id;
             }
 
-        try {
             console.log("Saving lead info for:", formData.email);
             const { error: insertError } = await supabase.from('academy_leads').insert([{
                 full_name: formData.full_name,
