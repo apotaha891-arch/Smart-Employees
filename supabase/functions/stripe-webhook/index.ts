@@ -40,35 +40,47 @@ serve(async (req: any) => {
         if (userId && planId) {
           if (paymentType === 'refill') {
             const refillAmount = planId === 'addon_1k' ? 1000 : 5000;
-            // Use the new RPC to add to topup_balance (legacy message_limit sync kept for safety)
             await supabase.rpc('fn_add_topup_credits', { p_user_id: userId, p_amount: refillAmount });
             console.log(`Refill successful: Added ${refillAmount} to user ${userId}`);
           } else {
-            // New subscription start: Call renewal RPC to initialize package credits
+            // New subscription or Academy Access
             if (paymentType === 'white_label') {
-                await supabase
-                  .from('profiles')
-                  .update({ 
-                    is_white_label_paid: true,
-                    white_label_sub_id: session.subscription 
-                  })
-                  .eq('id', userId);
-                console.log(`White label activated for agency: ${userId}`);
+                await supabase.from('profiles').update({ is_white_label_paid: true, white_label_sub_id: session.subscription }).eq('id', userId);
+            } else if (planId === 'academy_access') {
+                await supabase.from('academy_access').upsert({ user_id: userId, payment_id: session.id, status: 'active' });
             } else {
-                await supabase.rpc('fn_renew_user_subscription', { 
-                  p_user_id: userId, 
-                  p_plan_id: planId 
-                });
-                
-                // Link Stripe Subscription ID to profile
-                await supabase
-                  .from('profiles')
-                  .update({ stripe_subscription_id: session.subscription })
-                  .eq('id', userId);
-                
-                console.log(`New subscription started for ${userId}: ${planId}`);
+                await supabase.rpc('fn_renew_user_subscription', { p_user_id: userId, p_plan_id: planId });
+                await supabase.from('profiles').update({ stripe_subscription_id: session.subscription }).eq('id', userId);
             }
           }
+        } else if (planId === 'academy_access') {
+            // GUEST CHECKOUT HANDLING
+            const customerEmail = session.customer_details?.email;
+            if (customerEmail) {
+                console.log(`Guest payment for Academy: ${customerEmail}`);
+                // 1. Check if user exists
+                const { data: userData } = await supabase.auth.admin.listUsers();
+                let userMatch = userData.users.find(u => u.email === customerEmail);
+                
+                if (!userMatch) {
+                    console.log(`Creating ghost user for guest: ${customerEmail}`);
+                    const { data: newUser } = await supabase.auth.admin.createUser({
+                        email: customerEmail,
+                        email_confirm: true,
+                        user_metadata: { is_academy_guest: true }
+                    });
+                    userMatch = newUser.user;
+                }
+
+                if (userMatch) {
+                    await supabase.from('academy_access').upsert({ 
+                        user_id: userMatch.id, 
+                        payment_id: session.id, 
+                        status: 'active' 
+                    });
+                    console.log(`Academy access granted to guest-user: ${userMatch.id}`);
+                }
+            }
         }
         break;
       }

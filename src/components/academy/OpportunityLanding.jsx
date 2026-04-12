@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import AcademyLayout from '../layouts/AcademyLayout';
 import { useLanguage } from '../../LanguageContext';
 import { supabase } from '../../services/supabaseService';
+import { useAuth } from '../../context/AuthContext';
 import { 
     CheckCircle2, ArrowRight, Play, Zap, Phone, User, Users, Mail,
     Building2, Rocket, Star, Quote, ShieldCheck, 
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 
 const OpportunityLanding = () => {
+    const { user } = useAuth();
     const { language } = useLanguage();
     const isArabic = language === 'ar';
     const location = useLocation();
@@ -124,6 +126,7 @@ const OpportunityLanding = () => {
                 social_media_skills: formData.social_media_skills,
                 computer_skills: formData.computer_skills,
                 referrer_id: referrerId,
+                user_id: user?.id || null, 
                 status: 'knockout_viewed'
             }]);
 
@@ -157,6 +160,7 @@ const OpportunityLanding = () => {
             const { data, error } = await supabase.functions.invoke('create-checkout-session', {
                 body: {
                     planId: 'academy_access',
+                    guestEmail: formData.email, // Passing email for guest checkout
                     successUrl: `${window.location.origin}/academy/success`,
                     cancelUrl: window.location.href
                 }
@@ -166,12 +170,16 @@ const OpportunityLanding = () => {
 
             if (data?.url) {
                 window.location.href = data.url;
+            } else if (data?.error) {
+                // This captures our "fake 200" errors with descriptive messages
+                setPaymentError(`${t('فشل إنشاء رابط الدفع:', 'Payment creation failed:')} ${data.error}`);
             } else {
                 setPaymentError(t('عذراً، فشل إنشاء رابط الدفع. يرجى التأكد من إعدادات Stripe في لوحة التحكم.', 'Sorry, failed to generate payment link. Please check Stripe settings in the Admin Dashboard.'));
             }
         } catch (e) {
-            console.error('Payment Error:', e);
-            setPaymentError(t('حدث خطأ تقني في الاتصال ببوابة الدفع. يرجى المحاولة لاحقاً.', 'A technical error occurred while connecting to the payment gateway. Please try again later.'));
+            console.error('Full Payment Error Object:', e);
+            let technicalMsg = t('حدث خطأ تقني في الاتصال ببوابة الدفع.', 'A technical error occurred while connecting to the payment gateway.');
+            setPaymentError(`${technicalMsg} (${e.message || 'Unknown Error'})`);
         } finally {
             setLoading(false);
         }
