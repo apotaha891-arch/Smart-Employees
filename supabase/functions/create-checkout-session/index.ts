@@ -103,7 +103,11 @@ serve(async (req: any) => {
 
     console.log(`[checkout] priceId: ${priceId}, mode: ${mode}`);
 
-    if (!priceId) throw new Error(`Stripe Price ID not configured for plan: ${planId}`);
+    if (!priceId) {
+      const errorMsg = `Stripe Price ID not configured for plan: ${planId}. Please set it in Admin Dashboard or as STRIPE_PRICE_ACADEMY env var.`;
+      console.error(`[checkout] ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
 
     // 5. Build Session Config
     // For one-time payments (addons), use customer_email instead of customer
