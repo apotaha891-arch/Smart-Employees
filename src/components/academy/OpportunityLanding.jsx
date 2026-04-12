@@ -112,7 +112,9 @@ const OpportunityLanding = () => {
                 if (affData) referrerId = affData.id;
             }
 
-            await supabase.from('academy_leads').insert([{
+        try {
+            console.log("Saving lead info for:", formData.email);
+            const { error: insertError } = await supabase.from('academy_leads').insert([{
                 full_name: formData.full_name,
                 whatsapp: formData.whatsapp,
                 email: formData.email,
@@ -126,6 +128,10 @@ const OpportunityLanding = () => {
                 status: 'knockout_viewed'
             }]);
 
+            if (insertError) {
+                console.warn("Metadata save failed (Schema mismatch?), continuing flow:", insertError.message);
+            }
+            
             const segmentKey = `${userType}_${formData.industry}`;
             const { data: configData } = await supabase
                 .from('academy_config')
@@ -267,8 +273,8 @@ const OpportunityLanding = () => {
     );
 
     const Gatekeeper = () => (
-        <div className="animate-fade-in" style={{ textAlign: 'center', padding: '4rem 0' }}>
-            <h1 style={{ fontSize: '3.5rem', fontWeight: 950, marginBottom: '1.5rem', lineHeight: 1.1 }}>
+        <div className="animate-fade-in" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+            <h1 style={{ fontSize: 'clamp(2rem, 8vw, 3rem)', fontWeight: 950, marginBottom: '1.25rem', lineHeight: 1.15 }}>
                 {t('أهلاً بك.. كيف تريد البدء اليوم؟', 'Welcome.. how would you like to start today?')}
             </h1>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
@@ -425,10 +431,14 @@ const OpportunityLanding = () => {
                                     <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('القطاع المستهدف', 'Target Sector')}</label>
                                     <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} style={{ width: '100%', padding: '12px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }}>
                                         <option value="" style={{ background: '#111827' }}>{t('-- اختر القطاع --', '-- Choose Sector --')}</option>
-                                        <option value="real_estate" style={{ background: '#111827' }}>{t('عقارات (تسويق ذكي)', 'Real Estate (Smart Marketing)')}</option>
-                                        <option value="beauty" style={{ background: '#111827' }}>{t('صالونات تجميل (إدارة حجوزات)', 'Beauty Salons (Booking Mgmt)')}</option>
-                                        <option value="restaurant" style={{ background: '#111827' }}>{t('مطاعم (خدمة طاولات)', 'Restaurants (Table Service)')}</option>
-                                        <option value="retail" style={{ background: '#111827' }}>{t('تجارة إلكترونية (إغلاق مبيعات)', 'E-commerce (Sales Closing)')}</option>
+                                        <option value="real_estate" style={{ background: '#111827' }}>{t('عقارات 🏠', 'Real Estate 🏠')}</option>
+                                        <option value="beauty" style={{ background: '#111827' }}>{t('تجميل وعناية 🌸', 'Beauty & Care 🌸')}</option>
+                                        <option value="restaurant" style={{ background: '#111827' }}>{t('مطاعم وضيافة 🍽', 'Restaurants & Hospitality 🍽')}</option>
+                                        <option value="retail_ecommerce" style={{ background: '#111827' }}>{t('تجزئة ومتاجر 🛍', 'Retail & E-commerce 🛍')}</option>
+                                        <option value="medical" style={{ background: '#111827' }}>{t('طبي وصحي 🩺', 'Medical & Health 🩺')}</option>
+                                        <option value="call_center" style={{ background: '#111827' }}>{t('خدمات عملاء وسكرتارية 🎧', 'Customer Service & Secretary 🎧')}</option>
+                                        <option value="telecom_it" style={{ background: '#111827' }}>{t('اتصالات وتقنية 📡', 'Telecom & IT 📡')}</option>
+                                        <option value="banking" style={{ background: '#111827' }}>{t('بنوك ومالية 🏦', 'Banking & Finance 🏦')}</option>
                                     </select>
                                 </div>
                                 <div>
@@ -481,11 +491,11 @@ const OpportunityLanding = () => {
                 )}
                 {step === 2 && (
                     <div className="animate-fade-in" style={{ textAlign: 'center' }}>
-                         <div style={{ marginBottom: '3rem' }}>
-                            <h2 style={{ fontSize: '2.5rem', fontWeight: 950, marginBottom: '1rem', color: '#A78BFA' }}>{t(config?.headline_ar || 'تم تجهيز خطتك!', config?.headline_en || 'Your plan is ready!')}</h2>
+                         <div style={{ marginBottom: '2.5rem' }}>
+                            <h2 style={{ fontSize: 'clamp(1.8rem, 7vw, 2.5rem)', fontWeight: 950, marginBottom: '1rem', color: '#A78BFA' }}>{t(config?.headline_ar || 'تم تجهيز خطتك!', config?.headline_en || 'Your plan is ready!')}</h2>
                         </div>
-                        <div style={{ background: 'rgba(59, 130, 246, 0.05)', padding: '3.5rem', borderRadius: '40px', border: '1px solid rgba(59, 130, 246, 0.3)', textAlign: isArabic ? 'right' : 'left' }}>
-                            <h3 style={{ fontSize: '2.2rem', fontWeight: 950, marginBottom: '1.5rem', color: 'white' }}>{t(`بمجرد اشتراكك بـ ${price}${currency}، ستحصل على:`, `Once you subscribe for ${price}${currency}, you get:`)}</h3>
+                        <div style={{ background: 'rgba(59, 130, 246, 0.05)', padding: 'clamp(1.5rem, 5vw, 3.5rem)', borderRadius: '40px', border: '1px solid rgba(59, 130, 246, 0.3)', textAlign: isArabic ? 'right' : 'left' }}>
+                            <h3 style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)', fontWeight: 950, marginBottom: '1.5rem', color: 'white' }}>{t(`بمجرد اشتراكك بـ ${price}${currency}، ستحصل على:`, `Once you subscribe for ${price}${currency}, you get:`)}</h3>
                             
                             <ul style={{ listStyle: 'none', padding: 0, marginBottom: '3rem' }}>
                                 <li style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1.25rem', fontSize: '1.15rem' }}>
