@@ -95,7 +95,7 @@ serve(async (req: any) => {
         .eq('key', 'academy_price_id')
         .maybeSingle();
 
-      priceId = dbSetting?.value || Deno.env.get('STRIPE_PRICE_ACADEMY') || '';
+      priceId = dbSetting?.value || Deno.env.get('STRIPE_PRICE_ACADEMY') || 'price_1TLQyRAWmA1i5IJrQH2W5PE7';
       mode = 'payment';
     } else {
       throw new Error(`Invalid Plan: ${planId}`);
