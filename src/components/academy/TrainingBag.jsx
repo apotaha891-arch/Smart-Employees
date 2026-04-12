@@ -275,8 +275,50 @@ const TrainingBag = () => {
                     practiceTask_en: 'View the chart in your analytics dashboard and identify the busiest day of the week for your business.'
                 }
             ]
+        },
+        {
+            stage: 7,
+            title_ar: 'المرحلة 7: ماكينة الأرباح - التوسع كوكالة حلول ذكاء اصطناعي',
+            title_en: 'Stage 7: The Money-Machine - Scaling as an AI Solutions Agency',
+            lessons: [
+                {
+                    title_ar: 'استراتيجية التسعير وتحقيق أول 1000 دولار',
+                    title_en: 'Pricing Strategy & Achieving Your First $1,000',
+                    summary_ar: 'كيفية تحويل خبرتك في النظام إلى باقات خدمية تبيعها للشركات والمشاريع الناشئة.',
+                    summary_en: 'How to turn your system expertise into service packages sold to businesses and startups.',
+                    material_ar: `أنت الآن لست مجرد مستخدم، أنت "مهندس حلول". نموذج العمل كوكالة (Agency Model) يعتمد على ثلاث ركائز مالية:
+                    
+                    1. **رسوم التأسيس (Setup Fee)**: مقابل بناء "الكيان"، رفع ملفات المعرفة، وبرمجة الموظف الرقمي لأول مرة. (تتراوح غالباً بين 100$ - 500$ لكل عميل).
+                    2. **الاشتراك الشهري (Management Fee)**: مقابل متابعة جودة الردود، تحديث المعلومات، وتحليل التقارير للعميل.
+                    3. **هامش استهلاك الرصيد**: يمكنك إعادة بيع أرصدة المحادثات (Credits) للعملاء بهامش ربح بسيط.
+                    
+                    **قاعدة الذهب**: ابحث عن "نقاط الألم" عند العميل (مثلاً: تأخر الرد في الواتساب، ضياع الحجوزات) وقدم الموظف الرقمي كحل مالي وتشغيلي فوري.`,
+                    material_en: `You are no longer just a user; you are a "Solutions Architect." The Agency Model relies on three financial pillars:
+                    
+                    1. **Setup Fee**: For building the "Entity," uploading knowledge files, and programming the digital employee for the first time. (Standard range: $100 - $500 per client).
+                    2. **Management Fee**: For monitoring response quality, updating info, and analyzing reports for the client.
+                    3. **Credit Margin**: You can resell chat credits to clients with a modest profit margin.
+                    
+                    **Golden Rule**: Find the client's "Pain Points" (e.g., delayed WhatsApp replies, lost bookings) and present the Digital Employee as an instant financial and operational solution.`,
+                    steps_ar: [
+                        'تحديد الفئة المستهدفة (مطاعم، عيادات، شركات عقارية) وتجهيز عرض سعر لكل منها',
+                        'استخدام رابط "لوحة تحكم الوكالة" لإدارة جميع حسابات عملائك من شاشة واحدة',
+                        'تحديد ميزانية تسويقية لاستهداف أصحاب الأعمال عبر لينكد إن ومنصات التواصل'
+                    ],
+                    steps_en: [
+                        'Identify target niches (restaurants, clinics, real estate) and prepare price quotes for each',
+                        'Use the "Agency Dashboard" link to manage all client accounts from a single screen',
+                        'Set a marketing budget to target business owners via LinkedIn and social platforms'
+                    ],
+                    image_ar: '/academy/agency_dashboard.png',
+                    image_en: '/academy/agency_dashboard_en.png',
+                    practiceTask_ar: 'قم بإنشاء مستند "باقة العميل الأول"، واقترح سعراً لخدمة "الموظف الرقمي للعقارات".',
+                    practiceTask_en: 'Create a "First Client Package" document and propose a price for a "Real Estate Digital Employee" service.'
+                }
+            ]
         }
     ];
+
 
     const activeLesson = curriculum[currentStep.stage].lessons[currentStep.lesson];
 

@@ -10,6 +10,7 @@ function ScrollToTop() {
     return null;
 }
 import { LanguageProvider } from './LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { createAuthProvider, useAuth } from './context/AuthContext';
 import { BrandingProvider } from './context/BrandingContext';
 import ProtectedRoute, { AgencyRoute } from './components/shared/ProtectedRoute';
@@ -47,6 +48,8 @@ import Footer from './components/Footer';
 import AgencyDashboard from './components/AgencyDashboard';
 import OpportunityLanding from './components/academy/OpportunityLanding';
 import TrainingBag from './components/academy/TrainingBag';
+import MarketingMastery from './components/academy/MarketingMastery';
+import PartnerDashboard from './components/academy/PartnerDashboard';
 
 // Create AuthProvider
 const AuthProvider = createAuthProvider();
@@ -54,16 +57,18 @@ const AuthProvider = createAuthProvider();
 
 function App() {
     return (
-        <LanguageProvider>
-            <AuthProvider>
-                <BrandingProvider>
-                    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                        <ScrollToTop />
-                        <AppContent />
-                    </Router>
-                </BrandingProvider>
-            </AuthProvider>
-        </LanguageProvider>
+        <ThemeProvider>
+            <LanguageProvider>
+                <AuthProvider>
+                    <BrandingProvider>
+                        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                            <ScrollToTop />
+                            <AppContent />
+                        </Router>
+                    </BrandingProvider>
+                </AuthProvider>
+            </LanguageProvider>
+        </ThemeProvider>
     );
 }
 
@@ -79,7 +84,7 @@ function AppContent() {
     
     const isDashboard = alwaysDashboardRoutes.includes(location.pathname) || (hybridRoutes.includes(location.pathname) && isAuthenticated);
 
-    const isAcademy = location.pathname.startsWith('/opportunity') || location.pathname.startsWith('/academy');
+    const isAcademy = location.pathname.startsWith('/opportunity') || location.pathname.startsWith('/academy') || location.pathname.startsWith('/start') || location.pathname.startsWith('/academy/partner');
     
     return (
         <div className="App">
@@ -100,9 +105,12 @@ function AppContent() {
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/blog" element={<BlogList />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
-                <Route path="/opportunity" element={<OpportunityLanding />} />
+                <Route path="/opportunity" element={<Navigate to="/start" replace />} />
+                <Route path="/start" element={<OpportunityLanding />} />
                 <Route path="/academy" element={<TrainingBag />} />
                 <Route path="/academy/bag" element={<TrainingBag />} />
+                <Route path="/academy/mastery" element={<MarketingMastery />} />
+                <Route path="/academy/partner" element={<PartnerDashboard />} />
 
                 {/* ============ ADMIN PROTECTED ROUTES ============ */}
                 <Route
@@ -240,7 +248,7 @@ function AppContent() {
             </Routes>
 
             {!isDashboard && !isAcademy && <Footer />}
-            <PlatformConcierge />
+            {!isAcademy && <PlatformConcierge />}
         </div>
     );
 }

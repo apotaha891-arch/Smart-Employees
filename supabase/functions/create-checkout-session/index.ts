@@ -89,7 +89,13 @@ serve(async (req: any) => {
       priceId = dbSetting?.value || Deno.env.get('STRIPE_PRICE_WHITE_LABEL') || '';
       mode = 'subscription';
     } else if (planId === 'academy_access') {
-      priceId = Deno.env.get('STRIPE_PRICE_ACADEMY') || '';
+      const { data: dbSetting } = await supabaseAdmin
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'academy_price_id')
+        .maybeSingle();
+
+      priceId = dbSetting?.value || Deno.env.get('STRIPE_PRICE_ACADEMY') || '';
       mode = 'payment';
     } else {
       throw new Error(`Invalid Plan: ${planId}`);

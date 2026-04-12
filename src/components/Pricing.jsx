@@ -3,11 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Zap, Shield, Star, Crown, Loader, ShieldCheck } from 'lucide-react';
 import { supabase, getProfile } from '../services/supabaseService';
 import { useLanguage } from '../LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import ManusHero from './ManusHero';
 
 const Pricing = () => {
     const location = useLocation();
     const { t, language } = useLanguage();
+    const { isDarkMode } = useTheme();
     const navigate = useNavigate();
     const pricingPlans = t('pricingPlans');
 
@@ -370,7 +372,7 @@ const Pricing = () => {
     const currentPlans = viewMode === 'agency' ? agencyPlans : plans;
 
     return (
-        <div className="bg-light" style={{ paddingTop: '8rem', paddingBottom: '6rem', minHeight: '100vh', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
+        <div style={{ background: 'var(--color-bg-base)', paddingTop: '8rem', paddingBottom: '6rem', minHeight: '100vh', direction: language === 'ar' ? 'rtl' : 'ltr' }}>
             <div className="container">
                 <div className="text-center mb-3xl">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', alignItems: 'center', marginBottom: '4rem' }}>
@@ -378,12 +380,12 @@ const Pricing = () => {
                             <div className="badge badge-success mb-md" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6', padding: '0.6rem 1.75rem', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(139, 92, 246, 0.2)' }}>
                                 {viewMode === 'agency' ? (language === 'ar' ? 'حلول الوكالات وإعادة البيع' : 'Agency Reseller Solutions') : (language === 'ar' ? 'استثمار ذكي لمستقبل منشأتك' : 'Smart Investment for Your Business')}
                             </div>
-                            <h2 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1.5rem', color: 'var(--primary)', lineHeight: 1.2 }}>
+                            <h2 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1.5rem', color: 'var(--color-text-main)', lineHeight: 1.2 }}>
                                 {viewMode === 'agency' 
                                     ? (language === 'ar' ? 'كن شريكنا، وقدم خدمة AI لعملائك.' : 'Partner with us, Provide AI for your clients.')
                                     : (language === 'ar' ? 'موظف لا ينام، بتكلفة لا تقارن.' : 'An Employee Who Never Sleeps, at an Unbeatable Cost.')}
                             </h2>
-                            <p className="text-secondary" style={{ fontSize: '1.25rem', lineHeight: 1.7, fontWeight: 500, margin: '0' }}>
+                            <p style={{ fontSize: '1.25rem', lineHeight: 1.7, fontWeight: 500, margin: '0', color: 'var(--color-text-secondary)' }}>
                                 {viewMode === 'agency'
                                     ? (language === 'ar' ? 'سواء كنت وكالة تسويق أو شركة تقنية، قم بتوزيع الرصيد وإدارة عملائك من لوحة تحكم واحدة وبسهولة تامة.' : 'Whether you are a marketing agency or a tech firm, distribute credits and manage your clients from a single central dashboard.')
                                     : (language === 'ar' ? 'تخيل موظفاً يرد على عملائك فيตี3 فجراً، يغلق الصفقات، ويحجز المواعيد بلباقة تامة، بدون إجازات أو أخطاء وبجزء بسيط من تكلفة الموظف التقليدي.' : 'Imagine an employee replying to your customers at 3 AM, closing deals, and booking appointments politely, with no days off or errors, at a fraction of the cost.')}
@@ -477,10 +479,10 @@ const Pricing = () => {
                     {/* View Mode Toggle */}
                     <div style={{
                         display: 'flex',
-                        background: 'rgba(255,255,255,0.03)',
+                        background: 'var(--color-bg-input)',
                         padding: '0.4rem',
                         borderRadius: '24px',
-                        border: '1px solid rgba(255,255,255,0.05)',
+                        border: '1px solid var(--color-border-subtle)',
                         position: 'relative',
                         width: 'fit-content'
                     }}>
@@ -530,11 +532,11 @@ const Pricing = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '1rem',
-                        background: 'rgba(255,255,255,0.03)',
+                        background: 'var(--color-bg-input)',
                         padding: '0.5rem',
                         borderRadius: '20px',
                         width: 'fit-content',
-                        border: '1px solid rgba(255,255,255,0.05)'
+                        border: '1px solid var(--color-border-subtle)'
                     }}>
                         <button
                             onClick={() => setBillingCycle('monthly')}
@@ -598,8 +600,10 @@ const Pricing = () => {
                             key={plan.id}
                             className="card"
                             style={{
-                                background: plan.popular ? 'linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, rgba(24, 24, 27, 1) 100%)' : '#18181B',
-                                border: plan.popular ? `2px solid ${plan.color}` : '1px solid rgba(255,255,255,0.08)',
+                                background: plan.popular 
+                                    ? (isDarkMode ? 'linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, rgba(24, 24, 27, 1) 100%)' : 'rgba(139, 92, 246, 0.03)') 
+                                    : 'var(--color-bg-surface)',
+                                border: plan.popular ? `2px solid ${plan.color}` : '1px solid var(--color-border-subtle)',
                                 borderRadius: '32px',
                                 padding: '2.5rem',
                                 position: 'relative',
@@ -643,15 +647,15 @@ const Pricing = () => {
                                 }}>
                                     {plan.icon}
                                 </div>
-                                <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '0.75rem', color: '#FFF' }}>
+                                <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '0.75rem', color: 'var(--color-text-main)' }}>
                                     {plan.name}
                                 </h3>
-                                <p style={{ color: '#A1A1AA', fontSize: '1rem', lineHeight: 1.6, minHeight: '48px' }}>
+                                <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', lineHeight: 1.6, minHeight: '48px' }}>
                                     {plan.description}
                                 </p>
                             </div>
 
-                            <div style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
                                     {plan.id === 'enterprise' ? (
                                         <span style={{ fontSize: '2.4rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>
@@ -659,7 +663,7 @@ const Pricing = () => {
                                         </span>
                                     ) : (
                                         <>
-                                            <span style={{ fontSize: '3.5rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{price}</span>
+                                            <span style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--color-text-main)', lineHeight: 1 }}>{price}</span>
                                             <span style={{ fontSize: '1.1rem', color: '#71717A', fontWeight: 600 }}>$ / {billingCycle === 'monthly' ? t('month') : t('monthYearly')}</span>
                                         </>
                                     )}
@@ -689,7 +693,7 @@ const Pricing = () => {
                                         <div style={{ marginTop: '3px' }}>
                                             <CheckCircle2 size={18} color={plan.color} />
                                         </div>
-                                        <span style={{ color: '#E4E4E7', fontSize: '1rem', fontWeight: 500, lineHeight: 1.5 }}>
+                                        <span style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', fontWeight: 500, lineHeight: 1.5 }}>
                                             {feature}
                                         </span>
                                     </li>
@@ -708,7 +712,7 @@ const Pricing = () => {
                                     textAlign: 'center',
                                     fontWeight: 900,
                                     fontSize: '1.1rem',
-                                    border: plan.id === userPlan ? '1px solid rgba(16, 185, 129, 0.3)' : (plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)'),
+                                    border: plan.id === userPlan ? '1px solid rgba(16, 185, 129, 0.3)' : (plan.popular ? 'none' : '1px solid var(--color-border-subtle)'),
                                     cursor: 'pointer',
                                     transition: 'all 0.3s',
                                     boxShadow: plan.popular && plan.id !== userPlan ? `0 10px 25px rgba(${hexToRgb(plan.color)}, 0.3)` : 'none'
@@ -740,7 +744,7 @@ const Pricing = () => {
             {/* Quick Add-ons Section */}
             <div className="container" style={{ marginTop: '6rem' }}>
                 <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                    <h3 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '1rem', color: '#FFF' }}>
+                    <h3 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '1rem', color: 'var(--color-text-main)' }}>
                         {language === 'ar' ? '🚀 شحن نقاط إضافية' : '🚀 Quick Points Refill'}
                     </h3>
                     <p style={{ color: '#A1A1AA', fontSize: '1.1rem' }}>
@@ -774,7 +778,7 @@ const Pricing = () => {
                             <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'رصيد محادثات إضافي' : 'Extra conversation credits'}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFF' }}>${addons[0].price}</div>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-text-main)' }}>${addons[0].price}</div>
                             <button 
                                 onClick={() => { vibrate(); handleSelectPlan(addons[0]); }}
                                 disabled={loadingPlan === addons[0].id}
@@ -815,17 +819,17 @@ const Pricing = () => {
                             SAVE 30%
                         </div>
                         <div>
-                            <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>{addons[1].credits.toLocaleString()} {t('points')}</div>
-                            <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'باقة شحن كبيرة' : 'Bulk refill pack'}</div>
+                            <div style={{ color: 'var(--color-accent)', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>{addons[1].credits.toLocaleString()} {t('points')}</div>
+                            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>{language === 'ar' ? 'باقة شحن كبيرة' : 'Bulk refill pack'}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFF' }}>${addons[1].price}</div>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-text-main)' }}>${addons[1].price}</div>
                             <button 
                                 onClick={() => { vibrate(); handleSelectPlan(addons[1]); }}
                                 disabled={loadingPlan === addons[1].id}
                                 style={{
-                                    background: '#FFF',
-                                    color: '#8B5CF6',
+                                    background: 'var(--color-accent)',
+                                    color: 'white',
                                     border: 'none',
                                     padding: '0.5rem 1.25rem',
                                     borderRadius: '10px',
@@ -849,21 +853,21 @@ const Pricing = () => {
             {/* Comparison Table Section */}
             <div className="container" style={{ marginTop: '8rem', paddingBottom: '4rem' }}>
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                    <h3 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#FFF' }}>
+                    <h3 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-text-main)' }}>
                         {language === 'ar' ? '📊 قارن بين الباقات' : '📊 Compare Plans'}
                     </h3>
-                    <p style={{ color: '#A1A1AA', fontSize: '1.2rem' }}>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.2rem' }}>
                         {language === 'ar' ? 'اختر القوة التي تناسب طموح منشأتك' : 'Choose the power that fits your facility\'s ambition'}
                     </p>
                 </div>
 
-                <div style={{ overflowX: 'auto', background: '#18181B', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+                <div style={{ overflowX: 'auto', background: 'var(--color-bg-surface)', borderRadius: '32px', border: '1px solid var(--color-border-subtle)', boxShadow: 'var(--shadow-premium)' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: language === 'ar' ? 'right' : 'left' }}>
                         <thead>
-                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                <th style={{ padding: '2rem', color: '#71717A', fontWeight: 600 }}>{language === 'ar' ? 'الميزة' : 'Feature'}</th>
+                            <tr style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                <th style={{ padding: '2rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>{language === 'ar' ? 'الميزة' : 'Feature'}</th>
                                 <th style={{ padding: '2rem', color: '#06B6D4', fontWeight: 900, fontSize: '1.2rem' }}>{language === 'ar' ? 'الباقة الأساسية' : 'Starter'}</th>
-                                <th style={{ padding: '2rem', color: '#8B5CF6', fontWeight: 900, fontSize: '1.2rem', background: 'rgba(139, 92, 246, 0.05)' }}>{language === 'ar' ? 'الباقة المتقدمة' : 'Pro'}</th>
+                                <th style={{ padding: '2rem', color: 'var(--color-accent)', fontWeight: 900, fontSize: '1.2rem', background: 'var(--color-accent-soft)' }}>{language === 'ar' ? 'الباقة المتقدمة' : 'Pro'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -876,10 +880,10 @@ const Pricing = () => {
                                 { name: language === 'ar' ? 'تدريب مخصص' : 'Custom Training', starter: '✅', pro: '✅' },
                                 { name: language === 'ar' ? 'تقارير متقدمة' : 'Advanced Analytics', starter: '✅', pro: '✅' },
                             ].map((row, i) => (
-                                <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
-                                    <td style={{ padding: '1.5rem 2rem', color: '#E4E4E7', fontWeight: 600 }}>{row.name}</td>
-                                    <td style={{ padding: '1.5rem 2rem', color: '#A1A1AA' }}>{row.starter}</td>
-                                    <td style={{ padding: '1.5rem 2rem', color: '#FFF', fontWeight: 700, background: 'rgba(139, 92, 246, 0.05)' }}>{row.pro}</td>
+                                <tr key={i} style={{ borderBottom: '1px solid var(--color-border-subtle)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'var(--color-bg-input)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                                    <td style={{ padding: '1.5rem 2rem', color: 'var(--color-text-main)', fontWeight: 600 }}>{row.name}</td>
+                                    <td style={{ padding: '1.5rem 2rem', color: 'var(--color-text-secondary)' }}>{row.starter}</td>
+                                    <td style={{ padding: '1.5rem 2rem', color: 'var(--color-text-main)', fontWeight: 700, background: 'var(--color-accent-soft)' }}>{row.pro}</td>
                                 </tr>
                             ))}
                         </tbody>

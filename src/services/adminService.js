@@ -1,4 +1,5 @@
 import { supabase } from './supabaseService';
+import * as geminiService from './geminiService';
 
 // ─── Admin data via SECURITY DEFINER RPCs (bypasses RLS) ─────────────────────
 // These RPCs verify the caller is admin via app_metadata inside the DB function.
@@ -558,4 +559,11 @@ export const createAffiliate = async (userId, code) => {
         console.error('createAffiliate error:', e.message);
         throw e;
     }
+};
+
+// ─── Admin Advisor ──────────────────────────────────────────────────────────
+export const chatWithAdvisor = async (message, history, config, context) => {
+    const res = await geminiService.getAdminAdvisorResponse(message, history, config, context);
+    if (!res.success) throw new Error(res.error);
+    return res.text;
 };

@@ -7,13 +7,15 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { signOut, supabase, getProfile } from '../services/supabaseService';
 import { useBranding } from '../context/BrandingContext';
 import NotificationCenter from './shared/NotificationCenter';
-import { Globe } from 'lucide-react';
+import { Globe, Sun, Moon } from 'lucide-react';
 
 const ModernDashboardLayout = ({ children }) => {
     const { t, language, toggleLanguage } = useLanguage();
+    const { theme, toggleTheme, isDarkMode } = useTheme();
     const location = useLocation();
     const navigate = useNavigate();
     const { user, realUser, isAdmin, isCustomer, isAgency, isImpersonating, stopImpersonating } = useAuth();
@@ -170,7 +172,15 @@ const adminNavItems = [
 const navItems = isAdmin ? adminNavItems : customerNavItems;
 
 return (
-    <div className="dashboard-container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 74px)', background: '#0B0F19', color: 'white', direction: language === 'ar' ? 'rtl' : 'ltr', overflow: 'hidden' }}>
+            <div className="dashboard-container" style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            height: 'calc(100vh - 74px)', 
+            background: 'var(--color-bg-base)', 
+            color: 'var(--color-text-main)', 
+            direction: language === 'ar' ? 'rtl' : 'ltr', 
+            overflow: 'hidden' 
+        }}>
 
         {/* ── Impersonation Banner ── */}
         {isImpersonating && (
@@ -228,13 +238,13 @@ return (
                 width: isSidebarOpen ? '280px' : '80px', 
                 display: 'flex', 
                 flexDirection: 'column', 
-                background: '#111827', 
-                borderRight: language === 'ar' ? 'none' : '1px solid rgba(255,255,255,0.05)', 
-                borderLeft: language === 'ar' ? '1px solid rgba(255,255,255,0.05)' : 'none', 
+                background: 'var(--color-bg-surface)', 
+                borderRight: language === 'ar' ? 'none' : '1px solid var(--color-border-subtle)', 
+                borderLeft: language === 'ar' ? '1px solid var(--color-border-subtle)' : 'none', 
                 transition: 'width 0.3s', 
                 overflowY: 'auto', 
                 flexShrink: 0,
-                zIndex: 50 // Ensure it stays above main if anything weird happens
+                zIndex: 50
             }}>
                 {/* Logo Area */}
                 <div style={{ 
@@ -244,10 +254,29 @@ return (
                     justifyContent: 'space-between',
                     flexDirection: language === 'ar' ? 'row-reverse' : 'row' // Ensure button and logo swap correctly in RTL
                 }}>
-                    <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', minWidth: 0 }}>
+                    <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', minWidth: 0 }}>
+                        <img 
+                            src="/logo.png" 
+                            alt="24shift" 
+                            style={{ 
+                                height: isSidebarOpen ? '32px' : '36px', 
+                                objectFit: 'contain', 
+                                borderRadius: '6px',
+                                flexShrink: 0
+                            }} 
+                        />
                         {isSidebarOpen && (
-                            <span style={{ fontSize: '1.2rem', fontWeight: 900, background: '#fff', letterSpacing: '0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px', color: 'white' }}>
-                                {branding.is_custom ? branding.brand_name : (isAdmin ? '24Shift' : '24SHIFT')}
+                            <span style={{ 
+                                fontSize: '1.25rem', 
+                                fontWeight: 900, 
+                                letterSpacing: '0.5px', 
+                                whiteSpace: 'nowrap', 
+                                overflow: 'hidden', 
+                                textOverflow: 'ellipsis', 
+                                maxWidth: '150px', 
+                                color: 'var(--color-text-main)' 
+                            }}>
+                                {userData.business_name || (isAdmin ? '24Shift' : '24SHIFT')}
                             </span>
                         )}
                     </Link>
@@ -261,7 +290,7 @@ return (
                     {/* Role Section Header */}
                     {isSidebarOpen && (
                         <div style={{ padding: '1rem 0.5rem', marginBottom: '1rem' }}>
-                            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#9CA3AF', fontWeight: 700, letterSpacing: '0.05em' }}>
+                            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>
                                 {isAdmin ? t('adminTools') : t('customerTools')}
                             </span>
                         </div>
@@ -272,12 +301,12 @@ return (
                             if (item.type === 'title') {
                                 return isSidebarOpen ? (
                                     <li key={`title-${idx}`} style={{ padding: '1.5rem 1rem 0.5rem', marginBottom: '0.5rem', opacity: 0.6 }}>
-                                        <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#9CA3AF', fontWeight: 800, letterSpacing: '0.1em' }}>
+                                        <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', fontWeight: 800, letterSpacing: '0.1em' }}>
                                             {item.label}
                                         </span>
                                     </li>
                                 ) : (
-                                    <li key={`sep-${idx}`} style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '1.5rem 1rem' }} />
+                                    <li key={`sep-${idx}`} style={{ height: '1px', background: 'var(--color-border-subtle)', margin: '1.5rem 1rem' }} />
                                 );
                             }
 
@@ -290,15 +319,15 @@ return (
                                         display: 'flex', alignItems: 'center', gap: '1rem',
                                         padding: '12px 16px',
                                         borderRadius: '12px',
-                                        color: active ? 'white' : '#9CA3AF',
-                                        background: active ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
-                                        borderRight: language === 'ar' ? 'none' : (active ? '3px solid #8B5CF6' : '3px solid transparent'),
-                                        borderLeft: language === 'ar' ? (active ? '3px solid #8B5CF6' : '3px solid transparent') : 'none',
+                                        color: active ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                                        background: active ? 'var(--color-accent-soft)' : 'transparent',
+                                        borderRight: language === 'ar' ? 'none' : (active ? '3px solid var(--color-accent)' : '3px solid transparent'),
+                                        borderLeft: language === 'ar' ? (active ? '3px solid var(--color-accent)' : '3px solid transparent') : 'none',
                                         transition: 'all 0.2s',
                                         textDecoration: 'none'
                                     }}>
-                                        {item.icon && <item.icon size={20} color={active ? '#8B5CF6' : 'currentColor'} />}
-                                        {isSidebarOpen && <span style={{ fontSize: '0.9rem', fontWeight: active ? 600 : 400 }}>{item.label}</span>}
+                                        {item.icon && <item.icon size={20} color={active ? 'var(--color-accent)' : 'currentColor'} />}
+                                        {isSidebarOpen && <span style={{ fontSize: '0.9rem', fontWeight: active ? 800 : 500 }}>{item.label}</span>}
                                     </Link>
                                 </li>
                             );
@@ -307,7 +336,7 @@ return (
                 </nav>
 
                 {/* User Profile & Logout */}
-                <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ padding: '1.5rem', borderTop: '1px solid var(--color-border-subtle)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#374151', overflow: 'hidden' }}>
                             <img
@@ -322,8 +351,8 @@ return (
                                 <div style={{ fontSize: '0.7rem', color: '#6B7280', marginBottom: '0.25rem' }}>{userData.email}</div>
                                 <span style={{
                                     fontSize: '0.65rem',
-                                    background: isAdmin ? 'rgba(239, 68, 68, 0.2)' : 'rgba(139, 92, 246, 0.2)',
-                                    color: isAdmin ? '#FCA5A5' : '#C4B5FD',
+                                    background: 'var(--color-accent-soft)',
+                                    color: 'var(--color-accent)',
                                     padding: '0.15rem 0.4rem',
                                     borderRadius: '4px',
                                     fontWeight: 700
@@ -380,9 +409,9 @@ return (
             {/* Main Content Area */}
             <main style={{
                 flex: 1,
-                minWidth: 0, // CRITICAL: prevents flex child from expanding beyond parent
+                minWidth: 0,
                 transition: 'all 0.3s ease',
-                background: '#0B0F19',
+                background: 'var(--color-bg-base)',
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -395,19 +424,27 @@ return (
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '1rem 2rem',
-                    background: '#111827',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    background: 'var(--color-bg-surface)',
+                    borderBottom: '1px solid var(--color-border-subtle)',
                     position: 'sticky',
                     top: 0,
                     zIndex: 100
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
                         <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
-                            <Search size={16} style={{ position: 'absolute', top: '50%', [language === 'ar' ? 'right' : 'left']: '12px', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                            <Search size={16} style={{ position: 'absolute', top: '50%', [language === 'ar' ? 'right' : 'left']: '12px', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
                             <input
                                 type="text"
                                 placeholder={language === 'ar' ? 'بحث...' : 'Search...'}
-                                style={{ width: '100%', padding: language === 'ar' ? '8px 36px 8px 12px' : '8px 12px 8px 36px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white', fontSize: '0.85rem' }}
+                                style={{ 
+                                    width: '100%', 
+                                    padding: language === 'ar' ? '8px 36px 8px 12px' : '8px 12px 8px 36px', 
+                                    background: 'var(--color-bg-input)', 
+                                    border: '1px solid var(--color-border-subtle)', 
+                                    borderRadius: '10px', 
+                                    color: 'var(--color-text-main)', 
+                                    fontSize: '0.85rem' 
+                                }}
                             />
                         </div>
                     </div>
@@ -482,15 +519,33 @@ return (
 
                         <NotificationCenter userId={user?.id} />
 
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            style={{
+                                background: 'var(--color-bg-input)',
+                                border: '1px solid var(--color-border-subtle)',
+                                borderRadius: '10px',
+                                padding: '10px',
+                                color: 'var(--color-text-secondary)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                        </button>
+
                         {/* Language Toggle */}
                         <button
                             onClick={toggleLanguage}
                             style={{
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.08)',
+                                background: 'var(--color-bg-input)',
+                                border: '1px solid var(--color-border-subtle)',
                                 borderRadius: '10px',
                                 padding: '10px',
-                                color: '#9CA3AF',
+                                color: 'var(--color-text-secondary)',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',

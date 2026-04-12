@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { getCurrentUser, getProfile } from '../services/supabaseService';
 import * as adminService from '../services/adminService';
 import { getIndustryContent } from '../utils/industryContent';
@@ -101,6 +102,7 @@ const VideoPresentation = ({ industry, language }) => {
 
 const Home = () => {
     const { t, language } = useLanguage();
+    const { isDarkMode } = useTheme();
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [imgLoaded, setImgLoaded] = useState(false);
@@ -152,13 +154,13 @@ const Home = () => {
             {/* Industry Switcher (Only if not logged in or during exploration) */}
             {!profile && (
                 <div style={{
-                    background: 'linear-gradient(180deg, rgba(139,92,246,0.05) 0%, transparent 100%)',
+                    background: isDarkMode ? 'linear-gradient(180deg, rgba(139,92,246,0.05) 0%, transparent 100%)' : 'linear-gradient(180deg, rgba(139,92,246,0.03) 0%, transparent 100%)',
                     padding: '4rem 0 2rem',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    borderBottom: '1px solid var(--color-border-subtle)',
                     position: 'relative',
                     overflow: 'hidden'
                 }}>
-                    <div style={{ position: 'absolute', top: 0, left: '50%', width: '800px', height: '100%', background: 'radial-gradient(circle at center, rgba(139,92,246,0.1) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }}></div>
+                    <div style={{ position: 'absolute', top: 0, left: '50%', width: '800px', height: '100%', background: 'radial-gradient(circle at center, var(--color-accent-soft) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }}></div>
 
                     <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -190,16 +192,16 @@ const Home = () => {
                                             padding: '0.75rem 1.5rem',
                                             borderRadius: '30px',
                                             border: '1px solid',
-                                            borderColor: isActive ? 'rgba(139, 92, 246, 0.5)' : 'rgba(255, 255, 255, 0.08)',
-                                            background: isActive ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                                            color: isActive ? 'var(--primary)' : 'var(--text-muted)',
+                                            borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border-subtle)',
+                                            background: isActive ? 'var(--color-accent-soft)' : 'var(--color-bg-input)',
+                                            color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                                             fontSize: '0.88rem',
                                             fontWeight: 700,
                                             cursor: 'pointer',
                                             transition: 'all 0.3s ease',
                                             whiteSpace: 'nowrap',
                                             backdropFilter: 'blur(10px)',
-                                            boxShadow: isActive ? '0 4px 20px rgba(139, 92, 246, 0.2)' : 'none',
+                                            boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
                                             transform: isActive ? 'translateY(-2px)' : 'none',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -210,8 +212,8 @@ const Home = () => {
                                             width: '8px',
                                             height: '8px',
                                             borderRadius: '50%',
-                                            background: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
-                                            boxShadow: isActive ? '0 0 10px var(--accent)' : 'none'
+                                            background: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                                            boxShadow: isActive ? '0 0 10px var(--color-accent)' : 'none'
                                         }} />
                                         {emoji} {label && label !== `home.${type}` ? label : (
                                             type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
@@ -238,10 +240,10 @@ const Home = () => {
                     <div style={{ color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '2rem', textTransform: 'uppercase', fontSize: '0.85rem' }}>
                         {industry === 'general' ? t('home.platformName') : t('home.eliteSolutionsFor').replace('{industry}', t(`home.${industry}`))}
                     </div>
-                    <h1 style={{ fontSize: '2.8rem', fontWeight: '900', marginBottom: '2rem', color: 'var(--primary)', lineHeight: '1.2' }}>
+                    <h1 style={{ fontSize: '2.8rem', fontWeight: '900', marginBottom: '2rem', color: 'var(--color-text-main)', lineHeight: '1.2' }}>
                         {content.heroTitle}
                     </h1>
-                    <p className="text-secondary mb-2xl" style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '3.5rem', lineHeight: '1.7' }}>
+                    <p className="text-secondary mb-2xl" style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '3.5rem', lineHeight: '1.7', color: 'var(--color-text-secondary)' }}>
                         {content.heroDescription}
                     </p>
 
@@ -277,11 +279,11 @@ const Home = () => {
                         height: '520px',
                         borderRadius: '40px',
                         overflow: 'hidden',
-                        boxShadow: '0 25px 60px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+                        boxShadow: 'var(--shadow-premium)',
                         position: 'relative',
                         zIndex: 2,
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        background: 'linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(59,130,246,0.05) 100%)'
+                        border: '1px solid var(--color-border-subtle)',
+                        background: 'var(--color-bg-surface)'
                     }}>
                         {!imgLoaded && (
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -306,15 +308,15 @@ const Home = () => {
                             bottom: '2.5rem',
                             right: '2rem',
                             left: '2rem',
-                            background: 'rgba(15, 15, 30, 0.85)',
+                            background: 'var(--color-bg-glass)',
                             backdropFilter: 'blur(15px)',
                             padding: '1.75rem',
                             borderRadius: '24px',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            boxShadow: '0 15px 40px rgba(139, 92, 246, 0.15)'
+                            border: '1px solid var(--color-border-subtle)',
+                            boxShadow: 'var(--shadow-sm)'
                         }}>
-                            <p style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--primary)', lineHeight: '1.5' }}>"{content.quote}"</p>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.75rem', fontWeight: 900 }}>{t('home.strategicTeam')}</p>
+                            <p style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--color-text-main)', lineHeight: '1.5' }}>"{content.quote}"</p>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--color-accent)', marginTop: '0.75rem', fontWeight: 900 }}>{t('home.strategicTeam')}</p>
                         </div>
                     </div>
                     {/* Decorative backdrop */}
@@ -336,8 +338,8 @@ const Home = () => {
             {/* Recommendations Section */}
             <section className="container" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
                 <div className="page-header text-center" style={{ marginBottom: '3.5rem' }}>
-                    <h2 style={{ marginBottom: '0.75rem', fontSize: '2.5rem', fontWeight: 800 }}>{t('home.insightsTitle')}</h2>
-                    <p style={{ color: 'var(--text-muted)' }}>{t('home.insightsSubtitle')}</p>
+                    <h2 style={{ marginBottom: '0.75rem', fontSize: '2.5rem', fontWeight: 800, color: 'var(--color-text-main)' }}>{t('home.insightsTitle')}</h2>
+                    <p style={{ color: 'var(--color-text-secondary)' }}>{t('home.insightsSubtitle')}</p>
                 </div>
 
                 <div className="grid grid-2 gap-2xl" style={{ marginTop: '2rem' }}>
@@ -346,15 +348,15 @@ const Home = () => {
                         return (
                             <div key={i} className="flip-card animate-fade-in" style={{ animationDelay: `${i * 0.2}s` }}>
                                 <div className="flip-card-inner">
-                                    <div className="flip-card-front">
-                                        <span style={{ background: 'rgba(139,92,246,0.08)', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '20px' }}>
-                                            <AnimatedIcon animationPath={rec.animationPath} FallbackIcon={IconComponent} size={42} color="#8B5CF6" />
+                                    <div className="flip-card-front" style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)' }}>
+                                        <span style={{ background: 'var(--color-accent-soft)', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '20px' }}>
+                                            <AnimatedIcon animationPath={rec.animationPath} FallbackIcon={IconComponent} size={42} color="var(--color-accent)" />
                                         </span>
-                                        <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{rec.title}</h4>
+                                        <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>{rec.title}</h4>
                                     </div>
-                                    <div className="flip-card-back">
-                                        <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '0.5rem' }}>{rec.title}</h4>
-                                        <p className="text-secondary" style={{ fontSize: '0.95rem', margin: 0, lineHeight: '1.7', color: 'rgba(255,255,255,0.85)' }}>{rec.desc}</p>
+                                    <div className="flip-card-back" style={{ background: 'var(--color-accent)', border: '1px solid var(--color-accent)' }}>
+                                        <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-text-on-accent)', marginBottom: '0.5rem' }}>{rec.title}</h4>
+                                        <p style={{ fontSize: '0.95rem', margin: 0, lineHeight: '1.7', color: 'var(--color-text-on-accent)', opacity: 0.9 }}>{rec.desc}</p>
                                     </div>
                                 </div>
                             </div>
@@ -367,20 +369,20 @@ const Home = () => {
             <section style={{
                 paddingTop: '6rem',
                 paddingBottom: '2rem',
-                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.03) 50%, rgba(168, 85, 247, 0.05) 100%)',
-                borderTop: '1px solid rgba(255,255,255,0.05)',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                background: isDarkMode ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.03) 50%, rgba(168, 85, 247, 0.05) 100%)' : 'rgba(139, 92, 246, 0.02)',
+                borderTop: '1px solid var(--color-border-subtle)',
+                borderBottom: '1px solid var(--color-border-subtle)',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
-                <div style={{ position: 'absolute', top: 0, left: '50%', width: '600px', height: '100%', background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
+                <div style={{ position: 'absolute', top: 0, left: '50%', width: '600px', height: '100%', background: 'radial-gradient(circle, var(--color-accent-soft) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
                 <div className="container" style={{ position: 'relative', zIndex: 1 }}>
                     <div className="grid gap-lg text-center" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                         {content.stats && content.stats.map((stat, idx) => (
                             <div key={idx} className="stat-card">
                                 <h3 style={{ fontSize: '2.5rem', marginBottom: '0.25rem', fontWeight: 900, background: stat.gradient || 'linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{stat.value}</h3>
-                                <p style={{ color: 'var(--text-main)', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.4rem' }}>{stat.label}</p>
-                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', fontWeight: 500, margin: 0 }}>{stat.subLabel}</p>
+                                <p style={{ color: 'var(--color-text-main)', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.4rem' }}>{stat.label}</p>
+                                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', fontWeight: 500, margin: 0 }}>{stat.subLabel}</p>
                             </div>
                         ))}
                     </div>
@@ -390,8 +392,8 @@ const Home = () => {
             {/* Custom Request Banner */}
             <section className="container" style={{ paddingBottom: '3rem' }}>
                 <div style={{
-                    background: 'rgba(59, 130, 246, 0.05)',
-                    border: '1px dashed rgba(59, 130, 246, 0.4)',
+                    background: 'var(--color-bg-surface)',
+                    border: '1px dashed var(--color-accent)',
                     borderRadius: '24px',
                     padding: '2.5rem',
                     display: 'flex',
@@ -400,19 +402,19 @@ const Home = () => {
                     flexWrap: 'wrap',
                     gap: '1.5rem',
                     textAlign: language === 'ar' ? 'right' : 'left',
-                    direction: language === 'ar' ? 'rtl' : 'ltr'
+                    direction: language === 'ar' ? 'rtl' : 'rtl'
                 }}>
                     <div style={{ flex: '1 1 500px' }}>
-                        <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#60A5FA', marginBottom: '0.75rem' }}>
+                        <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
                             {language === 'ar' ? 'هل تبحث عن خدمات ذكية متخصصة غير مدرجة؟' : 'Looking for specialized smart services not listed?'}
                         </h3>
-                        <p style={{ color: '#9CA3AF', fontSize: '1.05rem', margin: 0, lineHeight: '1.6' }}>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.05rem', margin: 0, lineHeight: '1.6' }}>
                             {language === 'ar'
                                 ? 'يسعدنا جداً تلقي طلباتكم لتخصيص موظفين رقميين لخدمات أو قطاعات غير متوفرة حالياً. فريقنا الهندسي مستعد لتطوير حلول استثنائية لمنشأتك.'
                                 : 'We are very happy to receive your requests to customize digital employees for services or sectors not currently available. Our engineering team is ready to develop exceptional solutions for your facility.'}
                         </p>
                     </div>
-                    <Link to="/custom-request" className="btn" style={{ background: '#3B82F6', color: 'white', padding: '1rem 2rem', fontSize: '1.1rem', borderRadius: '14px', fontWeight: 700, border: 'none', transition: 'all 0.3s', whiteSpace: 'nowrap' }}>
+                    <Link to="/custom-request" className="btn" style={{ background: 'var(--color-accent)', color: 'var(--color-text-on-accent)', padding: '1rem 2rem', fontSize: '1.1rem', borderRadius: '14px', fontWeight: 700, border: 'none', transition: 'all 0.3s', whiteSpace: 'nowrap' }}>
                         {language === 'ar' ? 'اطلب موظف مخصص الآن' : 'Request Custom Agent Now'}
                     </Link>
                 </div>
@@ -424,26 +426,26 @@ const Home = () => {
             {/* Marketing CTA */}
             <section className="container" style={{ paddingTop: '6rem', paddingBottom: '6rem' }}>
                 <div style={{
-                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 50%, rgba(168, 85, 247, 0.15) 100%)',
-                    color: 'white',
+                    background: isDarkMode ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 50%, rgba(168, 85, 247, 0.15) 100%)' : 'var(--color-bg-surface)',
+                    color: 'var(--color-text-main)',
                     padding: '6rem 5rem',
                     borderRadius: '40px',
                     textAlign: 'center',
-                    boxShadow: '0 30px 70px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+                    boxShadow: 'var(--shadow-premium)',
                     position: 'relative',
                     overflow: 'hidden',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid var(--color-border-subtle)',
                     backdropFilter: 'blur(10px)'
                 }}>
-                    <div style={{ position: 'absolute', top: '-50%', left: '-10%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
-                    <div style={{ position: 'absolute', bottom: '-30%', right: '-10%', width: '350px', height: '350px', background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
+                    <div style={{ position: 'absolute', top: '-50%', left: '-10%', width: '400px', height: '400px', background: 'radial-gradient(circle, var(--color-accent-soft) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
+                    <div style={{ position: 'absolute', bottom: '-30%', right: '-10%', width: '350px', height: '350px', background: 'radial-gradient(circle, var(--color-accent-soft) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
                     <div style={{ position: 'relative', zIndex: 2 }}>
-                        <h2 style={{ color: 'white', marginBottom: '2rem', fontSize: '2.5rem', fontWeight: 900, lineHeight: '1.3' }}>
+                        <h2 style={{ color: 'var(--color-text-main)', marginBottom: '2rem', fontSize: '2.5rem', fontWeight: 900, lineHeight: '1.3' }}>
                             {language === 'ar'
                                 ? `هل أنت مستعد لنقل ${profile?.business_name || 'منشأتك'} إلى العصر الذكي؟`
                                 : `Ready to take ${profile?.business_name || 'your business'} into the smart era?`}
                         </h2>
-                        <p style={{ color: 'rgba(255,255,255,0.85)', marginBottom: '3.5rem', fontSize: '1.15rem', maxWidth: '700px', margin: '0 auto 3.5rem', lineHeight: '1.8', fontWeight: 500 }}>
+                        <p style={{ color: 'var(--color-text-secondary)', marginBottom: '3.5rem', fontSize: '1.15rem', maxWidth: '700px', margin: '0 auto 3.5rem', lineHeight: '1.8', fontWeight: 500 }}>
                             {industry === 'medical'
                                 ? t('home.ctaMedical')
                                 : industry === 'real_state' || industry === 'real_estate'
@@ -464,7 +466,7 @@ const Home = () => {
                                                                 ? t('home.ctaTelecom')
                                                                 : t('home.ctaGeneral')}
                         </p>
-                        <Link to="/templates" className="btn btn-lg" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #06B6D4 100%)', color: 'var(--primary)', padding: '1.25rem 3rem', fontSize: '1.2rem', borderRadius: '18px', fontWeight: 800, border: 'none', boxShadow: '0 15px 40px rgba(139, 92, 246, 0.3)' }}>
+                        <Link to="/templates" className="btn btn-lg" style={{ background: 'var(--color-accent)', color: 'var(--color-text-on-accent)', padding: '1.25rem 3rem', fontSize: '1.2rem', borderRadius: '18px', fontWeight: 800, border: 'none', boxShadow: 'var(--shadow-sm)' }}>
                             {t('home.ctaButton')}
                         </Link>
                     </div>

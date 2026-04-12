@@ -5,12 +5,15 @@ import { getCurrentUser, signOut, supabase, resendConfirmationEmail } from '../s
 import { useAuth } from '../context/AuthContext';
 import { Smartphone, Briefcase, Globe, LayoutDashboard, ShieldCheck } from 'lucide-react';
 import { useBranding } from '../context/BrandingContext';
+import { useTheme } from '../context/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 
 const Navbar = () => {
     const { t, language, toggleLanguage } = useLanguage();
     const location = useLocation();
     const navigate = useNavigate();
     const { isAgency, isAdmin } = useAuth();
+    const { theme, toggleTheme, isDarkMode } = useTheme();
     const branding = useBranding();
     const [user, setUser] = useState(null);
 
@@ -39,26 +42,25 @@ const Navbar = () => {
     return (
         <nav className="navbar">
             <div className="container nav-content">
-                <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
+                <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', textDecoration: 'none' }}>
                     <img 
-                        src={branding.logo_url} 
-                        alt={branding.brand_name} 
-                        style={{ height: '48px', maxWidth: '280px', objectFit: 'contain', borderRadius: '8px' }} 
+                        src="/logo.png" 
+                        alt="24shift" 
+                        style={{ height: '42px', objectFit: 'contain', borderRadius: '8px', flexShrink: 0 }} 
                     />
-                    {(!branding.logo_url || branding.logo_url === '/logo.png') && (
-                        <span style={{
-                            fontFamily: "'Montserrat', 'Inter', sans-serif",
-                            fontWeight: 900,
-                            fontSize: '1.6rem',
-                            textTransform: 'uppercase',
-                            background: 'linear-gradient(90deg, #FFFFFF 0%, #A78BFA 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            letterSpacing: '1.5px'
-                        }}>
-                            {branding.brand_name || '24SHIFT'}
-                        </span>
-                    )}
+                    <span style={{
+                        fontFamily: "'Montserrat', 'Inter', sans-serif",
+                        fontWeight: 900,
+                        fontSize: '1.6rem',
+                        textTransform: 'uppercase',
+                        color: isDarkMode ? '#FFFFFF' : 'var(--color-text-main)',
+                        letterSpacing: '1.5px',
+                        padding: '4px 0',
+                        display: 'inline-block',
+                        lineHeight: 1
+                    }}>
+                        {(branding.is_custom ? branding.brand_name : '24SHIFT')}
+                    </span>
                 </Link>
 
                 <ul className="nav-links">
@@ -84,7 +86,26 @@ const Navbar = () => {
                         </li>
                     )}
 
-                    <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)', margin: '0 0.5rem' }}></div>
+                    <div style={{ width: '1px', height: '20px', background: 'var(--color-border-subtle)', margin: '0 0.5rem' }}></div>
+
+                    {/* Theme Toggle */}
+                    <li>
+                        <button
+                            onClick={toggleTheme}
+                            className="nav-link"
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid var(--color-border-subtle)',
+                                padding: '0.5rem 0.6rem',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                        </button>
+                    </li>
 
                     {/* Language Toggle */}
                     <li>
@@ -94,7 +115,7 @@ const Navbar = () => {
                             title={language === 'ar' ? 'Switch to English' : 'Switch to Arabic'}
                             style={{
                                 background: 'transparent',
-                                border: '1px solid var(--border-subtle)',
+                                border: '1px solid var(--color-border-subtle)',
                                 padding: '0.5rem 0.8rem',
                                 borderRadius: '8px',
                                 display: 'flex',

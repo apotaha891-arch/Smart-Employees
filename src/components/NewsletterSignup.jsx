@@ -16,9 +16,15 @@ const NewsletterSignup = ({ source = 'blog' }) => {
         setStatus('loading');
         
         try {
+            // Validate source
+            const signupSource = source || 'blog';
+
             const { error } = await supabase
                 .from('newsletter_subscriptions')
-                .insert([{ email, source }]);
+                .insert([{ 
+                    email: email.toLowerCase().trim(), 
+                    source: signupSource 
+                }]);
 
             if (error) {
                 if (error.code === '23505') {
@@ -32,6 +38,7 @@ const NewsletterSignup = ({ source = 'blog' }) => {
                 setMessage(isEnglish ? "Thanks for subscribing!" : "شكراً لاشتراكك!");
             }
         } catch (err) {
+            console.error('Newsletter Error:', err);
             setStatus('error');
             setMessage(isEnglish ? "Something went wrong. Try again." : "حدث خطأ ما. حاول مرة أخرى.");
         }

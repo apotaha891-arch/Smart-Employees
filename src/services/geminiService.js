@@ -247,6 +247,45 @@ ${JSON.stringify(messages.slice(-15), null, 2)}
     }
 };
 
+export const getAdminAdvisorResponse = async (userMessage, history, config, platformContext) => {
+    try {
+        const prompt = `
+أنت المستشار الإداري الاستراتيجي لمنصة "24Shift". 
+مهمتك هي مساعدة "الأدمن" (المدير) في اتخاذ قرارات ذكية لتطوير المنصة، إدارة العملاء، وتحسين أداء الوكلاء.
+
+سياق المنصة الحالي (Platform Stats):
+${platformContext}
+
+قاعدة المعرفة الإدارية:
+${config.knowledge || 'إدارة المنصة تهدف للنمو والأتمتة.'}
+
+تعليمات الشخصية:
+${config.prompt || 'كن مستشاراً لبقاً، استراتيجياً، ومساعداً جداً. قدم حلولاً عملية بناءً على الأرقام والسياق.'}
+
+تاريخ المحادثة الحالي:
+${JSON.stringify(history.slice(-10))}
+
+سؤال الأدمن:
+${userMessage}
+`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        
+        return {
+            success: true,
+            text: cleanAIText(response.text().trim())
+        };
+    } catch (error) {
+        console.error("Admin Advisor API Error:", error);
+        return {
+            success: false,
+            error: error.message,
+            text: 'عذراً، حدث خطأ في التواصل مع المستشار.'
+        };
+    }
+};
+
 export const resetChat = (sessionId = 'default') => {
     delete chatSessions[sessionId];
 };

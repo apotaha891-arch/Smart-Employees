@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
     Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
     LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
-    Search, Download, Newspaper, Megaphone, Settings, Star, BookOpen, ArrowRight
+    Search, Download, Newspaper, Megaphone, Settings, Star, BookOpen, ArrowRight, Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -113,6 +113,8 @@ export default function AdminDashboard() {
     const [bookings, setBookings] = useState([]);
     const [pricing, setPricing] = useState([]);
     const [integrations, setIntegrations] = useState([]);
+    const [platformTelegramToken, setPlatformTelegramToken] = useState('');
+    const [academyPriceId, setAcademyPriceId] = useState('');
     const [conciergeChats, setConciergeChats] = useState([]);
     const [selChat, setSelChat] = useState(null);
     const [notifications, setNotifications] = useState([]);
@@ -214,6 +216,9 @@ export default function AdminDashboard() {
     const [newAgent, setNewAgent] = useState({ name: '', specialty: 'booking', business_type: 'telecom_it', user_id: '' });
     const [agentApps, setAgentApps] = useState({}); // {agentId: {appId: bool}}
     const [loadProgress, setLoadProgress] = useState({ clients: 0, agents: 0, bookings: 0, chats: 0 });
+    const [advisorMessages, setAdvisorMessages] = useState([{ role: 'assistant', content: isEnglish ? 'Hello Admin, I am your smart consultant. How can I help you manage the platform today?' : 'أهلاً بك أيها المدير، أنا مستشارك الذكي. كيف يمكنني مساعدتك في إدارة المنصة اليوم؟' }]);
+    const [advisorInput, setAdvisorInput] = useState('');
+    const [advisorConfig, setAdvisorConfig] = useState({ prompt: '', knowledge: '' });
 
     useEffect(() => { load(); }, []);
 
@@ -233,10 +238,22 @@ export default function AdminDashboard() {
 
             setPricing(plans || []);
             setIntegrations(integ || []);
+            
+            // Fetch platform settings
+            const [tgToken, priceId] = await Promise.all([
+                adminService.getPlatformSettings('platform_telegram_token'),
+                adminService.getPlatformSettings('academy_price_id')
+            ]);
+            if (tgToken) setPlatformTelegramToken(tgToken);
+            if (priceId) setAcademyPriceId(priceId);
+
             if (dbSectors) setSectors(dbSectors);
             if (dbRoles) setRoles(dbRoles);
             if (dbApps) setAgentAppsConfig(dbApps);
             if (dbAiConfig) setAiConfig(dbAiConfig);
+
+            const advCfg = await adminService.getPlatformSettings('admin_advisor_config');
+            if (advCfg) setAdvisorConfig(advCfg);
 
             // Priority 2: Core Business Data (Larger)
             const results = await Promise.allSettled([
@@ -464,7 +481,16 @@ export default function AdminDashboard() {
             flash('❌ فشل تحديث الحجز'); 
         }
     };
-    const savePlatformInteg = async () => { setSaving(true); await adminService.updatePlatformSettings('external_integrations', integrations); setSaving(false); flash('✅ تم الحفظ'); };
+    const savePlatformInteg = async () => { 
+        setSaving(true); 
+        await Promise.all([
+            adminService.updatePlatformSettings('external_integrations', integrations),
+            adminService.updatePlatformSettings('platform_telegram_token', platformTelegramToken),
+            adminService.updatePlatformSettings('academy_price_id', academyPriceId)
+        ]);
+        setSaving(false); 
+        flash('✅ تم حفظ مفاتيح المنصة'); 
+    };
     const saveClientKey = async (uid) => {
         setSaving(true);
         const k = clientKeys[uid] || {};
@@ -512,20 +538,15 @@ export default function AdminDashboard() {
     const saveAiConfig = async () => { setSaving(true); await adminService.updatePlatformSettings('manager_ai_config', aiConfig); setSaving(false); flash('✅ تم حفظ إعدادات المستشارة الذكية'); };
     const handleLogout = async () => { await signOut(); navigate('/login'); };
 
-    const remoteLogin = async (email) => {
-        if (!email || email === '—') return flash('❌ لا يتوفر بريد إلكتروني صالح لهذا العميل!');
+    const remoteLogin = async (targetClient) => {
+        if (!targetClient || !targetClient.id) return flash('❌ تعذر العثور على بروفايل العميل');
         setSaving(true);
         try {
-            // Find client in state
-            const targetClient = clients.find(c => c.email === email);
-            if (!targetClient) throw new Error('تعذر العثور على بروفايل العميل');
-
-            // 1. Logic check: If the user role is admin, let them jump directly.
-            // 2. Impersonate!
+            // Impersonate using the full client object
             impersonateUser(targetClient);
             
-            // 3. Navigate to Dashboard
-            flash(`🚀 تم الدخول كدعم فني لـ: ${targetClient.business_name || targetClient.full_name}`);
+            // Navigate to Dashboard
+            flash(`🚀 تم الدخول كدعم فني لـ: ${targetClient.business_name || targetClient.full_name || 'العميل'}`);
             setTimeout(() => navigate('/dashboard'), 500);
         } catch (e) {
             flash('❌ فشل الدخول كدعم فني: ' + e.message);
@@ -851,6 +872,7 @@ export default function AdminDashboard() {
         { id: 'academy', i: Star, l: isEnglish ? 'Academy Leads' : 'طلبات الأكاديمية' },
         { id: 'custom-requests', i: Zap, l: isEnglish ? 'Custom Requests' : 'طلبات التوظيف', badge: customRequests.filter(r => r.status === 'pending').length },
         { id: 'white-label-requests', i: Globe, l: isEnglish ? 'White-Label Requests' : 'طلبات الهوية', badge: 0 },
+        { id: 'admin-advisor', i: Sparkles, l: isEnglish ? 'Smart Advisor' : 'المستشار الذكي' },
     ];
 
     if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />{t('admin.loading')}</div>;
@@ -1678,7 +1700,39 @@ export default function AdminDashboard() {
                         </div>
 
                         {intTab === 'platform' && <div>
-                            <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>هذه المفاتيح تخدم المنصة بأكملها — OpenAI لتشغيل الذكاء الاصطناعي، n8n لأتمتة العمليات. تُخزَّن في جدول <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>platform_settings</code>.</p>
+                            <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.82rem' }}>هذه المفاتيح تخدم المنصة بأكملها — OpenAI لتشغيل الذكاء الاصطناعي، n8n لأتمتة العمليات. تُخزَّن في جدول <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>platform_settings</code>.</p>
+                            
+                            {/* Platform Telegram Bot (New) */}
+                            <div style={{ marginBottom: '2rem', background: 'rgba(0,136,204,0.05)', borderRadius: '13px', border: '1px solid rgba(0,136,204,0.2)', padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                                    <MessageSquare size={20} color="#0088cc" />
+                                    <h3 style={{ color: 'white', margin: 0, fontWeight: 700, fontSize: '1rem' }}>بوت التيليجرام الخاص بالمنصة (Platform Main Bot)</h3>
+                                </div>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '8px' }}>توكن البوت الرئيسي (يستخدم للإشعارات الإدارية والمستشار الذكي)</label>
+                                <Input 
+                                    type="password" 
+                                    value={platformTelegramToken} 
+                                    placeholder="7434105220:..." 
+                                    onChange={e => setPlatformTelegramToken(e.target.value)} 
+                                />
+                                <p style={{ color: '#4B5563', fontSize: '0.7rem', marginTop: '8px' }}>💡 هذا البوت مخصص لإدارة المنصة والتواصل مع الأدمن مباشرة.</p>
+                            </div>
+
+                            {/* Academy Pricing (New) */}
+                            <div style={{ marginBottom: '2rem', background: 'rgba(139,92,246,0.05)', borderRadius: '13px', border: '1px solid rgba(139,92,246,0.2)', padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                                    <CreditCard size={20} color="#A78BFA" />
+                                    <h3 style={{ color: 'white', margin: 0, fontWeight: 700, fontSize: '1rem' }}>إعدادات الدفع للأكاديمية (Stripe Academy)</h3>
+                                </div>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '8px' }}>Stripe Price ID (للاشتراك الـ 20 دولار في الأكاديمية)</label>
+                                <Input 
+                                    value={academyPriceId} 
+                                    placeholder="price_1TLQyRAW..." 
+                                    onChange={e => setAcademyPriceId(e.target.value)} 
+                                />
+                                <p style={{ color: '#4B5563', fontSize: '0.7rem', marginTop: '8px' }}>💡 هذا المعرف يحدد المنتج والسعر في Stripe Checkout للأكاديمية.</p>
+                            </div>
+
                             {integrations.map((integ, idx) => {
                                 const conn = integ.status === 'Connected';
                                 return (
@@ -1927,8 +1981,110 @@ export default function AdminDashboard() {
                                 <Input type="number" value={aiConfig.max_length || 150} onChange={e => setAiConfig({ ...aiConfig, max_length: Number(e.target.value) })} />
                             </div>
                         </div>} />
+
+                        <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div><h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>⚙️ إعدادات المستشار الإداري (Smart Advisor)</h3></div>
+                            <Btn onClick={async () => {
+                                setSaving(true);
+                                await adminService.updatePlatformSettings('admin_advisor_config', advisorConfig);
+                                setSaving(false);
+                                flash('✅ تم حفظ إعدادات المستشار الإداري');
+                            }} disabled={saving}><Save size={14} />حفظ إعدادات المستشار</Btn>
+                        </div>
+                        <Card c={<div>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '6px' }}>تعليمات الشخصية (System Prompt)</label>
+                                <textarea value={advisorConfig.prompt || ''} onChange={e => setAdvisorConfig({ ...advisorConfig, prompt: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '100px', fontSize: '0.85rem' }} placeholder="أنت مستشار إداري خبير في منصات AI..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '6px' }}>قاعدة المعرفة الإدارية</label>
+                                <textarea value={advisorConfig.knowledge || ''} onChange={e => setAdvisorConfig({ ...advisorConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '100px', fontSize: '0.85rem' }} placeholder="أدخل معلومات سرية أو استراتيجية تخص إدارة المنصة..." />
+                            </div>
+                        </div>} />
                     </div>
                 }
+
+                {/* ── ADMIN ADVISOR ── */}
+                {tab === 'admin-advisor' && (
+                    <div style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>🎙️ المستشار الذكي للأدمن</h1>
+                            <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>ناقش استراتيجيات المنصة، واطلب تحليل البيانات، وحسّن أداء "الموظفات الأذكياء".</p>
+                        </div>
+
+                        <div style={{ flex: 1, display: 'flex', gap: '1.5rem', overflow: 'hidden' }}>
+                            {/* Chat Interface */}
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0D1117', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                                <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {advisorMessages.map((m, i) => (
+                                        <div key={i} style={{ 
+                                            alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                                            maxWidth: '80%',
+                                            background: m.role === 'user' ? '#1F2937' : 'rgba(139,92,246,0.1)',
+                                            color: m.role === 'user' ? 'white' : '#A78BFA',
+                                            padding: '12px 16px',
+                                            borderRadius: '15px',
+                                            fontSize: '0.9rem',
+                                            lineHeight: 1.5,
+                                            border: `1px solid ${m.role === 'user' ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.2)'}`
+                                        }}>
+                                            {m.content}
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ padding: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+                                    <form style={{ display: 'flex', gap: '0.75rem' }} onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        if (!advisorInput.trim() || saving) return;
+                                        
+                                        const userMsg = advisorInput.trim();
+                                        setAdvisorInput('');
+                                        setAdvisorMessages(p => [...p, { role: 'user', content: userMsg }]);
+                                        
+                                        setSaving(true);
+                                        try {
+                                            // Dynamic context generation
+                                            const context = `Platform Stats: ${clients.length} Clients, ${agents.length} Agents, ${bookings.length} Bookings.`;
+                                            const response = await adminService.chatWithAdvisor(userMsg, advisorMessages, advisorConfig, context);
+                                            setAdvisorMessages(p => [...p, { role: 'assistant', content: response }]);
+                                        } catch (e) {
+                                            setAdvisorMessages(p => [...p, { role: 'assistant', content: isEnglish ? 'I encountered an error. Please check the logs.' : 'عذراً، حدث خطأ أثناء معالجة طلبك.' }]);
+                                        } finally {
+                                            setSaving(false);
+                                        }
+                                    }}>
+                                        <input 
+                                            value={advisorInput} 
+                                            onChange={e => setAdvisorInput(e.target.value)} 
+                                            placeholder={isEnglish ? 'Ask your consultant...' : 'اسأل مستشارك الذكي...'}
+                                            style={{ flex: 1, background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white', padding: '12px 16px', fontSize: '0.9rem', outline: 'none' }}
+                                        />
+                                        <button type="submit" disabled={saving} style={{ background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '10px', padding: '0 1.5rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            {saving ? <RefreshCw size={18} className="animate-spin" /> : <Zap size={18} />}
+                                            {isEnglish ? 'Send' : 'إرسال'}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            {/* Perspective Cards */}
+                            <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <Card s={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.1)' }} c={
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 800, marginBottom: '0.5rem' }}>مقترح استراتيجي</div>
+                                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>"بناءً على البيانات، قطاع الصالونات ينمو بسرعة. ننصح بزيادة حملات التسويق لهذا القطاع."</p>
+                                    </div>
+                                } />
+                                <Card s={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)' }} c={
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#3B82F6', fontWeight: 800, marginBottom: '0.5rem' }}>تحليل الأداء</div>
+                                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>معدل تحويل الزوار لمشتركين ارتفع بنسبة 12% هذا الشهر.</p>
+                                    </div>
+                                } />
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* ── ACADEMY ── */}
                 {tab === 'academy' && <AcademyView />}
