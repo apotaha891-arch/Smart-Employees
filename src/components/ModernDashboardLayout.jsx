@@ -245,19 +245,7 @@ return (
                     flexDirection: language === 'ar' ? 'row-reverse' : 'row' // Ensure button and logo swap correctly in RTL
                 }}>
                     <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', minWidth: 0 }}>
-                        <div style={{
-                            width: '40px', height: '40px',
-                            background: branding.logo_url && branding.logo_url !== '/logo.png' ? 'rgba(255,255,255,0.05)' : (isAdmin ? 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)' : 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)'),
-                            borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', fontSize: '1.2rem', fontWeight: '900', overflow: 'hidden', flexShrink: 0
-                        }}>
-                            {branding.logo_url && branding.logo_url !== '/logo.png' ? (
-                                <img src={branding.logo_url} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            ) : (
-                                isAdmin ? '24' : (userData.business_name ? userData.business_name.substring(0, 2).toUpperCase() : 'C')
-                            )}
-                        </div>
-                        {isSidebarOpen && (!branding.logo_url || branding.logo_url === '/logo.png') && (
+                        {isSidebarOpen && (
                             <span style={{ fontSize: '1.2rem', fontWeight: 900, background: '#fff', letterSpacing: '0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px', color: 'white' }}>
                                 {branding.is_custom ? branding.brand_name : (isAdmin ? '24Shift' : '24SHIFT')}
                             </span>
@@ -515,8 +503,7 @@ return (
                             <span>{language === 'ar' ? 'EN' : 'AR'}</span>
                         </button>
 
-                        {/* Notifications */}
-                        <NotificationCenter userId={supabase.auth.at_current_user_id || userData?.id} />
+
                     </div>
                 </header>
 
