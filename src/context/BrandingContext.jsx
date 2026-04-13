@@ -21,13 +21,16 @@ export const BrandingProvider = ({ children }) => {
             const isLocal = domain === 'localhost' || domain.includes('127.0.0.1');
             
             // Wait slightly if user is just logging in to ensure session is ready
-            const sessionUserId = user?.id || (await supabase.auth.getUser()).data.user?.id;
-
-            // Call our unified RPC
-            // We only pass p_domain (Level 2). p_user_id (Level 1) is now disabled.
-            const { data, error } = await supabase.rpc('get_branding_config', {
+            // Add a safety timeout for the RPC call
+            const fetchPromise = supabase.rpc('get_branding_config', {
                 p_domain: isLocal ? '' : domain
             });
+            
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Branding fetch timeout')), 5000)
+            );
+
+            const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
             if (error) throw error;
 

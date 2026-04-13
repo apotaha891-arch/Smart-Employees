@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { agentService } from '../services/agentService';
-import { Plus, Edit2, Pause, Trash2, Play, Send, MessageCircle } from 'lucide-react';
+import { Plus, Edit2, Pause, Trash2, Play, Send, MessageCircle, Terminal, X, Loader2, BarChart3, BellRing } from 'lucide-react';
+import * as geminiService from '../services/geminiService';
+import * as adminService from '../services/adminService';
+import { supabase } from '../services/supabaseService';
 
 /**
  * AgentManagement Component
@@ -163,6 +166,79 @@ const AgentManagement = () => {
             console.error('Error saving whatsapp settings:', error);
         } finally {
             setIsSavingWhatsApp(false);
+        }
+    const handleOpenCommandCenter = (agent) => {
+        setCommandingAgent(agent);
+        setShowCommandModal(true);
+        const welcomeMsg = { 
+            role: 'assistant', 
+            content: isEnglish 
+                ? `Ready for your orders, Director. How can I assist you with the business today?` 
+                : `جاهز لأوامرك يا مدير. كيف يمكنني مساعدتك في إدارة العمل اليوم؟` 
+        };
+        setCommandMessages([welcomeMsg]);
+        
+        // Initialize Gemini session for Owner Chat
+        const systemPrompt = geminiService.wrapIdentity({
+            name: agent.name || agent.customName,
+            role: agent.templateName || 'Digital Employee',
+            businessName: authUser?.business_name || '24Shift',
+            additionalPrompt: `أنت الآن في وضع "مركز القيادة الإداري". أنت تتحدث مباشرة مع صاحب العمل (المدير). 
+            لديك صلاحية استخدام الأدوات لتغيير أسعارك وقواعدك، أو التحكم في الحجوزات (تأكيد/إلغاء)، أو تقديم تقارير. 
+            كن محترفاً ومطيعاً جداً للمدير، ولكن تذكر أن هويتك واسمك غير قابلين للتغيير.`,
+            knowledge: agent.knowledge || ''
+        });
+        
+        geminiService.initializeChat(systemPrompt, `command-${agent.id}`, true);
+    };
+
+    const handleSendCommand = async () => {
+        if (!commandInput.trim() || isCommandProcessing) return;
+        
+        const userMsg = { role: 'user', content: commandInput };
+        setCommandMessages(prev => [...prev, userMsg]);
+        setCommandInput('');
+        setIsCommandProcessing(true);
+        
+        // Define Tool Handlers
+        const handlers = {
+            update_agent_config: async (args) => {
+                setCurrentToolAction(isEnglish ? 'Updating business rules...' : 'جاري تحديث قواعد العمل والأسعار...');
+                const { success } = await agentService.updateAgentConfiguration(commandingAgent.id, {
+                    knowledge: args.newKnowledge
+                });
+                return success ? "Configuration updated successfully in the database." : "Failed to update configuration.";
+            },
+            update_booking_status: async (args) => {
+                setCurrentToolAction(isEnglish ? `Updating booking ${args.bookingId}...` : `جاري تحديث حالة الحجز ${args.bookingId}...`);
+                const { success } = await adminService.updateBookingStatus(args.bookingId, args.status);
+                if (success && args.customerMessage) {
+                    await adminService.sendBookingNotification(args.bookingId, args.status);
+                }
+                return success ? `Booking ${args.bookingId} status changed to ${args.status}.` : "Booking update failed.";
+            },
+            get_business_stats: async (args) => {
+                setCurrentToolAction(isEnglish ? 'Fetching live metrics...' : 'جاري استخراج إحصائيات العمل...');
+                // Direct Supabase query for immediate stats
+                const { data: bks } = await supabase.from('bookings').select('id, status').eq('user_id', authUser.id);
+                const { data: custs } = await supabase.from('customers').select('id').eq('entity_id', commandingAgent.entity_id);
+                
+                return `Stats for ${args.timeRange || 'current'}: Total Bookings: ${bks?.length || 0}, Confirmed: ${bks?.filter(b => b.status === 'confirmed').length || 0}, Total Customers: ${custs?.length || 0}.`;
+            }
+        };
+
+        try {
+            const res = await geminiService.sendMessage(userMsg.content, `command-${commandingAgent.id}`, handlers);
+            if (res.success) {
+                setCommandMessages(prev => [...prev, { role: 'assistant', content: res.text }]);
+            } else {
+                setCommandMessages(prev => [...prev, { role: 'assistant', content: t('errorOccurred') }]);
+            }
+        } catch (err) {
+            setCommandMessages(prev => [...prev, { role: 'assistant', content: "Error: " + err.message }]);
+        } finally {
+            setIsCommandProcessing(false);
+            setCurrentToolAction(null);
         }
     };
 
@@ -436,6 +512,40 @@ const AgentManagement = () => {
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
+                                        handleOpenCommandCenter(agent);
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.6rem 1rem',
+                                        background: 'rgba(139, 92, 246, 0.2)',
+                                        color: '#A78BFA',
+                                        border: '1px solid rgba(139, 92, 246, 0.3)',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.85rem',
+                                        fontWeight: 700,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.5rem',
+                                        marginBottom: '0.75rem',
+                                        transition: 'all 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(139, 92, 246, 0.3)';
+                                        e.currentTarget.style.transform = 'scale(1.02)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                    }}
+                                >
+                                    <Terminal size={15} /> {isEnglish ? 'Command Agent' : 'أمر الموظف الذكي ⚡'}
+                                </button>
+
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
                                         setEditingTelegramAgent(agent);
                                         setTelegramToken(agent.telegram_token || '');
                                         setShowTelegramModal(true);
@@ -647,6 +757,130 @@ const AgentManagement = () => {
                                 }}
                             >
                                 {isSavingWhatsApp ? t('whatsappSavingBtn') : <><MessageCircle size={18} /> {t('saveWhatsappSettings')}</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Owner-Agent Command Center Modal */}
+            {showCommandModal && commandingAgent && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(10px)',
+                    zIndex: 1100,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '1.5rem'
+                }}>
+                    <div className="card animate-fade-in" style={{
+                        maxWidth: '700px', width: '100%', height: '80vh',
+                        background: '#111827', border: '1px solid rgba(139, 92, 246, 0.3)',
+                        padding: 0, borderRadius: '20px', display: 'flex', flexDirection: 'column',
+                        overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            padding: '1.25rem 1.5rem',
+                            background: 'rgba(139, 92, 246, 0.1)',
+                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ fontSize: '1.5rem' }}>{commandingAgent.icon}</div>
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>
+                                        {commandingAgent.name || commandingAgent.customName}
+                                    </h3>
+                                    <div style={{ fontSize: '0.75rem', color: '#A78BFA', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <Terminal size={12} /> {isEnglish ? 'ADMIN COMMAND CENTER' : 'مركز القيادة الإداري'}
+                                    </div>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setShowCommandModal(false)}
+                                style={{ background: 'transparent', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Messages Area */}
+                        <div style={{
+                            flex: 1, padding: '1.5rem', overflowY: 'auto',
+                            display: 'flex', flexDirection: 'column', gap: '1rem'
+                        }}>
+                            {commandMessages.map((msg, i) => (
+                                <div key={i} style={{
+                                    alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                                    maxWidth: '85%',
+                                    padding: '0.85rem 1.1rem',
+                                    borderRadius: '14px',
+                                    background: msg.role === 'user' ? '#8B5CF6' : '#1F2937',
+                                    color: 'white',
+                                    fontSize: '0.92rem',
+                                    lineHeight: 1.5,
+                                    border: msg.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.05)'
+                                }}>
+                                    {msg.content}
+                                </div>
+                            ))}
+                            {isCommandProcessing && (
+                                <div style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '10px', color: '#A78BFA', fontSize: '0.85rem', background: 'rgba(139, 92, 246, 0.05)', padding: '0.5rem 1rem', borderRadius: '10px' }}>
+                                    <Loader2 size={16} className="animate-spin" />
+                                    {currentToolAction || (isEnglish ? 'AI is processing...' : 'الموظف يقوم بالتنفيذ...')}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Suggested Actions */}
+                        {!isCommandProcessing && commandMessages.length < 3 && (
+                            <div style={{ padding: '0 1.5rem 1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                {[
+                                    isEnglish ? "What's our latest stats?" : "ما هي آخر الإحصائيات؟",
+                                    isEnglish ? "Summarize current bookings" : "لخص لي الحجوزات الحالية",
+                                    isEnglish ? "Update the price list" : "حدث قائمة الأسعار"
+                                ].map((hint, i) => (
+                                    <button 
+                                        key={i}
+                                        onClick={() => { setCommandInput(hint); }}
+                                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '5px 12px', fontSize: '0.75rem', color: '#D1D5DB', cursor: 'pointer' }}
+                                    >
+                                        {hint}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Input Area */}
+                        <div style={{
+                            padding: '1.25rem 1.5rem',
+                            background: '#0F172A',
+                            borderTop: '1px solid rgba(255,255,255,0.05)',
+                            display: 'flex', gap: '10px'
+                        }}>
+                            <input 
+                                type="text"
+                                style={{
+                                    flex: 1, background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '10px', padding: '0.75rem 1rem', color: 'white', fontSize: '0.9rem'
+                                }}
+                                placeholder={isEnglish ? "Give a command to your employee..." : "أعطِ أمراً لموظفك الرقمي..."}
+                                value={commandInput}
+                                onChange={(e) => setCommandInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSendCommand()}
+                            />
+                            <button 
+                                onClick={handleSendCommand}
+                                disabled={isCommandProcessing || !commandInput.trim()}
+                                style={{
+                                    width: '45px', height: '45px', borderRadius: '10px',
+                                    background: '#8B5CF6', color: 'white', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                                    border: 'none', opacity: (isCommandProcessing || !commandInput.trim()) ? 0.5 : 1
+                                }}
+                            >
+                                <Send size={18} />
                             </button>
                         </div>
                     </div>

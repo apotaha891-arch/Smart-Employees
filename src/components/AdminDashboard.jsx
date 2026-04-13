@@ -1967,13 +1967,18 @@ export default function AdminDashboard() {
                                 <textarea value={aiConfig.knowledge || ''} onChange={e => setAiConfig({ ...aiConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '180px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل بيانات المنصة هنا..." />
                             </div>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>2. التوجيهات الخاصة (System Prompt) - عربي</label>
-                                <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>تعليمات الشخصية وأسلوب التحدث بالعربية</p>
-                                <textarea value={aiConfig.prompt_ar || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_ar: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أنتِ نورة المستشارة..." />
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+                                    <Lock size={14} color="#10B981" /> 2. التوجيهات الخاصة (System Prompt) - عربي
+                                    <span style={{ fontSize: '0.65rem', background: '#10B98120', color: '#10B981', padding: '2px 6px', borderRadius: '4px' }}>هوية محمية</span>
+                                </label>
+                                <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>تعليمات الشخصية وأسلوب التحدث بالعربية. (ملاحظة: اسم نورة ودورها كمستشارة للمنصة مقفلان برمجياً لحماية الهوية).</p>
+                                <textarea value={aiConfig.prompt_ar || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_ar: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل التعليمات الإضافية هنا..." />
                             </div>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>2. التوجيهات الخاصة (System Prompt) - إنجليزي</label>
-                                <textarea dir="ltr" value={aiConfig.prompt_en || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_en: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="You are Noura..." />
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+                                    <Lock size={14} color="#10B981" /> 2. التوجيهات الخاصة (System Prompt) - إنجليزي
+                                </label>
+                                <textarea dir="ltr" value={aiConfig.prompt_en || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_en: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="Add additional english instructions here..." />
                             </div>
                             <div>
                                 <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>3. الحد الأقصى لطول الرد (حروف)</label>

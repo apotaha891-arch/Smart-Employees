@@ -6,6 +6,14 @@ function ScrollToTop() {
     const { pathname } = useLocation();
     useEffect(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        
+        // Hide emergency loader if it exists
+        const loader = document.getElementById('emergency-loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 500);
+            window.APP_LOADED = true;
+        }
     }, [pathname]);
     return null;
 }

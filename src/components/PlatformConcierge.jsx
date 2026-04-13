@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { sendMessage, initializeChat, extractConciergeInsights } from '../services/geminiService';
+import { sendMessage, initializeChat, extractConciergeInsights, wrapIdentity } from '../services/geminiService';
 import { getPlatformSettings } from '../services/adminService';
 import { useLanguage } from '../LanguageContext';
 import { supabase, getCurrentUser } from '../services/supabaseService';
@@ -8,7 +8,7 @@ import { useBranding } from '../context/BrandingContext';
 
 
 const PlatformConcierge = () => {
-    // ... (rest of component state)
+    // ...
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -20,41 +20,44 @@ const PlatformConcierge = () => {
     const { t, language } = useLanguage();
     const branding = useBranding();
 
-
     const loadConfig = async (isRefreshing = false) => {
         try {
             const managerConfig = await getPlatformSettings('manager_ai_config');
             setConfig(managerConfig);
 
-            if (managerConfig) {
-                const maxLengthConstraintAr = managerConfig.max_length ? `\n\nتنبيه هام جداً: يجب أن لا يتجاوز طول ردك ${managerConfig.max_length} حرفاً بأي حال من الأحوال. كوني مختصرة ومباشرة جداً.` : '';
-                const maxLengthConstraintEn = managerConfig.max_length ? `\n\nCRITICAL: Your response MUST NOT exceed ${managerConfig.max_length} characters. Be extremely concise and direct.` : '';
+            const isAr = language === 'ar';
+            const brandName = branding.is_custom ? branding.brand_name : '24Shift';
 
-                const systemPromptAr = managerConfig.prompt_ar ? `${managerConfig.prompt_ar}\n\nمعلومات المنصة: ${managerConfig.knowledge}${maxLengthConstraintAr}` : `
-أنتِ "نورة"، المستشارة الرقمية المتميزة لـ ${branding.is_custom ? branding.brand_name : 'منصة 24Shift'}.
-مهمتكِ:
-1. مساعدة العملاء بأسلوب لبق جداً، دافئ، واحترافي يشبه أرقى مكاتب الاستشارات.
-... (Rest of prompt) ...
-معلومات المنصة: ${managerConfig.knowledge}${maxLengthConstraintAr}`;
+            // 1. Core Identity (Protected)
+            const identityData = {
+                name: isAr ? "نورا (المستشارة الذكية)" : "Noura (Digital Consultant)",
+                role: isAr ? "مستشارة الأعمال والذكاء الاصطناعي" : "Business & AI Strategy Consultant",
+                businessName: brandName,
+                additionalPrompt: isAr ? (managerConfig?.prompt_ar || 'أنتِ مستشارة لبقة ومحترفة.') : (managerConfig?.prompt_en || 'You are a polite and professional consultant.'),
+                knowledge: managerConfig?.knowledge || 'منصة 24Shift توفر موظفين رقميين وأتمتة ذكية.'
+            };
 
-                const systemPromptEn = managerConfig.prompt_en ? `${managerConfig.prompt_en}\n\nPlatform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}` : `
-You are "Noura", the distinguished digital consultant for ${branding.is_custom ? branding.brand_name : '24Shift platform'}.
-Your mission:
-... (Rest of prompt) ...
-Platform Knowledge: ${managerConfig.knowledge}${maxLengthConstraintEn}`;
+            // 2. Add dynamic constraints (Length)
+            if (managerConfig?.max_length) {
+                const constraint = isAr 
+                    ? `تنبيه: يجب أن لا يتجاوز ردك ${managerConfig.max_length} حرفاً.` 
+                    : `Note: Your response must not exceed ${managerConfig.max_length} characters.`;
+                identityData.knowledge += `\n\n${constraint}`;
+            }
 
-                initializeChat(language === 'ar' ? systemPromptAr : systemPromptEn, 'concierge');
-                
-                // Only set default greeting if we're not middle-conversation
-                if (messages.length === 0 || isRefreshing) {
-                    const initialGreetingAr = `أهلاً بك. أنا نورة، مستشارتكِ في المنصة. كيف يمكنني مساعدتكِ اليوم في تطوير أعمالكِ وتخفيف أعباءكِ الإدارية؟ ✨`;
-                    const initialGreetingEn = `Welcome. I am Noura, your platform consultant. How can I assist you today in developing your business and easing your administrative burdens? ✨`;
+            // 3. Lock and Load
+            const protectedPrompt = wrapIdentity(identityData);
+            initializeChat(protectedPrompt, 'concierge');
+            
+            // Default greeting only if new chat
+            if (messages.length === 0 || isRefreshing) {
+                const initialGreetingAr = `أهلاً بك. أنا نورا، مستشارتكِ في المنصة. كيف يمكنني مساعدتكِ اليوم في تطوير أعمالكِ وتخفيف أعباءكِ الإدارية؟ ✨`;
+                const initialGreetingEn = `Welcome. I am Noura, your platform consultant. How can I assist you today in developing your business and easing your administrative burdens? ✨`;
 
-                    setMessages([{
-                        role: 'agent',
-                        content: language === 'ar' ? initialGreetingAr : initialGreetingEn
-                    }]);
-                }
+                setMessages([{
+                    role: 'agent',
+                    content: isAr ? initialGreetingAr : initialGreetingEn
+                }]);
             }
         } catch (err) {
             console.error('Error loading concierge config:', err);

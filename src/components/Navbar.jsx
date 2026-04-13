@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Sun, Moon, Menu, X, LayoutDashboard, Globe } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
-import { getCurrentUser, signOut, supabase, resendConfirmationEmail } from '../services/supabaseService';
 import { useAuth } from '../context/AuthContext';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { useBranding } from '../context/BrandingContext';
+import { getCurrentUser, signOut, supabase, resendConfirmationEmail } from '../services/supabaseService';
 
 const Navbar = () => {
     const { t, language, toggleLanguage } = useLanguage();

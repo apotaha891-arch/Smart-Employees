@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
@@ -14,47 +14,25 @@
   </head>
   <body>
     <div id="root"></div>
+    <div id="emergency-loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #09090b; color: white; font-family: sans-serif; z-index: 9999; transition: opacity 0.5s ease;">
+        <div style="width: 50px; height: 50px; border: 3px solid rgba(139, 92, 246, 0.3); border-top-color: #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p id="loader-text" style="margin-top: 20px; font-weight: bold; color: #a1a1aa;">جاري تشغيل المنظمة الذكية... | Initializing 24Shift...</p>
+        <button id="reset-btn" onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload();" style="display: none; margin-top: 20px; padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Reset & Reload | إعادة ضبط</button>
+    </div>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+    <script>
+        setTimeout(() => {
+            const btn = document.getElementById('reset-btn');
+            const txt = document.getElementById('loader-text');
+            if (txt) txt.innerText = 'Taking longer than usual... Try a hard reset?';
+            if (btn) btn.style.display = 'block';
+        }, 8000);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      // 1. Force unregister all Service Workers immediately
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister().then(() => {
-                console.log('SW Unregistered');
-            });
-          }
-        });
-      }
-      
-      // 2. Comprehensive Cache Clearing
-      if ('caches' in window) {
-        caches.keys().then(function(names) {
-          for (let name of names) caches.delete(name);
-        });
-      }
-
-      // 3. Asset Failure Detection & Auto-Repair (Nuclear Fix)
-      window.addEventListener('error', function(e) {
-        // If a script or link failed to load (likely 404 in old cache)
-        if (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK') {
-          console.log('Asset failed to load, triggering force reload...');
-          const url = new URL(window.location.href);
-          // Add a cache buster if not already present
-          if (!url.searchParams.has('v')) {
-            url.searchParams.set('v', Date.now());
-            window.location.replace(url.toString());
-          }
-        }
-      }, true);
-      
-      // 4. One-time auto-reload for people stuck in the old version
-      if (!localStorage.getItem('site_refreshed_v2')) {
-        localStorage.setItem('site_refreshed_v2', 'true');
-        const url = new URL(window.location.href);
-        url.searchParams.set('reload', '1');
-        window.location.replace(url.toString());
-      }
+      console.log('24Shift: Initialization Started');
     </script>
   </body>
 </html>
