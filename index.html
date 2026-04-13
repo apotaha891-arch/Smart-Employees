@@ -15,5 +15,30 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Clear old PWA artifacts and force fresh load
+      if ('serviceWorker' in navigator) {
+        // 1. Register the "Cleanup Worker" to clear caches
+        navigator.serviceWorker.register('/sw.js').then(function(reg) {
+          console.log('Cleanup worker registered');
+          // 2. Once it's done its job, we unregister everything
+          reg.unregister().then(function() {
+            console.log('Cleanup worker Task done -> Unregistered.');
+          });
+        }).catch(function(err) {
+          // If registration fails, manually unregister all
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for(let r of regs) r.unregister();
+          });
+        });
+      }
+      
+      // Clear all Cache Storage
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (let name of names) caches.delete(name);
+        });
+      }
+    </script>
   </body>
 </html>
