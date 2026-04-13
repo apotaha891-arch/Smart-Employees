@@ -142,6 +142,7 @@ const customerNavItems = [
     }] : []),
     { icon: LayoutDashboard, label: language === 'ar' ? 'نظرة عامة' : 'Overview', path: '/dashboard' },
     { icon: Bot, label: language === 'ar' ? 'الفريق الرقمي' : 'Digital Team', path: '/agents' },
+    { icon: MessageSquare, label: language === 'ar' ? 'المكتب الرقمي' : 'Digital Office', path: '/office' },
 
     { type: 'title', label: language === 'ar' ? 'نظام CRM المتكامل' : 'CRM & Operations' },
     { icon: Calendar, label: language === 'ar' ? 'الحجوزات' : 'Reservations', path: '/bookings' },

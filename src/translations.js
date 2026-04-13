@@ -357,6 +357,7 @@ export const translations = {
         aiAccuracy: "دقة الذكاء الاصطناعي",
         remainingCreditLabel: "الرصيد المتبقي",
         myAgentsTab: "موظفيني الرقميين",
+        testChatBtn: "دردشة التجربة",
         awaitingFirstTask: "بانتظار المهام الأولى",
 
         // Video Presentation
@@ -1025,6 +1026,7 @@ export const translations = {
         aiAccuracy: "AI Accuracy",
         remainingCreditLabel: "Remaining Credit",
         myAgentsTab: "My Digital Employees",
+        testChatBtn: "Test Chat",
         awaitingFirstTask: "Awaiting first task",
 
         // Video Presentation

@@ -1,9 +1,13 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
+// Models Configuration
+const FLASH_MODEL = "gemini-3-flash-preview";
+const PRO_MODEL = "gemini-3.1-pro-preview";
+
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-const getModel = (modelName = "gemini-3-flash") => {
+const getModel = (modelName = FLASH_MODEL) => {
     return genAI.getGenerativeModel({
         model: modelName,
         apiVersion: "v1beta",
@@ -20,7 +24,7 @@ const getModel = (modelName = "gemini-3-flash") => {
     });
 };
 
-const model = getModel("gemini-3-flash-preview"); // Exact API name from Google ListModels
+const model = getModel(PRO_MODEL);
 
 // Dictionary to store multiple chat sessions (e.g., 'agent', 'manager')
 let chatSessions = {};
@@ -67,6 +71,34 @@ const TOOLS = [
                         timeRange: { type: "STRING", enum: ["today", "week", "month"], description: "The time range for stats." }
                     }
                 }
+            },
+            {
+                name: "book_appointment",
+                description: "Book an appointment after gathering Name, Phone, Service, and Time.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        customer_name: { type: "STRING" },
+                        customer_phone: { type: "STRING" },
+                        service_requested: { type: "STRING", description: "The service the customer wants." },
+                        booking_date: { type: "STRING", description: "Gregorian date in YYYY-MM-DD format." },
+                        booking_time: { type: "STRING", description: "24-hour time in HH:mm:00 format." }
+                    },
+                    required: ["customer_name", "customer_phone", "service_requested", "booking_date", "booking_time"]
+                }
+            },
+            {
+                name: "update_customer_notes",
+                description: "Record customer inquiries, issues, or details.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        customer_name: { type: "STRING" },
+                        customer_phone: { type: "STRING" },
+                        notes: { type: "STRING" }
+                    },
+                    required: ["customer_phone", "notes"]
+                }
             }
         ]
     }
@@ -105,7 +137,7 @@ export const initializeChat = (customPrompt, sessionId = 'default', isOwnerMode 
 
     // Create a specific model instance for this session with system instruction and tools
     const sessionModel = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash", // Using flash for speed/cost
+        model: FLASH_MODEL,
         apiVersion: "v1beta",
         systemInstruction: prompt,
         tools: isOwnerMode ? TOOLS : [], // Only enable tools in owner mode
@@ -137,11 +169,32 @@ export const sendMessage = async (message, sessionId = 'default', toolHandlers =
             throw new Error('Gemini API Key is missing.');
         }
 
-        if (!chatSessions[sessionId]) {
-            initializeChat(null, sessionId);
+        const MODELS = [
+            FLASH_MODEL,
+            "gemini-1.5-flash", 
+            "gemini-2.0-flash-exp"
+        ];
+
+        let result = null;
+        let lastErr = null;
+
+        for (const modelName of MODELS) {
+            try {
+                if (!chatSessions[sessionId]) {
+                    initializeChat(null, sessionId);
+                }
+                result = await chatSessions[sessionId].sendMessage(message);
+                break;
+            } catch (err) {
+                console.warn(`Model ${modelName} in session ${sessionId} failed:`, err.message);
+                lastErr = err;
+                // Force re-init with next model on fallback
+                delete chatSessions[sessionId]; 
+            }
         }
 
-        let result = await chatSessions[sessionId].sendMessage(message);
+        if (!result) throw lastErr || new Error("All models failed.");
+
         let response = await result.response;
         
         // --- Tool Call Handling ---

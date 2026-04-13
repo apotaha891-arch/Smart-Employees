@@ -363,9 +363,9 @@ ${ec?.booking_requires_confirmation ? `7. After a SUCCESSFUL booking tool call, 
         const preferredModel = activeModelSetting?.value ? JSON.parse(activeModelSetting.value) : "gemini-3-flash-preview";
 
         const MODELS = [
-            preferredModel,                   // 🥇 Preferred from settings
-            "gemini-3-flash-preview",         // 🥈 Default Gen3
-            "gemini-1.5-flash",               // 🥉 Stable fallback
+            "gemini-3-flash-preview",         // 🥇 Primary
+            "gemini-1.5-flash",               // 🥈 Stable fallback
+            "gemini-2.0-flash-exp",           // 🥉 Experimental
         ];
         
         let finalResponse: any = null;

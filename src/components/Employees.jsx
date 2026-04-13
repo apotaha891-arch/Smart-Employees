@@ -311,7 +311,7 @@ const Employees = () => {
     const filtered = agents.filter(a => !filterRole || (a.specialty || 'booking') === filterRole);
 
     return (
-        <div style={{ color: 'white', minHeight: '100%', padding: '1rem' }}>
+        <div style={{ color: 'var(--color-text-main)', minHeight: '100%', padding: '1rem' }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
@@ -319,8 +319,8 @@ const Employees = () => {
                         <Bot size={28} />
                     </div>
                     <div>
-                        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, letterSpacing: '-0.5px' }}>{t('employeesTitle')}</h1>
-                        <p style={{ color: '#9CA3AF', fontSize: '0.9rem', margin: '6px 0 0' }}>
+                        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, letterSpacing: '-0.5px', color: 'var(--color-text-main)' }}>{t('employeesTitle')}</h1>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', margin: '6px 0 0' }}>
                             {t('employeesSector')} <span style={{ color: sector.color, fontWeight: 700 }}>{sector.emoji} {t(`sectors.${userSector}`)}</span>
                         </p>
                     </div>
@@ -376,8 +376,8 @@ const Employees = () => {
                     { label: t('activeNow'), value: agents.filter(a => a.status === 'active').length, color: '#10B981' },
                     { label: t('differentRoles'), value: [...new Set(agents.map(a => a.specialty || 'booking'))].length, color: '#F59E0B' },
                 ].map((s, i) => (
-                    <div key={i} style={{ background: 'rgba(17, 24, 39, 0.4)', backdropFilter: 'blur(10px)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 4px 30px rgba(0,0,0,0.1)' }}>
-                        <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '10px', fontWeight: 500 }}>{s.label}</div>
+                    <div key={i} style={{ background: 'var(--color-bg-surface)', backdropFilter: 'blur(10px)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '10px', fontWeight: 500 }}>{s.label}</div>
                         <div style={{ fontSize: '2.25rem', fontWeight: 800, color: s.color, letterSpacing: '-1px' }}>{s.value}</div>
                     </div>
                 ))}
@@ -385,9 +385,9 @@ const Employees = () => {
 
             {/* Filters - Only show if there are agents and multiple roles */}
             {agents.length > 0 && uniqueRoles.length > 1 && (
-                <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
+                <div style={{ marginBottom: '2.5rem', display: 'flex', gap: '1rem' }}>
                     <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
-                        style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white', padding: '10px 16px', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                        style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)', padding: '12px 20px', fontSize: '0.9rem', outline: 'none', cursor: 'pointer', minWidth: '200px', boxShadow: 'var(--shadow-sm)' }}>
                         <option value="">{t('allRolesFilter')}</option>
                         {uniqueRoles.map(roleKey => (
                             <option key={roleKey} value={roleKey}>{getRoleLabel(roleKey)}</option>
@@ -398,18 +398,18 @@ const Employees = () => {
 
             {/* Agents Grid */}
             {loading ? (
-                <div style={{ textAlign: 'center', padding: '5rem', color: '#9CA3AF', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                    <div className="loader" style={{ width: '40px', height: '40px', border: '3px solid rgba(139,92,246,0.1)', borderTopColor: '#8B5CF6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                <div style={{ textAlign: 'center', padding: '5rem', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <div className="loader" style={{ width: '40px', height: '40px', border: '3px solid var(--color-accent-soft)', borderTopColor: 'var(--color-accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
                     {t('loadingFallback')}
                 </div>
             ) : agents.length === 0 ? (
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '3rem', padding: '3rem', background: 'rgba(139, 92, 246, 0.03)', borderRadius: '24px', border: '1px dashed rgba(139, 92, 246, 0.2)' }}>
-                        <div style={{ width: '80px', height: '80px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                            <Bot size={40} color="#8B5CF6" />
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '3rem', padding: '3rem', background: 'var(--color-bg-glass)', borderRadius: '24px', border: '1px dashed var(--color-border-subtle)' }}>
+                        <div style={{ width: '80px', height: '80px', background: 'var(--color-accent-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                            <Bot size={40} color="var(--color-accent)" />
                         </div>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.75rem' }}>{isAr ? 'ابتدئ فريقك الرقمي الآن' : 'Start Your Digital Team'}</h2>
-                        <p style={{ color: '#9CA3AF', fontSize: '1rem', maxWidth: '500px', margin: '0 0 1.5rem', lineHeight: 1.6 }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.75rem', color: 'var(--color-text-main)' }}>{isAr ? 'ابتدئ فريقك الرقمي الآن' : 'Start Your Digital Team'}</h2>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', maxWidth: '500px', margin: '0 0 1.5rem', lineHeight: 1.6 }}>
                             {isAr 
                                 ? 'لم تقم بتوظيف أي موظف بعد. اختر من القوالب الجاهزة أدناه والمدربة خصيصاً لقطاعك لبدء أتمتة أعمالك.' 
                                 : 'You haven’t hired any agents yet. Choose from our pre-trained templates below to start automating your business.'}
@@ -425,26 +425,26 @@ const Employees = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
                         {templates.map(tmpl => (
-                            <div key={tmpl.id} className="card shadow-premium" style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'transform 0.2s' }}>
+                            <div key={tmpl.id} className="card shadow-premium" style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'transform 0.2s' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                                    <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'var(--color-accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
                                         {tmpl.avatar || '🤖'}
                                     </div>
                                     <div style={{ textAlign: 'start' }}>
-                                        <h4 style={{ fontWeight: 800, margin: 0, fontSize: '1.05rem' }}>
+                                        <h4 style={{ fontWeight: 800, margin: 0, fontSize: '1.05rem', color: 'var(--color-text-main)' }}>
                                             {isAr ? (tmpl.name_ar || tmpl.name) : tmpl.name}
                                         </h4>
-                                        <span style={{ fontSize: '0.7rem', color: '#8B5CF6', fontWeight: 700, textTransform: 'uppercase' }}>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--color-accent)', fontWeight: 700, textTransform: 'uppercase' }}>
                                             {t(`roles.${tmpl.specialty || 'booking'}`)}
                                         </span>
                                     </div>
                                 </div>
-                                <p style={{ fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.6, textAlign: 'start', flex: 1 }}>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.6, textAlign: 'start', flex: 1 }}>
                                     {isAr ? (tmpl.description_ar || tmpl.description) : tmpl.description}
                                 </p>
                                 <button 
                                     onClick={() => navigate('/interview', { state: { template: tmpl } })}
-                                    style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(139, 92, 246, 0.1)', color: '#A78BFA', border: '1px solid rgba(139, 92, 246, 0.2)', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'var(--color-accent-soft)', color: 'var(--color-accent)', border: '1px solid var(--color-accent-border)', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                 >
                                     {isAr ? 'مقابلة وتوظيف' : 'Interview & Hire'}
                                     <ArrowRight size={16} />
@@ -464,7 +464,7 @@ const Employees = () => {
                         const needsLink = isTelegram && !hasToken;
 
                         return (
-                            <div key={agent.id} style={{ background: 'rgba(17, 24, 39, 0.6)', borderRadius: '20px', border: `1px solid ${isActive ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.05)'}`, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', transition: 'transform 0.3s ease' }}>
+                            <div key={agent.id} style={{ background: 'var(--color-bg-surface)', borderRadius: '20px', border: `1px solid ${isActive ? 'var(--color-accent-border)' : 'var(--color-border-subtle)'}`, overflow: 'hidden', boxShadow: 'var(--shadow-premium)', transition: 'transform 0.3s ease' }}>
                                 {/* Card Header */}
                                 <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -472,7 +472,7 @@ const Employees = () => {
                                             {agent.avatar || '👩'}
                                         </div>
                                         <div>
-                                            <div style={{ fontWeight: 800, color: '#F3F4F6', fontSize: '1.1rem', marginBottom: '4px' }}>{agent.name}</div>
+                                            <div style={{ fontWeight: 800, color: 'var(--color-text-main)', fontSize: '1.1rem', marginBottom: '4px' }}>{agent.name}</div>
                                             <div style={{ display: 'flex', gap: '6px' }}>
                                                 <span style={{ fontSize: '0.7rem', background: `${role.color}15`, color: role.color, padding: '2px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                                     <RoleIcon size={10} />{getRoleLabel(agent.specialty)}
@@ -512,18 +512,25 @@ const Employees = () => {
                                     </div>
                                 )}
 
-                                <div style={{ padding: '1.25rem 1.5rem', fontSize: '0.9rem', color: '#9CA3AF', lineHeight: 1.6, minHeight: '80px' }}>
+                                <div style={{ padding: '1.25rem 1.5rem', fontSize: '0.9rem', color: 'var(--color-text-secondary)', lineHeight: 1.6, minHeight: '80px' }}>
                                     {agent.description || (isAr ? `موظف ذكي مخصص لدعم قطاع ${t(`sectors.${userSector}`)}` : `AI Agent specialized in ${t(`sectors.${userSector}`)}`)}
                                 </div>
 
                                 {/* Footer Actions */}
                                 <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.03)', display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.1)' }}>
                                     <button onClick={() => navigate(`/entity-setup?agent=${agent.id}`)}
-                                        style={{ flex: 1, background: 'rgba(255,255,255,0.03)', color: '#D1D5DB', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s' }}
-                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                                        style={{ flex: 1, background: 'var(--color-bg-input)', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s' }}
+                                        onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-glass)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'var(--color-bg-input)'}
                                     >
                                         <Settings size={16} /> {t('settingsBtn')}
+                                    </button>
+                                    <button onClick={() => navigate('/interview', { state: { template: agent, fromTemplates: true, isOwnerSession: true } })}
+                                        style={{ flex: 1, background: 'var(--color-accent-soft)', color: 'var(--color-accent)', border: '1px solid var(--color-accent-border)', borderRadius: '10px', padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 700, transition: 'all 0.2s' }}
+                                        onMouseEnter={e => e.currentTarget.style.background = 'var(--color-accent)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'var(--color-accent-soft)'}
+                                    >
+                                        <MessageCircle size={16} /> {t('testChatBtn')}
                                     </button>
                                     <button onClick={() => toggleAgent(agent)}
                                         style={{
@@ -562,17 +569,17 @@ const Employees = () => {
             {/* Link Telegram Modal */}
             {showLinkModal && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1.5rem' }}>
-                    <div style={{ background: '#111827', width: '100%', maxWidth: '440px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', padding: '2rem', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
-                        <button onClick={() => setShowLinkModal(false)} style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', background: 'transparent', border: 'none', color: '#4B5563', cursor: 'pointer' }}>
+                    <div style={{ background: 'var(--color-bg-base)', width: '100%', maxWidth: '440px', borderRadius: '24px', border: '1px solid var(--color-border-subtle)', padding: '2rem', position: 'relative', boxShadow: 'var(--shadow-premium)' }}>
+                        <button onClick={() => setShowLinkModal(false)} style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
                             <X size={24} />
                         </button>
 
                         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                            <div style={{ width: '64px', height: '64px', background: '#0088cc20', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0088cc', margin: '0 auto 1rem' }}>
+                            <div style={{ width: '64px', height: '64px', background: 'var(--color-accent-soft)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)', margin: '0 auto 1rem' }}>
                                 <MessageCircle size={32} />
                             </div>
-                            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('telegramModalTitle') || 'ربط بوت تيليجرام'}</h2>
-                            <p style={{ fontSize: '0.9rem', color: '#9CA3AF', lineHeight: 1.6 }}>
+                            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--color-text-main)' }}>{t('telegramModalTitle') || 'ربط بوت تيليجرام'}</h2>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
                                 {t('telegramModalDesc').replace('{name}', linkingAgent?.name || '') || `أدخل Bot Token الخاص بهذا الموظف لربطه وتفعيله للحديث نيابة عن ${linkingAgent?.name}.`}
                             </p>
                         </div>
@@ -602,13 +609,13 @@ const Employees = () => {
                         )}
 
                         <div style={{ marginBottom: '1.25rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '8px' }}>{t('telegramBotTokenLabel') || 'Telegram Bot Token'}</label>
+                            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-main)', marginBottom: '8px' }}>{t('telegramBotTokenLabel') || 'Telegram Bot Token'}</label>
                             <div style={{ position: 'relative' }}>
                                 <input
                                     value={linkToken}
                                     onChange={e => setLinkToken(e.target.value)}
                                     placeholder={t('telegramPlaceholder') || '7434105220:AAFvW...'}
-                                    style={{ width: '100%', background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px', color: 'white', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none' }}
+                                    style={{ width: '100%', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', padding: '12px 16px', color: 'var(--color-text-main)', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none' }}
                                 />
                                 {linkToken && (
                                     <button 

@@ -98,7 +98,6 @@ export default function AdminDashboard() {
         email: { l: 'منسق بريد', c: '#EC4899' },
         followup: { l: 'متابعة', c: '#06B6D4' }
     });
-    console.log('✨ AdminDashboard initialized with roles state');
     const [agentAppsConfig, setAgentAppsConfig] = useState([
         { id: 'email_notify', icon: 'Mail', label: 'إشعار بريد إلكتروني', desc: 'تنبيه للمدير عند الحجوزات أو المحادثات الجديدة' },
         { id: 'sms_notify', icon: 'MessageSquare', label: 'إشعار SMS', desc: 'رسالة نصية للعميل بتأكيد حجزه' },
@@ -1082,7 +1081,7 @@ export default function AdminDashboard() {
                                             <td style={{ padding: '0.85rem 0.9rem' }}>
                                                 <div style={{ display: 'flex', gap: '5px' }}>
                                                     <button onClick={() => setSelClient(c)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', transition: '0.2s' }} title="إدارة مفصلة"><Settings size={14} /></button>
-                                                    <button onClick={() => remoteLogin(c.email)} style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer' }} title="دخول الدعم"><LogOut size={14} style={{ transform: isRtl ? 'rotate(180deg)' : 'none' }} /></button>
+                                                    <button onClick={() => remoteLogin(c)} style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer' }} title="دخول الدعم"><LogOut size={14} style={{ transform: isRtl ? 'rotate(180deg)' : 'none' }} /></button>
                                                 </div>
                                             </td>
                                         </tr>;

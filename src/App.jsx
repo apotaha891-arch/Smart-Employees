@@ -85,10 +85,10 @@ function AppContent() {
     const { isAuthenticated } = useAuth();
     
     // Routes that ALWAYS use the Dashboard Layout
-    const alwaysDashboardRoutes = ['/dashboard', '/agency', '/setup', '/entity-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr'];
+    const alwaysDashboardRoutes = ['/dashboard', '/agency', '/setup', '/entity-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr', '/office'];
     
     // Routes that use Dashboard Layout ONLY when logged in
-    const hybridRoutes = ['/templates', '/interview', '/pricing'];
+    const hybridRoutes = ['/templates', '/interview', '/office', '/pricing'];
     
     const isDashboard = alwaysDashboardRoutes.includes(location.pathname) || (hybridRoutes.includes(location.pathname) && isAuthenticated);
 
@@ -105,6 +105,7 @@ function AppContent() {
                 <Route path="/custom-request" element={<CustomRequest />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/interview" element={isDashboard ? <ModernDashboardLayout><InterviewRoom /></ModernDashboardLayout> : <InterviewRoom />} />
+                <Route path="/office" element={<ProtectedRoute requiredRole="customer"><ModernDashboardLayout><InterviewRoom isOfficeMode={true} /></ModernDashboardLayout></ProtectedRoute>} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/templates" element={isDashboard ? <ModernDashboardLayout><AgentTemplates /></ModernDashboardLayout> : <AgentTemplates />} />
                 <Route path="/pricing" element={isDashboard ? <ModernDashboardLayout><Pricing /></ModernDashboardLayout> : <Pricing />} />
