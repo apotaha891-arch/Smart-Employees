@@ -16,28 +16,44 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      // Clear old PWA artifacts and force fresh load
+      // 1. Force unregister all Service Workers immediately
       if ('serviceWorker' in navigator) {
-        // 1. Register the "Cleanup Worker" to clear caches
-        navigator.serviceWorker.register('/sw.js').then(function(reg) {
-          console.log('Cleanup worker registered');
-          // 2. Once it's done its job, we unregister everything
-          reg.unregister().then(function() {
-            console.log('Cleanup worker Task done -> Unregistered.');
-          });
-        }).catch(function(err) {
-          // If registration fails, manually unregister all
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            for(let r of regs) r.unregister();
-          });
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister().then(() => {
+                console.log('SW Unregistered');
+            });
+          }
         });
       }
       
-      // Clear all Cache Storage
+      // 2. Comprehensive Cache Clearing
       if ('caches' in window) {
         caches.keys().then(function(names) {
           for (let name of names) caches.delete(name);
         });
+      }
+
+      // 3. Asset Failure Detection & Auto-Repair (Nuclear Fix)
+      window.addEventListener('error', function(e) {
+        // If a script or link failed to load (likely 404 in old cache)
+        if (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK') {
+          console.log('Asset failed to load, triggering force reload...');
+          const url = new URL(window.location.href);
+          // Add a cache buster if not already present
+          if (!url.searchParams.has('v')) {
+            url.searchParams.set('v', Date.now());
+            window.location.replace(url.toString());
+          }
+        }
+      }, true);
+      
+      // 4. One-time auto-reload for people stuck in the old version
+      if (!localStorage.getItem('site_refreshed_v2')) {
+        localStorage.setItem('site_refreshed_v2', 'true');
+        const url = new URL(window.location.href);
+        url.searchParams.set('reload', '1');
+        window.location.replace(url.toString());
       }
     </script>
   </body>
