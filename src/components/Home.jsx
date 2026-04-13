@@ -228,11 +228,6 @@ const Home = () => {
 
             {/* Hero Section */}
             <header className="hero container" style={{
-                padding: '8rem 0 7rem',
-                display: 'grid',
-                gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
-                gap: '4rem',
-                alignItems: 'center',
                 textAlign: language === 'en' ? 'left' : 'right',
                 direction: language === 'en' ? 'ltr' : 'rtl'
             }}>
@@ -240,7 +235,7 @@ const Home = () => {
                     <div style={{ color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '2rem', textTransform: 'uppercase', fontSize: '0.85rem' }}>
                         {industry === 'general' ? t('home.platformName') : t('home.eliteSolutionsFor').replace('{industry}', t(`home.${industry}`))}
                     </div>
-                    <h1 style={{ fontSize: '2.8rem', fontWeight: '900', marginBottom: '2rem', color: 'var(--color-text-main)', lineHeight: '1.2' }}>
+                    <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: '900', marginBottom: '1.5rem', color: 'var(--color-text-main)', lineHeight: '1.2' }}>
                         {content.heroTitle}
                     </h1>
                     <p className="text-secondary mb-2xl" style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '3.5rem', lineHeight: '1.7', color: 'var(--color-text-secondary)' }}>
@@ -273,10 +268,11 @@ const Home = () => {
                     </div>
                 </div>
 
-                <div className="animate-fade-in" style={{ position: 'relative' }}>
-                    <div style={{
+                <div className="animate-fade-in hero-image-container" style={{ position: 'relative' }}>
+                    <div className="hero-image-wrapper" style={{
                         width: '100%',
-                        height: '520px',
+                        minHeight: '350px',
+                        maxHeight: '520px',
                         borderRadius: '40px',
                         overflow: 'hidden',
                         boxShadow: 'var(--shadow-premium)',
@@ -303,20 +299,20 @@ const Home = () => {
                                 transition: 'opacity 0.8s ease'
                             }}
                         />
-                        <div style={{
+                        <div className="hero-quote-box" style={{
                             position: 'absolute',
-                            bottom: '2.5rem',
-                            right: '2rem',
-                            left: '2rem',
+                            bottom: '1.5rem',
+                            right: '1.5rem',
+                            left: '1.5rem',
                             background: 'var(--color-bg-glass)',
                             backdropFilter: 'blur(15px)',
-                            padding: '1.75rem',
+                            padding: '1.25rem',
                             borderRadius: '24px',
                             border: '1px solid var(--color-border-subtle)',
                             boxShadow: 'var(--shadow-sm)'
                         }}>
-                            <p style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--color-text-main)', lineHeight: '1.5' }}>"{content.quote}"</p>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--color-accent)', marginTop: '0.75rem', fontWeight: 900 }}>{t('home.strategicTeam')}</p>
+                            <p style={{ fontSize: '0.9rem', fontWeight: 800, margin: 0, color: 'var(--color-text-main)', lineHeight: '1.5' }}>"{content.quote}"</p>
+                            <p style={{ fontSize: '0.7rem', color: 'var(--color-accent)', marginTop: '0.5rem', fontWeight: 900 }}>{t('home.strategicTeam')}</p>
                         </div>
                     </div>
                     {/* Decorative backdrop */}

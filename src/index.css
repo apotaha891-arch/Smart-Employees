@@ -968,3 +968,144 @@ html[dir="rtl"] button {
   background: rgba(139, 92, 246, 1);
   box-shadow: 0 0 50px rgba(139, 92, 246, 0.8);
 }
+
+/* --- Responsive Design System --- */
+
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 1.5rem;
+    }
+    
+    .hero {
+        grid-template-columns: 1fr !important;
+        gap: 3rem !important;
+        padding: 6rem 0 4rem !important;
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --radius-xl: 20px;
+    }
+
+    body {
+        font-size: 15px;
+    }
+
+    .container {
+        padding: 0 1.25rem;
+    }
+
+    /* Navbar Mobile Styles */
+    .navbar {
+        padding: 1rem 0;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        height: 100vh;
+        background: var(--color-bg-surface);
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 6rem 2rem 2rem !important;
+        transition: var(--transition);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+        z-index: 1001;
+        gap: 1.5rem !important;
+        backdrop-filter: blur(20px);
+        border-left: 1px solid var(--color-border-subtle);
+    }
+
+    .nav-links.open {
+        right: 0;
+    }
+
+    html[dir="rtl"] .nav-links {
+        right: auto;
+        left: -100%;
+        border-left: none;
+        border-right: 1px solid var(--color-border-subtle);
+    }
+
+    html[dir="rtl"] .nav-links.open {
+        left: 0;
+    }
+
+    .nav-link {
+        width: 100%;
+        font-size: 1.1rem !important;
+        padding: 1rem !important;
+    }
+
+    /* Hero Responsive Adjustments */
+    .hero h1 {
+        font-size: clamp(2rem, 8vw, 2.5rem) !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .hero p {
+        font-size: 1.05rem !important;
+        margin-bottom: 2.5rem !important;
+    }
+
+    .hero .flex {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .hero .btn {
+        width: 100%;
+    }
+
+    /* Flip Cards & Grids */
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header h2 {
+        font-size: 2rem !important;
+    }
+
+    /* Industry Switcher */
+    .industry-pill {
+        padding: 0.6rem 1.1rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Stats Mobile */
+    .stat-card {
+        padding: 1.5rem 1rem !important;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem !important;
+    }
+
+    /* Prevent overflow on the root level */
+    #root {
+        overflow-x: hidden;
+        width: 100%;
+    }
+}
+
+/* Mobile Toggle Helper */
+.mobile-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--color-text-main);
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1002;
+    border-radius: var(--radius-sm);
+}
+
+@media (max-width: 768px) {
+    .mobile-toggle {
+        display: block;
+    }
+}
