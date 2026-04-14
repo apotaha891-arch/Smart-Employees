@@ -106,12 +106,22 @@ serve(async (req: any) => {
         // --- 3. QUOTA & PLAN LOGIC ---
         const { data: profile } = await supabaseClient
             .from('profiles')
-            .select('subscription_tier')
+            .select('subscription_tier, telegram_id, whatsapp_id')
             .eq('id', agent.user_id)
             .maybeSingle();
         
         const subTier = profile?.subscription_tier || 'starter';
         console.log(`User Plan: ${subTier} for User: ${agent.user_id}`);
+
+        // --- IDENTITY RECOGNITION (Owner vs Customer) ---
+        const platformPrefix = sessionId.split('_')[0];
+        const senderPlatformId = sessionId.split('_')[1];
+        let isOwner = false;
+
+        if (platformPrefix === 'telegram' && profile?.telegram_id === senderPlatformId) isOwner = true;
+        if (platformPrefix === 'whatsapp' && profile?.whatsapp_id === senderPlatformId) isOwner = true;
+        
+        console.log(`Connection: Platform=${platformPrefix} | Sender=${senderPlatformId} | isOwner=${isOwner}`);
 
         let businessContext = '';
         let servicesText = '';
@@ -232,13 +242,38 @@ serve(async (req: any) => {
                     },
                     required: ["customer_phone", "notes"]
                 }
+            },
+            {
+                name: "update_service_price",
+                description: "ADMIN ONLY: Update the price of a specific service in the system.",
+                parameters: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                        service_name: { type: SchemaType.STRING },
+                        new_price: { type: SchemaType.NUMBER }
+                    },
+                    required: ["service_name", "new_price"]
+                }
+            },
+            {
+                name: "get_today_bookings",
+                description: "ADMIN ONLY: Get a list of all bookings scheduled for today.",
+                parameters: {
+                    type: SchemaType.OBJECT,
+                    properties: {}
+                }
             }
         ];
 
-        // PLAN LIMIT ENFORCEMENT: [REMOVED/LEGACY]
-        // Now using points system. No need to cap at 2 for 'starter'.
-        const filteredFunctions = allFunctionDeclarations.filter(f => allowedToolNames.includes(f.name));
+        // PLAN LIMIT ENFORCEMENT & SECURITY:
+        // 1. Start with agents default permissions
+        // 2. Add admin tools ONLY if isOwner is true
+        let finalToolNames = [...allowedToolNames];
+        if (isOwner) {
+            finalToolNames.push('update_service_price', 'get_today_bookings');
+        }
 
+        const filteredFunctions = allFunctionDeclarations.filter(f => finalToolNames.includes(f.name));
         const tools = filteredFunctions.length > 0 ? [{ functionDeclarations: filteredFunctions }] : [];
 
         const specialty = (agent.specialty || '').toLowerCase();
@@ -295,12 +330,23 @@ CRITICAL DATE RULES:
 - If the customer says "tomorrow", calculate from today ${isoDateStr}.
 - If the customer says "بكرة" or "غداً", that means the next Gregorian day.
 
+${isOwner ? `
+# BOSS INTERACTION PROTOCOL (CRITICAL):
+You are talking directly to your BOSS/MANAGER. 
+1. DO NOT treat them as a customer. 
+2. Be obedient, professional, and ready for orders.
+3. You have ADMINISTRATIVE POWERS! You can:
+    - Report today's reservations (get_today_bookings).
+    - Update service prices in the system (update_service_price).
+4. Address them as "Boss", "Manager", or "Sir/Ma'am".
+` : `
 RULES:
 1. Identify as ${businessName}.
 2. Always reply in the user's language (Arabic/English).
 3. TO BOOK: Gather Name, Phone, Service, and Time. You MUST CALL 'book_appointment' and WAIT for the tool's response before confirming to the customer.
 4. [CRITICAL TRUTH] If a tool call (booking/notes) returns an error, NEVER tell the user it succeeded. Explain the issue politely.
 5. Only confirm success to the user AFTER the tool response confirms it.
+`}
 6. Calculate dates relative to Today: ${isoDateStr}.
 ${ec?.booking_requires_confirmation ? `7. After a SUCCESSFUL booking tool call, tell the customer: "تم تسجيل حجزك المبدئي بنجاح! سيصلك تأكيد نهائي قريباً."` : ''}
 `;
@@ -579,6 +625,35 @@ ${ec?.booking_requires_confirmation ? `7. After a SUCCESSFUL booking tool call, 
                      await supabaseClient.from('customers').upsert({ ...notesPayload, salon_config_id: finalEntityId }, { onConflict: conflictColNotes });
                 }
                 return { status: "success", message: "Customer notes updated." };
+            },
+            update_service_price: async (args: any) => {
+                const { service_name, new_price } = args;
+                console.log(`Admin Tool: Updating ${service_name} to ${new_price}`);
+                
+                const { data, error } = await supabaseClient
+                    .from('entity_services')
+                    .update({ price: new_price, updated_at: new Date().toISOString() })
+                    .eq('entity_id', finalEntityId)
+                    .ilike('service_name', `%${service_name}%`)
+                    .select();
+
+                if (error) return { status: "error", message: error.message };
+                if (!data || data.length === 0) return { status: "error", message: `Service "${service_name}" not found.` };
+                
+                return { status: "success", message: `Price updated successfully for ${data[0].service_name} ✅` };
+            },
+            get_today_bookings: async () => {
+                const today = new Date().toISOString().split('T')[0];
+                const { data, error } = await supabaseClient
+                    .from('bookings')
+                    .select('customer_name, service_requested, booking_time, status')
+                    .eq('entity_id', finalEntityId)
+                    .eq('booking_date', today);
+
+                if (error) return { status: "error", message: error.message };
+                if (!data || data.length === 0) return { status: "success", message: "No bookings for today." };
+                
+                return { status: "success", count: data.length, bookings: data };
             }
         };
 

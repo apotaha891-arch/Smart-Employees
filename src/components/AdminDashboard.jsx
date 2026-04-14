@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
     Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
     LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
-    Search, Download, Newspaper, Megaphone, Settings, Star, BookOpen, ArrowRight, Sparkles
+    Search, Download, Newspaper, Megaphone, Settings, Star, BookOpen, ArrowRight, Sparkles, Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -2012,15 +2012,15 @@ export default function AdminDashboard() {
                 {tab === 'admin-advisor' && (
                     <div style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div>
-                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>🎙️ المستشار الذكي للأدمن</h1>
-                            <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>ناقش استراتيجيات المنصة، واطلب تحليل البيانات، وحسّن أداء "الموظفات الأذكياء".</p>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>🎙️ {isEnglish ? 'Smart Advisor' : 'المستشار الذكي للأدمن'}</h1>
+                            <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>{isEnglish ? 'Discuss platform strategies, request data analysis, and improve agent performance.' : 'ناقش استراتيجيات المنصة، واطلب تحليل البيانات، وحسّن أداء "الموظفات الأذكياء".'}</p>
                         </div>
 
                         <div style={{ flex: 1, display: 'flex', gap: '1.5rem', overflow: 'hidden' }}>
                             {/* Chat Interface */}
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0D1117', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
                                 <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {advisorMessages.map((m, i) => (
+                                    {(advisorMessages || []).map((m, i) => (
                                         <div key={i} style={{ 
                                             alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
                                             maxWidth: '80%',
@@ -2039,7 +2039,7 @@ export default function AdminDashboard() {
                                 <div style={{ padding: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
                                     <form style={{ display: 'flex', gap: '0.75rem' }} onSubmit={async (e) => {
                                         e.preventDefault();
-                                        if (!advisorInput.trim() || saving) return;
+                                        if (!advisorInput?.trim() || saving) return;
                                         
                                         const userMsg = advisorInput.trim();
                                         setAdvisorInput('');
@@ -2047,7 +2047,6 @@ export default function AdminDashboard() {
                                         
                                         setSaving(true);
                                         try {
-                                            // Dynamic context generation
                                             const context = `Platform Stats: ${clients.length} Clients, ${agents.length} Agents, ${bookings.length} Bookings.`;
                                             const response = await adminService.chatWithAdvisor(userMsg, advisorMessages, advisorConfig, context);
                                             setAdvisorMessages(p => [...p, { role: 'assistant', content: response }]);
@@ -2058,7 +2057,7 @@ export default function AdminDashboard() {
                                         }
                                     }}>
                                         <input 
-                                            value={advisorInput} 
+                                            value={advisorInput || ''} 
                                             onChange={e => setAdvisorInput(e.target.value)} 
                                             placeholder={isEnglish ? 'Ask your consultant...' : 'اسأل مستشارك الذكي...'}
                                             style={{ flex: 1, background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white', padding: '12px 16px', fontSize: '0.9rem', outline: 'none' }}
@@ -2075,14 +2074,14 @@ export default function AdminDashboard() {
                             <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 <Card s={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.1)' }} c={
                                     <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 800, marginBottom: '0.5rem' }}>مقترح استراتيجي</div>
-                                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>"بناءً على البيانات، قطاع الصالونات ينمو بسرعة. ننصح بزيادة حملات التسويق لهذا القطاع."</p>
+                                        <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 800, marginBottom: '0.5rem' }}>{isEnglish ? 'Strategic Suggestion' : 'مقترح استراتيجي'}</div>
+                                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>{isEnglish ? '"Based on data, salon sector is growing fast. We suggest increasing marketing campaigns here."' : '"بناءً على البيانات، قطاع الصالونات ينمو بسرعة. ننصح بزيادة حملات التسويق لهذا القطاع."'}</p>
                                     </div>
                                 } />
                                 <Card s={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)' }} c={
                                     <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '0.7rem', color: '#3B82F6', fontWeight: 800, marginBottom: '0.5rem' }}>تحليل الأداء</div>
-                                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>معدل تحويل الزوار لمشتركين ارتفع بنسبة 12% هذا الشهر.</p>
+                                        <div style={{ fontSize: '0.7rem', color: '#3B82F6', fontWeight: 800, marginBottom: '0.5rem' }}>{isEnglish ? 'Performance Analysis' : 'تحليل الأداء'}</div>
+                                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>{isEnglish ? 'Visitor to subscriber conversion rate increased by 12% this month.' : 'معدل تحويل الزوار لمشتركين ارتفع بنسبة 12% هذا الشهر.'}</p>
                                     </div>
                                 } />
                             </div>

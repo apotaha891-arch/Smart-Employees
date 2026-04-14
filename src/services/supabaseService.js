@@ -1022,6 +1022,31 @@ export const updateService = async (serviceId, updates) => {
     }
 };
 
+/**
+ * Specifically for the AI Manager to update prices
+ */
+export const updateServicePrice = async (entityId, serviceName, newPrice) => {
+    try {
+        const priceValue = parseFloat(newPrice);
+        if (isNaN(priceValue)) throw new Error('Invalid price format');
+
+        const { data, error } = await supabase
+            .from('entity_services')
+            .update({ price: priceValue, updated_at: new Date().toISOString() })
+            .eq('entity_id', entityId)
+            .ilike('service_name', `%${serviceName}%`) // Flexible naming
+            .select();
+
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error(`Service "${serviceName}" not found.`);
+
+        return { success: true, data: data[0] };
+    } catch (error) {
+        console.error('Update Service Price Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 export const deleteService = async (serviceId) => {
     try {
         // Soft delete by setting is_active to false
@@ -1115,6 +1140,27 @@ export const getBookings = async (entityId, filters = {}) => {
     }
 };
 
+/**
+ * Reporting for Manager/Boss
+ */
+export const getTodayBookings = async (entityId) => {
+    try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('customer_name, customer_phone, booking_time, status, service_requested')
+            .eq('entity_id', entityId)
+            .eq('booking_date', todayStr)
+            .order('booking_time', { ascending: true });
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Get Today Bookings Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 export const getAvailableSlots = async (entityId, date) => {
     try {
         // Get all bookings for the specified date
@@ -1177,6 +1223,29 @@ export const updateBooking = async (bookingId, updates) => {
         return { success: true, data };
     } catch (error) {
         console.error('Update Booking Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Enhanced booking update for AI tool (can handle sending confirmation logic later)
+ */
+export const updateBookingDetails = async (bookingId, details) => {
+    try {
+        const { data, error } = await supabase
+            .from('bookings')
+            .update({
+                ...details,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', bookingId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Update Booking Details Error:', error);
         return { success: false, error: error.message };
     }
 };

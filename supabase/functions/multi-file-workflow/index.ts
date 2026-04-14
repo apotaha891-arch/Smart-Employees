@@ -43,15 +43,27 @@ async function callGeminiAndExtract(parts: any[]) {
         "address": "الموقع",
         "website": "الموقع الإلكتروني",
         "working_hours": "ساعات العمل",
-        "services": "قائمة الخدمات والمنتجات",
+        "services": "وصف نصي عام للخدمات والمنتجات",
+        "extracted_services": [
+           { 
+             "name": "اسم الخدمة بدقة", 
+             "price": 99.99, 
+             "duration": 30, 
+             "description": "وصف مختصر للخدمة" 
+           }
+        ],
         "description": "وصف جذاب وموجز للنشاط",
-        "knowledge_base": "قاعدة المعرفة: استخرج كل المعلومات التفصيلية (أسعار، سياسات، تفاصيل تقنية، بروتوكولات، تعليمات خاصة) وضعها هنا بشكل منظم جداً ومفصل لتدريب الموظف الرقمي لاحقاً."
+        "knowledge_base": "قاعدة المعرفة: استخرج كل المعلومات التفصيلية (أسعار، سياسات، تفاصيل تقنية، بروتوكولات، تعليمات خاصة) وضعها هنا بشكل منظم جداً ومفصل لتدريب الموظف الرقمي لاحقاً.",
+        "mission_statement": "رؤية ورسالة الشركة إن وجدت",
+        "target_audience": "الفئة المستهدفة",
+        "brand_voice": "نبرة الصوت المقترحة"
       }
       
       قواعد:
       1. إذا لم تجد معلومة، حاول استنتاجها من السياق (خصوصاً اسم المنشأة والمجال).
       2. لـ business_type التزم بالكلمات: commerce, beauty, medical, restaurant, real_estate, fitness, call_center, telecom_it, general.
-      3. كن كريماً جداً في ملء حقل knowledge_base، فهو أهم حقل لدينا.
+      3. في حقل extracted_services: استخرج كل الخدمات والأسعار المذكورة في النص بشكل مصفوفة منظمة.
+      4. كن كريماً جداً في ملء حقل knowledge_base، فهو أهم حقل لدينا.
     `;
 
   const genAI = new GoogleGenerativeAI(apiKey);

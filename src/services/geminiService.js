@@ -63,13 +63,37 @@ const TOOLS = [
                 }
             },
             {
-                name: "get_business_stats",
-                description: "Fetches live statistics about bookings and customers.",
+                name: "update_booking_details",
+                description: "Updates the date, time, or service for an existing booking.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        timeRange: { type: "STRING", enum: ["today", "week", "month"], description: "The time range for stats." }
-                    }
+                        bookingId: { type: "STRING", description: "The unique ID of the booking." },
+                        newDate: { type: "STRING", description: "The new date in YYYY-MM-DD format." },
+                        newTime: { type: "STRING", description: "The new time in HH:mm:00 format." },
+                        newService: { type: "STRING", description: "The new service name." }
+                    },
+                    required: ["bookingId"]
+                }
+            },
+            {
+                name: "get_today_bookings",
+                description: "Fetches a list of all reservations for today for the manager.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {}
+                }
+            },
+            {
+                name: "update_service_price",
+                description: "Updates the price of a specific service in the business system.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        serviceName: { type: "STRING", description: "The name of the service to update (e.g., Bollywood Smile)." },
+                        newPrice: { type: "STRING", description: "The new price (e.g., 70)." }
+                    },
+                    required: ["serviceName", "newPrice"]
                 }
             },
             {

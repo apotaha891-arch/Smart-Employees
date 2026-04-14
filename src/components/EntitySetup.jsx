@@ -421,6 +421,7 @@ const EntitySetup = () => {
                     address: result.data.address || '',
                     website: result.data.website || '',
                     services: result.data.services || '',
+                    extracted_services: result.data.extracted_services || [],
                     workingHours: result.data.working_hours || '',
                     knowledgeBase: result.data.knowledge_base || '',
                     // Mission fields
@@ -497,6 +498,20 @@ const EntitySetup = () => {
                     specialty: extractedProfile.businessType,
                     entity_id: configResult.data.id
                 });
+            }
+
+            // EXTRA: Save Extracted Services to the DB
+            if (extractedProfile.extracted_services && extractedProfile.extracted_services.length > 0) {
+                console.log(`EntitySetup: Saving ${extractedProfile.extracted_services.length} extracted services...`);
+                for (const svc of extractedProfile.extracted_services) {
+                    await addService({
+                        entity_id: configResult.data.id,
+                        name: svc.name,
+                        price: svc.price || 0,
+                        duration_minutes: svc.duration || 30,
+                        description: svc.description || ''
+                    });
+                }
             }
 
             setActiveTab('identity');
@@ -1639,6 +1654,30 @@ const EntitySetup = () => {
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    {/* Structured Services Preview */}
+                                    {extractedProfile.extracted_services && extractedProfile.extracted_services.length > 0 && (
+                                        <div style={{ marginTop: 10 }}>
+                                            <h4 style={{ color: '#E5E7EB', fontSize: '0.85rem', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                <Puzzle size={14} style={{ color: '#FCD34D' }} />
+                                                {language === 'ar' ? 'الخدمات التي تم التعرف عليها (' + extractedProfile.extracted_services.length + ')' : 'Identified Services (' + extractedProfile.extracted_services.length + ')'}
+                                            </h4>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                                                {extractedProfile.extracted_services.map((svc, sIdx) => (
+                                                    <div key={sIdx} style={{ background: 'rgba(139,92,246,0.04)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: 10, padding: 12 }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                                            <span style={{ color: '#E5E7EB', fontWeight: 700, fontSize: '0.8rem' }}>{svc.name}</span>
+                                                            <span style={{ color: '#10B981', fontWeight: 800, fontSize: '0.8rem' }}>${svc.price}</span>
+                                                        </div>
+                                                        <div style={{ color: '#9CA3AF', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                            <Clock size={10} />
+                                                            {svc.duration} {language === 'ar' ? 'دقيقة' : 'min'}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Confirm buttons */}
                                     <div style={{ display: 'flex', gap: 10 }}>

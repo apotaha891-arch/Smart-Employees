@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { sendMessage, extractBusinessRules, initializeChat, resetChat, getSupportResponse, wrapIdentity } from '../services/geminiService';
-import { createAgent, saveContract, getCurrentUser, checkAndDeductCredit, getProfile, updateBusinessProfile, supabase } from '../services/supabaseService';
+import { createAgent, saveContract, getCurrentUser, checkAndDeductCredit, getProfile, updateBusinessProfile, supabase, getTodayBookings, updateServicePrice, updateBookingDetails, getServices, getUserEntities, updateBooking } from '../services/supabaseService';
 import {
     Stethoscope, Activity, Search, Scissors, Building, Utensils, Zap, Headset,
     User, Send, CheckCircle2, Briefcase, Clock, Shield, Sparkles, Settings, ArrowUp, MoreHorizontal
@@ -157,35 +157,49 @@ const InterviewRoom = ({ isOfficeMode: isOfficeModeProp }) => {
                 setProfile(p.data);
                 const d = p.data;
 
-                // Fetch real entity_id if this is an owner session
-                if (location.state?.isOwnerSession) {
-                    const { data: ent } = await supabase
-                        .from('entities')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .maybeSingle();
-                    if (ent) setEntityId(ent.id);
-                }
+                // Fetch real entity data if available
+                const { data: ent } = await supabase
+                    .from('entities')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
 
-                // Only infer from DB if no UI selection was made
-                if (!targetTemplate) {
-                    const type = d.business_type?.toLowerCase() || '';
-                    if (type.includes('طب') || type.includes('صحي') || type.includes('clinic')) detectedIndustry = 'medical';
-                    else if (type.includes('عقار') || type.includes('estate')) detectedIndustry = 'realestate';
+                if (ent) {
+                    setEntityId(ent.id);
+                    // Merge entity knowledge into profile for context building
+                    d.knowledge_base = ent.knowledge_base || d.knowledge_base;
+                    d.business_name = ent.business_name || d.business_name;
+                    d.business_type = ent.business_type || d.business_type;
+                    d.working_hours = ent.working_hours ? JSON.stringify(ent.working_hours) : d.working_hours;
+                    d.mission_statement = ent.mission_statement;
+
+                    // Fetch Real Services from Database
+                    const { data: svcs } = await supabase
+                        .from('entity_services')
+                        .select('*')
+                        .eq('entity_id', ent.id);
+
+                    if (svcs && svcs.length > 0) {
+                        d.services_list = svcs.map(s => `- ${s.service_name} (${s.price ? 'السعر: ' + s.price : 'حسب الطلب'}) ${s.description ? '- ' + s.description : ''}`).join('\n');
+                    }
+                    
+                    let type = (d.business_type || '').toLowerCase();
+                    if (type.includes('tech') || type.includes('software') || type.includes('تقني') || type.includes('برمج')) {
+                        detectedIndustry = 'tech';
+                    } else if (type.includes('عقار') || type.includes('estate')) detectedIndustry = 'realestate';
                     else if (type.includes('تجميل') || type.includes('salon') || type.includes('beauty')) detectedIndustry = 'beauty';
                     else if (type.includes('مطعم') || type.includes('restau')) detectedIndustry = 'restaurant';
                     else if (type.includes('رياض') || type.includes('gym') || type.includes('club') || type.includes('fit')) detectedIndustry = 'fitness';
                 }
 
-                // Only add real profile data to the context if the user has actually filled it out.
-                // Otherwise, leave it empty so the Agent falls back to the rich Mock Data
                 if (d.business_name && d.business_type) {
                     profileDetails = `
 المعلومات الرسمية للمنشأة المتعاقد معها:
 - اسم المنشأة: ${d.business_name || 'غير محدد'}
 - نوع النشاط: ${d.business_type || 'غير محدد'}
 - ساعات العمل: ${d.working_hours || 'غير محدد'}
-- الخدمات: ${d.services || 'غير محدد'}
+- الخدمات والأسعار الرسمية:
+${d.services_list || d.services || 'لم يتم تحديد قائمة خدمات رسمية بعد.'}
 - نبذة إضافية: ${d.description || 'لا يوجد'}
 - نبرة التواصل المطلوبة: ${targetTemplate?.tone || d.branding_tone || 'احترافية'}
 
@@ -295,7 +309,10 @@ ${d.knowledge_base || "لا توجد بروتوكولات إضافية حالي�
 1. أنت موظف رسمي ومعين بالفعل في المنشأة (Digital Employee). لست مرشحاً ولست في مقابلة عمل.
 2. لا تعامله كزبون مطلقاً. لا تعرض عليه خدمات أو أسعار إلا إذا طلب ذلك لاختبارك.
 3. كن مططيعاً، محترفاً، ومستعداً لتنفيذ الأوامر فوراً.
-4. أظهر ذكاءك في فهم طبيعة العمل ولا تطلب منه توظيفك لأنك موظف لديه بالفعل.
+4. لديك صلاحيات إدارية! يمكنك:
+    - تقديم تقارير عن حجوزات اليوم (get_today_bookings).
+    - تحديث أسعار الخدمات في النظام (update_service_price).
+    - تعديل تفاصيل الحجوزات (update_booking_details).
 5. في لغة المخاطبة، استخدم (يا مدير، يا سيدي، أو حضرتك).
 `;
             const employerContextEn = `
@@ -303,8 +320,11 @@ ${d.knowledge_base || "لا توجد بروتوكولات إضافية حالي�
 You are talking directly to your BOSS/MANAGER. 
 1. DO NOT treat them as a customer. Never offer services or price lists.
 2. Be obedient, professional, and ready for orders (Ready for Duty).
-3. Show your intelligence in understanding the business goals.
-4. If asked about capabilities, report how you will serve customers efficiently.
+3. You have ADMINISTRATIVE POWERS! You can:
+    - Report today's reservations (get_today_bookings).
+    - Update service prices in the system (update_service_price).
+    - Modify booking details (update_booking_details).
+4. If asked about capabilities, report how you can manage the business efficiently.
 `;
 
             const identityData = {
@@ -603,6 +623,27 @@ ${industryPrivacyRules}
                         return { status: "success", message: isArabic ? "تم تسجيل الحجز في قاعدة بياناتك بنجاح ✅" : "Booking successfully recorded in your database ✅" };
                     }
                     return { status: "success", message: isArabic ? "تم تسجيل الحجز في الأنظمة التجريبية بنجاح ✅" : "Booking successfully recorded in the demo system ✅" };
+                },
+                get_today_bookings: async () => {
+                   if (!entityId) return { error: "No entity linked." };
+                   const res = await getTodayBookings(entityId);
+                   if (res.success) return { bookings: res.data };
+                   return { error: res.error };
+                },
+                update_service_price: async (args) => {
+                   if (!entityId) return { error: "No entity linked." };
+                   const res = await updateServicePrice(entityId, args.serviceName, args.newPrice);
+                   if (res.success) return { status: "success", message: `Price updated for ${args.serviceName} to ${args.newPrice}$ ✅` };
+                   return { error: res.error };
+                },
+                update_booking_details: async (args) => {
+                   const updates = {};
+                   if (args.newDate) updates.booking_date = args.newDate;
+                   if (args.newTime) updates.booking_time = args.newTime;
+                   if (args.newService) updates.service_requested = args.newService;
+                   const res = await updateBookingDetails(args.bookingId, updates);
+                   if (res.success) return { status: "success", message: "Booking updated successfully ✅" };
+                   return { error: res.error };
                 },
                 update_customer_notes: async (args) => {
                     console.log("Notes Tool Call:", args);
@@ -1283,72 +1324,74 @@ ${industryPrivacyRules}
                             </div>
                         </div>
 
-                        {/* Permanent Hiring Decision Card */}
-                        <div className="card p-xl" style={{
-                            background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-                            color: 'white',
-                            borderRadius: '24px',
-                            textAlign: 'center',
-                            border: 'none',
-                            boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)',
-                            width: '100%',
-                            position: 'relative',
-                            padding: '1.5rem',
-                            marginTop: '0.5rem'
-                        }}>
-                            <div style={{
-                                marginBottom: '1rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
+                        {/* Permanent Hiring Decision Card - Hidden in Office Mode */}
+                        {!isOfficeMode && (
+                            <div className="card p-xl" style={{
+                                background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+                                color: 'white',
+                                borderRadius: '24px',
+                                textAlign: 'center',
+                                border: 'none',
+                                boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)',
+                                width: '100%',
+                                position: 'relative',
+                                padding: '1.5rem',
+                                marginTop: '0.5rem'
                             }}>
                                 <div style={{
-                                    width: '60px',
-                                    height: '60px',
-                                    borderRadius: '50%',
-                                    background: 'rgba(255,255,255,0.2)',
+                                    marginBottom: '1rem',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    boxShadow: '0 0 20px rgba(255,255,255,0.1) inset'
+                                    justifyContent: 'center'
                                 }}>
-                                    <Sparkles size={30} color="white" fill="white" style={{ opacity: 0.9 }} />
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(255,255,255,0.2)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 0 20px rgba(255,255,255,0.1) inset'
+                                    }}>
+                                        <Sparkles size={30} color="white" fill="white" style={{ opacity: 0.9 }} />
+                                    </div>
+                                </div>
+
+                                <h3 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>{t('hiringDecisionTitle')}</h3>
+                                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                                    {t('hiringDecisionDesc').replace('{title}', template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || '')))}
+                                </p>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <button
+                                        className="btn"
+                                        onClick={handleHireAgent}
+                                        disabled={isHiring}
+                                        style={{
+                                            background: 'white',
+                                            color: '#7C3AED',
+                                            width: '100%',
+                                            fontWeight: 900,
+                                            fontSize: '1rem',
+                                            padding: '0.85rem',
+                                            borderRadius: '12px',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
+                                        }}
+                                    >
+                                        {isHiring ? (isArabic ? 'جاري الحفظ...' : 'Saving...') : t('hireCandidateBtn')}
+                                    </button>
                                 </div>
                             </div>
-
-                            <h3 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>{t('hiringDecisionTitle')}</h3>
-                            <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                                {t('hiringDecisionDesc').replace('{title}', template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || '')))}
-                            </p>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                <button
-                                    className="btn"
-                                    onClick={handleHireAgent}
-                                    disabled={isHiring}
-                                    style={{
-                                        background: 'white',
-                                        color: '#7C3AED',
-                                        width: '100%',
-                                        fontWeight: 900,
-                                        fontSize: '1rem',
-                                        padding: '0.85rem',
-                                        borderRadius: '12px',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
-                                    }}
-                                >
-                                    {isHiring ? (isArabic ? 'جاري الحفظ...' : 'Saving...') : (isOfficeMode ? (isArabic ? 'حفظ وتثبيت الإعدادات' : 'Save & Activate Configuration') : t('hireCandidateBtn'))}
-                                </button>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
         </div>
-        {/* Hiring Decision Modal */}
-        {showHiringModal && (
+        {/* Hiring Decision Modal - Hidden in Office Mode */}
+        {showHiringModal && !isOfficeMode && (
             <div style={{
                 position: 'fixed',
                 inset: 0,
