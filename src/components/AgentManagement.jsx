@@ -167,6 +167,8 @@ const AgentManagement = () => {
         } finally {
             setIsSavingWhatsApp(false);
         }
+    };
+
     const handleOpenCommandCenter = (agent) => {
         setCommandingAgent(agent);
         setShowCommandModal(true);
