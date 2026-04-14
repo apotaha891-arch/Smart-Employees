@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 const BrandingContext = createContext();
 
 export const BrandingProvider = ({ children }) => {
+    console.log('🎨 BrandingProvider Mounting...');
     const { user } = useAuth();
     const [branding, setBranding] = useState({
         is_custom: false,
@@ -18,10 +19,9 @@ export const BrandingProvider = ({ children }) => {
     const fetchBranding = async () => {
         try {
             const domain = window.location.hostname;
+            console.log('📡 Fetching branding for domain:', domain, 'User ID:', user?.id);
             const isLocal = domain === 'localhost' || domain.includes('127.0.0.1');
             
-            // Wait slightly if user is just logging in to ensure session is ready
-            // Add a safety timeout for the RPC call
             const fetchPromise = supabase.rpc('get_branding_config', {
                 p_domain: isLocal ? '' : domain
             });
@@ -30,27 +30,35 @@ export const BrandingProvider = ({ children }) => {
                 setTimeout(() => reject(new Error('Branding fetch timeout')), 5000)
             );
 
+            console.log('⏳ Waiting for branding RPC data...');
             const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Branding RPC Error:', error);
+                throw error;
+            }
 
             if (data) {
+                console.log('✅ Branding Data Received:', data);
                 setBranding({ ...data, loading: false });
                 
-                // Set CSS variable for primary color
                 if (data.primary_color) {
+                    console.log('🎨 Setting Primary Brand Color:', data.primary_color);
                     document.documentElement.style.setProperty('--primary-brand-color', data.primary_color);
                 }
+            } else {
+                console.log('ℹ️ No custom branding found, using defaults.');
+                setBranding(prev => ({ ...prev, loading: false }));
             }
         } catch (err) {
-            console.error('Branding load error:', err);
+            console.error('⚠️ Branding load error:', err);
             setBranding(prev => ({ ...prev, loading: false }));
         }
     };
 
     useEffect(() => {
         fetchBranding();
-    }, [user?.id]); // Re-fetch when user logs in or switches (impersonation)
+    }, [user?.id]);
 
     return (
         <BrandingContext.Provider value={branding}>
@@ -58,6 +66,7 @@ export const BrandingProvider = ({ children }) => {
         </BrandingContext.Provider>
     );
 };
+
 
 export const useBranding = () => {
     const context = useContext(BrandingContext);

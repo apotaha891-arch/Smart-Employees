@@ -155,7 +155,7 @@ const Home = () => {
             {!profile && (
                 <div style={{
                     background: isDarkMode ? 'linear-gradient(180deg, rgba(139,92,246,0.05) 0%, transparent 100%)' : 'linear-gradient(180deg, rgba(139,92,246,0.03) 0%, transparent 100%)',
-                    padding: '4rem 0 2rem',
+                    padding: '2rem 0 1.5rem',
                     borderBottom: '1px solid var(--color-border-subtle)',
                     position: 'relative',
                     overflow: 'hidden'
@@ -163,7 +163,7 @@ const Home = () => {
                     <div style={{ position: 'absolute', top: 0, left: '50%', width: '800px', height: '100%', background: 'radial-gradient(circle at center, var(--color-accent-soft) 0%, transparent 70%)', transform: 'translateX(-50%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }}></div>
 
                     <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             {t('home.sectorTitle')}
                         </h2>
 
@@ -189,13 +189,13 @@ const Home = () => {
                                         onClick={() => { setIndustry(type); setImgLoaded(false); }}
                                         className="industry-pill"
                                         style={{
-                                            padding: '0.75rem 1.5rem',
+                                            padding: '0.55rem 1.25rem',
                                             borderRadius: '30px',
                                             border: '1px solid',
                                             borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border-subtle)',
                                             background: isActive ? 'var(--color-accent-soft)' : 'var(--color-bg-input)',
                                             color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
-                                            fontSize: '0.88rem',
+                                            fontSize: '0.82rem',
                                             fontWeight: 700,
                                             cursor: 'pointer',
                                             transition: 'all 0.3s ease',
@@ -229,13 +229,14 @@ const Home = () => {
             {/* Hero Section */}
             <header className="hero container" style={{
                 textAlign: language === 'en' ? 'left' : 'right',
-                direction: language === 'en' ? 'ltr' : 'rtl'
+                direction: language === 'en' ? 'ltr' : 'rtl',
+                paddingTop: '5rem'
             }}>
                 <div className="animate-fade-in">
                     <div style={{ color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '2rem', textTransform: 'uppercase', fontSize: '0.85rem' }}>
                         {industry === 'general' ? t('home.platformName') : t('home.eliteSolutionsFor').replace('{industry}', t(`home.${industry}`))}
                     </div>
-                    <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: '900', marginBottom: '1.5rem', color: 'var(--color-text-main)', lineHeight: '1.2' }}>
+                    <h1 style={{ fontSize: 'clamp(1.6rem, 4.5vw, 2.4rem)', fontWeight: '900', marginBottom: '1.25rem', color: 'var(--color-text-main)', lineHeight: '1.2' }}>
                         {content.heroTitle}
                     </h1>
                     <p className="text-secondary mb-2xl" style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '3.5rem', lineHeight: '1.7', color: 'var(--color-text-secondary)' }}>

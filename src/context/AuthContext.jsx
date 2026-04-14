@@ -52,6 +52,7 @@ const getAuthDetails = async (authUser) => {
 
 export const createAuthProvider = () => {
     return function AuthProvider({ children }) {
+        console.log('🛡️ AuthProvider Mounting...');
         const [user, setUser] = useState(null);
         const [userRole, setUserRole] = useState(null);
         const [isAgency, setIsAgency] = useState(false);
@@ -60,6 +61,7 @@ export const createAuthProvider = () => {
         // Impersonation state
         const [impersonatedUser, setImpersonatedUser] = useState(() => {
             const saved = sessionStorage.getItem('impersonated_user');
+            if (saved) console.log('👤 Found impersonated user in session storage');
             return saved ? JSON.parse(saved) : null;
         });
 
@@ -68,18 +70,22 @@ export const createAuthProvider = () => {
 
             const initializeAuth = async (session) => {
                 const authUser = session?.user ?? null;
+                console.log('🔐 Auth Initializing. User:', authUser?.email || 'Guest');
                 if (cancelled) return;
 
                 setUser(authUser);
                 
                 if (authUser) {
+                    console.log('🔍 Fetching Auth Details for:', authUser.id);
                     const { role, isAgency } = await getAuthDetails(authUser);
                     if (!cancelled) {
+                        console.log('✅ Auth Details:', { role, isAgency });
                         setUserRole(role);
                         setIsAgency(isAgency);
                         setLoading(false);
                     }
                 } else {
+                    console.log('👋 No active session. Cleared user state.');
                     setUserRole(null);
                     setIsAgency(false);
                     setLoading(false);
@@ -87,18 +93,24 @@ export const createAuthProvider = () => {
             };
 
             // Get initial session
+            console.log('⏳ Fetching initial session...');
             supabase.auth.getSession().then(({ data: { session } }) => {
+                console.log('📡 Initial session response received');
                 initializeAuth(session);
             });
 
             const { data: { subscription } } = supabase.auth.onAuthStateChange(
-                async (_event, session) => {
+                async (event, session) => {
+                    console.log('🔄 Auth State Changed Event:', event);
                     initializeAuth(session);
                 }
             );
 
             const fallback = setTimeout(() => {
-                if (!cancelled) setLoading(false);
+                if (!cancelled && loading) {
+                    console.warn('⚠️ Auth check timed out after 5s. Forcing loading to false.');
+                    setLoading(false);
+                }
             }, 5000);
 
             return () => {
@@ -107,6 +119,7 @@ export const createAuthProvider = () => {
                 clearTimeout(fallback);
             };
         }, []);
+
 
         const impersonateUser = (targetUser) => {
             setImpersonatedUser(targetUser);

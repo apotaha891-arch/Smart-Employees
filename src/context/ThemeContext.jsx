@@ -3,25 +3,30 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
+    console.log('🌗 ThemeProvider Mounting...');
     const [theme, setTheme] = useState(() => {
-        // Default to dark or saved preference
-        return localStorage.getItem('appTheme') || 'dark';
+        const saved = localStorage.getItem('appTheme');
+        console.log('💾 Loaded theme from appTheme:', saved);
+        return saved || 'dark';
     });
 
     const toggleTheme = () => {
         const newTheme = theme === 'dark' ? 'light' : 'dark';
+        console.log('🔄 Toggling theme to:', newTheme);
         setTheme(newTheme);
         localStorage.setItem('appTheme', newTheme);
     };
 
     const setThemeExplicitly = (newTheme) => {
         if (newTheme === 'dark' || newTheme === 'light') {
+            console.log('🎯 Setting theme explicitly to:', newTheme);
             setTheme(newTheme);
             localStorage.setItem('appTheme', newTheme);
         }
     };
 
     useEffect(() => {
+        console.log('🌓 Applying theme effect:', theme);
         const root = document.documentElement;
         root.setAttribute('data-theme', theme);
         
@@ -42,7 +47,11 @@ export const ThemeProvider = ({ children }) => {
 export const useTheme = () => {
     const context = useContext(ThemeContext);
     if (!context) {
-        throw new Error('useTheme must be used within ThemeProvider');
+        console.error('❌ useTheme used outside ThemeProvider!');
+        const err = new Error('useTheme must be used within ThemeProvider');
+        console.error(err.stack);
+        throw err;
     }
     return context;
 };
+

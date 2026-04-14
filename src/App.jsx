@@ -64,6 +64,7 @@ const AuthProvider = createAuthProvider();
 
 
 function App() {
+    console.log('🏗️ App Component Mounting...');
     return (
         <ThemeProvider>
             <LanguageProvider>
@@ -81,8 +82,11 @@ function App() {
 }
 
 function AppContent() {
+    console.log('🧩 AppContent Rendering...');
     const location = useLocation();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, loading: authLoading } = useAuth();
+    
+    console.log('🔑 Auth State:', { isAuthenticated, authLoading });
     
     // Routes that ALWAYS use the Dashboard Layout
     const alwaysDashboardRoutes = ['/dashboard', '/agency', '/setup', '/entity-setup', '/contract', '/bookings', '/customers', '/deploy-agent', '/agents', '/hire-agent', '/help', '/sales', '/support', '/hr', '/office'];
