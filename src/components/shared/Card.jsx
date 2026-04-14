@@ -25,11 +25,11 @@ const Card = ({
     const variantStyles = {
         default: {
             background: 'var(--shift-surface-card, rgba(255,255,255,0.03))',
-            border: '1px solid var(--shift-border, rgba(255,255,255,0.1))',
+            border: '1px solid var(--shift-border, var(--color-border-subtle))',
         },
         elevated: {
             background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid var(--color-border-subtle)',
             boxShadow: '0 8px 32px rgba(139, 92, 246, 0.15)',
         },
         outlined: {

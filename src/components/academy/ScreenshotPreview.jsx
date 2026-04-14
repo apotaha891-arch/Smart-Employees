@@ -28,7 +28,7 @@ const ScreenshotPreview = ({ type = 'dashboard' }) => {
                     { label: 'المواعيد المؤكدة', value: '42', icon: <Calendar />, color: '#8B5CF6' },
                     { label: 'الموظفين الأذكياء', value: '3', icon: <Bot />, color: '#F59E0B' },
                 ].map((stat, i) => (
-                    <div key={i} style={{ background: '#111827', padding: '1.5rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div key={i} style={{ background: 'var(--color-bg-surface)', padding: '1.5rem', borderRadius: '20px', border: '1px solid var(--color-border-subtle)' }}>
                         <div style={{ color: stat.color, marginBottom: '1rem' }}>{stat.icon}</div>
                         <div style={{ fontSize: '0.9rem', color: '#6B7280', marginBottom: '0.25rem' }}>{stat.label}</div>
                         <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>{stat.value}</div>
@@ -36,13 +36,13 @@ const ScreenshotPreview = ({ type = 'dashboard' }) => {
                 ))}
             </div>
 
-            <div style={{ background: '#111827', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ background: 'var(--color-bg-surface)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--color-border-subtle)' }}>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.5rem' }}>آخر العمليات</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {[1, 2, 3].map(i => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--color-border-subtle)' }}>
                             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#1F2937' }}></div>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--color-bg-input)' }}></div>
                                 <div>
                                     <div style={{ fontWeight: 700 }}>عميل جديد #240{i}</div>
                                     <div style={{ fontSize: '0.8rem', color: '#4B5563' }}>منذ 5 دقائق - واتساب</div>
@@ -65,14 +65,14 @@ const ScreenshotPreview = ({ type = 'dashboard' }) => {
                     { name: 'خالد - دعم فني', role: 'حل مشكلات تقنية', color: '#10B981' },
                     { name: 'ليلى - سكرتيرة طبية', role: 'حجز مواعيد واستشارات', color: '#EC4899' },
                 ].map((agent, i) => (
-                    <div key={i} style={{ background: '#111827', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ height: '140px', background: `linear-gradient(135deg, ${agent.color}dd, #111827)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div key={i} style={{ background: 'var(--color-bg-surface)', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--color-border-subtle)' }}>
+                        <div style={{ height: '140px', background: `linear-gradient(135deg, ${agent.color}dd, var(--color-bg-surface))`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Bot size={60} color="white" />
                         </div>
                         <div style={{ padding: '1.5rem' }}>
                             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem' }}>{agent.name}</h3>
                             <p style={{ color: '#6B7280', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{agent.role}</p>
-                            <button style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: agent.color, color: 'white', border: 'none', fontWeight: 700 }}>توظيف الآن</button>
+                            <button style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: agent.color, color: 'var(--color-text-main)', border: 'none', fontWeight: 700 }}>توظيف الآن</button>
                         </div>
                     </div>
                 ))}

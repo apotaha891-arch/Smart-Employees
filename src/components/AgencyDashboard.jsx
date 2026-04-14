@@ -311,20 +311,20 @@ const AgencyDashboard = () => {
     };
 
     if (loading) {
-        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#09090b', color: 'white' }}>{t('systemStatus.loading')}...</div>;
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--color-bg-base)', color: 'var(--color-text-main)' }}>{t('systemStatus.loading')}...</div>;
     }
 
     return (
-        <div style={{ minHeight: '100vh', background: '#09090b', color: '#f3f4f6', direction: isRtl ? 'rtl' : 'ltr', fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
+        <div style={{ minHeight: '100vh', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', direction: isRtl ? 'rtl' : 'ltr', fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
             {/* Header */}
-            <header style={{ background: '#111827', padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <header style={{ background: 'var(--color-bg-surface)', padding: '1.5rem', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #8B5CF6, #3B82F6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <ShieldCheck size={24} color="white" />
                     </div>
                     <div>
-                        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: 'white' }}>{isEnglish ? 'Agency Manager' : 'مدير الوكالة'}</h1>
-                        <p style={{ color: '#9CA3AF', margin: 0, fontSize: '0.75rem', marginTop: '4px' }}>
+                        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: 'var(--color-text-main)' }}>{isEnglish ? 'Agency Manager' : 'مدير الوكالة'}</h1>
+                        <p style={{ color: 'var(--color-text-secondary)', margin: 0, fontSize: '0.75rem', marginTop: '4px' }}>
                             B2B2B Dashboard &nbsp;|&nbsp;
                             <span style={{ color: '#8B5CF6', fontFamily: 'monospace' }}>
                                 ID: {user?.id?.substring(0, 8)}...
@@ -334,7 +334,7 @@ const AgencyDashboard = () => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button onClick={() => navigate('/dashboard')} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderColor: 'rgba(255,255,255,0.1)' }}>
+                    <button onClick={() => navigate('/dashboard')} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderColor: 'var(--color-border-subtle)' }}>
                         <LayoutDashboard size={16} /> {isEnglish ? 'My Business View' : 'عرض منشأتي الخاصة'}
                     </button>
                 </div>
@@ -344,17 +344,17 @@ const AgencyDashboard = () => {
                 
                 {/* Stats Overview */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                    <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(139,92,246,0.3)', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ color: '#9CA3AF', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600 }}>{isEnglish ? 'Agency Balance' : 'رصيد الوكالة'}</div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'white', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <div style={{ background: 'var(--color-bg-surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(139,92,246,0.3)', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600 }}>{isEnglish ? 'Agency Balance' : 'رصيد الوكالة'}</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-text-main)', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                             {stats.walletBalance.toLocaleString()} <span style={{ fontSize: '1rem', color: '#8B5CF6' }}>{isEnglish ? 'Credits' : 'رصيد'}</span>
                         </div>
                         <Wallet size={120} style={{ position: 'absolute', right: '-20px', bottom: '-20px', color: 'rgba(139, 92, 246, 0.05)', transform: 'rotate(-15deg)' }} />
                     </div>
                     
-                    <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ color: '#9CA3AF', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600 }}>{isEnglish ? 'Managed Sub-Accounts' : 'الحسابات الفرعية'}</div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'white' }}>
+                    <div style={{ background: 'var(--color-bg-surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600 }}>{isEnglish ? 'Managed Sub-Accounts' : 'الحسابات الفرعية'}</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-text-main)' }}>
                             {stats.totalClients} <span style={{ fontSize: '1rem', color: '#6B7280' }}>/ {stats.maxClients === 0 ? '∞' : stats.maxClients}</span>
                         </div>
                         <button onClick={() => { setError(''); setShowAddClient(true); }} className="btn btn-primary btn-sm mt-md" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -365,10 +365,10 @@ const AgencyDashboard = () => {
 
                 {/* Clients Table */}
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Users size={20} color="#8B5CF6"/> {isEnglish ? 'Your Clients' : 'عملائك'}</h2>
-                <div style={{ background: '#111827', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                <div style={{ background: 'var(--color-bg-surface)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
                         <thead>
-                            <tr style={{ background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                            <tr style={{ background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                 <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>{isEnglish ? 'Business Name' : 'اسم المنشأة'}</th>
                                 <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>{isEnglish ? 'Email' : 'البريد'}</th>
                                 <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>{isEnglish ? 'Wallet Balance' : 'رصيد المحفظة'}</th>
@@ -379,9 +379,9 @@ const AgencyDashboard = () => {
                             {clients.length === 0 ? (
                                 <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: '#6B7280' }}>{isEnglish ? 'No clients yet. Create one above!' : 'لا يوجد عملاء حتى الآن. أنشئ حساباً جديداً من الأعلى!'}</td></tr>
                             ) : clients.map(client => (
-                                <tr key={client.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <tr key={client.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                     <td style={{ padding: '1rem' }}>
-                                        <div style={{ fontWeight: 800, color: 'white' }}>
+                                        <div style={{ fontWeight: 800, color: 'var(--color-text-main)' }}>
                                             {client.entity_business_name || client.entities?.[0]?.business_name || client.business_name || (client.full_name || client.email)}
                                         </div>
                                         <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{client.email}</div>
@@ -419,7 +419,7 @@ const AgencyDashboard = () => {
                 </div>
 
                 {/* Branding Settings Section */}
-                <div style={{ marginTop: '3rem', background: '#111827', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(139,92,246,0.2)' }}>
+                <div style={{ marginTop: '3rem', background: 'var(--color-bg-surface)', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(139,92,246,0.2)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem', justifyContent: 'space-between', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <Palette size={24} color="#8B5CF6" />
@@ -459,8 +459,8 @@ const AgencyDashboard = () => {
                                 <Zap size={40} />
                             </div>
                             <div>
-                                <h3 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white', marginBottom: '0.5rem' }}>{t('upgrade.unlockWhiteLabelTitle')}</h3>
-                                <p style={{ color: '#9CA3AF', maxWidth: '600px', lineHeight: 1.6 }}>{t('upgrade.unlockWhiteLabelDesc')}</p>
+                                <h3 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-text-main)', marginBottom: '0.5rem' }}>{t('upgrade.unlockWhiteLabelTitle')}</h3>
+                                <p style={{ color: 'var(--color-text-secondary)', maxWidth: '600px', lineHeight: 1.6 }}>{t('upgrade.unlockWhiteLabelDesc')}</p>
                             </div>
                             <button 
                                 onClick={handleWhiteLabelPayment} 
@@ -491,7 +491,7 @@ const AgencyDashboard = () => {
 
                                 {/* 1. Agency Core Profile */}
                                 <fieldset disabled={brandingRequest?.status === 'pending'} style={{ border: 'none', padding: 0, margin: 0 }}>
-                            <form onSubmit={handleUpdateAgencyProfile} style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <form onSubmit={handleUpdateAgencyProfile} style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#8B5CF6', marginBottom: '1rem', textTransform: 'uppercase' }}>
                                     {isEnglish ? 'Agency Internal Profile' : 'الملف الشخصي للوكالة'}
                                 </div>
@@ -508,14 +508,14 @@ const AgencyDashboard = () => {
                             </form>
 
                             {/* 2. Platform Branding (The White Label) */}
-                            <form onSubmit={handleSaveBranding} style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <form onSubmit={handleSaveBranding} style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#EC4899', marginBottom: '1rem', textTransform: 'uppercase' }}>
                                     {isEnglish ? 'Public Platform Identity' : 'هوية المنصة العامة (White Label)'}
                                 </div>
                                 <div className="mb-md">
                                     <label className="label">{isEnglish ? 'Platform Brand Name' : 'اسم العلامة التجارية للمنصة'}</label>
                                     <input type="text" className="input-field" value={brandingConfig.brand_name} onChange={e => setBrandingConfig({...brandingConfig, brand_name: e.target.value})} placeholder="Replaces '24Shift' for clients" />
-                                    <p style={{ fontSize: '0.7rem', color: '#9CA3AF', marginTop: '4px' }}>
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
                                         {isEnglish ? 'This name will replace "24Shift" for ALL your clients.' : 'هذا الاسم سيحل محل "24Shift" عند جميع عملائك.'}
                                     </p>
                                 </div>
@@ -532,7 +532,7 @@ const AgencyDashboard = () => {
                                                 height: '64px', 
                                                 borderRadius: '12px', 
                                                 background: 'rgba(255,255,255,0.05)', 
-                                                border: '1px dashed rgba(255,255,255,0.1)',
+                                                border: '1px dashed var(--color-border-subtle)',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -607,7 +607,7 @@ const AgencyDashboard = () => {
                                         />
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                                        <div style={{ fontSize: '0.75rem', color: isWhiteLabelPaid ? '#10B981' : '#6B7280', padding: '8px', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', width: '100%', textAlign: 'center', background: isWhiteLabelPaid ? 'rgba(16, 185, 129, 0.05)' : 'transparent' }}>
+                                        <div style={{ fontSize: '0.75rem', color: isWhiteLabelPaid ? '#10B981' : '#6B7280', padding: '8px', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', width: '100%', textAlign: 'center', background: isWhiteLabelPaid ? 'rgba(16, 185, 129, 0.05)' : 'transparent' }}>
                                             {isWhiteLabelPaid ? (isEnglish ? 'White-Label: Active' : 'الهوية المخصصة: نشطة') : (isEnglish ? 'White-Label: Inactive' : 'الهوية المخصصة: غير نشطة')}
                                         </div>
                                     </div>
@@ -625,24 +625,24 @@ const AgencyDashboard = () => {
                         </div>
 
                         {/* Preview Card */}
-                        <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '24px', padding: '1.5rem', border: '1px dashed rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '24px', padding: '1.5rem', border: '1px dashed var(--color-border-subtle)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                             <div style={{ fontSize: '0.75rem', color: '#6B7280', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '1px' }}>{isEnglish ? 'Live Preview' : 'معاينة مباشرة للعملاء'}</div>
                             
                             {/* Fake Sidebar Preview */}
-                            <div style={{ background: '#111827', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `linear-gradient(135deg, ${brandingConfig.primary_color} 0%, #111827 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: `0 0 15px ${brandingConfig.primary_color}40` }}>
+                            <div style={{ background: 'var(--color-bg-surface)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `linear-gradient(135deg, ${brandingConfig.primary_color} 0%, var(--color-bg-surface) 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: `0 0 15px ${brandingConfig.primary_color}40` }}>
                                     {brandingConfig.logo_url ? <img src={brandingConfig.logo_url} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '0.9rem', fontWeight: 900 }}>AI</span>}
                                 </div>
                                 <div>
-                                    <div style={{ fontWeight: 800, fontSize: '1rem', color: 'white' }}>{brandingConfig.brand_name || (isEnglish ? 'Your Brand' : 'علامتك التجارية')}</div>
+                                    <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--color-text-main)' }}>{brandingConfig.brand_name || (isEnglish ? 'Your Brand' : 'علامتك التجارية')}</div>
                                     <div style={{ fontSize: '0.65rem', color: '#6B7280' }}>Dashboard Context</div>
                                 </div>
                             </div>
 
                             {/* Fake Concierge Footer Preview */}
-                            <div style={{ marginTop: 'auto', background: '#18181B', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', boxShadow: '0 -10px 25px -5px rgba(0,0,0,0.1)' }}>
-                                <div style={{ fontSize: '0.75rem', color: '#E4E4E7', marginBottom: '10px' }}>{isEnglish ? 'Chatting with Assistant...' : 'تحدث مع المساعد الذكي...'}</div>
-                                <div style={{ fontSize: '0.65rem', color: '#71717A', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px', fontWeight: 500 }}>
+                            <div style={{ marginTop: 'auto', background: '#18181B', padding: '1rem', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', textAlign: 'center', boxShadow: '0 -10px 25px -5px rgba(0,0,0,0.1)' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-main)', marginBottom: '10px' }}>{isEnglish ? 'Chatting with Assistant...' : 'تحدث مع المساعد الذكي...'}</div>
+                                <div style={{ fontSize: '0.65rem', color: '#71717A', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '8px', fontWeight: 500 }}>
                                 {isEnglish ? 'Powered by' : 'بدعم من'} <span style={{ color: brandingConfig.primary_color || '#8B5CF6' }}>{brandingConfig.brand_name || (isEnglish ? 'Smart Platform' : 'منصتنا الذكية')}</span>
                                 </div>
                             </div>
@@ -654,12 +654,12 @@ const AgencyDashboard = () => {
                 {/* --- Help Modal: Custom Domain --- */}
                 {showDomainHelp && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-                        <div style={{ background: '#111827', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(139,92,246,0.3)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+                        <div style={{ background: 'var(--color-bg-surface)', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(139,92,246,0.3)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                 <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}><Globe color="#8B5CF6"/> {isEnglish ? 'Domain Linking Strategy' : 'طريقة ربط النطاق الخاص'}</h3>
-                                <button onClick={() => setShowDomainHelp(false)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}><Plus style={{ transform: 'rotate(45deg)' }}/></button>
+                                <button onClick={() => setShowDomainHelp(false)} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}><Plus style={{ transform: 'rotate(45deg)' }}/></button>
                             </div>
-                            <div style={{ color: '#D1D5DB', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                            <div style={{ color: 'var(--color-text-main)', fontSize: '0.9rem', lineHeight: 1.6 }}>
                                 <p>{isEnglish ? 'To point your custom domain to our platform, follow these steps:' : 'لربط نطاقك الخاص بمنصتنا، اتبع الخطوات التالية في لوحة تحكم النطاق (DNS):'}</p>
                                 <ol style={{ paddingRight: '1.25rem', marginTop: '1rem' }}>
                                     <li>{isEnglish ? 'Log in to your DNS provider (Cloudflare, GoDaddy, etc.).' : 'قم بتسجيل الدخول لمزود النطاق الخاص بك (Cloudflare, GoDaddy, إلخ).'}</li>
@@ -679,13 +679,13 @@ const AgencyDashboard = () => {
                 {/* --- Legal Modal: Hide Credits Agreement --- */}
                 {showLegalModal && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-                        <div style={{ background: '#111827', width: '100%', maxWidth: '850px', borderRadius: '32px', padding: '3rem', border: '1px solid #EC489940', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ background: 'var(--color-bg-surface)', width: '100%', maxWidth: '850px', borderRadius: '32px', padding: '3rem', border: '1px solid #EC489940', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)', position: 'relative', overflow: 'hidden' }}>
                             <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '1.5rem' }}>
                                 <div style={{ background: '#EC489920', padding: '12px', borderRadius: '12px' }}><ShieldCheck color="#EC4899" size={32}/></div>
-                                <h3 style={{ margin: 0, fontSize: '1.75rem', color: 'white' }}>{isEnglish ? 'White Label Terms of Use' : 'شروط اتفاقية العلامة البيضاء'}</h3>
+                                <h3 style={{ margin: 0, fontSize: '1.75rem', color: 'var(--color-text-main)' }}>{isEnglish ? 'White Label Terms of Use' : 'شروط اتفاقية العلامة البيضاء'}</h3>
                             </div>
-                            <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '15px', color: '#D1D5DB', fontSize: '0.95rem', lineHeight: 1.8, background: 'rgba(0,0,0,0.3)', padding: '2rem', borderRadius: '20px' }}>
-                                <p style={{ fontWeight: 800, color: 'white', marginBottom: '1rem' }}>{isEnglish ? 'By activating "Hide Credits", you agree to the following:' : 'بتفعيل خيار "إخفاء حقوق المنصة"، فإنك تقر وتوافق على البنود التالية:'}</p>
+                            <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '15px', color: 'var(--color-text-main)', fontSize: '0.95rem', lineHeight: 1.8, background: 'rgba(0,0,0,0.3)', padding: '2rem', borderRadius: '20px' }}>
+                                <p style={{ fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1rem' }}>{isEnglish ? 'By activating "Hide Credits", you agree to the following:' : 'بتفعيل خيار "إخفاء حقوق المنصة"، فإنك تقر وتوافق على البنود التالية:'}</p>
                                 <ul style={{ paddingRight: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     <li><strong>{isEnglish ? 'Agency Rights:' : 'حقوق الوكالة:'}</strong> {isEnglish ? 'You have the right to present this software as your own brand to your end-clients and charge them according to your pricing.' : 'لك الحق في تقديم السوفتوير كعلامة تجارية خاصة بك أمام عملائك وتحصيل الرسوم منهم حسب تسعيرك الخاص.'}</li>
                                     <li><strong>{isEnglish ? 'Platform Ownership:' : 'ملكية المنصة:'}</strong> {isEnglish ? '24Shift remains the sole owner of the source code, technology, and updates. This agreement does not transfer IP ownership.' : 'تظل منصة 24Shift هي المالك الوحيد للكود المصدري والتقنية والتحديثات. هذا الاتفاق لا ينقل ملكية الفكرية.'}</li>
@@ -723,7 +723,7 @@ const AgencyDashboard = () => {
             {/* Modal: Add Client */}
             {showAddClient && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-                    <div style={{ background: '#111827', width: '100%', maxWidth: '450px', borderRadius: '20px', padding: '2rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ background: 'var(--color-bg-surface)', width: '100%', maxWidth: '450px', borderRadius: '20px', padding: '2rem', border: '1px solid var(--color-border-subtle)' }}>
                         <h3 style={{ margin: '0 0 1.5rem', fontSize: '1.25rem', fontWeight: 800 }}>{isEnglish ? 'Provision New Sub-Account' : 'تأسيس حساب فرعي جديد'}</h3>
                         
                         {error && <div style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', padding: '10px', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
@@ -768,7 +768,7 @@ const AgencyDashboard = () => {
             {/* Modal: Top Up */}
             {showTopUp && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-                    <div style={{ background: '#111827', width: '100%', maxWidth: '400px', borderRadius: '20px', padding: '2rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ background: 'var(--color-bg-surface)', width: '100%', maxWidth: '400px', borderRadius: '20px', padding: '2rem', border: '1px solid var(--color-border-subtle)' }}>
                         <h3 style={{ margin: '0 0 1.5rem', fontSize: '1.25rem', fontWeight: 800 }}>{isEnglish ? `Top-up Wallet for ${showTopUp.entities?.[0]?.business_name}` : `شحن محفظة ${showTopUp.entities?.[0]?.business_name}`}</h3>
                         
                         {error && <div style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', padding: '10px', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
@@ -777,7 +777,7 @@ const AgencyDashboard = () => {
                             <div className="mb-xl">
                                 <label className="label">{isEnglish ? 'Amount to transfer from your balance' : 'المبلغ المراد سحبه من وكالتك'}</label>
                                 <input required type="number" min="1" max={stats.walletBalance} className="input-field" value={topUpAmount} onChange={e => setTopUpAmount(e.target.value)} />
-                                <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: '8px' }}>Your current balance: {stats.walletBalance}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '8px' }}>Your current balance: {stats.walletBalance}</div>
                             </div>
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => { setError(''); setShowTopUp(null); }}>{isEnglish ? 'Cancel' : 'إلغاء'}</button>

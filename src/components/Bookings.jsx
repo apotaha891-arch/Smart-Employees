@@ -175,27 +175,27 @@ const Bookings = () => {
     };
 
     return (
-        <div style={{ padding: '2rem', background: '#0B0F19', minHeight: '100vh', color: 'white' }}>
+        <div style={{ padding: '2rem', background: '#0B0F19', minHeight: '100vh', color: 'var(--color-text-main)' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
                 {/* Header */}
                 <div style={{ marginBottom: '2rem' }}>
                     <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>{t('bookingsTitle')}</h1>
-                    <p style={{ color: '#9CA3AF' }}>{t('bookingsSubtitle')}</p>
+                    <p style={{ color: 'var(--color-text-secondary)' }}>{t('bookingsSubtitle')}</p>
                 </div>
 
                 {/* Filters */}
                 <div style={{
-                    background: '#111827',
+                    background: 'var(--color-bg-surface)',
                     padding: '1.5rem',
                     borderRadius: '16px',
                     marginBottom: '2rem',
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                     gap: '1rem',
-                    border: '1px solid rgba(255,255,255,0.05)'
+                    border: '1px solid var(--color-border-subtle)'
                 }}>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#9CA3AF', fontSize: '0.9rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                             <Filter size={16} style={{ display: 'inline', marginLeft: '6px' }} />
                             {t('statusLabel')}
                         </label>
@@ -205,21 +205,21 @@ const Bookings = () => {
                             style={{
                                 width: '100%',
                                 padding: '10px',
-                                background: '#1F2937',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--color-bg-input)',
+                                border: '1px solid var(--color-border-subtle)',
                                 borderRadius: '8px',
-                                color: 'white'
+                                color: 'var(--color-text-main)'
                             }}
                         >
-                            <option value="" style={{ color: 'white', background: '#1F2937' }}>{t('allStatus')}</option>
-                            <option value="pending" style={{ color: 'white', background: '#1F2937' }}>{t('pendingStatus')}</option>
-                            <option value="confirmed" style={{ color: 'white', background: '#1F2937' }}>{t('confirmedStatus')}</option>
-                            <option value="completed" style={{ color: 'white', background: '#1F2937' }}>{t('completedStatus')}</option>
-                            <option value="cancelled" style={{ color: 'white', background: '#1F2937' }}>{t('cancelledStatus')}</option>
+                            <option value="" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{t('allStatus')}</option>
+                            <option value="pending" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{t('pendingStatus')}</option>
+                            <option value="confirmed" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{t('confirmedStatus')}</option>
+                            <option value="completed" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{t('completedStatus')}</option>
+                            <option value="cancelled" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{t('cancelledStatus')}</option>
                         </select>
                     </div>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#9CA3AF', fontSize: '0.9rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                             <Calendar size={16} style={{ display: 'inline', marginLeft: '6px' }} />
                             {t('dateLabel')}
                         </label>
@@ -230,15 +230,15 @@ const Bookings = () => {
                             style={{
                                 width: '100%',
                                 padding: '10px',
-                                background: '#1F2937',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--color-bg-input)',
+                                border: '1px solid var(--color-border-subtle)',
                                 borderRadius: '8px',
-                                color: 'white'
+                                color: 'var(--color-text-main)'
                             }}
                         />
                     </div>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#9CA3AF', fontSize: '0.9rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                             <Phone size={16} style={{ display: 'inline', marginLeft: '6px' }} />
                             {t('phoneLabel')}
                         </label>
@@ -250,37 +250,37 @@ const Bookings = () => {
                             style={{
                                 width: '100%',
                                 padding: '10px',
-                                background: '#1F2937',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--color-bg-input)',
+                                border: '1px solid var(--color-border-subtle)',
                                 borderRadius: '8px',
-                                color: 'white'
+                                color: 'var(--color-text-main)'
                             }}
                         />
                     </div>
                 </div>
 
                 {/* Bookings Table */}
-                <div style={{ background: '#111827', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ background: 'var(--color-bg-surface)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--color-border-subtle)' }}>
                     {loading ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF' }}>{t('loading')}</div>
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{t('loading')}</div>
                     ) : bookings.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF' }}>{t('noBookings')}</div>
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{t('noBookings')}</div>
                     ) : (
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
-                                <tr style={{ background: '#1F2937', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('clientLabel')}</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('serviceLabel')}</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('dateLabel')}</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('timeLabel')}</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', color: '#9CA3AF', fontWeight: 600 }}>{t('durationLabel')}</th>
-                                    <th style={{ padding: '1rem', textAlign: 'center', color: '#9CA3AF', fontWeight: 600 }}>{t('statusLabel')}</th>
-                                    <th style={{ padding: '1rem', textAlign: 'center', color: '#9CA3AF', fontWeight: 600 }}>{t('actionsLabel')}</th>
+                                <tr style={{ background: 'var(--color-bg-input)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--color-text-secondary)', fontWeight: 600 }}>{t('clientLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--color-text-secondary)', fontWeight: 600 }}>{t('serviceLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--color-text-secondary)', fontWeight: 600 }}>{t('dateLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--color-text-secondary)', fontWeight: 600 }}>{t('timeLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--color-text-secondary)', fontWeight: 600 }}>{t('durationLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-secondary)', fontWeight: 600 }}>{t('statusLabel')}</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-secondary)', fontWeight: 600 }}>{t('actionsLabel')}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {bookings.map((booking) => (
-                                    <tr key={booking.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <tr key={booking.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                         <td style={{ padding: '1rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <User size={16} color="#9CA3AF" />
@@ -314,7 +314,7 @@ const Bookings = () => {
                                                         onClick={() => handleStatusChange(booking.id, 'confirmed')}
                                                         style={{
                                                             background: '#10B981',
-                                                            color: 'white',
+                                                            color: 'var(--color-text-main)',
                                                             border: 'none',
                                                             padding: '6px 12px',
                                                             borderRadius: '6px',
@@ -329,7 +329,7 @@ const Bookings = () => {
                                                         onClick={() => handleCancelBooking(booking.id)}
                                                         style={{
                                                             background: '#EF4444',
-                                                            color: 'white',
+                                                            color: 'var(--color-text-main)',
                                                             border: 'none',
                                                             padding: '6px 12px',
                                                             borderRadius: '6px',
@@ -346,7 +346,7 @@ const Bookings = () => {
                                                     onClick={() => handleStatusChange(booking.id, 'completed')}
                                                     style={{
                                                         background: '#3B82F6',
-                                                        color: 'white',
+                                                        color: 'var(--color-text-main)',
                                                         border: 'none',
                                                         padding: '6px 12px',
                                                         borderRadius: '6px',

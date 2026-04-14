@@ -69,7 +69,7 @@ const Table = ({
         textAlign: 'left',
         padding: '1rem',
         background: 'rgba(255,255,255,0.02)',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: '1px solid var(--color-border-subtle)',
         color: 'var(--text-secondary)',
         fontSize: '0.8rem',
         fontWeight: 700,
@@ -80,8 +80,8 @@ const Table = ({
 
     const bodyCellStyle = {
         padding: '1rem',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
-        color: 'white',
+        borderBottom: '1px solid var(--color-border-subtle)',
+        color: 'var(--color-text-main)',
         fontSize: '0.9rem',
     };
 
@@ -179,7 +179,7 @@ const Table = ({
                                                         }}
                                                         style={{
                                                             background: 'transparent',
-                                                            border: '1px solid rgba(255,255,255,0.2)',
+                                                            border: '1px solid var(--color-border-subtle)',
                                                             color: 'var(--accent)',
                                                             borderRadius: '6px',
                                                             padding: '0.4rem 0.8rem',

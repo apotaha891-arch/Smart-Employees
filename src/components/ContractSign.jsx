@@ -116,7 +116,7 @@ const ContractSign = () => {
                     padding: '3rem',
                     borderRadius: '24px',
                     background: '#18181B',
-                    border: '1px solid rgba(255,255,255,0.05)',
+                    border: '1px solid var(--color-border-subtle)',
                     boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
                 }}>
                     <div style={{
@@ -125,13 +125,13 @@ const ContractSign = () => {
                         background: 'rgba(0,0,0,0.2)',
                         padding: '1.5rem',
                         borderRadius: '12px',
-                        border: '1px solid rgba(255,255,255,0.05)',
+                        border: '1px solid var(--color-border-subtle)',
                         marginBottom: '2rem',
                         color: '#D4D4D8',
                         lineHeight: 1.8,
                         fontSize: '0.95rem'
                     }}>
-                        <h4 style={{ color: 'white', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <h4 style={{ color: 'var(--color-text-main)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <Scale size={20} color="#8B5CF6" /> {isArabic ? 'بنود اتفاقية (NDA) وتوظيف الذكاء الاصطناعي' : 'NDA & AI Employment Terms'}
                         </h4>
                         <p><strong>{isArabic ? '١. حماية البيانات السرية:' : '1. Confidentiality:'}</strong> {isArabic ? 'تتعهد منصة 24Shift بالمحافظة التامة على سرية كافة البيانات، الملفات، والمرفقات التي يتم رفعها لغرض تدريب الموظف الرقمي الخاص بك.' : '24Shift platform pledges to maintain complete confidentiality of all data, files, and attachments uploaded for training your digital agent.'}</p>
@@ -160,7 +160,7 @@ const ContractSign = () => {
                                 }}
                             />
                             <div>
-                                <span style={{ color: 'white', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
+                                <span style={{ color: 'var(--color-text-main)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
                                     {isArabic ? 'أقر بأنني اطلعت على البنود وموّفق عليها' : 'I acknowledge that I have read and agree to the terms'}
                                 </span>
                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
@@ -171,7 +171,7 @@ const ContractSign = () => {
                     </div>
 
                     <div style={{ marginBottom: '2.5rem', textAlign: isArabic ? 'right' : 'left' }}>
-                        <label style={{ display: 'block', marginBottom: '0.75rem', color: 'white', fontWeight: 600 }}>{isArabic ? 'التوقيع الإلكتروني (الاسم الكامل):' : 'Electronic Signature (Full Name):'}</label>
+                        <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--color-text-main)', fontWeight: 600 }}>{isArabic ? 'التوقيع الإلكتروني (الاسم الكامل):' : 'Electronic Signature (Full Name):'}</label>
                         <div style={{ position: 'relative' }}>
                             <FileText size={20} color="#A1A1AA" style={{ position: 'absolute', [isArabic ? 'right' : 'left']: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                             <input
@@ -184,8 +184,8 @@ const ContractSign = () => {
                                     padding: isArabic ? '1rem 3rem 1rem 1rem' : '1rem 1rem 1rem 3rem',
                                     borderRadius: '12px',
                                     background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    color: 'white',
+                                    border: '1px solid var(--color-border-subtle)',
+                                    color: 'var(--color-text-main)',
                                     fontSize: '1rem'
                                 }}
                             />
@@ -200,7 +200,7 @@ const ContractSign = () => {
                             padding: '1.25rem',
                             borderRadius: '16px',
                             background: accepted && signature.trim() !== '' ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : '#27272A',
-                            color: 'white',
+                            color: 'var(--color-text-main)',
                             fontWeight: 900,
                             fontSize: '1.2rem',
                             border: 'none',

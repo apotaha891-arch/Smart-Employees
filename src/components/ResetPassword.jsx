@@ -113,7 +113,7 @@ const ResetPassword = () => {
                         <h3 style={{ marginBottom: '0.5rem', fontWeight: 800 }}>
                             {language === 'ar' ? 'تم التغيير بنجاح!' : 'Password Reset Successful!'}
                         </h3>
-                        <p style={{ fontSize: '0.9rem', color: '#9CA3AF' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
                             {language === 'ar' ? 'سيتم توجيهك لصفحة الدخول خلال لحظات...' : 'Redirecting you to login page...'}
                         </p>
                     </div>
@@ -139,7 +139,7 @@ const ResetPassword = () => {
                                         transform: 'translateY(-50%)',
                                         background: 'none',
                                         border: 'none',
-                                        color: 'white',
+                                        color: 'var(--color-text-main)',
                                         cursor: 'pointer',
                                         zIndex: 10
                                     }}

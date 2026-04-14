@@ -83,10 +83,10 @@ const HRRecruitmentManager = () => {
         <div className="animate-fade-in" style={{ padding: '1.5rem', direction: isAr ? 'rtl' : 'ltr' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', marginBottom: '0.5rem' }}>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '0.5rem' }}>
                         {isAr ? 'مركز التوظيف والموارد البشرية' : 'Hiring Hub & HR Management'}
                     </h1>
-                    <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                         {isAr ? 'إدارة المتقدمين، تتبع المقابلات الذكاء الاصطناعي وتنظيم فريقك' : 'Manage candidates, track AI interviews, and build your team'}
                     </p>
                 </div>
@@ -103,9 +103,9 @@ const HRRecruitmentManager = () => {
                     { label: isAr ? 'العروض المرسلة' : 'Offers Sent', count: stats.offers, color: '#F59E0B' },
                     { label: isAr ? 'الموظفين الجدد' : 'New Hires', count: stats.hired, color: '#10B981' },
                 ].map((step, idx) => (
-                    <div key={idx} style={{ flex: 1, minWidth: '180px', background: '#111827', padding: '1.5rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ fontSize: '0.85rem', color: '#9CA3AF', marginBottom: '0.75rem' }}>{step.label}</div>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'white' }}>{step.count}</div>
+                    <div key={idx} style={{ flex: 1, minWidth: '180px', background: 'var(--color-bg-surface)', padding: '1.5rem', borderRadius: '20px', border: '1px solid var(--color-border-subtle)', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '0.75rem' }}>{step.label}</div>
+                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--color-text-main)' }}>{step.count}</div>
                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px', background: step.color }} />
                     </div>
                 ))}
@@ -113,15 +113,15 @@ const HRRecruitmentManager = () => {
 
             {/* Candidate List */}
             {loading ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-secondary)' }}>
                     {isAr ? 'جاري تحميل البيانات...' : 'Loading data...'}
                 </div>
             ) : candidates.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '4rem', background: '#111827', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+                <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--color-bg-surface)', borderRadius: '20px', border: '1px dashed var(--color-border-subtle)' }}>
                     <div style={{ width: '72px', height: '72px', background: 'rgba(139,92,246,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#8B5CF6' }}>
                         <Users size={36} />
                     </div>
-                    <h3 style={{ color: 'white', fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                    <h3 style={{ color: 'var(--color-text-main)', fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
                         {isAr ? 'لا يوجد متقدمون بعد' : 'No applicants yet'}
                     </h3>
                     <p style={{ color: '#6B7280', fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto' }}>
@@ -136,36 +136,36 @@ const HRRecruitmentManager = () => {
                         const stage = getStageStyle(candidate.stage);
                         const StageIcon = stage.icon;
                         return (
-                            <div key={candidate.id} className="card shadow-premium" style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '1.5rem' }}>
+                            <div key={candidate.id} className="card shadow-premium" style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '20px', padding: '1.5rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-                                    <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: '#1F2937', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}>
+                                    <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: 'var(--color-bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)' }}>
                                         <Users size={24} />
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(139,92,246,0.1)', color: '#A78BFA', padding: '2px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
                                         <Star size={12} fill="#A78BFA" /> {candidate.score || 0}%
                                     </div>
                                 </div>
-                                <h3 style={{ color: 'white', fontWeight: 800, marginBottom: '0.25rem' }}>{candidate.name}</h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                                <h3 style={{ color: 'var(--color-text-main)', fontWeight: 800, marginBottom: '0.25rem' }}>{candidate.name}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
                                     <Briefcase size={14} /> {candidate.role || candidate.job_title}
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
                                     <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>
                                         <div style={{ marginBottom: '2px' }}>{isAr ? 'الخبرة' : 'Exp'}</div>
-                                        <div style={{ color: '#E5E7EB', fontWeight: 600 }}>{candidate.experience || '—'}</div>
+                                        <div style={{ color: 'var(--color-text-main)', fontWeight: 600 }}>{candidate.experience || '—'}</div>
                                     </div>
                                     <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>
                                         <div style={{ marginBottom: '2px' }}>{isAr ? 'تاريخ التقديم' : 'Applied'}</div>
-                                        <div style={{ color: '#E5E7EB', fontWeight: 600 }}>{new Date(candidate.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
+                                        <div style={{ color: 'var(--color-text-main)', fontWeight: 600 }}>{new Date(candidate.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid var(--color-border-subtle)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                         <StageIcon size={16} color={stage.text} />
                                         <span style={{ color: stage.text, fontSize: '0.85rem', fontWeight: 700 }}>{candidate.stage}</span>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button style={{ background: 'rgba(255,255,255,0.03)', border: 'none', color: '#9CA3AF', padding: '8px', borderRadius: '8px', cursor: 'pointer' }}><FileText size={18} /></button>
+                                        <button style={{ background: 'rgba(255,255,255,0.03)', border: 'none', color: 'var(--color-text-secondary)', padding: '8px', borderRadius: '8px', cursor: 'pointer' }}><FileText size={18} /></button>
                                         <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>{isAr ? 'عرض' : 'View'}</button>
                                     </div>
                                 </div>

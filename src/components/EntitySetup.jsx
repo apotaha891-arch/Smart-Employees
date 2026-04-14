@@ -164,9 +164,9 @@ const EntitySetup = () => {
     // Shared Styles
     const cardStyle = {
         padding: '1.25rem',
-        background: '#1F2937',
+        background: 'var(--color-bg-input)',
         borderRadius: 16,
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: '1px solid var(--color-border-subtle)',
         transition: 'all 0.3s ease'
     };
 
@@ -174,9 +174,9 @@ const EntitySetup = () => {
         width: '100%',
         padding: '12px 16px',
         borderRadius: 12,
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid var(--color-border-subtle)',
         background: 'rgba(255,255,255,0.03)',
-        color: 'white',
+        color: 'var(--color-text-main)',
         fontSize: '0.9rem',
         outline: 'none',
         boxSizing: 'border-box',
@@ -1128,13 +1128,13 @@ const EntitySetup = () => {
 
     // Stat Card Component
     const StatCard = ({ icon: Icon, label, value, color }) => (
-        <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ background: 'var(--color-bg-surface)', padding: '1.5rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--color-border-subtle)' }}>
             <div style={{ padding: '12px', borderRadius: '12px', background: `${color}20` }}>
                 <Icon size={24} color={color} />
             </div>
             <div>
-                <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>{label}</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{value}</div>
+                <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>{label}</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text-main)' }}>{value}</div>
             </div>
         </div>
     );
@@ -1243,13 +1243,13 @@ const EntitySetup = () => {
                 }}>
                     <div style={{
                         padding: '24px', background: `linear-gradient(135deg, ${guide.color}22, transparent)`,
-                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        borderBottom: '1px solid var(--color-border-subtle)',
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between'
                     }}>
                         <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF' }}>{guide.title}</h3>
                         <button 
                             onClick={() => setShowHelpModal(false)}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#9CA3AF', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--color-text-secondary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}
                         >
                             <X size={20} />
                         </button>
@@ -1267,12 +1267,12 @@ const EntitySetup = () => {
                                         {idx + 1}
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <h4 style={{ margin: '0 0 6px', fontSize: '1rem', fontWeight: 700, color: '#E5E7EB' }}>{step.t}</h4>
-                                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#9CA3AF', lineHeight: 1.5 }}>{step.d}</p>
+                                        <h4 style={{ margin: '0 0 6px', fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-main)' }}>{step.t}</h4>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>{step.d}</p>
                                         
                                         {step.copy && (
                                             <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                                                <code style={{ flex: 1, background: '#0F172A', padding: '10px', borderRadius: '10px', fontSize: '0.8rem', color: guide.color, border: '1px solid rgba(255,255,255,0.05)', wordBreak: 'break-all' }}>
+                                                <code style={{ flex: 1, background: '#0F172A', padding: '10px', borderRadius: '10px', fontSize: '0.8rem', color: guide.color, border: '1px solid var(--color-border-subtle)', wordBreak: 'break-all' }}>
                                                     {step.copy}
                                                 </code>
                                                 <button 
@@ -1280,7 +1280,7 @@ const EntitySetup = () => {
                                                         navigator.clipboard.writeText(step.copy);
                                                         setStatusMsg({ type: 'success', text: language === 'ar' ? 'تم نسخ البريد!' : 'Email copied!' });
                                                     }}
-                                                    style={{ background: '#374151', border: 'none', color: 'white', padding: '0 16px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}
+                                                    style={{ background: '#374151', border: 'none', color: 'var(--color-text-main)', padding: '0 16px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}
                                                 >
                                                     {language === 'ar' ? 'نسخ' : 'Copy'}
                                                 </button>
@@ -1300,10 +1300,10 @@ const EntitySetup = () => {
                                 ✨
                             </div>
                             <div style={{ flex: 1 }}>
-                                <p style={{ margin: 0, fontSize: '0.85rem', color: '#E5E7EB', fontWeight: 600 }}>
+                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-main)', fontWeight: 600 }}>
                                     {language === 'ar' ? 'هل تواجه صعوبة؟' : 'Need more help?'}
                                 </p>
-                                <p style={{ margin: 0, fontSize: '0.8rem', color: '#9CA3AF' }}>
+                                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
                                     {language === 'ar' ? 'يمكن لـ "نورة" مساعدتك في كل خطوة.' : 'Noura can guide you through every step.'}
                                 </p>
                             </div>
@@ -1315,15 +1315,15 @@ const EntitySetup = () => {
                                         : `I need help activating ${guide.title}`;
                                     window.dispatchEvent(new CustomEvent('open-concierge', { detail: { type: 'support', message: msg } }));
                                 }}
-                                style={{ background: '#8B5CF6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                                style={{ background: '#8B5CF6', color: 'var(--color-text-main)', border: 'none', padding: '8px 16px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
                             >
                                 {language === 'ar' ? 'اسأل نورة' : 'Ask Noura'}
                             </button>
                         </div>
                     </div>
 
-                    <div style={{ padding: '20px', background: '#18181B', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                        <button onClick={() => setShowHelpModal(false)} style={{ background: 'transparent', color: '#9CA3AF', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
+                    <div style={{ padding: '20px', background: '#18181B', borderTop: '1px solid var(--color-border-subtle)', textAlign: 'center' }}>
+                        <button onClick={() => setShowHelpModal(false)} style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
                             {language === 'ar' ? 'فهمت ذلك، إغلاق' : 'Got it, close'}
                         </button>
                     </div>
@@ -1333,7 +1333,7 @@ const EntitySetup = () => {
     };
 
     return (
-        <div className="fade-in" dir={language === 'ar' ? 'rtl' : 'ltr'} style={{ textAlign: language === 'ar' ? 'right' : 'left', color: 'white', position: 'relative', minHeight: '100vh' }}>
+        <div className="fade-in" dir={language === 'ar' ? 'rtl' : 'ltr'} style={{ textAlign: language === 'ar' ? 'right' : 'left', color: 'var(--color-text-main)', position: 'relative', minHeight: '100vh' }}>
             {renderHelpModal()}
             
             {/* Agency Self-Edit Warning Guardrail */}
@@ -1375,7 +1375,7 @@ const EntitySetup = () => {
                     width: '90%',
                     maxWidth: '550px',
                     background: statusMsg.type === 'success' ? '#059669' : '#DC2626',
-                    color: 'white',
+                    color: 'var(--color-text-main)',
                     padding: '1.25rem 2rem',
                     borderRadius: '24px',
                     boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 1), 0 0 30px rgba(139, 92, 246, 0.3)',
@@ -1383,7 +1383,7 @@ const EntitySetup = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: '15px',
-                    border: '2px solid rgba(255,255,255,0.2)'
+                    border: '2px solid var(--color-border-subtle)'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         {statusMsg.type === 'success' ? <CheckCircle2 size={30} /> : <AlertCircle size={30} />}
@@ -1392,7 +1392,7 @@ const EntitySetup = () => {
                             <div style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.9 }}>{statusMsg.text}</div>
                         </div>
                     </div>
-                    <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: 'var(--color-text-main)', cursor: 'pointer', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <X size={24} />
                     </button>
                 </div>
@@ -1432,7 +1432,7 @@ const EntitySetup = () => {
                     <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700 }}>
                         {language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup'}
                     </h1>
-                    <p style={{ margin: '4px 0 0', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                    <p style={{ margin: '4px 0 0', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                         {language === 'ar'
                             ? 'معلومات منشأتك التي يستخدمها الموظفون الذكيون للتعرف على عملك'
                             : 'Your business profile that AI agents read to understand your entity'}
@@ -1441,9 +1441,9 @@ const EntitySetup = () => {
             </div>
 
             {/* Tabs Panel */}
-            <div style={{ background: '#111827', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--color-bg-surface)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
                 {/* Tabs */}
-                <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap' }}>
                     {[
                         { id: 'sources', label: language === 'ar' ? 'مصادر الذكاء' : 'AI Sources', icon: Sparkles },
                         { id: 'identity', label: language === 'ar' ? 'معلومات المنشأة' : 'Entity Info', icon: Briefcase },
@@ -1455,7 +1455,7 @@ const EntitySetup = () => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             style={{
-                                flex: 1, padding: '1rem', background: activeTab === tab.id ? '#1F2937' : 'transparent',
+                                flex: 1, padding: '1rem', background: activeTab === tab.id ? 'var(--color-bg-input)' : 'transparent',
                                 border: 'none', color: activeTab === tab.id ? '#8B5CF6' : '#9CA3AF',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                                 cursor: 'pointer', transition: 'all 0.2s', borderBottom: activeTab === tab.id ? '2px solid #8B5CF6' : 'none',
@@ -1481,7 +1481,7 @@ const EntitySetup = () => {
                                         {language === 'ar' ? 'الإعداد الذكي بالذكاء الاصطناعي' : 'AI-Powered Smart Setup'}
                                     </span>
                                 </div>
-                                <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.83rem', lineHeight: 1.6 }}>
+                                <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.83rem', lineHeight: 1.6 }}>
                                     {language === 'ar'
                                         ? 'ارفع ملفات منشأتك (PDF, Word, Excel) للحصول على أفضل دقة. موظفنا الذكي سيقرأها ويُنشئ لك ملف تعريفي متكامل تلقائياً.'
                                         : 'Upload your business files (PDF, Word, Excel) for best accuracy. Our AI agent will read them and auto-generate a complete profile.'}
@@ -1490,7 +1490,7 @@ const EntitySetup = () => {
 
                             {/* File Upload */}
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 8, fontWeight: 600 }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 8, fontWeight: 600 }}>
                                     📁 {language === 'ar' ? 'رفع الملفات (PDF, Word, Excel, CSV)' : 'Upload Files (PDF, Word, Excel, CSV)'}
                                 </label>
                                 <div
@@ -1504,7 +1504,7 @@ const EntitySetup = () => {
                                     onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.3)'}
                                 >
                                     <Upload size={28} color="#8B5CF6" style={{ marginBottom: 8 }} />
-                                    <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                    <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                         {language === 'ar' ? 'اضغط لاختيار الملفات أو اسحبها هنا' : 'Click to choose files or drag & drop here'}
                                     </p>
                                     <input id="entity-ai-upload" type="file" multiple style={{ display: 'none' }}
@@ -1515,7 +1515,7 @@ const EntitySetup = () => {
                                     <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
                                         {aiFiles.map((f, i) => (
                                             <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '7px 12px', borderRadius: 8 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#E5E7EB', fontSize: '0.83rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-text-main)', fontSize: '0.83rem' }}>
                                                     <FileText size={14} color="#8B5CF6" /> {f.name}
                                                 </div>
                                                 <X size={14} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => removeFile(i)} />
@@ -1526,9 +1526,9 @@ const EntitySetup = () => {
                             </div>
 
                             {/* URL Input - Secondary & Experimental Section */}
-                            <div style={{ marginTop: '0.5rem', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, background: 'rgba(255,255,255,0.01)' }}>
+                            <div style={{ marginTop: '0.5rem', padding: '1rem', border: '1px solid var(--color-border-subtle)', borderRadius: 12, background: 'rgba(255,255,255,0.01)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', fontWeight: 600 }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', fontWeight: 600 }}>
                                         🔗 {language === 'ar' ? 'أضف روابط (اختياري - ميزة تجريبية)' : 'Add Links (Optional - Experimental)'}
                                     </label>
                                     <span style={{ fontSize: '0.7rem', color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '2px 8px', borderRadius: 8 }}>
@@ -1574,7 +1574,7 @@ const EntitySetup = () => {
                                 style={{
                                     padding: '14px', borderRadius: 12, border: 'none', fontWeight: 700, fontSize: '1rem',
                                     background: (aiFiles.length === 0 && aiUrlsList.length === 0) ? '#374151' : 'linear-gradient(135deg,#8B5CF6,#6D28D9)',
-                                    color: 'white', cursor: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'not-allowed' : 'pointer',
+                                    color: 'var(--color-text-main)', cursor: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'not-allowed' : 'pointer',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'all 0.2s'
                                 }}>
                                 {aiLoading
@@ -1603,10 +1603,10 @@ const EntitySetup = () => {
                                     </div>
 
                                     {/* Profile table */}
-                                    <div style={{ background: '#0D1117', borderRadius: 12, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                                    <div style={{ background: '#0D1117', borderRadius: 12, border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
                                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                                             <thead>
-                                                <tr style={{ background: 'rgba(139,92,246,0.08)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                                <tr style={{ background: 'rgba(139,92,246,0.08)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                                     <th style={{ padding: '10px 14px', color: '#A78BFA', fontWeight: 700, textAlign: language === 'ar' ? 'right' : 'left', width: '35%' }}>
                                                         {language === 'ar' ? 'الحقل' : 'Field'}
                                                     </th>
@@ -1629,8 +1629,8 @@ const EntitySetup = () => {
                                                     { key: 'description', labelAr: 'وصف عام', labelEn: 'General Description', multiline: true },
                                                     { key: 'services', labelAr: 'الخدمات المستخرجة', labelEn: 'Extracted Services', multiline: true },
                                                 ].map((row, idx) => (
-                                                    <tr key={row.key} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
-                                                        <td style={{ padding: '10px 14px', color: '#9CA3AF', fontWeight: 600, verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                                                    <tr key={row.key} style={{ borderBottom: '1px solid var(--color-border-subtle)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
+                                                        <td style={{ padding: '10px 14px', color: 'var(--color-text-secondary)', fontWeight: 600, verticalAlign: 'top', whiteSpace: 'nowrap' }}>
                                                             {language === 'ar' ? row.labelAr : row.labelEn}
                                                         </td>
                                                         <td style={{ padding: '8px 14px' }}>
@@ -1639,13 +1639,13 @@ const EntitySetup = () => {
                                                                     rows={3}
                                                                     value={extractedProfile[row.key]}
                                                                     onChange={e => setExtractedProfile(p => ({ ...p, [row.key]: e.target.value }))}
-                                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#E5E7EB', padding: '7px 10px', fontSize: '0.85rem', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+                                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border-subtle)', borderRadius: 8, color: 'var(--color-text-main)', padding: '7px 10px', fontSize: '0.85rem', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
                                                                 />
                                                             ) : (
                                                                 <input
                                                                     value={extractedProfile[row.key]}
                                                                     onChange={e => setExtractedProfile(p => ({ ...p, [row.key]: e.target.value }))}
-                                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#E5E7EB', padding: '7px 10px', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+                                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border-subtle)', borderRadius: 8, color: 'var(--color-text-main)', padding: '7px 10px', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
                                                                 />
                                                             )}
                                                         </td>
@@ -1658,7 +1658,7 @@ const EntitySetup = () => {
                                     {/* Structured Services Preview */}
                                     {extractedProfile.extracted_services && extractedProfile.extracted_services.length > 0 && (
                                         <div style={{ marginTop: 10 }}>
-                                            <h4 style={{ color: '#E5E7EB', fontSize: '0.85rem', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            <h4 style={{ color: 'var(--color-text-main)', fontSize: '0.85rem', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                                                 <Puzzle size={14} style={{ color: '#FCD34D' }} />
                                                 {language === 'ar' ? 'الخدمات التي تم التعرف عليها (' + extractedProfile.extracted_services.length + ')' : 'Identified Services (' + extractedProfile.extracted_services.length + ')'}
                                             </h4>
@@ -1666,10 +1666,10 @@ const EntitySetup = () => {
                                                 {extractedProfile.extracted_services.map((svc, sIdx) => (
                                                     <div key={sIdx} style={{ background: 'rgba(139,92,246,0.04)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: 10, padding: 12 }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                                            <span style={{ color: '#E5E7EB', fontWeight: 700, fontSize: '0.8rem' }}>{svc.name}</span>
+                                                            <span style={{ color: 'var(--color-text-main)', fontWeight: 700, fontSize: '0.8rem' }}>{svc.name}</span>
                                                             <span style={{ color: '#10B981', fontWeight: 800, fontSize: '0.8rem' }}>${svc.price}</span>
                                                         </div>
-                                                        <div style={{ color: '#9CA3AF', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: 4 }}>
                                                             <Clock size={10} />
                                                             {svc.duration} {language === 'ar' ? 'دقيقة' : 'min'}
                                                         </div>
@@ -1684,7 +1684,7 @@ const EntitySetup = () => {
                                         <button onClick={handleConfirmProfile} disabled={loading}
                                             style={{
                                                 flex: 1, padding: '13px', borderRadius: 12, border: 'none', fontWeight: 700, fontSize: '0.95rem',
-                                                background: 'linear-gradient(135deg,#10B981,#059669)', color: 'white', cursor: 'pointer',
+                                                background: 'linear-gradient(135deg,#10B981,#059669)', color: 'var(--color-text-main)', cursor: 'pointer',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
                                             }}>
                                             <Save size={16} />
@@ -1693,7 +1693,7 @@ const EntitySetup = () => {
                                                 : (language === 'ar' ? 'تأكيد وحفظ البروفايل' : 'Confirm & Save Profile')}
                                         </button>
                                         <button onClick={() => setExtractedProfile(null)}
-                                            style={{ padding: '13px 18px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#9CA3AF', cursor: 'pointer', fontWeight: 600 }}>
+                                            style={{ padding: '13px 18px', borderRadius: 12, border: '1px solid var(--color-border-subtle)', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontWeight: 600 }}>
                                             {language === 'ar' ? 'إلغاء' : 'Cancel'}
                                         </button>
                                     </div>
@@ -1718,7 +1718,7 @@ const EntitySetup = () => {
                             <div style={{ padding: '1.25rem', background: 'rgba(245,158,11,0.05)', borderRadius: 12, border: '1px solid rgba(245,158,11,0.2)', marginBottom: '1rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                                     <Target size={20} color="#F59E0B" />
-                                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>
+                                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-text-main)' }}>
                                         {language === 'ar' ? 'خارطة طريق نجاح الموظف الذكي' : 'Success Roadmap for your AI Agent'}
                                     </h4>
                                 </div>
@@ -1745,7 +1745,7 @@ const EntitySetup = () => {
                                                 {step.done ? <Zap size={14} /> : <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B' }} />}
                                                 {step.label}
                                             </div>
-                                            <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: 4 }}>{step.desc}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 4 }}>{step.desc}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -1760,7 +1760,7 @@ const EntitySetup = () => {
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                         {language === 'ar' ? 'اسم المنشأة *' : 'Entity / Business Name *'}
                                     </label>
                                     <input style={inp} value={formData.businessName}
@@ -1768,7 +1768,7 @@ const EntitySetup = () => {
                                         placeholder={language === 'ar' ? 'مثال: شركة البركة، عيادة الشفاء...' : 'e.g. Al-Baraka Co, Al-Shifa Clinic...'} />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                         {language === 'ar' ? 'نوع النشاط التجاري' : 'Business Type'}
                                     </label>
                                     <select style={{ ...inp, cursor: 'pointer' }} value={formData.businessType}
@@ -1789,7 +1789,7 @@ const EntitySetup = () => {
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                     {language === 'ar' ? 'وصف المنشأة' : 'Business Description'}
                                 </label>
                                 <textarea style={{ ...inp, resize: 'vertical' }} rows={3}
@@ -1802,7 +1802,7 @@ const EntitySetup = () => {
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                         {language === 'ar' ? 'رقم التواصل' : 'Contact Number'}
                                     </label>
                                     <input style={inp} value={formData.phone} type="tel"
@@ -1810,7 +1810,7 @@ const EntitySetup = () => {
                                         placeholder="+966 5x xxx xxxx" />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                         {language === 'ar' ? 'الموقع / العنوان' : 'Location / Address'}
                                     </label>
                                     <input style={inp} value={formData.address}
@@ -1821,7 +1821,7 @@ const EntitySetup = () => {
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                         {language === 'ar' ? 'الموقع الإلكتروني (اختياري)' : 'Website (optional)'}
                                     </label>
                                     <input style={inp} value={formData.website} type="url"
@@ -1829,7 +1829,7 @@ const EntitySetup = () => {
                                         placeholder="https://" />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                         {language === 'ar' ? 'منصبك الوظيفي' : 'Your Position'}
                                     </label>
                                     <input style={inp} value={formData.position} 
@@ -1842,7 +1842,7 @@ const EntitySetup = () => {
                                 style={{
                                     padding: '12px', borderRadius: 10, border: 'none',
                                     background: !formData.businessName ? '#374151' : 'linear-gradient(135deg,#8B5CF6,#6D28D9)',
-                                    color: 'white', fontWeight: 700, cursor: !formData.businessName ? 'not-allowed' : 'pointer',
+                                    color: 'var(--color-text-main)', fontWeight: 700, cursor: !formData.businessName ? 'not-allowed' : 'pointer',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
                                 }}>
                                 <Save size={16} />
@@ -1876,31 +1876,31 @@ const EntitySetup = () => {
                             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 300px', gap: '2rem' }}>
                                 {/* 2. Business Knowledge Section */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ padding: '1.5rem', background: 'var(--color-bg-input)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
                                             <Target size={18} color="#8B5CF6" />
                                             <h4 style={{ margin: 0 }}>{language === 'ar' ? 'مهمة المنشأة والجمهور المستهدف' : 'Mission & Audience'}</h4>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                             <div>
-                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'رسالة المنشأة (لماذا نحن هنا؟)' : 'Business Mission'}</label>
+                                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'رسالة المنشأة (لماذا نحن هنا؟)' : 'Business Mission'}</label>
                                                 <textarea style={{ ...inp, minHeight: 60 }} placeholder={language === 'ar' ? 'مثال: تقديم أفضل خدمات العناية بالبشرة بأحدث التقنيات...' : 'e.g. Provide best skincare using latest tech...'} 
                                                     value={formData.mission_statement} onChange={e => setFormData({...formData, mission_statement: e.target.value})} />
                                             </div>
                                             <div>
-                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'الجمهور المستهدف' : 'Target Audience'}</label>
+                                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: 6 }}>{language === 'ar' ? 'الجمهور المستهدف' : 'Target Audience'}</label>
                                                 <input style={inp} placeholder={language === 'ar' ? 'مثال: سيدات الأعمال، المهتمين بالجمال...' : 'e.g. Business women, beauty enthusiasts...'} 
                                                     value={formData.target_audience} onChange={e => setFormData({...formData, target_audience: e.target.value})} />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ padding: '1.5rem', background: 'var(--color-bg-input)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
                                             <BookOpen size={18} color="#8B5CF6" />
                                             <h4 style={{ margin: 0 }}>{language === 'ar' ? 'دليل إجراءات العمل (SOPs)' : 'Operating Procedures (SOPs)'}</h4>
                                         </div>
-                                        <p style={{ fontSize: '0.8rem', color: '#9CA3AF', marginBottom: '1rem' }}>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
                                             {language === 'ar' ? 'أعطِ تعليمات واضحة للموظف حول كيفية التصرف في حالات معينة (مثل الخصومات، الإرجاع، المواعيد المستعجلة).' : 'Give clear instructions on how to handle specific cases (e.g. discounts, cancellations, urgent cues).'}
                                         </p>
                                         <textarea style={{ ...inp, minHeight: 180, border: '1px solid rgba(139, 92, 246, 0.2)', background: 'rgba(17, 24, 39, 0.4)' }} 
@@ -1909,13 +1909,13 @@ const EntitySetup = () => {
                                     </div>
 
                                     {/* Booking Confirmation Toggle */}
-                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ padding: '1.5rem', background: 'var(--color-bg-input)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                 <Calendar size={18} color="#F59E0B" />
                                                 <div>
                                                     <h4 style={{ margin: 0 }}>{language === 'ar' ? 'تأكيد الحجوزات يدوياً' : 'Manual Booking Confirmation'}</h4>
-                                                    <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: '4px 0 0' }}>
+                                                    <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
                                                         {language === 'ar' 
                                                             ? 'عند التفعيل: الحجوزات تكون مبدئية وتحتاج تأكيدك. الموظف سيُبلغ العميل بأن الحجز مبدئي وسيصله تأكيد لاحقاً.' 
                                                             : 'When enabled: Bookings are preliminary and need your approval. The agent will inform the customer that a confirmation will be sent.'}
@@ -1940,19 +1940,19 @@ const EntitySetup = () => {
                                         </div>
                                     </div>
 
-                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ padding: '1.5rem', background: 'var(--color-bg-input)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
                                             <Sparkles size={18} color="#8B5CF6" />
                                             <h4 style={{ margin: 0 }}>{language === 'ar' ? 'الأسئلة الشائعة (FAQ)' : 'Frequently Asked Questions'}</h4>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                             {(formData.faq_data || []).map((faq, idx) => (
-                                                <div key={idx} style={{ padding: 10, background: '#111827', borderRadius: 8, borderLeft: '3px solid #8B5CF6' }}>
+                                                <div key={idx} style={{ padding: 10, background: 'var(--color-bg-surface)', borderRadius: 8, borderLeft: '3px solid #8B5CF6' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <strong style={{ fontSize: '0.85rem' }}>{faq.q}</strong>
                                                         <Trash2 size={14} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => setFormData({...formData, faq_data: formData.faq_data.filter((_, i) => i !== idx)})} />
                                                     </div>
-                                                    <p style={{ fontSize: '0.82rem', color: '#9CA3AF', margin: '4px 0 0' }}>{faq.a}</p>
+                                                    <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>{faq.a}</p>
                                                 </div>
                                             ))}
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
@@ -1965,7 +1965,7 @@ const EntitySetup = () => {
                                                         setFormData({...formData, faq_data: [...(formData.faq_data || []), newFaq]});
                                                         setNewFaq({ q: '', a: '' });
                                                     }
-                                                }} style={{ padding: 8, background: '#374151', border: 'none', borderRadius: 8, color: 'white', cursor: 'pointer', fontSize: '0.85rem' }}>
+                                                }} style={{ padding: 8, background: '#374151', border: 'none', borderRadius: 8, color: 'var(--color-text-main)', cursor: 'pointer', fontSize: '0.85rem' }}>
                                                     {language === 'ar' ? '+ إضافة سؤال' : '+ Add Question'}
                                                 </button>
                                             </div>
@@ -1975,7 +1975,7 @@ const EntitySetup = () => {
 
                                 {/* 3. Side Panel (Hours & Brand Voice) */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ padding: '1.5rem', background: 'var(--color-bg-input)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.2rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                 <Clock size={18} color="#8B5CF6" />
@@ -2010,7 +2010,7 @@ const EntitySetup = () => {
                                                 {(formData.workingHours?.shifts || [{ start: '09:00', end: '22:00' }]).map((shift, sIdx) => (
                                                     <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <div style={{ flex: 1 }}>
-                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: 4 }}>{language === 'ar' ? `وقت البدء (${sIdx + 1})` : `Start Time (${sIdx + 1})`}</label>
+                                                            <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: 4 }}>{language === 'ar' ? `وقت البدء (${sIdx + 1})` : `Start Time (${sIdx + 1})`}</label>
                                                             <input type="time" style={inp} value={shift.start} onChange={e => {
                                                                 const newShifts = [...(formData.workingHours.shifts || [])];
                                                                 newShifts[sIdx] = { ...shift, start: e.target.value };
@@ -2018,7 +2018,7 @@ const EntitySetup = () => {
                                                             }} />
                                                         </div>
                                                         <div style={{ flex: 1 }}>
-                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: 4 }}>{language === 'ar' ? `وقت الانتهاء (${sIdx + 1})` : `End Time (${sIdx + 1})`}</label>
+                                                            <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: 4 }}>{language === 'ar' ? `وقت الانتهاء (${sIdx + 1})` : `End Time (${sIdx + 1})`}</label>
                                                             <input type="time" style={inp} value={shift.end} onChange={e => {
                                                                 const newShifts = [...(formData.workingHours.shifts || [])];
                                                                 newShifts[sIdx] = { ...shift, end: e.target.value };
@@ -2086,7 +2086,7 @@ const EntitySetup = () => {
                                                                             wh.days[day] = { ...wh.days[day], shifts: dShifts };
                                                                             setFormData({ ...formData, workingHours: wh });
                                                                         }} />
-                                                                    <span style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>-</span>
+                                                                    <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem' }}>-</span>
                                                                     <input type="time" style={{ ...inp, padding: '4px', flex: 1, minWidth: 0, fontSize: '0.75rem' }}
                                                                         value={shift.end} onChange={e => {
                                                                             const wh = { ...formData.workingHours };
@@ -2111,7 +2111,7 @@ const EntitySetup = () => {
                                         )}
                                     </div>
 
-                                    <div style={{ padding: '1.5rem', background: '#1F2937', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ padding: '1.5rem', background: 'var(--color-bg-input)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.2rem' }}>
                                             <MessageCircle size={18} color="#8B5CF6" />
                                             <h4 style={{ margin: 0 }}>{language === 'ar' ? 'نبرة الصوت (Tone)' : 'Brand Voice'}</h4>
@@ -2125,7 +2125,7 @@ const EntitySetup = () => {
                                         style={{
                                             padding: '14px', borderRadius: 12, border: 'none',
                                             background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)',
-                                            color: 'white', fontWeight: 700, cursor: 'pointer',
+                                            color: 'var(--color-text-main)', fontWeight: 700, cursor: 'pointer',
                                             boxShadow: '0 4px 12px rgba(139,92,246,0.3)',
                                             marginTop: '1rem'
                                         }}>
@@ -2161,7 +2161,7 @@ const EntitySetup = () => {
                                         </div>
                                         {agentId ? (
                                             <>
-                                                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                                                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
                                                     {language === 'ar'
                                                         ? 'انسخ الكود أدناه وضعه قبل وسم </body> في موقعك ليتمكن الزوار من التحدث مع موظفك الذكي.'
                                                         : 'Copy the code below and paste it before the </body> tag on your website to allow visitors to chat with your agent.'}
@@ -2174,7 +2174,7 @@ const EntitySetup = () => {
                                                         fontSize: '0.75rem',
                                                         color: '#E2E8F0',
                                                         overflowX: 'auto',
-                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        border: '1px solid var(--color-border-subtle)',
                                                         fontFamily: 'monospace'
                                                     }}>
                                                         {`<script
@@ -2194,7 +2194,7 @@ const EntitySetup = () => {
                                                         }}
                                                         style={{
                                                             position: 'absolute', top: '8px', [language === 'ar' ? 'left' : 'right']: '8px',
-                                                            background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white',
+                                                            background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--color-text-main)',
                                                             padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer'
                                                         }}>
                                                         {language === 'ar' ? 'نسخ' : 'Copy'}
@@ -2202,7 +2202,7 @@ const EntitySetup = () => {
                                                 </div>
                                             </>
                                         ) : (
-                                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#9CA3AF' }}>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
                                                 {language === 'ar' 
                                                     ? 'يجب عليك توظيف موظف ذكي واحد على الأقل ليظهر كود التضمين الخاص به.' 
                                                     : 'You need to hire at least one AI agent to see the embedding code.'}
@@ -2265,7 +2265,7 @@ const EntitySetup = () => {
                                             <button onClick={() => {
                                                 navigator.clipboard.writeText(`${supabaseUrl}/functions/v1/meta-webhook?user_id=${currentUserId}`);
                                                 alert(language === 'ar' ? 'تم النسخ!' : 'Copied!');
-                                            }} style={{ background: '#374151', border: 'none', color: 'white', padding: '0 12px', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer' }}>
+                                            }} style={{ background: '#374151', border: 'none', color: 'var(--color-text-main)', padding: '0 12px', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer' }}>
                                                 {language === 'ar' ? 'نسخ' : 'Copy'}
                                             </button>
                                         </div>
@@ -2280,7 +2280,7 @@ const EntitySetup = () => {
                                             <BookOpen size={14} />
                                             {language === 'ar' ? 'دليل إعداد منصة Meta (WhatsApp)' : 'Meta Platform Setup Guide (WhatsApp)'}
                                         </button>
-                                        <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#9CA3AF' }}>{language === 'ar' ? 'استخدم هذا الرابط في إعدادات Webhook في تطبيق Meta الخاص بك.' : 'Use this URL in your Meta App Webhook settings.'}</p>
+                                        <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{language === 'ar' ? 'استخدم هذا الرابط في إعدادات Webhook في تطبيق Meta الخاص بك.' : 'Use this URL in your Meta App Webhook settings.'}</p>
                                     </div>
                                 )
                             },
@@ -2304,7 +2304,7 @@ const EntitySetup = () => {
                                             <button onClick={() => {
                                                 navigator.clipboard.writeText(`${supabaseUrl}/functions/v1/meta-webhook?user_id=${currentUserId}`);
                                                 alert(language === 'ar' ? 'تم النسخ!' : 'Copied!');
-                                            }} style={{ background: '#374151', border: 'none', color: 'white', padding: '0 12px', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer' }}>
+                                            }} style={{ background: '#374151', border: 'none', color: 'var(--color-text-main)', padding: '0 12px', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer' }}>
                                                 {language === 'ar' ? 'نسخ' : 'Copy'}
                                             </button>
                                         </div>
@@ -2319,7 +2319,7 @@ const EntitySetup = () => {
                                             <BookOpen size={14} />
                                             {language === 'ar' ? 'دليل إعداد منصة Meta (Instagram)' : 'Meta Platform Setup Guide (Instagram)'}
                                         </button>
-                                        <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#9CA3AF' }}>{language === 'ar' ? 'تأكد من اختيار (messages) في اشتراكات Webhook.' : 'Ensure you select (messages) in Webhook subscriptions.'}</p>
+                                        <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{language === 'ar' ? 'تأكد من اختيار (messages) في اشتراكات Webhook.' : 'Ensure you select (messages) in Webhook subscriptions.'}</p>
                                     </div>
                                 )
                             },
@@ -2346,7 +2346,7 @@ const EntitySetup = () => {
                                             {language === 'ar' ? 'عرض دليل الإعداد المصبور (خطوة بخطوة)' : 'View Step-by-Step Setup Guide'}
                                         </button>
                                         
-                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                                        <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: '1rem' }}>
                                             <button 
                                                 onClick={handleTestCalendarConnection}
                                                 disabled={isTestingCalendar}
@@ -2396,7 +2396,7 @@ const EntitySetup = () => {
                                             {language === 'ar' ? 'عرض دليل الإعداد المصبور (خطوة بخطوة)' : 'View Step-by-Step Setup Guide'}
                                         </button>
 
-                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                                        <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: '1rem' }}>
                                             <button 
                                                 onClick={handleTestSheetsConnection}
                                                 disabled={isTestingSheets}
@@ -2475,10 +2475,10 @@ const EntitySetup = () => {
                             <div className="animate-fade-in">
                                 {/* Header */}
                                 <div style={{ marginBottom: '1.25rem' }}>
-                                    <h3 style={{ margin: '0 0 4px', fontSize: '1.05rem', fontWeight: 700, color: '#E5E7EB' }}>
+                                    <h3 style={{ margin: '0 0 4px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--color-text-main)' }}>
                                         {language === 'ar' ? '🔌 أدوات الربط والمنصات' : '🔌 Connections & Integrations'}
                                     </h3>
-                                    <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                    <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                         {language === 'ar'
                                             ? 'قم بتوصيل الموظف الذكي بحساباتك ومنصاتك لتسريع سير العمل.'
                                             : 'Connect the AI agent with your platforms to accelerate workflows.'}
@@ -2510,13 +2510,13 @@ const EntitySetup = () => {
 
                                                     {/* Left: Icon & Text */}
                                                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flex: 1 }}>
-                                                        <div style={{ width: 42, height: 42, borderRadius: 12, background: isConnected ? `${cardColor}20` : '#27272A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isConnected ? cardColor : '#3B82F6', flexShrink: 0, border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                        <div style={{ width: 42, height: 42, borderRadius: 12, background: isConnected ? `${cardColor}20` : '#27272A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isConnected ? cardColor : '#3B82F6', flexShrink: 0, border: '1px solid var(--color-border-subtle)' }}>
                                                             {/* If it has native color use it, otherwise use blue */}
                                                             <card.icon size={22} color={cardColor} />
                                                         </div>
                                                         <div style={{ flex: 1 }}>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#E5E7EB' }}>
+                                                                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-main)' }}>
                                                                     {language === 'ar' ? card.titleAr : card.titleEn}
                                                                 </span>
                                                                 {isConnected && (
@@ -2525,7 +2525,7 @@ const EntitySetup = () => {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <div style={{ color: '#9CA3AF', fontSize: '0.8rem', marginTop: 4, lineHeight: 1.4 }}>
+                                                            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginTop: 4, lineHeight: 1.4 }}>
                                                                 {language === 'ar' ? card.descAr : card.descEn}
                                                             </div>
                                                         </div>
@@ -2536,12 +2536,12 @@ const EntitySetup = () => {
                                                         {card.comingSoon ? (
                                                             <div style={{
                                                                 background: 'rgba(255,255,255,0.05)',
-                                                                color: '#9CA3AF',
+                                                                color: 'var(--color-text-secondary)',
                                                                 padding: '6px 14px',
                                                                 borderRadius: 99,
                                                                 fontSize: '0.75rem',
                                                                 fontWeight: 600,
-                                                                border: '1px solid rgba(255,255,255,0.1)'
+                                                                border: '1px solid var(--color-border-subtle)'
                                                             }}>
                                                                 {language === 'ar' ? 'قريباً' : 'Coming Soon'}
                                                             </div>
@@ -2588,12 +2588,12 @@ const EntitySetup = () => {
 
                                                 {/* Expanded Form / Setup Fields */}
                                                 {isOpen && card.fields.length > 0 && (
-                                                    <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '1px solid var(--color-border-subtle)' }}>
                                                         {card.id === 'custom_request' ? (
                                                             /* Render special custom request fields if ID matches */
                                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
                                                                 <div>
-                                                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                                                         {language === 'ar' ? 'اسم الأداة أو المنصة' : 'Tool / Platform Name'}
                                                                     </label>
                                                                     <input style={inp} value={requestToolName}
@@ -2601,7 +2601,7 @@ const EntitySetup = () => {
                                                                         placeholder="e.g. Slack, WhatsApp API, Zapier..." />
                                                                 </div>
                                                                 <div>
-                                                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                                                         {language === 'ar' ? 'وصف الاحتياج' : 'Description of Need'}
                                                                     </label>
                                                                     <textarea style={{ ...inp, resize: 'vertical' }} rows={2}
@@ -2609,18 +2609,18 @@ const EntitySetup = () => {
                                                                         onChange={e => setRequestReason(e.target.value)}
                                                                         placeholder={language === 'ar' ? 'لماذا تحتاج هذا الربط؟' : 'How will this help your workflow?'} />
                                                                 </div>
-                                                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                                                                <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: '1rem', marginTop: '0.5rem' }}>
                                                                     <h4 style={{ color: '#A78BFA', fontSize: '0.9rem', marginBottom: '1rem' }}>{language === 'ar' ? 'بيانات التواصل' : 'Contact Information'}</h4>
                                                                     <div style={{ display: 'flex', gap: '1rem' }}>
                                                                         <div style={{ flex: 1 }}>
-                                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                            <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                                                                 {language === 'ar' ? 'الاسم' : 'Name'}
                                                                             </label>
                                                                             <input style={inp} value={requestContactName}
                                                                                 onChange={e => setRequestContactName(e.target.value)} />
                                                                         </div>
                                                                         <div style={{ flex: 1 }}>
-                                                                            <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                            <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                                                                 {language === 'ar' ? 'رقم الجوال' : 'Phone'}
                                                                             </label>
                                                                             <input style={inp} type="tel" value={requestContactPhone}
@@ -2628,7 +2628,7 @@ const EntitySetup = () => {
                                                                         </div>
                                                                     </div>
                                                                     <div style={{ marginTop: '1rem' }}>
-                                                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 6 }}>
+                                                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 6 }}>
                                                                             {language === 'ar' ? 'البريد الإلكتروني' : 'Email'}
                                                                         </label>
                                                                         <input style={inp} type="email" value={requestContactEmail}
@@ -2639,7 +2639,7 @@ const EntitySetup = () => {
                                                         ) : (
                                                             card.fields.map(f => (
                                                                 <div key={f.key} style={{ marginTop: 16 }}>
-                                                                    <label style={{ display: 'block', color: '#E5E7EB', fontSize: '0.85rem', marginBottom: 8, fontWeight: 500 }}>
+                                                                    <label style={{ display: 'block', color: 'var(--color-text-main)', fontSize: '0.85rem', marginBottom: 8, fontWeight: 500 }}>
                                                                         {language === 'ar' ? f.labelAr : f.labelEn}
                                                                         <span style={{ fontWeight: 400, color: '#6B7280', marginInlineStart: 8 }}>
                                                                             — {language === 'ar' ? f.hintAr : f.hintEn}
@@ -2711,7 +2711,7 @@ const EntitySetup = () => {
                                                                                     <div style={{ marginTop: '12px', display: 'flex', gap: '10px', alignItems: 'center' }}>
                                                                                         {integrationGuides[f.key].url && (
                                                                                             <a href={integrationGuides[f.key].url} target="_blank" rel="noreferrer" style={{
-                                                                                                background: '#3B82F6', color: 'white', textDecoration: 'none', padding: '4px 12px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem'
+                                                                                                background: '#3B82F6', color: 'var(--color-text-main)', textDecoration: 'none', padding: '4px 12px', borderRadius: '6px', fontWeight: 600, fontSize: '0.75rem'
                                                                                             }}>
                                                                                                 {language === 'ar' ? 'فتح بوابة Meta' : 'Open Meta Portal'}
                                                                                             </a>
@@ -2742,7 +2742,7 @@ const EntitySetup = () => {
                                                                 style={{
                                                                     flex: 1, padding: '12px', borderRadius: 99, border: 'none',
                                                                     background: `linear-gradient(135deg, ${cardColor}, ${cardColor}bb)`,
-                                                                    color: 'white', fontWeight: 700, cursor: integrationSaving ? 'not-allowed' : 'pointer',
+                                                                    color: 'var(--color-text-main)', fontWeight: 700, cursor: integrationSaving ? 'not-allowed' : 'pointer',
                                                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: '0.95rem',
                                                                     opacity: integrationSaving ? 0.7 : 1, boxShadow: `0 4px 14px ${cardColor}40`
                                                                 }}>
@@ -2769,7 +2769,7 @@ const EntitySetup = () => {
                                                                 <h4 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: '#EF4444', fontWeight: 700 }}>
                                                                     {language === 'ar' ? '⚠️ تجديد ذكاء الموظف' : '⚠️ Reset Industry Intelligence'}
                                                                 </h4>
-                                                                <p style={{ margin: '0 0 12px', fontSize: '0.75rem', color: '#9CA3AF', lineHeight: 1.4 }}>
+                                                                <p style={{ margin: '0 0 12px', fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
                                                                     {language === 'ar'
                                                                         ? 'إذا كان الموظف يرد بمعلومات خاطئة عن نشاطك (مثلاً يرد كصالون تجميل وأنت شركة برمجيات)، اضغط هنا لمسح البيانات القديمة.'
                                                                         : 'If the agent is giving wrong info (e.g. answering like a salon when you are a software firm), reset old data here.'}
@@ -2807,23 +2807,23 @@ const EntitySetup = () => {
                                     width: '64px', height: '64px', margin: '0 auto 1.5rem',
                                     background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
                                     borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: 'white', fontSize: '1.8rem', fontWeight: '900',
+                                    color: 'var(--color-text-main)', fontSize: '1.8rem', fontWeight: '900',
                                     boxShadow: '0 0 20px rgba(139, 92, 246, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2)',
-                                    border: '2px solid rgba(255, 255, 255, 0.1)', position: 'relative', overflow: 'hidden'
+                                    border: '2px solid var(--color-border-subtle)', position: 'relative', overflow: 'hidden'
                                 }}>
                                     <span style={{ position: 'relative', zIndex: 2, letterSpacing: '-1.5px' }}>24</span>
                                     <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 60%)', opacity: 0.5 }}></div>
                                 </div>
-                                <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', color: 'white' }}>
+                                <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--color-text-main)' }}>
                                     {language === 'ar' ? '✅ الموظف جاهز للعمل' : '✅ Agent Ready to Deploy'}
                                 </h3>
-                                <p style={{ color: '#9CA3AF', marginBottom: '1.5rem' }}>
+                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>
                                     {language === 'ar'
                                         ? 'تم إعداد ملف المنشأة وأدوات الربط. اضغط أدناه لتفعيل الموظف الذكي.'
                                         : 'Entity profile and integrations configured. Click below to activate your AI agent.'}
                                 </p>
                                 <button
-                                    style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: '#22C55E', color: 'white', fontWeight: 700, fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
+                                    style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: '#22C55E', color: 'var(--color-text-main)', fontWeight: 700, fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
                                     onClick={handleActivate} disabled={loading}>
                                     {loading
                                         ? (language === 'ar' ? '⏳ جاري التفعيل...' : '⏳ Activating...')

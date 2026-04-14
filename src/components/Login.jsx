@@ -192,14 +192,14 @@ const Login = () => {
                                     <span style={{ color: '#10B981', fontWeight: 700 }}>{language === 'ar' ? '✓ تم إرسال الرابط بنجاح! تفقد بريدك.' : '✓ Confirmation sent! Check your inbox.'}</span>
                                 ) : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                                        <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: 0 }}>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', margin: 0 }}>
                                             {language === 'ar' ? 'تبدو أن حسابك بحاجة لتفعيل. هل تريد إرسال الرابط مرة أخرى؟' : 'Your account needs activation. Resend link?'}
                                         </p>
                                         <button 
                                             onClick={handleResend}
                                             disabled={resendLoading}
                                             className="btn btn-sm"
-                                            style={{ background: '#EF4444', color: 'white', borderRadius: '8px', padding: '5px 15px', fontSize: '0.75rem', border: 'none', cursor: 'pointer', fontWeight: 700 }}
+                                            style={{ background: '#EF4444', color: 'var(--color-text-main)', borderRadius: '8px', padding: '5px 15px', fontSize: '0.75rem', border: 'none', cursor: 'pointer', fontWeight: 700 }}
                                         >
                                             {resendLoading ? (language === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (language === 'ar' ? 'إرسال رابط التفعيل الآن' : 'Resend Activation Now')}
                                         </button>
@@ -215,7 +215,7 @@ const Login = () => {
                         <div className="text-center mb-xl">
                             <Key size={40} style={{ color: 'var(--accent)', marginBottom: '1rem' }} />
                             <h3 style={{ fontWeight: 800 }}>{language === 'ar' ? 'استعادة كلمة السر' : 'Recover Password'}</h3>
-                            <p style={{ fontSize: '0.9rem', color: '#9CA3AF' }}>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
                                 {language === 'ar' ? 'أدخل بريدك الإلكتروني لإرسال رابط الاستعادة' : 'Enter your email to receive a reset link'}
                             </p>
                         </div>
@@ -223,7 +223,7 @@ const Login = () => {
                         {recoverySuccess ? (
                             <div style={{ textAlign: 'center', padding: '1.5rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '16px' }}>
                                 <CheckCircle size={32} style={{ color: '#10B981', marginBottom: '0.5rem' }} />
-                                <p style={{ color: '#E4E4E7' }}>{language === 'ar' ? 'تم إرسال الرابط! تفقد بريدك الإلكتروني.' : 'Reset link sent! Please check your email.'}</p>
+                                <p style={{ color: 'var(--color-text-main)' }}>{language === 'ar' ? 'تم إرسال الرابط! تفقد بريدك الإلكتروني.' : 'Reset link sent! Please check your email.'}</p>
                                 <button onClick={() => setIsRecovery(false)} className="btn btn-secondary btn-sm mt-md">{t('backToLogin')}</button>
                             </div>
                         ) : (
@@ -242,7 +242,7 @@ const Login = () => {
                                 <button type="submit" className={`btn btn-primary btn-block ${loading ? 'loading' : ''}`} disabled={loading}>
                                     {language === 'ar' ? 'إرسال رابط الاستعادة' : 'Send Reset Link'}
                                 </button>
-                                <button type="button" onClick={() => setIsRecovery(false)} className="btn btn-link btn-block mt-md" style={{ color: '#9CA3AF' }}>
+                                <button type="button" onClick={() => setIsRecovery(false)} className="btn btn-link btn-block mt-md" style={{ color: 'var(--color-text-secondary)' }}>
                                     {language === 'ar' ? 'العودة للخلف' : 'Go Back'}
                                 </button>
                             </form>
@@ -262,7 +262,7 @@ const Login = () => {
                         <h3 style={{ marginBottom: '0.5rem', fontWeight: 800 }}>
                             {language === 'ar' ? 'تم إنشاء الحساب بنجاح!' : 'Account Created Successfully!'}
                         </h3>
-                        <p style={{ fontSize: '0.9rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
                             {language === 'ar' 
                                 ? 'لقد أرسلنا رابط تفعيل إلى بريدك الإلكتروني. يرجى تفعيله لتتمكن من الدخول إلى المنصة.' 
                                 : 'We have sent a confirmation link to your email. Please activate it to access the platform.'}
@@ -336,9 +336,9 @@ const Login = () => {
                                             [language === 'ar' ? 'left' : 'right']: '0.75rem',
                                             transform: 'translateY(-50%)',
                                             background: 'rgba(255, 255, 255, 0.05)',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            border: '1px solid var(--color-border-subtle)',
                                             borderRadius: '8px',
-                                            color: 'white',
+                                            color: 'var(--color-text-main)',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -403,7 +403,7 @@ const Login = () => {
         justifyContent: 'center', 
         gap: '10px',
         background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid var(--color-border-subtle)',
         padding: '0.875rem'
     }}
 >
@@ -428,7 +428,7 @@ const Login = () => {
                 <div style={{
                     marginTop: '2rem',
                     paddingTop: '1rem',
-                    borderTop: '1px solid rgba(255,255,255,0.05)',
+                    borderTop: '1px solid var(--color-border-subtle)',
                     display: 'flex',
                     justifyContent: 'center',
                     gap: '1.5rem',

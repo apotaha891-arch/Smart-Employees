@@ -55,7 +55,7 @@ const NewsletterSignup = ({ source = 'blog' }) => {
                 animation: 'fade-in 0.5s ease'
             }}>
                 <CheckCircle size={48} color="#10B981" style={{ marginBottom: '1rem' }} />
-                <h4 style={{ color: 'white', marginBottom: '0.5rem' }}>{isEnglish ? 'Success!' : 'تم بنجاح!'}</h4>
+                <h4 style={{ color: 'var(--color-text-main)', marginBottom: '0.5rem' }}>{isEnglish ? 'Success!' : 'تم بنجاح!'}</h4>
                 <p style={{ color: '#A7F3D0', fontSize: '0.9rem', margin: 0 }}>{message}</p>
             </div>
         );
@@ -63,7 +63,7 @@ const NewsletterSignup = ({ source = 'blog' }) => {
 
     return (
         <div style={{ 
-            background: 'linear-gradient(135deg, #111827, #1E1B4B)', 
+            background: 'linear-gradient(135deg, var(--color-bg-surface), #1E1B4B)', 
             borderRadius: '24px', 
             padding: '2rem', 
             border: '1px solid rgba(139, 92, 246, 0.2)',
@@ -76,7 +76,7 @@ const NewsletterSignup = ({ source = 'blog' }) => {
             <h4 style={{ 
                 fontSize: '1.2rem', 
                 fontWeight: 800, 
-                color: 'white', 
+                color: 'var(--color-text-main)', 
                 marginBottom: '0.75rem',
                 textAlign: isEnglish ? 'left' : 'right'
             }}>
@@ -84,7 +84,7 @@ const NewsletterSignup = ({ source = 'blog' }) => {
             </h4>
             <p style={{ 
                 fontSize: '0.85rem', 
-                color: '#9CA3AF', 
+                color: 'var(--color-text-secondary)', 
                 marginBottom: '1.5rem',
                 lineHeight: '1.5',
                 textAlign: isEnglish ? 'left' : 'right'
@@ -105,9 +105,9 @@ const NewsletterSignup = ({ source = 'blog' }) => {
                         width: '100%', 
                         padding: '12px 16px', 
                         background: '#0B0F19', 
-                        border: '1px solid rgba(255,255,255,0.1)', 
+                        border: '1px solid var(--color-border-subtle)', 
                         borderRadius: '12px', 
-                        color: 'white',
+                        color: 'var(--color-text-main)',
                         fontSize: '0.9rem',
                         marginBottom: '0.75rem',
                         outline: 'none',
@@ -123,7 +123,7 @@ const NewsletterSignup = ({ source = 'blog' }) => {
                         width: '100%', 
                         padding: '12px', 
                         background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', 
-                        color: 'white', 
+                        color: 'var(--color-text-main)', 
                         border: 'none', 
                         borderRadius: '12px', 
                         fontWeight: 700, 

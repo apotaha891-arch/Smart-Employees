@@ -48,7 +48,7 @@ const LowCreditModal = ({ remaining, onClose }) => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        color: '#9CA3AF'
+                        color: 'var(--color-text-secondary)'
                     }}
                 >
                     <X size={18} />
@@ -86,7 +86,7 @@ const LowCreditModal = ({ remaining, onClose }) => {
                         style={{
                             flex: 1,
                             background: '#8B5CF6',
-                            color: 'white',
+                            color: 'var(--color-text-main)',
                             padding: '1rem',
                             borderRadius: '16px',
                             fontWeight: 800,
@@ -107,11 +107,11 @@ const LowCreditModal = ({ remaining, onClose }) => {
                         style={{
                             flex: 1,
                             background: 'rgba(255,255,255,0.05)',
-                            color: '#E4E4E7',
+                            color: 'var(--color-text-main)',
                             padding: '1rem',
                             borderRadius: '16px',
                             fontWeight: 700,
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            border: '1px solid var(--color-border-subtle)',
                             cursor: 'pointer'
                         }}
                         onClick={onClose}

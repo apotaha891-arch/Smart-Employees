@@ -195,20 +195,20 @@ const Dashboard = () => {
                         </div>
 
                         {/* Customer Info Bar */}
-                        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--color-border-subtle)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
                                 <Users size={16} color="#8B5CF6" />
-                                <span style={{ color: '#E5E7EB', fontWeight: 600 }}>{profile?.full_name || (language === 'ar' ? 'ضيف' : 'Guest')}</span>
-                                {profile?.position && <span style={{ color: '#9CA3AF', fontSize: '0.8rem', background: 'rgba(139,92,246,0.1)', padding: '2px 8px', borderRadius: '4px' }}>{profile.position}</span>}
+                                <span style={{ color: 'var(--color-text-main)', fontWeight: 600 }}>{profile?.full_name || (language === 'ar' ? 'ضيف' : 'Guest')}</span>
+                                {profile?.position && <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', background: 'rgba(139,92,246,0.1)', padding: '2px 8px', borderRadius: '4px' }}>{profile.position}</span>}
                             </div>
                             {profile?.email && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#9CA3AF' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
                                     <BookOpen size={16} />
                                     <span>{profile.email}</span>
                                 </div>
                             )}
                             {profile?.phone && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#9CA3AF' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
                                     <Bot size={16} />
                                     <span>{profile.phone}</span>
                                 </div>
@@ -243,8 +243,8 @@ const Dashboard = () => {
                                     </button>
                                 </Link>
                             </div>
-                            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'white', lineHeight: 1 }}>{profile?.wallet_balance?.toLocaleString() || 0}</div>
-                            <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-text-main)', lineHeight: 1 }}>{profile?.wallet_balance?.toLocaleString() || 0}</div>
+                            <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
                                 {language === 'ar' ? 'يُستخدم للمحادثات والردود التلقائية ورسائل الواتساب الواردة.' : 'Used for chats, automated replies and WhatsApp messages.'}
                             </p>
                         </div>
@@ -257,8 +257,8 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 600 }}>{language === 'ar' ? 'مهام أُنجزت اليوم' : 'Tasks Completed Today'}</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'white', lineHeight: 1 }}>{stats.tasksToday || 0}</div>
-                            <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+                            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-text-main)', lineHeight: 1 }}>{stats.tasksToday || 0}</div>
+                            <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
                                 {language === 'ar' ? 'محادثات وعمليات تعامل معها الموظف الرقمي بالكامل دون تدخل بشري.' : 'Operations handled entirely by your AI agent without expected intervention.'}
                             </p>
                         </div>
@@ -271,7 +271,7 @@ const Dashboard = () => {
                         </div>
                         <div style={{ width: '100%' }}>
                             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '4px', fontWeight: 600 }}>{language === 'ar' ? 'مهام تفعيل الموظف' : 'Agent Mission Checklist'}</div>
-                            <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '4px 0', lineHeight: 1.3 }}>{language === 'ar' ? 'متطلبات النجاح' : 'Success Requirements'}</h4>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text-main)', margin: '4px 0', lineHeight: 1.3 }}>{language === 'ar' ? 'متطلبات النجاح' : 'Success Requirements'}</h4>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                                 {[
@@ -310,10 +310,10 @@ const Dashboard = () => {
                             overflow: 'hidden'
                         }}>
                             <div style={{ flex: '1 1 400px', position: 'relative', zIndex: 1 }}>
-                                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>
+                                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--color-text-main)', marginBottom: '1rem' }}>
                                     {t('upgrade.becomeAgentTitle')}
                                 </h2>
-                                <p style={{ color: '#E5E7EB', fontSize: '1rem', lineHeight: 1.6, marginBottom: '0' }}>
+                                <p style={{ color: 'var(--color-text-main)', fontSize: '1rem', lineHeight: 1.6, marginBottom: '0' }}>
                                     {t('upgrade.becomeAgentDesc')}
                                 </p>
                             </div>
@@ -339,7 +339,7 @@ const Dashboard = () => {
                         
                         <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', gap: '3rem', alignItems: 'center' }}>
                             <div style={{ flex: '1 1 400px' }}>
-                                <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white', marginBottom: '1.2rem' }}>
+                                <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-text-main)', marginBottom: '1.2rem' }}>
                                     {language === 'ar' ? '🚀 نظام التوسع المرن والقائم على النقاط' : '🚀 Flexible Point-Based Scaling System'}
                                 </h2>
                                 <p style={{ color: '#A1A1AA', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
@@ -351,15 +351,15 @@ const Dashboard = () => {
                                     <Link to="/pricing" className="btn btn-primary" style={{ padding: '0.85rem 2rem', borderRadius: '14px', fontWeight: 800 }}>
                                         {language === 'ar' ? 'تعزيز رصيد النقاط' : 'Power Up Credits'}
                                     </Link>
-                                    <Link to="/templates" className="btn" style={{ padding: '0.85rem 2rem', borderRadius: '14px', fontWeight: 800, background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <Link to="/templates" className="btn" style={{ padding: '0.85rem 2rem', borderRadius: '14px', fontWeight: 800, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)' }}>
                                         {language === 'ar' ? 'توظيف موظف إضافي' : 'Hire Extra Agent'}
                                     </Link>
                                 </div>
                             </div>
                             
                             <div style={{ flex: '1 1 350px' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-                                    <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)', fontWeight: 800, color: '#A78BFA', textAlign: 'center' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
+                                    <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--color-border-subtle)', background: 'rgba(255,255,255,0.02)', fontWeight: 800, color: '#A78BFA', textAlign: 'center' }}>
                                         {language === 'ar' ? 'دليل استهلاك النقاط' : 'Credit Consumption Guide'}
                                     </div>
                                     <div style={{ padding: '1rem' }}>
@@ -370,11 +370,11 @@ const Dashboard = () => {
                                             { label: language === 'ar' ? 'رسالة واتساب واردة/صادرة' : 'WhatsApp In/Out', cost: '1 pt', icon: <MessageSquare size={14} /> },
                                         ].map((item, i) => (
                                             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0.5rem', borderBottom: i === 3 ? 'none' : '1px solid rgba(255,255,255,0.03)' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#E4E4E7', fontSize: '0.9rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-main)', fontSize: '0.9rem' }}>
                                                     <span style={{ color: '#8B5CF6' }}>{item.icon}</span>
                                                     {item.label}
                                                 </div>
-                                                <div style={{ fontWeight: 800, color: 'white', fontSize: '1rem' }}>{item.cost}</div>
+                                                <div style={{ fontWeight: 800, color: 'var(--color-text-main)', fontSize: '1rem' }}>{item.cost}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -389,7 +389,7 @@ const Dashboard = () => {
 
                 {/* CRM Operations Hub */}
                 <div style={{ marginTop: '2.5rem' }}>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'var(--color-text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <Zap size={20} color="#8B5CF6" />
                         {language === 'ar' ? 'مركز العمليات والنظام المتكامل' : 'CRM & Operations Hub'}
                     </h2>
@@ -401,13 +401,13 @@ const Dashboard = () => {
                             { label: language === 'ar' ? 'التوظيف (HR)' : 'Recruitment (HR)', icon: Users, path: '/hr', color: '#F59E0B', desc: language === 'ar' ? 'إدارة المتقدمين والمقابلات' : 'Manage hiring' },
                         ].map((hub, i) => (
                             <Link key={i} to={hub.path} style={{ textDecoration: 'none' }}>
-                                <div className="card" style={{ padding: '1.25rem', height: '100%', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: '12px', transition: 'transform 0.2s' }}>
+                                <div className="card" style={{ padding: '1.25rem', height: '100%', border: '1px solid var(--color-border-subtle)', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: '12px', transition: 'transform 0.2s' }}>
                                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: `${hub.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: hub.color }}>
                                         <hub.icon size={22} />
                                     </div>
                                     <div>
-                                        <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem' }}>{hub.label}</div>
-                                        <div style={{ fontSize: '0.8rem', color: '#9CA3AF', marginTop: '4px' }}>{hub.desc}</div>
+                                        <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '1rem' }}>{hub.label}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '4px' }}>{hub.desc}</div>
                                     </div>
                                     <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: hub.color, fontWeight: 700 }}>
                                         {language === 'ar' ? 'دخول المركز' : 'Access Center'}
@@ -436,7 +436,7 @@ const Dashboard = () => {
                         <h3 style={{ margin: '0 0 0.5rem', fontWeight: 900, fontSize: '1.5rem', color: '#FFF' }}>
                             {language === 'ar' ? 'نحن هنا لمساعدتك' : 'We are here to help'}
                         </h3>
-                        <p style={{ margin: 0, color: '#9CA3AF', fontSize: '1rem', lineHeight: 1.6 }}>
+                        <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '1rem', lineHeight: 1.6 }}>
                             {language === 'ar' ? 'فريق الدعم الفني في 24Shift متواجد للرد على استفساراتك ومساعدتك في تحسين موظفك الذكي.' : 'The 24Shift support team is available to answer your questions and help you optimize your digital agent.'}
                         </p>
                     </div>
@@ -451,9 +451,9 @@ const Dashboard = () => {
                                 </span>
                             </div>
 
-                            <div style={{ background: '#18181B', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <div style={{ color: '#E4E4E7', fontWeight: 600, marginBottom: '0.25rem' }}>{language === 'ar' ? 'استفسارات فنية أو مبيعات؟' : 'Technical or Sales inquiries?'}</div>
-                                <div style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>{language === 'ar' ? 'تحدث مع فريقنا مباشرة عبر الواتساب للحصول على استجابة سريعة.' : 'Chat with our team directly via WhatsApp for a quick response.'}</div>
+                            <div style={{ background: '#18181B', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--color-border-subtle)' }}>
+                                <div style={{ color: 'var(--color-text-main)', fontWeight: 600, marginBottom: '0.25rem' }}>{language === 'ar' ? 'استفسارات فنية أو مبيعات؟' : 'Technical or Sales inquiries?'}</div>
+                                <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>{language === 'ar' ? 'تحدث مع فريقنا مباشرة عبر الواتساب للحصول على استجابة سريعة.' : 'Chat with our team directly via WhatsApp for a quick response.'}</div>
                             </div>
 
                             <a

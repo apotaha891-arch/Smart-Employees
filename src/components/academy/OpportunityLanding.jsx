@@ -198,7 +198,7 @@ const OpportunityLanding = () => {
 
         return (
             <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }} className="animate-fade-in">
-                <div style={{ background: '#111827', width: '100%', maxWidth: '550px', borderRadius: '40px', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '3rem', position: 'relative', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
+                <div style={{ background: 'var(--color-bg-surface)', width: '100%', maxWidth: '550px', borderRadius: '40px', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '3rem', position: 'relative', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
                     <button onClick={() => setShowExitPopup(false)} style={{ position: 'absolute', top: '20px', left: isArabic ? 'auto' : '20px', right: isArabic ? '20px' : 'auto', background: 'transparent', border: 'none', color: '#4B5563', cursor: 'pointer' }}>
                         <ZapOff size={24} />
                     </button>
@@ -209,7 +209,7 @@ const OpportunityLanding = () => {
                                 <AlertCircle size={35} color="#8B5CF6" />
                             </div>
                             <h2 style={{ fontSize: '2.2rem', fontWeight: 950, marginBottom: '1.5rem' }}>{t('لحظة واحدة.. لا تضيع فرصة العمر!', 'Wait! Don\'t miss the opportunity of a lifetime!')}</h2>
-                            <p style={{ color: '#9CA3AF', marginBottom: '2.5rem', fontSize: '1.1rem' }}>{t('أنا مهتم جداً بمعرفة سبب تراجعك الآن، هل يمكننا مساعدتك في شيء معين؟', 'I\'m genuinely curious why you\'re hesitant. Can we help with something?')}</p>
+                            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>{t('أنا مهتم جداً بمعرفة سبب تراجعك الآن، هل يمكننا مساعدتك في شيء معين؟', 'I\'m genuinely curious why you\'re hesitant. Can we help with something?')}</p>
                             
                             <div style={{ display: 'grid', gap: '1rem' }}>
                                 {[
@@ -221,7 +221,7 @@ const OpportunityLanding = () => {
                                     <button 
                                         key={option.id}
                                         onClick={() => handleSurvey(option.id)}
-                                        style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', color: 'white', fontWeight: 700, cursor: 'pointer', textAlign: isArabic ? 'right' : 'left', transition: 'all 0.2s' }}
+                                        style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border-subtle)', borderRadius: '16px', color: 'var(--color-text-main)', fontWeight: 700, cursor: 'pointer', textAlign: isArabic ? 'right' : 'left', transition: 'all 0.2s' }}
                                         onMouseOver={e => e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'}
                                         onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                                     >
@@ -236,10 +236,10 @@ const OpportunityLanding = () => {
                         <div style={{ textAlign: 'center' }}>
                             <Star size={60} color="#F59E0B" style={{ marginBottom: '2rem', filter: 'drop-shadow(0 0 10px rgba(245, 158, 11, 0.3))' }} />
                             <h2 style={{ fontSize: '2.2rem', fontWeight: 950, marginBottom: '1.5rem' }}>{t('حسناً.. ماذا عن حساب مجاني؟', 'Okay.. how about a Free Account?')}</h2>
-                            <p style={{ color: '#9CA3AF', marginBottom: '3rem', fontSize: '1.1rem' }}>{t('لا تدع المال يكون عائقاً. سنمنحك حساباً أساسياً لتجربة المنصة واستكشاف الإمكانيات مجاناً.', 'Don\'t let money be an obstacle. We\'ll give you a basic account to test the platform and explore the possibilities for free.')}</p>
+                            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>{t('لا تدع المال يكون عائقاً. سنمنحك حساباً أساسياً لتجربة المنصة واستكشاف الإمكانيات مجاناً.', 'Don\'t let money be an obstacle. We\'ll give you a basic account to test the platform and explore the possibilities for free.')}</p>
                             <button 
                                 onClick={() => window.location.href = 'https://t.me/Noura24ShiftBot'}
-                                style={{ background: '#F59E0B', color: 'white', width: '100%', padding: '1.5rem', borderRadius: '20px', fontWeight: 950, fontSize: '1.2rem', border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(245, 158, 11, 0.3)' }}
+                                style={{ background: '#F59E0B', color: 'var(--color-text-main)', width: '100%', padding: '1.5rem', borderRadius: '20px', fontWeight: 950, fontSize: '1.2rem', border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(245, 158, 11, 0.3)' }}
                             >
                                 {t('ارسل لي رابط الحساب المجاني (تيليجرام)', 'Send me the Free Account Link (Telegram)')}
                             </button>
@@ -250,10 +250,10 @@ const OpportunityLanding = () => {
                         <div style={{ textAlign: 'center' }}>
                             <Handshake size={60} color="#10B981" style={{ marginBottom: '2rem' }} />
                             <h2 style={{ fontSize: '2.2rem', fontWeight: 950, marginBottom: '1.5rem' }}>{t('دعنا نتحدث بصراحة..', 'Let\'s talk frankly..')}</h2>
-                            <p style={{ color: '#9CA3AF', marginBottom: '3rem', fontSize: '1.1rem' }}>{t('أي مشروع جديد يثير تساؤلات. تحدث معي مباشرة عبر الواتساب للإجابة على أي استفسار تقني أو مهني.', 'Any new venture raises questions. Talk to me directly on WhatsApp to answer any technical or professional inquiries.')}</p>
+                            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>{t('أي مشروع جديد يثير تساؤلات. تحدث معي مباشرة عبر الواتساب للإجابة على أي استفسار تقني أو مهني.', 'Any new venture raises questions. Talk to me directly on WhatsApp to answer any technical or professional inquiries.')}</p>
                             <button 
                                 onClick={() => window.location.href = 'https://t.me/Noura24ShiftBot'}
-                                style={{ background: '#10B981', color: 'white', width: '100%', padding: '1.5rem', borderRadius: '20px', fontWeight: 950, fontSize: '1.2rem', border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)' }}
+                                style={{ background: '#10B981', color: 'var(--color-text-main)', width: '100%', padding: '1.5rem', borderRadius: '20px', fontWeight: 950, fontSize: '1.2rem', border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)' }}
                             >
                                 {t('تحدث مع نورة عبر تيليجرام', 'Talk to Noura on Telegram')}
                             </button>
@@ -268,7 +268,7 @@ const OpportunityLanding = () => {
         <div style={{ 
             position: 'sticky', top: 0, zIndex: 100, 
             background: 'linear-gradient(to right, #7C3AED, #DB2777)', 
-            color: 'white', padding: '0.75rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem',
+            color: 'var(--color-text-main)', padding: '0.75rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px',
             boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
         }}>
@@ -287,7 +287,7 @@ const OpportunityLanding = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
                 <div 
                     onClick={() => selectUserType('owner')}
-                    style={{ padding: '3rem 2rem', background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', cursor: 'pointer', transition: 'all 0.3s' }}
+                    style={{ padding: '3rem 2rem', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '32px', cursor: 'pointer', transition: 'all 0.3s' }}
                     onMouseOver={e => e.currentTarget.style.borderColor = '#8B5CF6'}
                     onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
                 >
@@ -297,7 +297,7 @@ const OpportunityLanding = () => {
                 </div>
                 <div 
                     onClick={() => selectUserType('agency')}
-                    style={{ padding: '3rem 2rem', background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', cursor: 'pointer', transition: 'all 0.3s' }}
+                    style={{ padding: '3rem 2rem', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '32px', cursor: 'pointer', transition: 'all 0.3s' }}
                     onMouseOver={e => e.currentTarget.style.borderColor = '#EC4899'}
                     onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
                 >
@@ -307,7 +307,7 @@ const OpportunityLanding = () => {
                 </div>
                 <div 
                     onClick={() => selectUserType('affiliate')}
-                    style={{ padding: '3rem 2rem', background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', cursor: 'pointer', transition: 'all 0.3s' }}
+                    style={{ padding: '3rem 2rem', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '32px', cursor: 'pointer', transition: 'all 0.3s' }}
                     onMouseOver={e => e.currentTarget.style.borderColor = '#10B981'}
                     onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
                 >
@@ -335,23 +335,23 @@ const OpportunityLanding = () => {
                             <h1 style={{ fontSize: 'clamp(1.8rem, 8vw, 3.2rem)', fontWeight: 950, lineHeight: 1.1, marginBottom: '2rem' }}>
                                 {t(`الرحلة من "التوهان التقني" لامتلاك أول وكالة ذكاء اصطناعي مخصصة لقطاعك.. في يومين وبـ ${price} ${currency} بس.`, `The journey from "Technical Confusion" to owning your first AI Agency specialized in your sector.. in 2 days and for only ${price}${currency}.`)}
                             </h1>
-                            <p style={{ fontSize: '1.4rem', color: '#9CA3AF', maxWidth: '850px', margin: '0 auto 3.5rem', lineHeight: 1.6, fontWeight: 500 }}>
+                            <p style={{ fontSize: '1.4rem', color: 'var(--color-text-secondary)', maxWidth: '850px', margin: '0 auto 3.5rem', lineHeight: 1.6, fontWeight: 500 }}>
                                 {t(`امتلاك أدوات خارقة تجعلك سابقاً لخطوات في الأمام هو السر وراء النجاح اليوم. انضم لنخبة شركاء التشغيل الذين بدأوا رحلة التحول الرقمي الحقيقي.`, `Owning superpower tools that put you steps ahead is the secret to success today. Join the elite operation partners who started their true digital transformation journey.`)}
                             </p>
 
                             {/* WHY US SECTION (NEW) */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginBottom: '6rem', textAlign: isArabic ? 'right' : 'left' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '2.5rem', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '2.5rem', borderRadius: '32px', border: '1px solid var(--color-border-subtle)' }}>
                                     <ZapOff size={32} color="#8B5CF6" style={{ marginBottom: '1.5rem' }} />
                                     <h4 style={{ fontSize: '1.3rem', fontWeight: 900, marginBottom: '1rem' }}>{t('مش محتاج كود', 'No Coding Needed')}</h4>
                                     <p style={{ color: '#6B7280', lineHeight: 1.5 }}>{t('لو بتعرف تستخدم واتساب، هتعرف تدير المنصة بالكامل بدون تدخل برمجيات معقدة.', 'If you can use WhatsApp, you can manage the platform fully without complex code.')}</p>
                                 </div>
-                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '2.5rem', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '2.5rem', borderRadius: '32px', border: '1px solid var(--color-border-subtle)' }}>
                                     <BarChart size={32} color="#EC4899" style={{ marginBottom: '1.5rem' }} />
                                     <h4 style={{ fontSize: '1.3rem', fontWeight: 900, marginBottom: '1rem' }}>{t('وفرنا عليك الوقت', 'We Saved Your Time')}</h4>
                                     <p style={{ color: '#6B7280', lineHeight: 1.5 }}>{t('جهزنا لك "قوالب جاهزة" لكل قطاع (عقارات، صالونات، مطاعم) تبدأ بها فوراً.', 'We prepared "ready templates" for every sector (Real Estate, Salons, Restaurants) to start immediately.')}</p>
                                 </div>
-                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '2.5rem', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '2.5rem', borderRadius: '32px', border: '1px solid var(--color-border-subtle)' }}>
                                     <Lock size={32} color="#10B981" style={{ marginBottom: '1.5rem' }} />
                                     <h4 style={{ fontSize: '1.3rem', fontWeight: 900, marginBottom: '1rem' }}>{t('التكلفة تحت سيطرتك', 'Costs Under Control')}</h4>
                                     <p style={{ color: '#6B7280', lineHeight: 1.5 }}>{t('أنت بتربط بمفاتيح Meta الخاصة بيك، يعني مفيش أي استغلال أو رسوم خفية من مبرمجين.', 'You link your own Meta keys, meaning no developer exploitation or hidden fees.')}</p>
@@ -360,14 +360,14 @@ const OpportunityLanding = () => {
 
                             {/* ROI CALCULATOR SECTION (NEW) */}
                             {userType === 'owner' && (
-                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '3rem', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '4rem', textAlign: 'right' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '3rem', borderRadius: '40px', border: '1px solid var(--color-border-subtle)', marginBottom: '4rem', textAlign: 'right' }}>
                                      <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <TrendingUp /> {t('حاسبة التوفير الذكية', 'Smart Savings Calculator')}
                                      </h3>
                                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
                                         <div>
                                             <label style={{ display: 'block', color: '#6B7280', fontSize: '0.9rem', marginBottom: '1rem' }}>{t('عدد موظفي خدمة العملاء الحاليين', 'Current CS Employees')}</label>
-                                            <input type="number" defaultValue={2} style={{ width: '100%', padding: '15px', borderRadius: '15px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '1.2rem', fontWeight: 900 }} id="staffCount" onChange={(e) => {
+                                            <input type="number" defaultValue={2} style={{ width: '100%', padding: '15px', borderRadius: '15px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-main)', fontSize: '1.2rem', fontWeight: 900 }} id="staffCount" onChange={(e) => {
                                                 const staff = e.target.value;
                                                 const savings = staff * 800; // Average salary saved
                                                 document.getElementById('savingsValue').innerText = `$${savings}`;
@@ -384,14 +384,14 @@ const OpportunityLanding = () => {
 
                             {/* AFFILIATE PROFIT MATH (NEW) */}
                             {userType === 'affiliate' && (
-                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '3rem', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '4rem', textAlign: 'right' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '3rem', borderRadius: '40px', border: '1px solid var(--color-border-subtle)', marginBottom: '4rem', textAlign: 'right' }}>
                                      <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <DollarSign size={24} /> {t('معادلة الربح للمسوقين', 'Affiliate Profit Math')}
                                      </h3>
                                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
                                         <div>
                                             <label style={{ display: 'block', color: '#6B7280', fontSize: '0.9rem', marginBottom: '1rem' }}>{t('عدد الشركات التي ستدعوهم شهرياً', 'Clients Invited Monthly')}</label>
-                                            <input type="number" defaultValue={10} style={{ width: '100%', padding: '15px', borderRadius: '15px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '1.2rem', fontWeight: 900 }} onChange={(e) => {
+                                            <input type="number" defaultValue={10} style={{ width: '100%', padding: '15px', borderRadius: '15px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-main)', fontSize: '1.2rem', fontWeight: 900 }} onChange={(e) => {
                                                 const count = e.target.value;
                                                 const earnings = count * 10;
                                                 document.getElementById('affEarnings').innerText = `$${earnings}`;
@@ -405,7 +405,7 @@ const OpportunityLanding = () => {
                                 </div>
                             )}
 
-                            <button onClick={scrollToForm} style={{ padding: '1.5rem 4rem', borderRadius: '50px', backgroundColor: '#8B5CF6', color: 'white', fontWeight: 950, fontSize: '1.4rem', border: 'none', cursor: 'pointer', boxShadow: '0 20px 40px rgba(139, 92, 246, 0.4)' }}>
+                            <button onClick={scrollToForm} style={{ padding: '1.5rem 4rem', borderRadius: '50px', backgroundColor: '#8B5CF6', color: 'var(--color-text-main)', fontWeight: 950, fontSize: '1.4rem', border: 'none', cursor: 'pointer', boxShadow: '0 20px 40px rgba(139, 92, 246, 0.4)' }}>
                                 {userType === 'affiliate' ? t('انضم لبرنامج العمولة مجاناً', 'Join Affiliate Program Free') : t('ابدأ كورس التدريب المجاني الآن', 'Start FREE Training Course Now')}
                             </button>
                         </div>
@@ -416,43 +416,43 @@ const OpportunityLanding = () => {
                         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                             <h2 style={{ fontSize: '2.5rem', fontWeight: 950, marginBottom: '1rem' }}>{t('تأهيل طلبك المجاني', 'Qualify Your FREE Access')}</h2>
                         </div>
-                        <form onSubmit={handleSubmitClassification} style={{ background: '#111827', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <form onSubmit={handleSubmitClassification} style={{ background: 'var(--color-bg-surface)', padding: '3rem', borderRadius: '24px', border: '1px solid var(--color-border-subtle)' }}>
                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('الاسم بالكامل', 'Full Name')}</label>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('الاسم بالكامل', 'Full Name')}</label>
                                     <div style={{ position: 'relative' }}>
                                         <User size={18} style={{ position: 'absolute', top: '14px', [isArabic ? 'right' : 'left']: '14px', color: '#4B5563' }} />
-                                        <input required type="text" placeholder={t("أحمد محمد", "John Doe")} value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} style={{ width: '100%', padding: '12px 42px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }} />
+                                        <input required type="text" placeholder={t("أحمد محمد", "John Doe")} value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} style={{ width: '100%', padding: '12px 42px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)' }} />
                                     </div>
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('رقم الواتساب', 'WhatsApp Number')}</label>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('رقم الواتساب', 'WhatsApp Number')}</label>
                                     <div style={{ position: 'relative' }}>
                                         <Phone size={18} style={{ position: 'absolute', top: '14px', [isArabic ? 'right' : 'left']: '14px', color: '#4B5563' }} />
-                                        <input required type="tel" placeholder="+966..." value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} style={{ width: '100%', padding: '12px 42px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }} />
+                                        <input required type="tel" placeholder="+966..." value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} style={{ width: '100%', padding: '12px 42px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)' }} />
                                     </div>
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('القطاع المستهدف', 'Target Sector')}</label>
-                                    <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} style={{ width: '100%', padding: '12px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }}>
-                                        <option value="" style={{ background: '#111827' }}>{t('-- اختر القطاع --', '-- Choose Sector --')}</option>
-                                        <option value="real_estate" style={{ background: '#111827' }}>{t('عقارات 🏠', 'Real Estate 🏠')}</option>
-                                        <option value="beauty" style={{ background: '#111827' }}>{t('تجميل وعناية 🌸', 'Beauty & Care 🌸')}</option>
-                                        <option value="restaurant" style={{ background: '#111827' }}>{t('مطاعم وضيافة 🍽', 'Restaurants & Hospitality 🍽')}</option>
-                                        <option value="retail_ecommerce" style={{ background: '#111827' }}>{t('تجزئة ومتاجر 🛍', 'Retail & E-commerce 🛍')}</option>
-                                        <option value="medical" style={{ background: '#111827' }}>{t('طبي وصحي 🩺', 'Medical & Health 🩺')}</option>
-                                        <option value="call_center" style={{ background: '#111827' }}>{t('خدمات عملاء وسكرتارية 🎧', 'Customer Service & Secretary 🎧')}</option>
-                                        <option value="telecom_it" style={{ background: '#111827' }}>{t('اتصالات وتقنية 📡', 'Telecom & IT 📡')}</option>
-                                        <option value="banking" style={{ background: '#111827' }}>{t('بنوك ومالية 🏦', 'Banking & Finance 🏦')}</option>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('القطاع المستهدف', 'Target Sector')}</label>
+                                    <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} style={{ width: '100%', padding: '12px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)' }}>
+                                        <option value="" style={{ background: 'var(--color-bg-surface)' }}>{t('-- اختر القطاع --', '-- Choose Sector --')}</option>
+                                        <option value="real_estate" style={{ background: 'var(--color-bg-surface)' }}>{t('عقارات 🏠', 'Real Estate 🏠')}</option>
+                                        <option value="beauty" style={{ background: 'var(--color-bg-surface)' }}>{t('تجميل وعناية 🌸', 'Beauty & Care 🌸')}</option>
+                                        <option value="restaurant" style={{ background: 'var(--color-bg-surface)' }}>{t('مطاعم وضيافة 🍽', 'Restaurants & Hospitality 🍽')}</option>
+                                        <option value="retail_ecommerce" style={{ background: 'var(--color-bg-surface)' }}>{t('تجزئة ومتاجر 🛍', 'Retail & E-commerce 🛍')}</option>
+                                        <option value="medical" style={{ background: 'var(--color-bg-surface)' }}>{t('طبي وصحي 🩺', 'Medical & Health 🩺')}</option>
+                                        <option value="call_center" style={{ background: 'var(--color-bg-surface)' }}>{t('خدمات عملاء وسكرتارية 🎧', 'Customer Service & Secretary 🎧')}</option>
+                                        <option value="telecom_it" style={{ background: 'var(--color-bg-surface)' }}>{t('اتصالات وتقنية 📡', 'Telecom & IT 📡')}</option>
+                                        <option value="banking" style={{ background: 'var(--color-bg-surface)' }}>{t('بنوك ومالية 🏦', 'Banking & Finance 🏦')}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('كم عميل محتمل في منطقتك؟', 'Potential leads in your area?')}</label>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('كم عميل محتمل في منطقتك؟', 'Potential leads in your area?')}</label>
                                     <div style={{ position: 'relative' }}>
                                         <Users size={18} style={{ position: 'absolute', top: '14px', [isArabic ? 'right' : 'left']: '14px', color: '#4B5563' }} />
-                                        <input required type="number" placeholder="50" value={formData.expected_leads || ''} onChange={e => setFormData({...formData, expected_leads: e.target.value})} style={{ width: '100%', padding: '12px 42px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }} />
+                                        <input required type="number" placeholder="50" value={formData.expected_leads || ''} onChange={e => setFormData({...formData, expected_leads: e.target.value})} style={{ width: '100%', padding: '12px 42px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)' }} />
                                     </div>
                                 </div>
                             </div>
@@ -467,7 +467,7 @@ const OpportunityLanding = () => {
                                         { id: 'social_media_skills', label: t('أمتلك مهارات التعامل مع وسائل التواصل الاجتماعي', 'I have social media skills') },
                                         { id: 'computer_skills', label: t('أجيد التعامل مع جهاز الكمبيوتر والإنترنت', 'I am proficient with computers and the internet') }
                                     ].map(item => (
-                                        <label key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '1.05rem', color: '#D1D5DB' }}>
+                                        <label key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '1.05rem', color: 'var(--color-text-main)' }}>
                                             <input 
                                                 type="checkbox" 
                                                 checked={formData[item.id]} 
@@ -484,13 +484,13 @@ const OpportunityLanding = () => {
                             </div>
 
                             <div style={{ marginBottom: '3rem' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('البريد الإلكتروني', 'Email Address')}</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 600 }}>{t('البريد الإلكتروني', 'Email Address')}</label>
                                 <div style={{ position: 'relative' }}>
                                     <Mail size={18} style={{ position: 'absolute', top: '14px', [isArabic ? 'right' : 'left']: '14px', color: '#4B5563' }} />
-                                    <input required type="email" placeholder="example@gmail.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '12px 42px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }} />
+                                    <input required type="email" placeholder="example@gmail.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '12px 42px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)' }} />
                                 </div>
                             </div>
-                            <button type="submit" disabled={loading} style={{ width: '100%', padding: '1.25rem', borderRadius: '16px', backgroundColor: '#8B5CF6', color: 'white', fontWeight: 900, fontSize: '1.2rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                            <button type="submit" disabled={loading} style={{ width: '100%', padding: '1.25rem', borderRadius: '16px', backgroundColor: '#8B5CF6', color: 'var(--color-text-main)', fontWeight: 900, fontSize: '1.2rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                                 {loading ? <div className="loading-spinner-sm"></div> : t('أنا مستعد لاستكشاف الفرصة', 'I am ready to explore the opportunity')}
                             </button>
                         </form>
@@ -502,7 +502,7 @@ const OpportunityLanding = () => {
                             <h2 style={{ fontSize: 'clamp(1.8rem, 7vw, 2.5rem)', fontWeight: 950, marginBottom: '1rem', color: '#A78BFA' }}>{t(config?.headline_ar || 'تم تجهيز خطتك!', config?.headline_en || 'Your plan is ready!')}</h2>
                         </div>
                         <div style={{ background: 'rgba(59, 130, 246, 0.05)', padding: 'clamp(1.5rem, 5vw, 3.5rem)', borderRadius: '40px', border: '1px solid rgba(59, 130, 246, 0.3)', textAlign: isArabic ? 'right' : 'left' }}>
-                            <h3 style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)', fontWeight: 950, marginBottom: '1.5rem', color: 'white' }}>{t(`بمجرد اشتراكك بـ ${price}${currency}، ستحصل على:`, `Once you subscribe for ${price}${currency}, you get:`)}</h3>
+                            <h3 style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)', fontWeight: 950, marginBottom: '1.5rem', color: 'var(--color-text-main)' }}>{t(`بمجرد اشتراكك بـ ${price}${currency}، ستحصل على:`, `Once you subscribe for ${price}${currency}, you get:`)}</h3>
                             
                             <ul style={{ listStyle: 'none', padding: 0, marginBottom: '3rem' }}>
                                 <li style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1.25rem', fontSize: '1.15rem' }}>
@@ -516,11 +516,11 @@ const OpportunityLanding = () => {
                                 </li>
                             </ul>
 
-                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '24px', marginBottom: '3rem', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '24px', marginBottom: '3rem', border: '1px dashed var(--color-border-subtle)' }}>
                                 <h4 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '1rem', color: '#60A5FA', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <Info size={20} /> {t('ليه 20 دولار؟', 'Why 20 Dollars?')}
                                 </h4>
-                                <p style={{ color: '#9CA3AF', lineHeight: 1.6, fontSize: '1rem' }}>
+                                <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, fontSize: '1rem' }}>
                                     {t(`هذا المبلغ هو قيمة اشتراكك في البنية التحتية للمنصة والحصول على الحقيبة التدريبية الكاملة. لا توجد عقود معقدة ولا رسوم إدارية مخفية. أنت بتبدأ بيزنس حقيقي بسعر "عزومة غداء".`, `This amount is the value of your subscription to the platform infrastructure and full training bag. No complex contracts or hidden fees. You are starting a real business for the price of a "lunch treat".`)}
                                 </p>
                             </div>
@@ -537,7 +537,7 @@ const OpportunityLanding = () => {
                                     </div>
                                 )}
 
-                                <button onClick={handleStartPayment} disabled={loading} style={{ width: '100%', maxWidth: '500px', padding: '1.5rem 4rem', borderRadius: '50px', backgroundColor: '#3B82F6', color: 'white', fontWeight: 950, fontSize: '1.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 15px 35px rgba(59, 130, 246, 0.4)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                                <button onClick={handleStartPayment} disabled={loading} style={{ width: '100%', maxWidth: '500px', padding: '1.5rem 4rem', borderRadius: '50px', backgroundColor: '#3B82F6', color: 'var(--color-text-main)', fontWeight: 950, fontSize: '1.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 15px 35px rgba(59, 130, 246, 0.4)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
                                     {loading ? <div className="loading-spinner-sm"></div> : t(`فعل حساب الممارسة الآن (${price}${currency})`, `Activate Practice Account Now (${price}${currency})`)}
                                     <ArrowRight size={24} />
                                 </button>
@@ -550,23 +550,23 @@ const OpportunityLanding = () => {
                     </div>
                 )}
                 {/* FAQ SECTION (NEW) */}
-                <div style={{ marginTop: '8rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '6rem' }}>
+                <div style={{ marginTop: '8rem', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '6rem' }}>
                     <h2 style={{ fontSize: '2.5rem', fontWeight: 950, textAlign: 'center', marginBottom: '4rem' }}>{t('الأسئلة الشائعة', 'Frequently Asked Questions')}</h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem', textAlign: isArabic ? 'right' : 'left' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.01)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1rem', color: 'white' }}>{t('هل الموضوع محتاج وقت طويل؟', 'Does it take a long time?')}</h4>
+                        <div style={{ background: 'rgba(255,255,255,0.01)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--color-border-subtle)' }}>
+                            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--color-text-main)' }}>{t('هل الموضوع محتاج وقت طويل؟', 'Does it take a long time?')}</h4>
                             <p style={{ color: '#6B7280', lineHeight: 1.6 }}>{t('يومين كفاية جداً تفهم كل حاجة وتبدأ الإطلاق الحقيقي، حتى لو عندك دوام كامل.', 'Two days are plenty to understand everything and start the real launch, even if you have a full-time job.')}</p>
                         </div>
-                        <div style={{ background: 'rgba(255,255,255,0.01)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1rem', color: 'white' }}>{t('أنا مش تقني، هعرف أتعامل؟', 'I\'m not technical, can I handle it?')}</h4>
+                        <div style={{ background: 'rgba(255,255,255,0.01)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--color-border-subtle)' }}>
+                            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--color-text-main)' }}>{t('أنا مش تقني، هعرف أتعامل؟', 'I\'m not technical, can I handle it?')}</h4>
                             <p style={{ color: '#6B7280', lineHeight: 1.6 }}>{t('السيستم معمول عشان "الناس الطبيعية" مش المبرمجين. كل حاجة بالسحب والإفلات والتعليمات بالعربي الواضح.', 'The system is made for "normal people", not programmers. Everything is drag-and-drop with clear instructions.')}</p>
                         </div>
-                        <div style={{ background: 'rgba(255,255,255,0.01)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1rem', color: 'white' }}>{t('إزاي ببدأ أجيب عملاء؟', 'How do I start getting clients?')}</h4>
+                        <div style={{ background: 'rgba(255,255,255,0.01)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--color-border-subtle)' }}>
+                            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--color-text-main)' }}>{t('إزاي ببدأ أجيب عملاء؟', 'How do I start getting clients?')}</h4>
                             <p style={{ color: '#6B7280', lineHeight: 1.6 }}>{t('الحقيبة التدريبية فيها "خريطة طريق" كاملة بتعلمك إزاي تقفل أول عميل ليك في أول 48 ساعة بخطوات عملية.', 'The training bag contains a full "roadmap" teaching you how to close your first client in the first 48 hours with practical steps.')}</p>
                         </div>
-                        <div style={{ background: 'rgba(255,255,255,0.01)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1rem', color: 'white' }}>{t(`هل الـ ${price}${currency} دي كل حاجة؟`, `Is the ${price}${currency} all I pay?`)}</h4>
+                        <div style={{ background: 'rgba(255,255,255,0.01)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--color-border-subtle)' }}>
+                            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--color-text-main)' }}>{t(`هل الـ ${price}${currency} دي كل حاجة؟`, `Is the ${price}${currency} all I pay?`)}</h4>
                             <p style={{ color: '#6B7280', lineHeight: 1.6 }}>{t('الـ 20 هي قيمة البنية التحتية والتدريب وبداية الرصيد. بعد كدة بتشحن رصيد فقط حسب استهلاك عملاء وكالتك.', 'The $20 is the value of infrastructure, training, and initial credit. After that, you just top up credit based on your agency clients\' consumption.')}</p>
                         </div>
                     </div>

@@ -118,15 +118,15 @@ const CustomRequest = () => {
                                 className="input-field"
                                 value={formData.preferred_language}
                                 onChange={(e) => setFormData({ ...formData, preferred_language: e.target.value })}
-                                style={{ color: 'white', background: '#1F2937' }}
+                                style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}
                             >
-                                <option value="ar" style={{ color: 'white', background: '#1F2937' }}>
+                                <option value="ar" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>
                                     {isArabic ? 'العربية' : 'Arabic'}
                                 </option>
-                                <option value="en" style={{ color: 'white', background: '#1F2937' }}>
+                                <option value="en" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>
                                     {isArabic ? 'الإنجليزية' : 'English'}
                                 </option>
-                                <option value="both" style={{ color: 'white', background: '#1F2937' }}>
+                                <option value="both" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>
                                     {isArabic ? 'كلتا اللغتين' : 'Both Languages'}
                                 </option>
                             </select>
@@ -158,7 +158,7 @@ const CustomRequest = () => {
                         <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', color: '#A78BFA' }}>
                             {isArabic ? '📞 بيانات التواصل' : '📞 Contact Information'}
                         </h3>
-                        <p style={{ fontSize: '0.85rem', color: '#9CA3AF', marginBottom: '1rem' }}>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
                             {isArabic
                                 ? 'سيتواصل معك فريقنا عبر هذه البيانات لمناقشة تفاصيل طلبك'
                                 : 'Our team will contact you via these details to discuss your request.'}

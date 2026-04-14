@@ -30,7 +30,7 @@ const AcademyLayout = ({ children, title = "Smart Agent Academy" }) => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                borderBottom: '1px solid var(--color-border-subtle)',
                 backgroundColor: 'rgba(5,5,5,0.8)',
                 backdropFilter: 'blur(10px)',
                 position: 'sticky',
@@ -59,8 +59,8 @@ const AcademyLayout = ({ children, title = "Smart Agent Academy" }) => {
                         onClick={() => toggleLanguage()}
                         style={{
                             background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            color: 'white',
+                            border: '1px solid var(--color-border-subtle)',
+                            color: 'var(--color-text-main)',
                             padding: '6px 12px',
                             borderRadius: '8px',
                             cursor: 'pointer',
@@ -81,7 +81,7 @@ const AcademyLayout = ({ children, title = "Smart Agent Academy" }) => {
                             style={{ 
                                 background: 'transparent', 
                                 border: 'none', 
-                                color: '#9CA3AF', 
+                                color: 'var(--color-text-secondary)', 
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -110,7 +110,7 @@ const AcademyLayout = ({ children, title = "Smart Agent Academy" }) => {
             <footer style={{
                 padding: '4rem 2rem',
                 textAlign: 'center',
-                borderTop: '1px solid rgba(255,255,255,0.05)',
+                borderTop: '1px solid var(--color-border-subtle)',
                 marginTop: '4rem'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#4B5563', fontSize: '0.85rem' }}>

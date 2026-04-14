@@ -74,7 +74,7 @@ export const AgencyRoute = ({ children }) => {
         return (
             <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: '100vh', background: '#09090b', color: 'white',
+                height: '100vh', background: 'var(--color-bg-base)', color: 'var(--color-text-main)',
                 flexDirection: 'column', gap: '1rem'
             }}>
                 <div style={{
@@ -84,7 +84,7 @@ export const AgencyRoute = ({ children }) => {
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                 }} />
-                <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>Verifying agency access...</p>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>Verifying agency access...</p>
             </div>
         );
     }

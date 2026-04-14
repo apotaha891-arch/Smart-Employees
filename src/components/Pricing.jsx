@@ -415,19 +415,19 @@ const Pricing = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '1rem',
-                                borderBottom: '1px solid rgba(255,255,255,0.05)'
+                                borderBottom: '1px solid var(--color-border-subtle)'
                             }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #8B5CF6, #3B82F6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #8B5CF6, #3B82F6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-main)' }}>
                                     <Star size={20} />
                                 </div>
                                 <div style={{ textAlign: language === 'ar' ? 'right' : 'left', flex: 1 }}>
-                                    <div style={{ color: 'white', fontWeight: 700, fontSize: '1rem' }}>{language === 'ar' ? 'سارة - موظفة المبيعات' : 'Sarah - Sales Agent'}</div>
+                                    <div style={{ color: 'var(--color-text-main)', fontWeight: 700, fontSize: '1rem' }}>{language === 'ar' ? 'سارة - موظفة المبيعات' : 'Sarah - Sales Agent'}</div>
                                     <div style={{ color: '#10B981', fontSize: '0.8rem', fontWeight: 600 }}>{language === 'ar' ? 'متصل الآن (3:14 ص)' : 'Online Now (3:14 AM)'}</div>
                                 </div>
                             </div>
 
                             {/* Chat Messages */}
-                            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#09090B', minHeight: '300px' }}>
+                            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--color-bg-base)', minHeight: '300px' }}>
                                 {visibleMessages.map((msg) => (
                                     <div key={msg.id} className="animate-fade-in" style={{
                                         alignSelf: msg.role === 'user' ? 'flex-start' : 'flex-end',
@@ -623,14 +623,14 @@ const Pricing = () => {
                                     left: '50%',
                                     transform: 'translateX(-50%)',
                                     background: plan.color,
-                                    color: 'white',
+                                    color: 'var(--color-text-main)',
                                     padding: '0.5rem 1.5rem',
                                     borderRadius: '20px',
                                     fontWeight: 800,
                                     fontSize: '0.9rem',
                                     boxShadow: `0 10px 20px rgba(${hexToRgb(plan.color)}, 0.3)`,
                                     whiteSpace: 'nowrap',
-                                    border: '1px solid rgba(255,255,255,0.2)'
+                                    border: '1px solid var(--color-border-subtle)'
                                 }}>
                                     {t('mostPopular')}
                                 </div>
@@ -762,7 +762,7 @@ const Pricing = () => {
                     {/* Add-on 1000 Points */}
                     <div style={{
                         background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        border: '1px solid var(--color-border-subtle)',
                         borderRadius: '24px',
                         padding: '2rem',
                         display: 'flex',
@@ -775,7 +775,7 @@ const Pricing = () => {
                     >
                         <div>
                             <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.25rem' }}>{addons[0].credits.toLocaleString()} {t('points')}</div>
-                            <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'رصيد محادثات إضافي' : 'Extra conversation credits'}</div>
+                            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>{language === 'ar' ? 'رصيد محادثات إضافي' : 'Extra conversation credits'}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                             <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-text-main)' }}>${addons[0].price}</div>
@@ -784,7 +784,7 @@ const Pricing = () => {
                                 disabled={loadingPlan === addons[0].id}
                                 style={{
                                     background: '#8B5CF6',
-                                    color: 'white',
+                                    color: 'var(--color-text-main)',
                                     border: 'none',
                                     padding: '0.5rem 1.25rem',
                                     borderRadius: '10px',
@@ -815,7 +815,7 @@ const Pricing = () => {
                         position: 'relative',
                         overflow: 'hidden'
                     }}>
-                        <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#EF4444', color: 'white', padding: '2px 40px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900 }}>
+                        <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#EF4444', color: 'var(--color-text-main)', padding: '2px 40px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900 }}>
                             SAVE 30%
                         </div>
                         <div>
@@ -829,7 +829,7 @@ const Pricing = () => {
                                 disabled={loadingPlan === addons[1].id}
                                 style={{
                                     background: 'var(--color-accent)',
-                                    color: 'white',
+                                    color: 'var(--color-text-main)',
                                     border: 'none',
                                     padding: '0.5rem 1.25rem',
                                     borderRadius: '10px',

@@ -106,7 +106,7 @@ const MarketingMastery = () => {
                         fontWeight: 800, 
                         marginBottom: '1rem', 
                         lineHeight: 1.2,
-                        color: 'white'
+                        color: 'var(--color-text-main)'
                     }}>
                         {t('كيف تبني وتوسّع وكالة ', 'Scale Your ')}
                         <span style={{ color: '#8B5CF6' }}>
@@ -116,7 +116,7 @@ const MarketingMastery = () => {
                     
                     <p style={{ 
                         fontSize: fontSize.body, 
-                        color: '#9CA3AF', 
+                        color: 'var(--color-text-secondary)', 
                         maxWidth: '700px', 
                         margin: '0 auto', 
                         lineHeight: 1.6
@@ -133,14 +133,14 @@ const MarketingMastery = () => {
                                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px' }}>
                                     {step.icon}
                                 </div>
-                                <h3 style={{ fontSize: fontSize.h2, fontWeight: 700, color: 'white' }}>
+                                <h3 style={{ fontSize: fontSize.h2, fontWeight: 700, color: 'var(--color-text-main)' }}>
                                     {step.title}
                                 </h3>
                             </div>
-                            <p style={{ fontSize: fontSize.small, color: '#9CA3AF', marginBottom: '1.5rem' }}>{step.description}</p>
+                            <p style={{ fontSize: fontSize.small, color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>{step.description}</p>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
                                 {step.bullets.map((bullet, j) => (
-                                    <div key={j} style={{ display: 'flex', gap: '10px', fontSize: fontSize.small, color: '#D1D5DB', lineHeight: 1.4 }}>
+                                    <div key={j} style={{ display: 'flex', gap: '10px', fontSize: fontSize.small, color: 'var(--color-text-main)', lineHeight: 1.4 }}>
                                         <CheckCircle2 size={16} color="#10B981" style={{ flexShrink: 0, marginTop: '2px' }} />
                                         <span>{bullet}</span>
                                     </div>
@@ -168,7 +168,7 @@ const MarketingMastery = () => {
 
                 {/* Sales Tools & Hacks */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', marginBottom: '4rem' }}>
-                    <h2 style={{ fontSize: fontSize.h2, fontWeight: 800, color: 'white', textAlign: 'center' }}>
+                    <h2 style={{ fontSize: fontSize.h2, fontWeight: 800, color: 'var(--color-text-main)', textAlign: 'center' }}>
                         {t('أدوات الإغلاق السريع', 'Rapid Closing Tools')}
                     </h2>
                     <div className="grid grid-2" style={{ gap: '2rem' }}>
@@ -178,14 +178,14 @@ const MarketingMastery = () => {
                                 background: i === 0 ? 'rgba(139, 92, 246, 0.05)' : 'rgba(255,255,255,0.02)',
                                 border: i === 0 ? '1px solid rgba(139, 92, 246, 0.2)' : '1px solid rgba(255,255,255,0.05)'
                             }}>
-                                <h4 style={{ fontSize: fontSize.h3, fontWeight: 700, color: 'white', marginBottom: '1rem' }}>{tool.title}</h4>
-                                <p style={{ fontSize: fontSize.body, color: '#9CA3AF', lineHeight: 1.6, marginBottom: '2rem' }}>{tool.content}</p>
+                                <h4 style={{ fontSize: fontSize.h3, fontWeight: 700, color: 'var(--color-text-main)', marginBottom: '1rem' }}>{tool.title}</h4>
+                                <p style={{ fontSize: fontSize.body, color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>{tool.content}</p>
                                 <button 
                                     onClick={() => navigate(tool.ctaLink)}
                                     style={{ 
                                         background: 'transparent', 
-                                        border: '1px solid rgba(255,255,255,0.1)', 
-                                        color: '#E5E7EB', 
+                                        border: '1px solid var(--color-border-subtle)', 
+                                        color: 'var(--color-text-main)', 
                                         padding: '10px 20px', 
                                         borderRadius: '10px', 
                                         fontSize: '0.85rem',
@@ -208,13 +208,13 @@ const MarketingMastery = () => {
                     padding: '3.5rem 2rem', 
                     borderRadius: '40px', 
                     background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)', 
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid var(--color-border-subtle)',
                     textAlign: 'center'
                 }}>
-                    <h3 style={{ fontSize: fontSize.h2, fontWeight: 800, marginBottom: '0.75rem', color: 'white' }}>
+                    <h3 style={{ fontSize: fontSize.h2, fontWeight: 800, marginBottom: '0.75rem', color: 'var(--color-text-main)' }}>
                         {t('هل أنت جاهز للبدء؟', 'Ready to Start Scaling?')}
                     </h3>
-                    <p style={{ color: '#9CA3AF', marginBottom: '2.5rem', fontSize: fontSize.body, maxWidth: '600px', margin: '0 auto 2.5rem' }}>
+                    <p style={{ color: 'var(--color-text-secondary)', marginBottom: '2.5rem', fontSize: fontSize.body, maxWidth: '600px', margin: '0 auto 2.5rem' }}>
                         {t('لا تنتظر الكمال. ابدأ بأول عميل اليوم، طبق استراتيجية العرض الذهبي، وشاهد النتائج بنفسك.', 'Don\'t wait for perfection. Start with your first client today, apply the Golden Demo, and see the results.')}
                     </p>
                     <button 
@@ -228,7 +228,7 @@ const MarketingMastery = () => {
                 </div>
 
                 {/* Footer Badges */}
-                <div style={{ marginTop: '5rem', paddingTop: '3rem', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                <div style={{ marginTop: '5rem', paddingTop: '3rem', borderTop: '1px solid var(--color-border-subtle)', textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', fontWeight: 700, color: '#4B5563' }}>
                             <ShieldCheck size={16} color="#10B981" /> {t('محتوى حصري للشركاء', 'Partner Exclusive Content')}

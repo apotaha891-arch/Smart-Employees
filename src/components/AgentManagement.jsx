@@ -289,7 +289,7 @@ const AgentManagement = () => {
                     padding: '1.5rem',
                     background: 'rgba(255,255,255,0.03)',
                     borderRadius: '12px',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid var(--color-border-subtle)',
                 }}>
                     {templates.length === 0 ? (
                         <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem' }}>
@@ -303,7 +303,7 @@ const AgentManagement = () => {
                                 style={{
                                     padding: '1.5rem',
                                     background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    border: '1px solid var(--color-border-subtle)',
                                     borderRadius: '12px',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
@@ -348,7 +348,7 @@ const AgentManagement = () => {
                         padding: '3rem',
                         background: 'rgba(255,255,255,0.03)',
                         borderRadius: '12px',
-                        border: '2px dashed rgba(255,255,255,0.1)',
+                        border: '2px dashed var(--color-border-subtle)',
                     }}>
                         <h3 style={{ margin: 0, marginBottom: '0.5rem', fontSize: '1.1rem' }}>
                             No digital employees hired yet
@@ -615,10 +615,10 @@ const AgentManagement = () => {
                 }}>
                     <div className="card animate-fade-in" style={{
                         maxWidth: '500px', width: '100%',
-                        background: '#18181B', border: '1px solid rgba(255,255,255,0.1)',
+                        background: '#18181B', border: '1px solid var(--color-border-subtle)',
                         padding: '2rem', borderRadius: '16px'
                     }}>
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--color-text-main)' }}>
                             {t('telegramModalTitle')}
                         </h3>
                         <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
@@ -635,7 +635,7 @@ const AgentManagement = () => {
                                 placeholder={t('telegramPlaceholder')}
                                 value={telegramToken}
                                 onChange={(e) => setTelegramToken(e.target.value)}
-                                style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                                style={{ background: '#27272A', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)' }}
                             />
                         </div>
 
@@ -645,8 +645,8 @@ const AgentManagement = () => {
                                 className="btn"
                                 style={{
                                     background: 'transparent',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    color: 'white',
+                                    border: '1px solid var(--color-border-subtle)',
+                                    color: 'var(--color-text-main)',
                                     padding: '0.75rem 1.5rem',
                                 }}
                             >
@@ -658,7 +658,7 @@ const AgentManagement = () => {
                                 className="btn"
                                 style={{
                                     background: '#0088cc',
-                                    color: 'white',
+                                    color: 'var(--color-text-main)',
                                     border: 'none',
                                     padding: '0.75rem 1.5rem',
                                     display: 'flex',
@@ -685,10 +685,10 @@ const AgentManagement = () => {
                 }}>
                     <div className="card animate-fade-in" style={{
                         maxWidth: '500px', width: '100%',
-                        background: '#18181B', border: '1px solid rgba(255,255,255,0.1)',
+                        background: '#18181B', border: '1px solid var(--color-border-subtle)',
                         padding: '2rem', borderRadius: '16px'
                     }}>
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--color-text-main)' }}>
                             {t('whatsappModalTitle')}
                         </h3>
                         <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
@@ -703,7 +703,7 @@ const AgentManagement = () => {
                                 placeholder={t('whatsappTokenPlaceholder')}
                                 value={whatsappSettings.token}
                                 onChange={(e) => setWhatsappSettings({ ...whatsappSettings, token: e.target.value })}
-                                style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                                style={{ background: '#27272A', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)' }}
                             />
                         </div>
 
@@ -715,7 +715,7 @@ const AgentManagement = () => {
                                 placeholder={t('whatsappPhoneIdPlaceholder')}
                                 value={whatsappSettings.phoneNumberId}
                                 onChange={(e) => setWhatsappSettings({ ...whatsappSettings, phoneNumberId: e.target.value })}
-                                style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                                style={{ background: '#27272A', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)' }}
                             />
                         </div>
 
@@ -727,7 +727,7 @@ const AgentManagement = () => {
                                 placeholder={t('whatsappVerifyTokenPlaceholder')}
                                 value={whatsappSettings.verifyToken}
                                 onChange={(e) => setWhatsappSettings({ ...whatsappSettings, verifyToken: e.target.value })}
-                                style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                                style={{ background: '#27272A', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)' }}
                             />
                         </div>
 
@@ -737,8 +737,8 @@ const AgentManagement = () => {
                                 className="btn"
                                 style={{
                                     background: 'transparent',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    color: 'white',
+                                    border: '1px solid var(--color-border-subtle)',
+                                    color: 'var(--color-text-main)',
                                     padding: '0.75rem 1.5rem',
                                 }}
                             >
@@ -750,7 +750,7 @@ const AgentManagement = () => {
                                 className="btn"
                                 style={{
                                     background: '#22c55e',
-                                    color: 'white',
+                                    color: 'var(--color-text-main)',
                                     border: 'none',
                                     padding: '0.75rem 1.5rem',
                                     display: 'flex',
@@ -777,7 +777,7 @@ const AgentManagement = () => {
                 }}>
                     <div className="card animate-fade-in" style={{
                         maxWidth: '700px', width: '100%', height: '80vh',
-                        background: '#111827', border: '1px solid rgba(139, 92, 246, 0.3)',
+                        background: 'var(--color-bg-surface)', border: '1px solid rgba(139, 92, 246, 0.3)',
                         padding: 0, borderRadius: '20px', display: 'flex', flexDirection: 'column',
                         overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
                     }}>
@@ -785,13 +785,13 @@ const AgentManagement = () => {
                         <div style={{
                             padding: '1.25rem 1.5rem',
                             background: 'rgba(139, 92, 246, 0.1)',
-                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            borderBottom: '1px solid var(--color-border-subtle)',
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                 <div style={{ fontSize: '1.5rem' }}>{commandingAgent.icon}</div>
                                 <div>
-                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-text-main)' }}>
                                         {commandingAgent.name || commandingAgent.customName}
                                     </h3>
                                     <div style={{ fontSize: '0.75rem', color: '#A78BFA', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -801,7 +801,7 @@ const AgentManagement = () => {
                             </div>
                             <button 
                                 onClick={() => setShowCommandModal(false)}
-                                style={{ background: 'transparent', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}
+                                style={{ background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}
                             >
                                 <X size={20} />
                             </button>
@@ -818,8 +818,8 @@ const AgentManagement = () => {
                                     maxWidth: '85%',
                                     padding: '0.85rem 1.1rem',
                                     borderRadius: '14px',
-                                    background: msg.role === 'user' ? '#8B5CF6' : '#1F2937',
-                                    color: 'white',
+                                    background: msg.role === 'user' ? '#8B5CF6' : 'var(--color-bg-input)',
+                                    color: 'var(--color-text-main)',
                                     fontSize: '0.92rem',
                                     lineHeight: 1.5,
                                     border: msg.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.05)'
@@ -846,7 +846,7 @@ const AgentManagement = () => {
                                     <button 
                                         key={i}
                                         onClick={() => { setCommandInput(hint); }}
-                                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '5px 12px', fontSize: '0.75rem', color: '#D1D5DB', cursor: 'pointer' }}
+                                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border-subtle)', borderRadius: '20px', padding: '5px 12px', fontSize: '0.75rem', color: 'var(--color-text-main)', cursor: 'pointer' }}
                                     >
                                         {hint}
                                     </button>
@@ -858,14 +858,14 @@ const AgentManagement = () => {
                         <div style={{
                             padding: '1.25rem 1.5rem',
                             background: '#0F172A',
-                            borderTop: '1px solid rgba(255,255,255,0.05)',
+                            borderTop: '1px solid var(--color-border-subtle)',
                             display: 'flex', gap: '10px'
                         }}>
                             <input 
                                 type="text"
                                 style={{
-                                    flex: 1, background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: '10px', padding: '0.75rem 1rem', color: 'white', fontSize: '0.9rem'
+                                    flex: 1, background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)',
+                                    borderRadius: '10px', padding: '0.75rem 1rem', color: 'var(--color-text-main)', fontSize: '0.9rem'
                                 }}
                                 placeholder={isEnglish ? "Give a command to your employee..." : "أعطِ أمراً لموظفك الرقمي..."}
                                 value={commandInput}
@@ -877,7 +877,7 @@ const AgentManagement = () => {
                                 disabled={isCommandProcessing || !commandInput.trim()}
                                 style={{
                                     width: '45px', height: '45px', borderRadius: '10px',
-                                    background: '#8B5CF6', color: 'white', display: 'flex',
+                                    background: '#8B5CF6', color: 'var(--color-text-main)', display: 'flex',
                                     alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                                     border: 'none', opacity: (isCommandProcessing || !commandInput.trim()) ? 0.5 : 1
                                 }}

@@ -250,7 +250,7 @@ const IntegrationsAddons = () => {
 
                 <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '1rem' }}>
                         <Zap size={24} color="#F59E0B" />
                         <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>
                             {isArabic ? 'الإضافات وباقات المنصات المتاحة' : 'Available Add-ons & Platforms'}
@@ -329,14 +329,14 @@ const IntegrationsAddons = () => {
 
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', width: 'fit-content' }}>
                                             <CreditCard size={16} color="#A1A1AA" />
-                                            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>{priceFormat}</span>
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text-main)' }}>{priceFormat}</span>
                                         </div>
                                     </div>
 
                                     {/* Configuration Inputs */}
                                     {isActive && addon.type === 'telegram' && (
-                                        <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }} onClick={(e) => e.stopPropagation()}>
-                                            <label className="label" style={{ fontSize: '0.9rem', color: 'white', marginBottom: '0.5rem', display: 'block' }}>
+                                        <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '1.5rem' }} onClick={(e) => e.stopPropagation()}>
+                                            <label className="label" style={{ fontSize: '0.9rem', color: 'var(--color-text-main)', marginBottom: '0.5rem', display: 'block' }}>
                                                 {isArabic ? 'رمز البوت (Bot Token)' : 'Bot Token'}
                                             </label>
                                             <input
@@ -345,7 +345,7 @@ const IntegrationsAddons = () => {
                                                 value={telegramToken}
                                                 onChange={(e) => setTelegramToken(e.target.value)}
                                                 placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-                                                style={{ background: '#27272A', border: '1px solid rgba(255,255,255,0.1)', width: '100%' }}
+                                                style={{ background: '#27272A', border: '1px solid var(--color-border-subtle)', width: '100%' }}
                                                 required
                                             />
                                             <p style={{ color: '#A1A1AA', fontSize: '0.8rem', marginTop: '0.5rem' }}>
@@ -355,9 +355,9 @@ const IntegrationsAddons = () => {
                                     )}
 
                                     {isActive && addon.type === 'whatsapp' && (
-                                        <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }} onClick={(e) => e.stopPropagation()}>
+                                        <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '1.5rem' }} onClick={(e) => e.stopPropagation()}>
                                             <div style={{ marginBottom: '1rem' }}>
-                                                <label className="label" style={{ fontSize: '0.9rem', color: 'white', marginBottom: '0.5rem', display: 'block' }}>
+                                                <label className="label" style={{ fontSize: '0.9rem', color: 'var(--color-text-main)', marginBottom: '0.5rem', display: 'block' }}>
                                                     {isArabic ? 'رقم الهاتف (Phone Number ID)' : 'Phone Number ID'}
                                                 </label>
                                                 <input
@@ -366,12 +366,12 @@ const IntegrationsAddons = () => {
                                                     value={whatsappSettings.phoneNumberId}
                                                     onChange={(e) => setWhatsappSettings({ ...whatsappSettings, phoneNumberId: e.target.value })}
                                                     placeholder="101234567890"
-                                                    style={{ background: '#27272A', border: '1px solid rgba(255,255,255,0.1)', width: '100%' }}
+                                                    style={{ background: '#27272A', border: '1px solid var(--color-border-subtle)', width: '100%' }}
                                                     required
                                                 />
                                             </div>
                                             <div>
-                                                <label className="label" style={{ fontSize: '0.9rem', color: 'white', marginBottom: '0.5rem', display: 'block' }}>
+                                                <label className="label" style={{ fontSize: '0.9rem', color: 'var(--color-text-main)', marginBottom: '0.5rem', display: 'block' }}>
                                                     {isArabic ? 'رمز الوصول الدائم (Access Token)' : 'Access Token'}
                                                 </label>
                                                 <input
@@ -380,7 +380,7 @@ const IntegrationsAddons = () => {
                                                     value={whatsappSettings.token}
                                                     onChange={(e) => setWhatsappSettings({ ...whatsappSettings, token: e.target.value })}
                                                     placeholder="EAABw..."
-                                                    style={{ background: '#27272A', border: '1px solid rgba(255,255,255,0.1)', width: '100%' }}
+                                                    style={{ background: '#27272A', border: '1px solid var(--color-border-subtle)', width: '100%' }}
                                                     required
                                                 />
                                             </div>
@@ -412,7 +412,7 @@ const IntegrationsAddons = () => {
                                 <div style={{ width: '48px', height: '48px', background: '#8B5CF6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <Settings size={24} color="white" />
                                 </div>
-                                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'white' }}>
+                                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'var(--color-text-main)' }}>
                                     {isArabic ? 'هل تحتاج إلى إضافة مخصصة؟' : 'Need a Custom Integration?'}
                                 </h3>
                             </div>
@@ -446,7 +446,7 @@ const IntegrationsAddons = () => {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '2rem' }}>
                         <button
                             onClick={() => navigate('/dashboard')}
                             className="btn"
@@ -454,7 +454,7 @@ const IntegrationsAddons = () => {
                             style={{
                                 background: 'transparent',
                                 color: '#A1A1AA',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                border: '1px solid var(--color-border-subtle)',
                                 padding: '1rem 2rem',
                                 borderRadius: '14px',
                                 fontWeight: 700,
@@ -506,7 +506,7 @@ const IntegrationsAddons = () => {
                 }}>
                     <div className="card animate-fade-in" style={{
                         maxWidth: '500px', width: '100%',
-                        background: '#18181B', border: '1px solid rgba(255,255,255,0.1)',
+                        background: '#18181B', border: '1px solid var(--color-border-subtle)',
                         padding: '2rem', position: 'relative'
                     }}>
                         <button
@@ -516,7 +516,7 @@ const IntegrationsAddons = () => {
                             <X size={24} />
                         </button>
 
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--color-text-main)' }}>
                             {isArabic ? 'طلب إضافة مخصصة' : 'Custom Request'}
                         </h3>
                         <p style={{ color: '#A1A1AA', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
@@ -543,7 +543,7 @@ const IntegrationsAddons = () => {
                                         className="input-field"
                                         value={customFormData.request_type}
                                         onChange={(e) => setCustomFormData({ ...customFormData, request_type: e.target.value })}
-                                        style={{ background: '#27272A', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                                        style={{ background: '#27272A', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)' }}
                                     >
                                         <option value="custom_integration">{isArabic ? 'ربط بنظام خارجي (ERP/CRM)' : 'External Integration (ERP/CRM)'}</option>
                                         <option value="mobile_app">{isArabic ? 'تطبيق جوال' : 'Mobile App'}</option>
@@ -560,7 +560,7 @@ const IntegrationsAddons = () => {
                                         placeholder={isArabic ? 'اشرح بالتفصيل ما ترغب في إضافته أو ربطه...' : 'Describe your custom features or integration needs...'}
                                         value={customFormData.description}
                                         onChange={(e) => setCustomFormData({ ...customFormData, description: e.target.value })}
-                                        style={{ background: '#27272A', border: '1px solid rgba(255,255,255,0.1)' }}
+                                        style={{ background: '#27272A', border: '1px solid var(--color-border-subtle)' }}
                                         required
                                     ></textarea>
                                 </div>
@@ -568,7 +568,7 @@ const IntegrationsAddons = () => {
                                 <div>
                                     <label className="label">{isArabic ? 'طريقة التواصل المفضلة' : 'Preferred Contact Method'}</label>
                                     <div style={{ display: 'flex', gap: '1rem' }}>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E4E4E7', cursor: 'pointer' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-main)', cursor: 'pointer' }}>
                                             <input
                                                 type="radio"
                                                 name="contact"
@@ -578,7 +578,7 @@ const IntegrationsAddons = () => {
                                             />
                                             {isArabic ? 'البريد الإلكتروني' : 'Email'}
                                         </label>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E4E4E7', cursor: 'pointer' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-main)', cursor: 'pointer' }}>
                                             <input
                                                 type="radio"
                                                 name="contact"
@@ -596,7 +596,7 @@ const IntegrationsAddons = () => {
                                     className="btn btn-block"
                                     disabled={customFormStatus === 'loading'}
                                     style={{
-                                        background: '#8B5CF6', color: 'white', marginTop: '1rem',
+                                        background: '#8B5CF6', color: 'var(--color-text-main)', marginTop: '1rem',
                                         opacity: customFormStatus === 'loading' ? 0.7 : 1
                                     }}
                                 >

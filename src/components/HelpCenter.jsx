@@ -124,16 +124,16 @@ const HelpCenter = () => {
     });
 
     return (
-        <div style={{ padding: '1rem', maxWidth: '1000px', margin: '0 auto', color: 'white' }}>
+        <div style={{ padding: '1rem', maxWidth: '1000px', margin: '0 auto', color: 'var(--color-text-main)' }}>
             {/* Header Area */}
-            <div style={{ textAlign: 'center', marginBottom: '3rem', padding: '3rem 1rem', background: 'var(--shift-surface-card, rgba(255,255,255,0.03))', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '3rem', padding: '3rem 1rem', background: 'var(--shift-surface-card, rgba(255,255,255,0.03))', borderRadius: '24px', border: '1px solid var(--color-border-subtle)' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '20px', background: 'rgba(139, 92, 246, 0.2)', color: '#C4B5FD', marginBottom: '1.5rem' }}>
                     <HelpCircle size={32} />
                 </div>
                 <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem', background: 'linear-gradient(135deg, white, #C4B5FD)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                     {isArabic ? 'كيف يمكننا مساعدتك اليوم؟' : 'How can we help you today?'}
                 </h1>
-                <p style={{ color: '#9CA3AF', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
                     {isArabic
                         ? 'تصفح الإجابات الشاملة خطوة بخطوة لكل ما تحتاجه لإدارة وتدريب موظفيك الرقميين.'
                         : 'Browse comprehensive step-by-step answers for everything you need to manage your digital agents.'}
@@ -141,7 +141,7 @@ const HelpCenter = () => {
 
                 {/* Search Bar */}
                 <div style={{ position: 'relative', maxWidth: '500px', margin: '0 auto' }}>
-                    <Search size={20} style={{ position: 'absolute', left: isArabic ? 'auto' : '1rem', right: isArabic ? '1rem' : 'auto', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                    <Search size={20} style={{ position: 'absolute', left: isArabic ? 'auto' : '1rem', right: isArabic ? '1rem' : 'auto', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
                     <input
                         type="text"
                         placeholder={isArabic ? 'ابحث عن سؤال، مشكلة، أو أداة...' : 'Search for a question, issue, or tool...'}
@@ -150,10 +150,10 @@ const HelpCenter = () => {
                         style={{
                             width: '100%',
                             padding: '1rem 3rem',
-                            background: '#111827',
+                            background: 'var(--color-bg-surface)',
                             border: '1px solid rgba(139, 92, 246, 0.3)',
                             borderRadius: '99px',
-                            color: 'white',
+                            color: 'var(--color-text-main)',
                             fontSize: '1rem',
                             outline: 'none',
                             boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
@@ -183,7 +183,7 @@ const HelpCenter = () => {
                                     padding: '0.75rem 1.5rem',
                                     borderRadius: '99px',
                                     border: isActive ? '1px solid #8B5CF6' : '1px solid rgba(255,255,255,0.1)',
-                                    background: isActive ? 'rgba(139, 92, 246, 0.15)' : '#111827',
+                                    background: isActive ? 'rgba(139, 92, 246, 0.15)' : 'var(--color-bg-surface)',
                                     color: isActive ? '#C4B5FD' : '#9CA3AF',
                                     cursor: 'pointer',
                                     whiteSpace: 'nowrap',
@@ -201,7 +201,7 @@ const HelpCenter = () => {
                 {/* FAQ List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: '400px' }}>
                     {filteredFaqs.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '4rem', color: '#9CA3AF' }}>
+                        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-secondary)' }}>
                             <Search size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
                             <p>{isArabic ? 'لم نتمكن من العثور على أي نتائج لبحثك.' : 'We could not find any results for your search.'}</p>
                         </div>
@@ -210,8 +210,8 @@ const HelpCenter = () => {
                             <div
                                 key={faq.id}
                                 style={{
-                                    background: '#111827',
-                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    background: 'var(--color-bg-surface)',
+                                    border: '1px solid var(--color-border-subtle)',
                                     borderRadius: '16px',
                                     overflow: 'hidden',
                                     transition: 'all 0.3s'
@@ -227,7 +227,7 @@ const HelpCenter = () => {
                                         padding: '1.5rem',
                                         background: 'transparent',
                                         border: 'none',
-                                        color: 'white',
+                                        color: 'var(--color-text-main)',
                                         cursor: 'pointer',
                                         textAlign: isArabic ? 'right' : 'left'
                                     }}
@@ -256,7 +256,7 @@ const HelpCenter = () => {
                                             }}>
                                                 <div style={{
                                                     paddingTop: '1rem',
-                                                    borderTop: '1px solid rgba(255,255,255,0.05)'
+                                                    borderTop: '1px solid var(--color-border-subtle)'
                                                 }}>
                                                     {faq.answer}
                                                 </div>
@@ -285,7 +285,7 @@ const HelpCenter = () => {
                         <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>
                             {isArabic ? 'لم تجد إجابة لسؤالك؟' : 'Still need help?'}
                         </h3>
-                        <p style={{ color: '#9CA3AF', margin: 0 }}>
+                        <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>
                             {isArabic
                                 ? 'تحدث مع "المستشارة الذكية" لمنصة 24Shift، جاهزة لإرشادك والإجابة على استفساراتك فوراً.'
                                 : 'Talk to our "AI Consultant" for 24Shift, ready to guide you and answer your questions instantly.'}
@@ -295,7 +295,7 @@ const HelpCenter = () => {
                         onClick={() => window.dispatchEvent(new CustomEvent('open-concierge'))}
                         style={{
                             background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
-                            color: 'white',
+                            color: 'var(--color-text-main)',
                             border: 'none',
                             padding: '1rem 2rem',
                             borderRadius: '12px',

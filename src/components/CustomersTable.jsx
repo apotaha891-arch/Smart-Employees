@@ -47,11 +47,11 @@ const CustomersTable = ({ customers, onUpdateCustomer, onDeleteCustomer }) => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{
                         width: '100%',
-                        background: '#1F2937',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: 'var(--color-bg-input)',
+                        border: '1px solid var(--color-border-subtle)',
                         borderRadius: '8px',
                         padding: '10px 10px 10px 40px',
-                        color: 'white',
+                        color: 'var(--color-text-main)',
                         fontSize: '0.9rem'
                     }}
                 />
@@ -59,54 +59,54 @@ const CustomersTable = ({ customers, onUpdateCustomer, onDeleteCustomer }) => {
 
             {/* Table */}
             <div style={{
-                background: '#111827',
+                background: 'var(--color-bg-surface)',
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
+                border: '1px solid var(--color-border-subtle)',
                 overflow: 'hidden'
             }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                     <thead>
-                        <tr style={{ background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                            <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>العميل</th>
-                            <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>معرفات المنصات</th>
-                            <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>آخر زيارة</th>
-                            <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>ملاحظات</th>
-                            <th style={{ padding: '1.2rem', color: '#9CA3AF', fontWeight: 500 }}>الإجراءات</th>
+                        <tr style={{ background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                            <th style={{ padding: '1.2rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>العميل</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>معرفات المنصات</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>آخر زيارة</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>ملاحظات</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredCustomers.map((customer) => (
-                            <tr key={customer.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', transition: 'background 0.2s' }}>
+                            <tr key={customer.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', transition: 'background 0.2s' }}>
                                 <td style={{ padding: '1.2rem' }}>
                                     {editingId === customer.id ? (
                                         <input
                                             value={editForm.customer_name}
                                             onChange={(e) => setEditForm({ ...editForm, customer_name: e.target.value })}
-                                            style={{ background: '#1F2937', border: '1px solid #8B5CF6', color: 'white', padding: '5px', borderRadius: '4px', width: '100%' }}
+                                            style={{ background: 'var(--color-bg-input)', border: '1px solid #8B5CF6', color: 'var(--color-text-main)', padding: '5px', borderRadius: '4px', width: '100%' }}
                                         />
                                     ) : (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                                             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8B5CF6' }}>
                                                 <User size={16} />
                                             </div>
-                                            <span style={{ color: 'white', fontWeight: 500 }}>{customer.customer_name || 'بدون اسم'}</span>
+                                            <span style={{ color: 'var(--color-text-main)', fontWeight: 500 }}>{customer.customer_name || 'بدون اسم'}</span>
                                         </div>
                                     )}
                                 </td>
                                 <td style={{ padding: '1.2rem' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                         {customer.customer_phone && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                                 <Phone size={14} /> <span>{customer.customer_phone}</span>
                                             </div>
                                         )}
                                         {customer.instagram_id && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                                 <Instagram size={14} /> <span>{customer.instagram_id}</span>
                                             </div>
                                         )}
                                         {customer.telegram_id && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                                 <Send size={14} /> <span>{customer.telegram_id}</span>
                                             </div>
                                         )}
@@ -115,7 +115,7 @@ const CustomersTable = ({ customers, onUpdateCustomer, onDeleteCustomer }) => {
                                         )}
                                     </div>
                                 </td>
-                                <td style={{ padding: '1.2rem', color: '#9CA3AF', fontSize: '0.9rem' }}>
+                                <td style={{ padding: '1.2rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <Calendar size={14} />
                                         {formatDate(customer.last_service_date)}
@@ -126,10 +126,10 @@ const CustomersTable = ({ customers, onUpdateCustomer, onDeleteCustomer }) => {
                                         <textarea
                                             value={editForm.notes}
                                             onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                                            style={{ background: '#1F2937', border: '1px solid #8B5CF6', color: 'white', padding: '5px', borderRadius: '4px', width: '100%', resize: 'none' }}
+                                            style={{ background: 'var(--color-bg-input)', border: '1px solid #8B5CF6', color: 'var(--color-text-main)', padding: '5px', borderRadius: '4px', width: '100%', resize: 'none' }}
                                         />
                                     ) : (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                             <FileText size={14} />
                                             <span style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {customer.notes || 'لا يوجد ملاحظات'}

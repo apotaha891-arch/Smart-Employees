@@ -46,7 +46,7 @@ const Button = ({
         },
         secondary: {
             background: 'rgba(255,255,255,0.05)',
-            color: 'white',
+            color: 'var(--color-text-main)',
             border: '1px solid var(--border-subtle)',
             '&:hover': { background: 'rgba(255,255,255,0.1)' },
         },

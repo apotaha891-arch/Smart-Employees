@@ -89,25 +89,25 @@ const ManusHero = () => {
 
                 {/* Orbiting Icons */}
                 <div style={{ position: 'absolute', top: '10%', left: 'calc(50% - 130px)', animation: 'float 4s ease-in-out infinite' }}>
-                    <div style={{ width: '50px', height: '50px', background: '#229ED9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(34,158,217,0.3)', border: '2px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ width: '50px', height: '50px', background: '#229ED9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(34,158,217,0.3)', border: '2px solid var(--color-border-subtle)' }}>
                         <SiTelegram size={26} color="white" />
                     </div>
                 </div>
 
                 <div style={{ position: 'absolute', top: '25%', left: 'calc(50% + 100px)', animation: 'float 5s ease-in-out infinite 1s' }}>
-                    <div style={{ width: '50px', height: '50px', background: '#25D366', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(37,211,102,0.3)', border: '2px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ width: '50px', height: '50px', background: '#25D366', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(37,211,102,0.3)', border: '2px solid var(--color-border-subtle)' }}>
                         <SiWhatsapp size={26} color="white" />
                     </div>
                 </div>
 
                 <div style={{ position: 'absolute', top: '0%', left: 'calc(50% + 15px)', animation: 'float 4.5s ease-in-out infinite 0.5s' }}>
-                    <div style={{ width: '50px', height: '50px', background: '#00B2FF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(0,178,255,0.3)', border: '2px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ width: '50px', height: '50px', background: '#00B2FF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(0,178,255,0.3)', border: '2px solid var(--color-border-subtle)' }}>
                         <SiMessenger size={26} color="white" />
                     </div>
                 </div>
 
                 <div style={{ position: 'absolute', top: '-15%', left: 'calc(50% - 30px)', animation: 'float 5.5s ease-in-out infinite 1.5s' }}>
-                    <div style={{ width: '50px', height: '50px', background: '#00C300', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(0,195,0,0.3)', border: '2px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ width: '50px', height: '50px', background: '#00C300', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(0,195,0,0.3)', border: '2px solid var(--color-border-subtle)' }}>
                         <SiLine size={26} color="white" />
                     </div>
                 </div>

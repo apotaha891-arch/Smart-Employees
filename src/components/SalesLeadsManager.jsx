@@ -77,10 +77,10 @@ const SalesLeadsManager = () => {
         <div className="animate-fade-in" style={{ padding: '1.5rem', direction: isAr ? 'rtl' : 'ltr' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', marginBottom: '0.5rem' }}>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '0.5rem' }}>
                         {isAr ? 'إدارة المبيعات والعملاء المحتملين' : 'Sales & Leads Management'}
                     </h1>
-                    <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                         {isAr ? 'تابع رحلة عملائك من الاهتمام الأولي حتى إغلاق الصفقة' : 'Track your customer journey from initial interest to closing deals'}
                     </p>
                 </div>
@@ -97,14 +97,14 @@ const SalesLeadsManager = () => {
                     { label: isAr ? 'صفقات مغلقة' : 'Closed Won', value: leads.filter(l => l.status === 'closed').length, icon: CheckCircle2, color: '#10B981' },
                     { label: isAr ? 'معدل التحويل' : 'Conversion Rate', value: leads.length ? Math.round((leads.filter(l => l.status === 'closed').length / leads.length) * 100) + '%' : '0%', icon: Tag, color: '#8B5CF6' },
                 ].map((stat, idx) => (
-                    <div key={idx} style={{ background: '#111827', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div key={idx} style={{ background: 'var(--color-bg-surface)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <span style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>{stat.label}</span>
+                            <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>{stat.label}</span>
                             <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${stat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
                                 <stat.icon size={18} />
                             </div>
                         </div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white' }}>{stat.value}</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text-main)' }}>{stat.value}</div>
                     </div>
                 ))}
             </div>
@@ -141,33 +141,33 @@ const SalesLeadsManager = () => {
             </div>
 
             {/* Leads Table */}
-            <div style={{ background: '#111827', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--color-bg-surface)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isAr ? 'right' : 'left' }}>
                     <thead>
-                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
-                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'العميل' : 'Lead'}</th>
-                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'الحالة' : 'Status'}</th>
-                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'تاريخ الإضافة' : 'Date Added'}</th>
-                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'المتابعة القادمة' : 'Next Follow-up'}</th>
-                            <th style={{ padding: '1rem', color: '#9CA3AF', fontWeight: 600, fontSize: '0.85rem' }}></th>
+                        <tr style={{ borderBottom: '1px solid var(--color-border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
+                            <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'العميل' : 'Lead'}</th>
+                            <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'الحالة' : 'Status'}</th>
+                            <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'تاريخ الإضافة' : 'Date Added'}</th>
+                            <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>{isAr ? 'المتابعة القادمة' : 'Next Follow-up'}</th>
+                            <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}></th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#9CA3AF' }}>{isAr ? 'جاري التحميل...' : 'Loading...'}</td></tr>
+                            <tr><td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{isAr ? 'جاري التحميل...' : 'Loading...'}</td></tr>
                         ) : filteredLeads.length === 0 ? (
-                            <tr><td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF' }}>{isAr ? 'لا يوجد عملاء محتملون يطابقون البحث' : 'No leads found matching your criteria'}</td></tr>
+                            <tr><td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{isAr ? 'لا يوجد عملاء محتملون يطابقون البحث' : 'No leads found matching your criteria'}</td></tr>
                         ) : filteredLeads.map((lead) => {
                             const status = getStatusColor(lead.status || 'new');
                             return (
-                                <tr key={lead.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                <tr key={lead.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                     <td style={{ padding: '1rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', fontWeight: 700 }}>
                                                 {(lead.full_name || 'U').charAt(0)}
                                             </div>
                                             <div>
-                                                <div style={{ fontWeight: 600, color: 'white' }}>{lead.full_name || (isAr ? 'غير معروف' : 'Unknown')}</div>
+                                                <div style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{lead.full_name || (isAr ? 'غير معروف' : 'Unknown')}</div>
                                                 <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{lead.email}</div>
                                             </div>
                                         </div>
@@ -177,11 +177,11 @@ const SalesLeadsManager = () => {
                                             {status.label}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '1rem', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                    <td style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                         {new Date(lead.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}
                                     </td>
                                     <td style={{ padding: '1rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                                             <Clock size={14} />
                                             {isAr ? 'غداً، 10:00 ص' : 'Tomorrow, 10:00 AM'}
                                         </div>

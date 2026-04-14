@@ -71,13 +71,13 @@ const BlogList = () => {
     const featuredPost = posts[0];
 
     if (loading) return (
-        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white' }}>
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-base)', color: 'var(--color-text-main)' }}>
             <div className="animate-pulse">Loading Articles...</div>
         </div>
     );
 
     return (
-        <div style={{ minHeight: '100vh', background: '#070B14', color: 'white', padding: '4rem 1rem', direction: isEnglish ? 'ltr' : 'rtl' }}>
+        <div style={{ minHeight: '100vh', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', padding: '4rem 1rem', direction: isEnglish ? 'ltr' : 'rtl' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
                 
                 {/* 1. Header Section */}
@@ -85,7 +85,7 @@ const BlogList = () => {
                     <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1rem', background: 'linear-gradient(to right, #fff, #A78BFA)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                         {isEnglish ? 'Knowledge Hub' : 'مركز المعرفة'}
                     </h1>
-                    <p style={{ color: '#9CA3AF', fontSize: '1.25rem', maxWidth: '700px' }}>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.25rem', maxWidth: '700px' }}>
                         {isEnglish 
                             ? 'Expert insights on AI agents, business automation, and the future of work.' 
                             : 'رؤى الخبراء حول وكلاء الذكاء الاصطناعي، أتمتة الأعمال، ومستقبل العمل.'}
@@ -120,10 +120,10 @@ const BlogList = () => {
                                             <Star size={16} fill="#F59E0B" /> {isEnglish ? 'Featured Article' : 'مقال مميز'}
                                         </div>
                                         <h2 style={{ fontSize: '2.4rem', fontWeight: 900, marginBottom: '1.25rem', lineHeight: '1.2' }}>{isEnglish ? featuredPost.title_en : featuredPost.title_ar}</h2>
-                                        <p style={{ color: '#9CA3AF', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '2rem' }}>{isEnglish ? featuredPost.excerpt_en : featuredPost.excerpt_ar}</p>
+                                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '2rem' }}>{isEnglish ? featuredPost.excerpt_en : featuredPost.excerpt_ar}</p>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#A78BFA', fontWeight: 800 }}>{isEnglish ? 'Read Featured Article' : 'اقرأ المقال المميز'} <ArrowRight size={18} /></div>
                                     </div>
-                                    <div style={{ height: '300px', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <div style={{ height: '300px', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--color-border-subtle)' }}>
                                         <img src={featuredPost.featured_image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     </div>
                                 </div>
@@ -133,14 +133,14 @@ const BlogList = () => {
                         {/* Recent Articles Grid */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
                             {filteredPosts.length === 0 ? (
-                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem', background: '#111827', borderRadius: '32px', border: '1px dashed rgba(255,255,255,0.05)' }}>
+                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem', background: 'var(--color-bg-surface)', borderRadius: '32px', border: '1px dashed var(--color-border-subtle)' }}>
                                     <BookOpen size={48} color="#374151" style={{ marginBottom: '1rem' }} />
-                                    <h3 style={{ color: '#9CA3AF' }}>{isEnglish ? 'No articles match your criteria.' : 'لم يتم العثور على مقالات تطابق بحثك.'}</h3>
+                                    <h3 style={{ color: 'var(--color-text-secondary)' }}>{isEnglish ? 'No articles match your criteria.' : 'لم يتم العثور على مقالات تطابق بحثك.'}</h3>
                                 </div>
                             ) : (
                                 filteredPosts.map(post => (
                                     <Link key={post.id} to={`/blog/${post.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                        <div style={{ background: '#111827', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)', height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                                        <div style={{ background: 'var(--color-bg-surface)', borderRadius: '24px', border: '1px solid var(--color-border-subtle)', height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                                             <div style={{ height: '200px', background: '#0B0F19', borderRadius: '24px 24px 0 0', overflow: 'hidden' }}>
                                                 <img src={post.featured_image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             </div>
@@ -149,7 +149,7 @@ const BlogList = () => {
                                                     {t(`sectors.${post.category.toLowerCase().replace(' ', '_')}`) || post.category}
                                                 </div>
                                                 <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.75rem', lineHeight: '1.3' }}>{isEnglish ? post.title_en : post.title_ar}</h3>
-                                                <p style={{ fontSize: '0.9rem', color: '#9CA3AF', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{isEnglish ? post.excerpt_en : post.excerpt_ar}</p>
+                                                <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{isEnglish ? post.excerpt_en : post.excerpt_ar}</p>
                                                 <div style={{ marginTop: 'auto', color: '#A78BFA', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                     {isEnglish ? 'Read More' : 'اقرأ المزيد'} <ArrowRight size={14} />
                                                 </div>
@@ -166,7 +166,7 @@ const BlogList = () => {
                                 padding: '3.5rem', 
                                 background: 'linear-gradient(135deg, #1E1B4B, #4C1D95)', 
                                 borderRadius: '32px', 
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                border: '1px solid var(--color-border-subtle)',
                                 textAlign: 'center'
                             }}>
                                 <h2 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '1rem' }}>{isEnglish ? bannerSettings.banner_text_en : bannerSettings.banner_text_ar}</h2>
@@ -182,21 +182,21 @@ const BlogList = () => {
                     <aside style={{ display: 'flex', flexDirection: 'column', gap: '2rem', height: 'fit-content', position: 'sticky', top: '2rem' }}>
                         
                         {/* Search Sidebar */}
-                        <div style={{ background: '#111827', borderRadius: '24px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ background: 'var(--color-bg-surface)', borderRadius: '24px', padding: '1.5rem', border: '1px solid var(--color-border-subtle)' }}>
                             <div style={{ position: 'relative' }}>
                                 <Search size={18} style={{ position: 'absolute', right: isEnglish ? 'auto' : '15px', left: isEnglish ? '15px' : 'auto', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
                                 <input 
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                     placeholder={isEnglish ? "Search..." : "بحث..."}
-                                    style={{ width: '100%', padding: isEnglish ? '12px 12px 12px 42px' : '12px 42px 12px 12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }}
+                                    style={{ width: '100%', padding: isEnglish ? '12px 12px 12px 42px' : '12px 42px 12px 12px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)' }}
                                 />
                             </div>
                         </div>
 
                         {/* Category Sidebar */}
-                        <div style={{ background: '#111827', borderRadius: '24px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ background: 'var(--color-bg-surface)', borderRadius: '24px', padding: '1.5rem', border: '1px solid var(--color-border-subtle)' }}>
+                            <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Tag size={18} color="#8B5CF6" /> {isEnglish ? 'Categories' : 'التصنيفات'}
                             </h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -228,15 +228,15 @@ const BlogList = () => {
                         </div>
 
                         {/* Trending Sidebar */}
-                        <div style={{ background: '#111827', borderRadius: '24px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ background: 'var(--color-bg-surface)', borderRadius: '24px', padding: '1.5rem', border: '1px solid var(--color-border-subtle)' }}>
+                            <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <TrendingUp size={18} color="#10B981" /> {isEnglish ? 'Trending' : 'شائع الآن'}
                             </h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 {posts.slice(1, 4).map((rp, idx) => (
                                     <Link key={rp.id} to={`/blog/${rp.slug}`} style={{ textDecoration: 'none', display: 'flex', gap: '12px' }}>
                                         <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'rgba(255,255,255,0.1)', width: '20px' }}>0{idx + 1}</div>
-                                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#E4E4E7', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-text-main)', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                             {isEnglish ? rp.title_en : rp.title_ar}
                                         </div>
                                     </Link>

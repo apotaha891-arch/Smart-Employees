@@ -19,17 +19,17 @@ import { REALISTIC_AVATARS, getRealisticAvatar } from '../utils/avatars';
 const ICON_MAP = { Mail, MessageSquare, Bell, Zap, Globe, Bot, Users, Calendar };
 
 // ── Tiny UI helpers ───────────────────────────────────────────────────────────
-const Card = ({ c, s = {} }) => <div style={{ background: '#111827', borderRadius: '13px', border: '1px solid rgba(255,255,255,0.06)', padding: '1.1rem', ...s }}>{c}</div>;
+const Card = ({ c, s = {} }) => <div style={{ background: 'var(--color-bg-surface)', borderRadius: '13px', border: '1px solid var(--color-border-subtle)', padding: '1.1rem', ...s }}>{c}</div>;
 const Btn = ({ onClick, disabled, children, color = '#8B5CF6', style = {} }) => (
-    <button onClick={onClick} disabled={disabled} style={{ background: `linear-gradient(135deg,${color},${color}cc)`, color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, fontSize: '0.83rem', opacity: disabled ? 0.6 : 1, ...style }}>{children}</button>
+    <button onClick={onClick} disabled={disabled} style={{ background: `linear-gradient(135deg,${color},${color}cc)`, color: 'var(--color-text-main)', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, fontSize: '0.83rem', opacity: disabled ? 0.6 : 1, ...style }}>{children}</button>
 );
 const Input = ({ value, onChange, placeholder, type = 'text' }) => (
-    <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', boxSizing: 'border-box', fontSize: '0.82rem', fontFamily: type === 'password' ? 'monospace' : 'inherit' }} />
+    <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={{ width: '100%', padding: '8px 10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', boxSizing: 'border-box', fontSize: '0.82rem', fontFamily: type === 'password' ? 'monospace' : 'inherit' }} />
 );
 const StatCard = ({ icon: Icon, label, value, color, sub }) => (
     <Card c={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div><div style={{ color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '5px' }}>{label}</div>
-            <div style={{ fontSize: '1.9rem', fontWeight: 800, color: 'white' }}>{value}</div>
+        <div><div style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '5px' }}>{label}</div>
+            <div style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--color-text-main)' }}>{value}</div>
             {sub && <div style={{ fontSize: '0.73rem', color, marginTop: '3px' }}>{sub}</div>}
         </div>
         <div style={{ width: '40px', height: '40px', borderRadius: '9px', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={18} color={color} /></div>
@@ -48,18 +48,18 @@ const NewsletterSubscribers = () => {
     }, []);
     return (
         <div>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 1rem' }}>مشتركي النشرة البريدية</h1>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 1rem' }}>مشتركي النشرة البريدية</h1>
             <Card s={{ padding: 0, overflow: 'hidden' }} c={
                 loading ? <div style={{ padding: '2rem', textAlign: 'center' }}>جاري التحميل...</div> :
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-                    <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                         <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontSize: '0.77rem' }}>البريد الإلكتروني</th>
                         <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontSize: '0.77rem' }}>تاريخ الاشتراك</th>
                     </tr></thead>
                     <tbody>
                         {subs.length === 0 ? <tr><td colSpan={2} style={{ padding: '2rem', textAlign: 'center' }}>لا يوجد مشتركين حالياً</td></tr> :
-                        subs.map(s => <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                            <td style={{ padding: '0.75rem 0.9rem', color: 'white' }}>{s.email}</td>
+                        subs.map(s => <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                            <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-main)' }}>{s.email}</td>
                             <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280' }}>{new Date(s.created_at).toLocaleDateString('ar-EG')}</td>
                         </tr>)}
                     </tbody>
@@ -590,7 +590,7 @@ export default function AdminDashboard() {
     const AcademyView = () => (
         <div className="animate-fade-in" style={{ padding: '0.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: 950, color: 'white', margin: 0 }}>{isEnglish ? 'Academy & Affiliates' : 'الأكاديمية والمسوقين'}</h1>
+                <h1 style={{ fontSize: '1.8rem', fontWeight: 950, color: 'var(--color-text-main)', margin: 0 }}>{isEnglish ? 'Academy & Affiliates' : 'الأكاديمية والمسوقين'}</h1>
                 <Btn onClick={loadAcademyData} disabled={academyLoading}><RefreshCw size={16} className={academyLoading ? 'animate-spin' : ''} /> {isEnglish ? 'Refresh' : 'تحديث'}</Btn>
             </div>
 
@@ -601,11 +601,11 @@ export default function AdminDashboard() {
 
             {/* Leads Table */}
             <div style={{ marginBottom: '3rem' }}>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Star size={20} color="#F59E0B" /> {isEnglish ? 'Academy Leads' : 'طلبات الحقيبة التدريبية'}</h2>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Star size={20} color="#F59E0B" /> {isEnglish ? 'Academy Leads' : 'طلبات الحقيبة التدريبية'}</h2>
                 <Card s={{ padding: 0, overflow: 'hidden' }} c={
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
-                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Name' : 'الاسم'}</th>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Contact' : 'التواصل'}</th>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Referrer' : 'المسوق'}</th>
@@ -615,9 +615,9 @@ export default function AdminDashboard() {
                             <tbody>
                                 {academyLeads.length === 0 ? <tr><td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: '#4B5563' }}>{isEnglish ? 'No leads found' : 'لا يوجد طلبات حالياً'}</td></tr> :
                                 academyLeads.map(l => (
-                                    <tr key={l.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                    <tr key={l.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                         <td style={{ padding: '1rem' }}>
-                                            <div style={{ fontWeight: 700, color: 'white' }}>{l.full_name}</div>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>{l.full_name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{l.user_type} • {l.industry}</div>
                                         </td>
                                         <td style={{ padding: '1rem' }}>
@@ -654,11 +654,11 @@ export default function AdminDashboard() {
 
             {/* Affiliates Table */}
             <div>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Zap size={20} color="#10B981" /> {isEnglish ? 'Affiliate Partners' : 'شركاء التسويق بالعمولة'}</h2>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Zap size={20} color="#10B981" /> {isEnglish ? 'Affiliate Partners' : 'شركاء التسويق بالعمولة'}</h2>
                 <Card s={{ padding: 0, overflow: 'hidden' }} c={
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
-                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Partner' : 'الشريك'}</th>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Ref Code' : 'كود الإحالة'}</th>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Total Commission' : 'إجمالي العمولات'}</th>
@@ -667,15 +667,15 @@ export default function AdminDashboard() {
                             <tbody>
                                 {affiliates.length === 0 ? <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: '#4B5563' }}>{isEnglish ? 'No affiliates registered' : 'لا يوجد مسوقين حالياً'}</td></tr> :
                                 affiliates.map(a => (
-                                    <tr key={a.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                    <tr key={a.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                         <td style={{ padding: '1rem' }}>
-                                            <div style={{ fontWeight: 700, color: 'white' }}>{a.profiles?.full_name}</div>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>{a.profiles?.full_name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{a.profiles?.email}</div>
                                         </td>
                                         <td style={{ padding: '1rem' }}>
                                             <code style={{ padding: '4px 8px', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.1)', color: '#A78BFA', fontWeight: 800 }}>{a.affiliate_code}</code>
                                         </td>
-                                        <td style={{ padding: '1rem', fontWeight: 700, color: 'white' }}>${a.commission_rate_fixed}</td>
+                                        <td style={{ padding: '1rem', fontWeight: 700, color: 'var(--color-text-main)' }}>${a.commission_rate_fixed}</td>
                                         <td style={{ padding: '1rem' }}>
                                             <span style={{ 
                                                 display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem',
@@ -741,25 +741,25 @@ export default function AdminDashboard() {
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>
+                <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>
                     {isEnglish ? 'Marketing & Broadcasts' : 'التسويق والبث المباشر'}
                 </h1>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <Card c={
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <h3 style={{ margin: 0, color: '#F9FAFB', fontSize: '1rem' }}>
+                            <h3 style={{ margin: 0, color: 'var(--color-text-main)', fontSize: '1rem' }}>
                                 {isEnglish ? 'Create New Broadcast' : 'إنشاء رسالة بث جديدة'}
                             </h3>
                             
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>
                                     {isEnglish ? 'Target Business' : 'المنشأة المستهدفة'}
                                 </label>
                                 <select 
                                     value={targetEntity}
                                     onChange={(e) => setTargetEntity(e.target.value)}
-                                    style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white' }}
+                                    style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)' }}
                                 >
                                     <option value="">{isEnglish ? 'Select Business' : 'اختر المنشأة'}</option>
                                     {clients.map(e => <option key={e.id} value={e.id}>{e.full_name || e.business_type}</option>)}
@@ -776,7 +776,7 @@ export default function AdminDashboard() {
                                 placeholder={isEnglish ? "Your marketing message..." : "اكتب رسالتك التسويقية هنا..."}
                                 value={broadcastText}
                                 onChange={(e) => setBroadcastText(e.target.value)}
-                                style={{ width: '100%', height: '120px', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', resize: 'none', fontFamily: 'inherit' }}
+                                style={{ width: '100%', height: '120px', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', resize: 'none', fontFamily: 'inherit' }}
                             />
 
                             <Btn disabled={sending} onClick={handleSendBroadcast}>
@@ -788,7 +788,7 @@ export default function AdminDashboard() {
 
                     <Card c={
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <h3 style={{ margin: 0, color: '#F9FAFB', fontSize: '1rem' }}>
+                            <h3 style={{ margin: 0, color: 'var(--color-text-main)', fontSize: '1rem' }}>
                                 {isEnglish ? 'Reach Distribution' : 'توزيع الوصول'}
                             </h3>
                             <div style={{ display: 'flex', justifyContent: 'space-around', padding: '1rem 0' }}>
@@ -796,13 +796,13 @@ export default function AdminDashboard() {
                                     <div style={{ color: '#8B5CF6', fontSize: '1.5rem', fontWeight: 800 }}>
                                         {endCustomers.filter(c => !!c.telegram_id).length}
                                     </div>
-                                    <div style={{ color: '#9CA3AF', fontSize: '0.7rem' }}>Telegram</div>
+                                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.7rem' }}>Telegram</div>
                                 </div>
                                 <div style={{ textAlign: 'center' }}>
                                     <div style={{ color: '#EC4899', fontSize: '1.5rem', fontWeight: 800 }}>
                                         {endCustomers.filter(c => !!c.instagram_id).length}
                                     </div>
-                                    <div style={{ color: '#9CA3AF', fontSize: '0.7rem' }}>Instagram</div>
+                                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.7rem' }}>Instagram</div>
                                 </div>
                             </div>
                             <div style={{ fontSize: '0.75rem', color: '#6B7280', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px' }}>
@@ -874,14 +874,14 @@ export default function AdminDashboard() {
         { id: 'admin-advisor', i: Sparkles, l: isEnglish ? 'Smart Advisor' : 'المستشار الذكي' },
     ];
 
-    if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14', color: 'white', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />{t('admin.loading')}</div>;
+    if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />{t('admin.loading')}</div>;
 
     const isRtl = !isEnglish;
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#070B14', direction: isRtl ? 'rtl' : 'ltr', color: '#E4E4E7', fontFamily: "'Inter','Tajawal',sans-serif" }}>
+        <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-base)', direction: isRtl ? 'rtl' : 'ltr', color: 'var(--color-text-main)', fontFamily: "'Inter','Tajawal',sans-serif" }}>
             {/* Flash message */}
-            {msg && <div style={{ position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', background: '#1F2937', border: '1px solid #374151', color: 'white', padding: '10px 20px', borderRadius: '10px', zIndex: 9999, fontWeight: 600, fontSize: '0.9rem' }}>{msg}</div>}
+            {msg && <div style={{ position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-main)', padding: '10px 20px', borderRadius: '10px', zIndex: 9999, fontWeight: 600, fontSize: '0.9rem' }}>{msg}</div>}
 
             {/* Sidebar */}
             <aside style={{ 
@@ -897,7 +897,7 @@ export default function AdminDashboard() {
                 left: !isRtl ? 0 : 'auto', 
                 zIndex: 50 
             }}>
-                <div style={{ padding: '1.1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '9px' }}>
+                <div style={{ padding: '1.1rem', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: '9px' }}>
                     <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg,#10B981,#3B82F6)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.8rem' }}>24</div>
                     <div><div style={{ fontWeight: 900, fontSize: '0.95rem', background: 'linear-gradient(90deg,#fff,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{t('brand.name')}</div>
                         <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 700 }}>⚡ ADMIN</div></div>
@@ -934,12 +934,12 @@ export default function AdminDashboard() {
                             <button key={id} onClick={() => { setTab(id); if (id === 'concierge-chats' || id === 'notifications') notifications.filter(n => !n.is_read).forEach(n => adminService.markNotificationAsRead(n.id)); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '9px', padding: '9px 11px', borderRadius: '8px', background: a ? 'rgba(139,92,246,0.12)' : 'transparent', color: a ? '#A78BFA' : '#6B7280', border: 'none', cursor: 'pointer', fontWeight: a ? 700 : 400, fontSize: '0.84rem', marginBottom: '2px', borderRight: (isRtl && a) ? '3px solid #8B5CF6' : '3px solid transparent', borderLeft: (!isRtl && a) ? '3px solid #8B5CF6' : '3px solid transparent', transition: 'all 0.15s', position: 'relative', textAlign: isRtl ? 'right' : 'left' }}>
                                 <Icon size={16} />
                                 <span>{l}</span>
-                                {badge > 0 && <span style={{ position: 'absolute', left: isRtl ? '10px' : 'auto', right: !isRtl ? '10px' : 'auto', top: '50%', transform: 'translateY(-50%)', background: '#EF4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>{badge}</span>}
+                                {badge > 0 && <span style={{ position: 'absolute', left: isRtl ? '10px' : 'auto', right: !isRtl ? '10px' : 'auto', top: '50%', transform: 'translateY(-50%)', background: '#EF4444', color: 'var(--color-text-main)', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>{badge}</span>}
                             </button>
                         );
                     })}
                 </nav>
-                <div style={{ padding: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ padding: '0.6rem', borderTop: '1px solid var(--color-border-subtle)' }}>
                     <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 11px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: 'none', cursor: 'pointer', fontSize: '0.83rem', textAlign: isRtl ? 'right' : 'left' }}>
                         <LogOut size={14} />{t('admin.logout')}
                     </button>
@@ -951,7 +951,7 @@ export default function AdminDashboard() {
 
                 {/* ── OVERVIEW ── */}
                 {tab === 'overview' && <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>{t('admin.overview')}</h1>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>{t('admin.overview')}</h1>
                     <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.85rem' }}>{isEnglish ? 'Comprehensive overview of 24Shift performance' : 'نظرة شاملة على أداء منصة 24Shift'}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(175px,1fr))', gap: '0.9rem', marginBottom: '1.75rem' }}>
                         <StatCard icon={Users} label={t('admin.totalClients')} value={clients.length} color="#10B981" sub={`+${clients.filter(c => new Date(c.created_at) > new Date(Date.now() - 30 * 24 * 3600 * 1000)).length} ${isEnglish ? 'new clients' : 'عملاء جدد'}`} />
@@ -964,7 +964,7 @@ export default function AdminDashboard() {
                             return <StatCard icon={TrendingUp} label={isEnglish ? 'Estimated Revenue' : 'إيراد متوقع'} value={`${estRev.toLocaleString()} $`} color="#3B82F6" sub={isEnglish ? 'Monthly Est.' : 'شهري تقديري'} />;
                         })()}
                     </div>
-                    <h3 style={{ color: 'white', marginBottom: '0.9rem', fontSize: '0.9rem', fontWeight: 700 }}>{isEnglish ? 'Client Sector Distribution' : 'توزيع العملاء بالقطاعات'}</h3>
+                    <h3 style={{ color: 'var(--color-text-main)', marginBottom: '0.9rem', fontSize: '0.9rem', fontWeight: 700 }}>{isEnglish ? 'Client Sector Distribution' : 'توزيع العملاء بالقطاعات'}</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: '0.75rem' }}>
                         {Object.entries(sectors).map(([k, v]) => {
                             // Normalize business_type to sector key
@@ -986,7 +986,7 @@ export default function AdminDashboard() {
                             return <Card key={k} s={{ padding: '0.9rem', border: `1px solid ${v.c}25`, opacity: v.on ? 1 : 0.5 }} c={<>
                                 <div style={{ fontSize: '1.3rem', marginBottom: '4px' }}>{v.e}</div>
                                 <div style={{ color: v.c, fontWeight: 700, fontSize: '0.77rem' }}>{v.l}</div>
-                                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'white' }}>{cnt}</div>
+                                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-text-main)' }}>{cnt}</div>
                             </>} />;
                         })}
                     </div>
@@ -995,17 +995,17 @@ export default function AdminDashboard() {
                 {/* ── CLIENTS ── */}
                 {tab === 'clients' && <div style={{ display: 'flex', gap: '1.25rem' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>{t('admin.clients')}</h1>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>{t('admin.clients')}</h1>
                         <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{filteredClients.length} {isEnglish ? 'clients matched' : 'عميل مطابق'}</p>
                         
                         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                            <select value={cFilter} onChange={e => setCFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                            <select value={cFilter} onChange={e => setCFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
                                 <option value="">{isEnglish ? 'All Clients' : 'كل العملاء'}</option>
                                 {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
                             </select>
                             <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
                                 <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
-                                <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="بحث بالاسم أو الإيميل..." style={{ width: '100%', padding: '8px 30px 8px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '0.82rem' }} />
+                                <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="بحث بالاسم أو الإيميل..." style={{ width: '100%', padding: '8px 30px 8px 10px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.82rem' }} />
                             </div>
                             <Btn onClick={() => handleExport(filteredClients, 'clients')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />تصدير Excel</Btn>
                         </div>
@@ -1017,7 +1017,7 @@ export default function AdminDashboard() {
                                 { id: 'sub-accounts', l: 'عملاء تابعين 👤', c: '#3B82F6' }
                             ].map(f => (
                                 <button key={f.id} onClick={() => setCFilter(f.id)} style={{ 
-                                    padding: '8px 16px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.05)',
+                                    padding: '8px 16px', borderRadius: '99px', border: '1px solid var(--color-border-subtle)',
                                     background: cFilter === f.id ? f.c : 'transparent',
                                     color: cFilter === f.id ? 'white' : '#9CA3AF',
                                     fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
@@ -1026,7 +1026,7 @@ export default function AdminDashboard() {
                         </div>
 
                         <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
-                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                 <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>{t('admin.clients')}</th>
                                 <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>النوع / التبيعة</th>
                                 <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>الموارد (موظفة/طلب)</th>
@@ -1045,9 +1045,9 @@ export default function AdminDashboard() {
                                                        : (isSubAccount ? { l: `تابع لـ ${c.agency_name || 'وكالة'}`, c: '#3B82F6', e: '👤' } 
                                                        : { l: 'منشأة مستقلة', c: '#10B981', e: '🏢' });
 
-                                        return <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }}>
+                                        return <tr key={c.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', transition: 'background 0.2s' }}>
                                             <td style={{ padding: '0.85rem 0.9rem' }}>
-                                                <div style={{ fontWeight: 800, color: 'white', fontSize: '0.86rem' }}>{c.business_name && c.business_name !== '—' ? c.business_name : (c.full_name || '—')}</div>
+                                                <div style={{ fontWeight: 800, color: 'var(--color-text-main)', fontSize: '0.86rem' }}>{c.business_name && c.business_name !== '—' ? c.business_name : (c.full_name || '—')}</div>
                                                 <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{c.email}</div>
                                                 <div style={{ fontSize: '0.65rem', color: '#4B5563', marginTop: '2px' }}>ID: {c.id.slice(0,8)}</div>
                                             </td>
@@ -1072,7 +1072,7 @@ export default function AdminDashboard() {
                                             </td>
                                             <td style={{ padding: '0.85rem 0.9rem' }}>
                                                 <div style={{ color: '#FCD34D', fontWeight: 900, fontSize: '0.95rem', marginBottom: '2px' }}>
-                                                    {(c.wallet_balance || 0).toLocaleString()} <span style={{ fontSize: '0.6rem', color: '#9CA3AF' }}>نقطة</span>
+                                                    {(c.wallet_balance || 0).toLocaleString()} <span style={{ fontSize: '0.6rem', color: 'var(--color-text-secondary)' }}>نقطة</span>
                                                 </div>
                                                 <select value={c.subscription_tier || 'basic'} onChange={e => updateClientPlan(c.id, e.target.value)} style={{ background: plan.bg, color: plan.t, border: 'none', borderRadius: '6px', padding: '1px 7px', fontWeight: 700, fontSize: '0.7rem', cursor: 'pointer' }}>
                                                     {Object.entries(PLANS).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
@@ -1092,7 +1092,7 @@ export default function AdminDashboard() {
                     {/* Client panel */}
                     {selClient && <div style={{ width: '340px', flexShrink: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
-                            <div style={{ fontWeight: 900, color: 'white', fontSize: '1rem' }}>⚙️ إدارة التحكم الكامل</div>
+                            <div style={{ fontWeight: 900, color: 'var(--color-text-main)', fontSize: '1rem' }}>⚙️ إدارة التحكم الكامل</div>
                             <button onClick={() => setSelClient(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#6B7280', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={16} /></button>
                         </div>
                         
@@ -1103,18 +1103,18 @@ export default function AdminDashboard() {
                                     {selClient.is_agency ? '🤝' : '🏢'}
                                 </div>
                                 <div>
-                                    <div style={{ fontWeight: 900, color: 'white', fontSize: '0.9rem' }}>{selClient.business_name || selClient.full_name}</div>
-                                    <div style={{ color: '#9CA3AF', fontSize: '0.72rem' }}>{selClient.email}</div>
+                                    <div style={{ fontWeight: 900, color: 'var(--color-text-main)', fontSize: '0.9rem' }}>{selClient.business_name || selClient.full_name}</div>
+                                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.72rem' }}>{selClient.email}</div>
                                 </div>
                             </div>
                         </>} />
 
                         {/* Identity Controls */}
-                        <div style={{ color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>إعدادات الهوية والتبيعة</div>
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>إعدادات الهوية والتبيعة</div>
                         <Card s={{ marginBottom: '1rem' }} c={<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             <div>
                                 <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '4px' }}>نوع الحساب الرئيسي</label>
-                                <div style={{ display: 'flex', background: '#111827', borderRadius: '8px', padding: '3px' }}>
+                                <div style={{ display: 'flex', background: 'var(--color-bg-surface)', borderRadius: '8px', padding: '3px' }}>
                                     <button onClick={() => adminService.changeClientIdentity(selClient.id, true).then(load)} 
                                         style={{ flex: 1, padding: '6px', borderRadius: '6px', border: 'none', background: selClient.is_agency ? '#8B5CF6' : 'transparent', color: selClient.is_agency ? 'white' : '#6B7280', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>وكالة</button>
                                     <button onClick={() => adminService.changeClientIdentity(selClient.id, false).then(load)} 
@@ -1128,7 +1128,7 @@ export default function AdminDashboard() {
                                     <select 
                                         value={selClient.agency_id || ''} 
                                         onChange={(e) => adminService.changeClientIdentity(selClient.id, false, e.target.value === '' ? null : e.target.value).then(load)}
-                                        style={{ width: '100%', padding: '8px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.75rem' }}
+                                        style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', fontSize: '0.75rem' }}
                                     >
                                         <option value="">— منشأة مستقلة (بدون وكالة) —</option>
                                         {clients.filter(x => x.is_agency && x.id !== selClient.id).map(a => (
@@ -1140,10 +1140,10 @@ export default function AdminDashboard() {
                         </div>} />
 
                         {/* Financials */}
-                        <div style={{ color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>إدارة الرصيد (المحفظة)</div>
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>إدارة الرصيد (المحفظة)</div>
                         <Card s={{ marginBottom: '1rem', border: '1px solid rgba(252,211,77,0.2)' }} c={<>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                <div style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>الرصيد الحالي:</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>الرصيد الحالي:</div>
                                 <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FCD34D' }}>{selClient.wallet_balance || 0} <small style={{ fontSize: '0.6rem' }}>نقطة</small></div>
                             </div>
                             <div style={{ display: 'flex', gap: '5px' }}>
@@ -1159,7 +1159,7 @@ export default function AdminDashboard() {
                         </>} />
 
                         {/* Integration Keys */}
-                        <div style={{ color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>🔑 مفاتيح الربط البرمجية</div>
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>🔑 مفاتيح الربط البرمجية</div>
                         <Card c={<>
                             {[['telegram_token', 'Telegram Token'], ['whatsapp_number', 'رقم WhatsApp'], ['whatsapp_api_key', 'WhatsApp Key']].map(([f, l]) => <div key={f} style={{ marginBottom: '0.6rem' }}>
                                 <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '3px' }}>{l}</label>
@@ -1172,22 +1172,22 @@ export default function AdminDashboard() {
 
                 {/* ── END CUSTOMERS (Total Database) ── */}
                 {tab === 'end-customers' && <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>{t('admin.endCustomers')}</h1>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>{t('admin.endCustomers')}</h1>
                     <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{endCustomers.length} {isEnglish ? 'total registered customers' : 'إجمالي العملاء المسجلين'}</p>
                     
                     <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
-                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                             {['ID', t('fullName'), t('phoneLabel'), 'Instagram', 'Telegram', t('lastUpdate')].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
                         </tr></thead>
                         <tbody>
                             {endCustomers.length === 0 ? <tr><td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>{isEnglish ? 'No customers found' : 'لا يوجد زبائن مسجلين'}</td></tr>
                                 : endCustomers.map(c => (
-                                    <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                    <tr key={c.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                         <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.65rem' }}>{c.id.slice(0, 8)}</td>
-                                        <td style={{ padding: '0.75rem 0.9rem', color: 'white', fontWeight: 600 }}>{c.customer_name || '—'}</td>
-                                        <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF' }}>{c.customer_phone || '—'}</td>
-                                        <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF' }}>{c.instagram_id || '—'}</td>
-                                        <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF' }}>{c.telegram_id || '—'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-main)', fontWeight: 600 }}>{c.customer_name || '—'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-secondary)' }}>{c.customer_phone || '—'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-secondary)' }}>{c.instagram_id || '—'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-secondary)' }}>{c.telegram_id || '—'}</td>
                                         <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(c.updated_at).toLocaleDateString(isEnglish ? 'en-US' : 'ar-EG')}</td>
                                     </tr>
                                 ))}
@@ -1197,11 +1197,11 @@ export default function AdminDashboard() {
 
                 {/* ── CUSTOM REQUESTS ── */}
                 {tab === 'custom-requests' && <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>{isEnglish ? 'Custom Employee Requests' : 'طلبات التوظيف المخصصة'}</h1>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>{isEnglish ? 'Custom Employee Requests' : 'طلبات التوظيف المخصصة'}</h1>
                     <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{customRequests.length} {isEnglish ? 'total requests' : 'إجمالي الطلبات المستلمة'}</p>
 
                     <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
-                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                             {[(isEnglish ? 'Date' : 'التاريخ'), (isEnglish ? 'Contact' : 'بيانات التواصل'), (isEnglish ? 'Requirements' : 'المتطلبات'), (isEnglish ? 'Status' : 'الحالة'), (isEnglish ? 'Actions' : 'إجراءات')].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
                         </tr></thead>
                         <tbody>
@@ -1209,15 +1209,15 @@ export default function AdminDashboard() {
                             : customRequests.map(r => {
                                 const st = r.status === 'completed' ? { c: '#10B981', bg: '#10B98120', l: (!isEnglish ? 'مكتمل' : 'Completed') } : { c: '#F59E0B', bg: '#F59E0B20', l: (!isEnglish ? 'قيد المراجعة' : 'Pending') };
                                 return (
-                                    <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                    <tr key={r.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                         <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(r.created_at).toLocaleDateString(!isEnglish ? 'ar-EG' : 'en-US')}</td>
                                         <td style={{ padding: '0.75rem 0.9rem' }}>
-                                            <div style={{ fontWeight: 700, color: 'white', fontSize: '0.85rem' }}>{r.contact_name}</div>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.85rem' }}>{r.contact_name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#A78BFA' }}>{r.contact_phone}</div>
                                             <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{r.contact_email}</div>
                                         </td>
                                         <td style={{ padding: '0.75rem 0.9rem', maxWidth: '300px' }}>
-                                            <div style={{ fontSize: '0.78rem', color: '#E4E4E7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={r.required_tasks}>
+                                            <div style={{ fontSize: '0.78rem', color: 'var(--color-text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={r.required_tasks}>
                                                 <strong>{r.business_type}</strong>: {r.required_tasks}
                                             </div>
                                             <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{isEnglish ? 'Integrations' : 'ربط'}: {r.integrations || '—'}</div>
@@ -1238,14 +1238,14 @@ export default function AdminDashboard() {
 
                 {/* ── NOTIFICATIONS ── */}
                 {tab === 'notifications' && <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 1.25rem' }}>{t('admin.notifications')}</h1>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 1.25rem' }}>{t('admin.notifications')}</h1>
                     
                     <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                        <select value={notifClientFilter} onChange={e => setNotifClientFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                        <select value={notifClientFilter} onChange={e => setNotifClientFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
                             <option value="">{isEnglish ? 'All Clients' : 'كل العملاء'}</option>
                             {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
                         </select>
-                        <select value={notifTypeFilter} onChange={e => setNotifTypeFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                        <select value={notifTypeFilter} onChange={e => setNotifTypeFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
                             <option value="">{isEnglish ? 'All Types' : 'كل الأنواع'}</option>
                             <option value="new_booking">{isEnglish ? 'New Bookings' : 'حجوزات جديدة'}</option>
                             <option value="booking_update">{isEnglish ? 'Booking Updates' : 'تحديثات الحجوزات'}</option>
@@ -1259,12 +1259,12 @@ export default function AdminDashboard() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         {filteredNotifications.length === 0 ? <Card c={<div style={{ textAlign: 'center', color: '#6B7280', padding: '2rem' }}>{t('admin.noNotifications')}</div>} />
                         : filteredNotifications.map(n => (
-                            <Card key={n.id} s={{ background: n.is_read ? '#111827' : 'rgba(139,92,246,0.08)', borderLeft: n.is_read ? '1px solid rgba(255,255,255,0.06)' : '4px solid #8B5CF6' }} c={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Card key={n.id} s={{ background: n.is_read ? 'var(--color-bg-surface)' : 'rgba(139,92,246,0.08)', borderLeft: n.is_read ? '1px solid rgba(255,255,255,0.06)' : '4px solid #8B5CF6' }} c={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={18} color={n.is_read ? '#6B7280' : '#8B5CF6'} /></div>
                                     <div>
-                                        <div style={{ fontWeight: 700, color: 'white', fontSize: '0.9rem' }}>{n.title}</div>
-                                        <div style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>{n.message}</div>
+                                        <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.9rem' }}>{n.title}</div>
+                                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>{n.message}</div>
                                         <div style={{ color: '#6B7280', fontSize: '0.7rem', marginTop: '4px' }}>{new Date(n.created_at).toLocaleString(isEnglish ? 'en-US' : 'ar-EG')}</div>
                                     </div>
                                 </div>
@@ -1277,7 +1277,7 @@ export default function AdminDashboard() {
                 {/* ── AGENTS ── */}
                 {tab === 'agents' && <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                        <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>{t('admin.agents')}</h1>
+                        <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>{t('admin.agents')}</h1>
                             <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>{filteredAgents.length} {isEnglish ? 'matching agents' : 'موظفة مطابقة'}</p></div>
                         <div style={{ display: 'flex', gap: '8px' }}>
                             <Btn onClick={() => handleExport(filteredAgents, 'agents')} color="#10B981"><Download size={14} />{isEnglish ? 'Export' : 'تصدير'}</Btn>
@@ -1286,13 +1286,13 @@ export default function AdminDashboard() {
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-                        <select value={aFilter} onChange={e => setAFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', padding: '9px 11px', fontSize: '0.85rem', minWidth: '200px' }}>
+                        <select value={aFilter} onChange={e => setAFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '9px', color: 'var(--color-text-main)', padding: '9px 11px', fontSize: '0.85rem', minWidth: '200px' }}>
                             <option value="">{isEnglish ? 'All Clients' : 'كل العملاء'} ({agents.length})</option>
                             {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email} ({cl(c.id).length})</option>)}
                         </select>
                         <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
                             <Search size={14} style={{ position: 'absolute', [isRtl ? 'right' : 'left']: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
-                            <input value={aSearch} onChange={e => setASearch(e.target.value)} placeholder={isEnglish ? 'Search agent or owner...' : 'بحث باسم الموظفة أو المالك...'} style={{ width: '100%', padding: isRtl ? '9px 30px 9px 10px' : '9px 10px 9px 30px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '9px', color: 'white', fontSize: '0.85rem' }} />
+                            <input value={aSearch} onChange={e => setASearch(e.target.value)} placeholder={isEnglish ? 'Search agent or owner...' : 'بحث باسم الموظفة أو المالك...'} style={{ width: '100%', padding: isRtl ? '9px 30px 9px 10px' : '9px 10px 9px 30px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '9px', color: 'var(--color-text-main)', fontSize: '0.85rem' }} />
                         </div>
                     </div>
 
@@ -1300,25 +1300,25 @@ export default function AdminDashboard() {
                     {showAddAgent && <Card s={{ marginBottom: '1.25rem', border: '1px solid rgba(139,92,246,0.3)' }} c={<div>
                         <div style={{ fontWeight: 700, color: '#A78BFA', marginBottom: '1rem', fontSize: '0.9rem' }}>➕ {isEnglish ? 'Register New Digital Agent' : 'تسجيل موظفة جديدة'}</div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{isEnglish ? 'Agent Name *' : 'اسم الموظفة *'}</label>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '4px' }}>{isEnglish ? 'Agent Name *' : 'اسم الموظفة *'}</label>
                                 <Input value={newAgent.name} onChange={e => setNewAgent(p => ({ ...p, name: e.target.value }))} placeholder={isEnglish ? 'e.g. Sarah' : 'مثال: سارة'} /></div>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{t('specialtyLabel')}</label>
-                                <select value={newAgent.specialty} onChange={e => setNewAgent(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem' }}>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '4px' }}>{t('specialtyLabel')}</label>
+                                <select value={newAgent.specialty} onChange={e => setNewAgent(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', fontSize: '0.82rem' }}>
                                     {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{isEnglish ? k.toUpperCase() : v.l}</option>)}
                                 </select></div>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{t('home.sectorTitle')}</label>
-                                <select value={newAgent.business_type} onChange={e => setNewAgent(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem' }}>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '4px' }}>{t('home.sectorTitle')}</label>
+                                <select value={newAgent.business_type} onChange={e => setNewAgent(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', fontSize: '0.82rem' }}>
                                     {Object.entries(sectors).map(([k, v]) => <option key={k} value={k}>{v.e} {isEnglish ? k.toUpperCase() : v.l}</option>)}
                                 </select></div>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '4px' }}>{isEnglish ? 'Assign to Client *' : 'أسند للعميل *'}</label>
-                                <select value={newAgent.user_id} onChange={e => setNewAgent(p => ({ ...p, user_id: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', fontSize: '0.82rem' }}>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '4px' }}>{isEnglish ? 'Assign to Client *' : 'أسند للعميل *'}</label>
+                                <select value={newAgent.user_id} onChange={e => setNewAgent(p => ({ ...p, user_id: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', fontSize: '0.82rem' }}>
                                     <option value="">{isEnglish ? 'Select client...' : 'اختر عميل...'}</option>
                                     {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
                                 </select></div>
                         </div>
                         <div style={{ display: 'flex', gap: '0.6rem' }}>
                             <Btn onClick={addAgent}><Check size={14} />{isEnglish ? 'Create Agent' : 'إنشاء الموظفة'}</Btn>
-                            <button onClick={() => setShowAddAgent(false)} style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.83rem' }}>{t('templates.cancelBtn')}</button>
+                            <button onClick={() => setShowAddAgent(false)} style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.83rem' }}>{t('templates.cancelBtn')}</button>
                         </div>
                     </div>} />}
 
@@ -1334,34 +1334,34 @@ export default function AdminDashboard() {
                             return <Card key={agent.id} s={{ border: `1px solid ${isActive ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)'}` }} c={<>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '7px' }}>
                                     <div style={{ flex: 1 }}>
-                                        {isEd ? <input value={editAgent.name} onChange={e => setEditAgent({ ...editAgent, name: e.target.value })} style={{ background: '#1F2937', border: '1px solid #8B5CF6', borderRadius: '5px', color: 'white', padding: '2px 7px', fontWeight: 700, width: '100%', fontSize: '0.85rem', marginBottom: '4px' }} />
-                                            : <div style={{ fontWeight: 700, color: 'white', fontSize: '0.87rem' }}>{agent.name}</div>}
+                                        {isEd ? <input value={editAgent.name} onChange={e => setEditAgent({ ...editAgent, name: e.target.value })} style={{ background: 'var(--color-bg-input)', border: '1px solid #8B5CF6', borderRadius: '5px', color: 'var(--color-text-main)', padding: '2px 7px', fontWeight: 700, width: '100%', fontSize: '0.85rem', marginBottom: '4px' }} />
+                                            : <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.87rem' }}>{agent.name}</div>}
                                         <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>مالك: <span style={{ color: '#A78BFA' }}>{client?.full_name || client?.email || '—'}</span></div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '3px' }}>
                                         {isEd ? <><button onClick={() => saveAgentEdit(editAgent)} style={{ background: '#10B98120', color: '#10B981', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Check size={12} /></button><button onClick={() => setEditAgent(null)} style={{ background: '#EF444420', color: '#EF4444', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><X size={12} /></button></>
-                                            : <><button onClick={() => setEditAgent({ ...agent })} style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Edit2 size={12} /></button>
+                                            : <><button onClick={() => setEditAgent({ ...agent })} style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Edit2 size={12} /></button>
                                                 <button onClick={() => deleteAgent(agent.id)} style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Trash2 size={12} /></button></>}
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', flexWrap: 'wrap' }}>
                                     {isEd ? (
-                                        <select value={editAgent.specialty} onChange={e => setEditAgent({ ...editAgent, specialty: e.target.value })} style={{ background: '#1F2937', border: '1px solid #374151', borderRadius: '4px', color: 'white', fontSize: '0.7rem', padding: '2px' }}>
+                                        <select value={editAgent.specialty} onChange={e => setEditAgent({ ...editAgent, specialty: e.target.value })} style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '4px', color: 'var(--color-text-main)', fontSize: '0.7rem', padding: '2px' }}>
                                             {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
                                         </select>
                                     ) : <span style={{ background: `${role.c}20`, color: role.c, padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{role.l}</span>}
-                                    <span style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{sectors[agent.business_type]?.e || '🏢'}</span>
+                                    <span style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)', padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{sectors[agent.business_type]?.e || '🏢'}</span>
                                 </div>
 
                                 {/* Integration Settings */}
-                                <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '8px', marginBottom: '10px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.03)' }}>
+                                <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '8px', marginBottom: '10px', fontSize: '0.75rem', border: '1px solid var(--color-border-subtle)' }}>
                                     <div style={{ marginBottom: '6px' }}>
                                         <label style={{ color: '#0088cc', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
                                             <MessageSquare size={10} /> Telegram Token
                                         </label>
                                         {isEd ? <Input value={editAgent.telegram_token || ''} onChange={e => setEditAgent({ ...editAgent, telegram_token: e.target.value })} placeholder="7434105220:..." />
-                                            : <div style={{ color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.telegram_token || '❌ غير مرتبط'}</div>}
+                                            : <div style={{ color: 'var(--color-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.telegram_token || '❌ غير مرتبط'}</div>}
                                     </div>
                                     <div>
                                         <label style={{ color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
@@ -1369,13 +1369,13 @@ export default function AdminDashboard() {
                                         </label>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: agent.whatsapp_settings?.enabled ? '#10B981' : '#374151' }} />
-                                            <span style={{ color: '#9CA3AF' }}>{agent.whatsapp_settings?.enabled ? 'نشط' : 'معطل'}</span>
+                                            <span style={{ color: 'var(--color-text-secondary)' }}>{agent.whatsapp_settings?.enabled ? 'نشط' : 'معطل'}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Agent Apps */}
-                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px', marginBottom: '8px' }}>
+                                <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: '8px', marginBottom: '8px' }}>
                                     <div style={{ fontSize: '0.7rem', color: '#6B7280', marginBottom: '5px', fontWeight: 600 }}>التطبيقات والإضافات:</div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                                         {agentAppsConfig.map(app => {
@@ -1400,32 +1400,32 @@ export default function AdminDashboard() {
 
                 {/* ── BOOKINGS ── */}
                 {tab === 'bookings' && <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>الحجوزات</h1>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>الحجوزات</h1>
                     <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.83rem' }}>{filtBk.length} حجز مطابق</p>
                     <div style={{ marginBottom: '0.9rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                        <select value={bFilter} onChange={e => setBFilter(e.target.value)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '7px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                        <select value={bFilter} onChange={e => setBFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '7px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
                             <option value="">كل العملاء ({bookings.length})</option>
                             {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email} ({bl(c.id).length})</option>)}
                         </select>
                         <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
                             <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
-                            <input value={bSearch} onChange={e => setBSearch(e.target.value)} placeholder="بحث باسم الزبونة أو الجوال..." style={{ width: '100%', padding: '7px 30px 7px 10px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '0.82rem' }} />
+                            <input value={bSearch} onChange={e => setBSearch(e.target.value)} placeholder="بحث باسم الزبونة أو الجوال..." style={{ width: '100%', padding: '7px 30px 7px 10px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.82rem' }} />
                         </div>
                         <Btn onClick={() => handleExport(filtBk, 'bookings')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />تصدير Excel</Btn>
                         {bFilter && <button onClick={() => setBFilter('')} style={{ background: 'rgba(255,255,255,0.05)', color: '#EF4444', border: 'none', borderRadius: '7px', padding: '6px 11px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>إلغاء فلفر العميل</button>}
                     </div>
                     <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                             {['العميل', 'الخدمة', 'التاريخ', 'الوقت', 'الحالة'].map(h => <th key={h} style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
                         </tr></thead>
                         <tbody>
                             {filtBk.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا توجد حجوزات</td></tr>
                                 : filtBk.map(b => {
-                                    const sc = STATUSES[b.status] || STATUSES.pending; return <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                                        <td style={{ padding: '0.7rem 0.9rem' }}><div style={{ fontWeight: 600, color: 'white', fontSize: '0.82rem' }}>{b.customer_name || '—'}</div><div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{b.customer_phone}</div></td>
-                                        <td style={{ padding: '0.7rem 0.9rem', color: '#9CA3AF', fontSize: '0.8rem' }}>{b.service_requested || '—'}</td>
-                                        <td style={{ padding: '0.7rem 0.9rem', color: '#9CA3AF', fontSize: '0.79rem' }}>{b.booking_date}</td>
-                                        <td style={{ padding: '0.7rem 0.9rem', color: '#9CA3AF', fontSize: '0.79rem' }}>{b.booking_time?.slice(0, 5)}</td>
+                                    const sc = STATUSES[b.status] || STATUSES.pending; return <tr key={b.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                        <td style={{ padding: '0.7rem 0.9rem' }}><div style={{ fontWeight: 600, color: 'var(--color-text-main)', fontSize: '0.82rem' }}>{b.customer_name || '—'}</div><div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{b.customer_phone}</div></td>
+                                        <td style={{ padding: '0.7rem 0.9rem', color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>{b.service_requested || '—'}</td>
+                                        <td style={{ padding: '0.7rem 0.9rem', color: 'var(--color-text-secondary)', fontSize: '0.79rem' }}>{b.booking_date}</td>
+                                        <td style={{ padding: '0.7rem 0.9rem', color: 'var(--color-text-secondary)', fontSize: '0.79rem' }}>{b.booking_time?.slice(0, 5)}</td>
                                         <td style={{ padding: '0.7rem 0.9rem' }}><select value={b.status} onChange={e => updateBookingStatus(b.id, e.target.value)} style={{ background: sc.bg, color: sc.t, border: 'none', borderRadius: '6px', padding: '2px 8px', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer' }}>
                                             {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
                                         </select></td>
@@ -1440,10 +1440,10 @@ export default function AdminDashboard() {
 
                 {/* ── INFRASTRUCTURE ── */}
                 {tab === 'infrastructure' && <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>البنية التحتية</h1>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>البنية التحتية</h1>
                     <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>إدارة القطاعات والأدوار وسجلات النظام</p>
 
-                    <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: '#111827', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
+                    <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: 'var(--color-bg-surface)', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
                         {[['cfg', '⚙️ الإعدادات'], ['logs', '📋 السجلات']].map(([id, lbl]) => <button key={id} onClick={() => setIntTab(id)} style={{ padding: '7px 18px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', background: intTab === id ? '#8B5CF6' : 'transparent', color: intTab === id ? 'white' : '#6B7280' }}>
                             {lbl}
                         </button>)}
@@ -1452,7 +1452,7 @@ export default function AdminDashboard() {
                     {intTab === 'cfg' && <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                             <div>
-                                <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 800 }}>تخصيص المنصة</h3>
+                                <h3 style={{ color: 'var(--color-text-main)', fontSize: '1rem', fontWeight: 800 }}>تخصيص المنصة</h3>
                                 <p style={{ color: '#6B7280', fontSize: '0.8rem', margin: 0 }}>تحكم في القطاعات والأدوار الوظيفية المتاحة عبر المنصة</p>
                             </div>
                             <Btn onClick={async () => {
@@ -1468,7 +1468,7 @@ export default function AdminDashboard() {
 
                         {/* SECTORS SECTION */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>1. القطاعات المتاحة (Sectors)</h3>
+                            <h3 style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 700 }}>1. القطاعات المتاحة (Sectors)</h3>
                             <button onClick={() => {
                                 const newId = `sec_${Date.now()}`;
                                 setSectors(p => ({ ...p, [newId]: { l: 'قطاع جديد', e: '📁', c: '#10B981', on: true } }));
@@ -1479,9 +1479,9 @@ export default function AdminDashboard() {
                                 <Card key={sk} s={{ border: `1px solid ${sec.on ? sec.c + '30' : 'rgba(255,255,255,0.05)'}` }} c={<>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <input value={sec.e} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, e: e.target.value } }))} style={{ width: '30px', background: 'transparent', border: 'none', fontSize: '1.3rem', color: 'white', textAlign: 'center' }} />
+                                            <input value={sec.e} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, e: e.target.value } }))} style={{ width: '30px', background: 'transparent', border: 'none', fontSize: '1.3rem', color: 'var(--color-text-main)', textAlign: 'center' }} />
                                             <div>
-                                                <input value={sec.l} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, l: e.target.value } }))} style={{ fontWeight: 700, color: 'white', fontSize: '0.87rem', background: 'transparent', border: 'none' }} />
+                                                <input value={sec.l} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, l: e.target.value } }))} style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.87rem', background: 'transparent', border: 'none' }} />
                                                 <input type="color" value={sec.c} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, c: e.target.value } }))} style={{ width: '30px', height: '15px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'block' }} />
                                             </div>
                                         </div>
@@ -1501,7 +1501,7 @@ export default function AdminDashboard() {
 
                         {/* roles SECTION */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>2. الأدوار الوظيفية (Roles)</h3>
+                            <h3 style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 700 }}>2. الأدوار الوظيفية (Roles)</h3>
                             <button onClick={() => {
                                 const newId = `role_${Date.now()}`;
                                 setRoles(p => ({ ...p, [newId]: { l: 'دور جديد', c: '#8B5CF6', on: true } }));
@@ -1514,7 +1514,7 @@ export default function AdminDashboard() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: rol.c }} />
                                             <div>
-                                                <input value={rol.l} onChange={e => setRoles(p => ({ ...p, [rk]: { ...rol, l: e.target.value } }))} style={{ fontWeight: 700, color: 'white', fontSize: '0.87rem', background: 'transparent', border: 'none' }} />
+                                                <input value={rol.l} onChange={e => setRoles(p => ({ ...p, [rk]: { ...rol, l: e.target.value } }))} style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.87rem', background: 'transparent', border: 'none' }} />
                                                 <input type="color" value={rol.c} onChange={e => setRoles(p => ({ ...p, [rk]: { ...rol, c: e.target.value } }))} style={{ width: '30px', height: '15px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'block' }} />
                                             </div>
                                         </div>
@@ -1533,7 +1533,7 @@ export default function AdminDashboard() {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700 }}>إدارة تطبيقات الموظفات</h3>
+                            <h3 style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 700 }}>إدارة تطبيقات الموظفات</h3>
                             <Btn onClick={async () => {
                                 setSaving(true);
                                 await adminService.updatePlatformSettings('system_agent_apps', agentAppsConfig);
@@ -1545,7 +1545,7 @@ export default function AdminDashboard() {
                             {agentAppsConfig.map((app, idx) => (
                                 <Card key={app.id} c={<div>
                                     <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                                        <select value={app.icon} onChange={e => { const u = [...agentAppsConfig]; u[idx].icon = e.target.value; setAgentAppsConfig(u); }} style={{ background: '#1F2937', color: 'white', border: '1px solid #374151', borderRadius: '5px' }}>
+                                        <select value={app.icon} onChange={e => { const u = [...agentAppsConfig]; u[idx].icon = e.target.value; setAgentAppsConfig(u); }} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)', borderRadius: '5px' }}>
                                             {Object.keys(ICON_MAP).map(i => <option key={i} value={i}>{i}</option>)}
                                         </select>
                                         <Input value={app.label} onChange={e => { const u = [...agentAppsConfig]; u[idx].label = e.target.value; setAgentAppsConfig(u); }} />
@@ -1558,7 +1558,7 @@ export default function AdminDashboard() {
 
                     {intTab === 'logs' && <div>
                         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', alignItems: 'center' }}>
-                            <select value={logParams.category} onChange={e => setLogParams(p => ({ ...p, category: e.target.value }))} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '7px', padding: '6px' }}>
+                            <select value={logParams.category} onChange={e => setLogParams(p => ({ ...p, category: e.target.value }))} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-main)', borderRadius: '7px', padding: '6px' }}>
                                 <option value="">كل التصنيفات</option>
                                 <option value="system">نظام</option>
                                 <option value="auth">هوية</option>
@@ -1568,7 +1568,7 @@ export default function AdminDashboard() {
                         </div>
                         <Card s={{ padding: 0 }} c={<div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', textAlign: 'right' }}>
-                                <thead><tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <thead><tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                     <th style={{ padding: '0.6rem' }}>الوقت</th>
                                     <th style={{ padding: '0.6rem' }}>المستوى</th>
                                     <th style={{ padding: '0.6rem' }}>التصنيف</th>
@@ -1577,11 +1577,11 @@ export default function AdminDashboard() {
                                 <tbody>
                                     {logs.length === 0 ? <tr><td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>لا توجد سجلات</td></tr>
                                         : logs.map(l => (
-                                            <tr key={l.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                            <tr key={l.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                                 <td style={{ padding: '0.6rem', color: '#6B7280' }}>{new Date(l.created_at).toLocaleString('ar-EG')}</td>
                                                 <td style={{ padding: '0.6rem' }}><span style={{ color: l.level === 'error' ? '#EF4444' : l.level === 'warn' ? '#F59E0B' : '#3B82F6' }}>{l.level}</span></td>
-                                                <td style={{ padding: '0.6rem', color: '#9CA3AF' }}>{l.category}</td>
-                                                <td style={{ padding: '0.6rem', color: 'white' }}>{l.message}</td>
+                                                <td style={{ padding: '0.6rem', color: 'var(--color-text-secondary)' }}>{l.category}</td>
+                                                <td style={{ padding: '0.6rem', color: 'var(--color-text-main)' }}>{l.message}</td>
                                             </tr>
                                         ))}
                                 </tbody>
@@ -1594,7 +1594,7 @@ export default function AdminDashboard() {
                 {tab === 'pricing' && <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                         <div>
-                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>الباقات والأسعار</h1>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>الباقات والأسعار</h1>
                             <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>تعديل استراتيجية التسعير والمميزات التقنية لكل فئة</p>
                         </div>
                         <Btn onClick={async () => { 
@@ -1614,17 +1614,17 @@ export default function AdminDashboard() {
                                     <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#8B5CF620', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <Zap size={16} color="#8B5CF6" />
                                     </div>
-                                    <h3 style={{ color: 'white', fontWeight: 800, margin: 0, fontSize: '1rem' }}>{plan.name}</h3>
+                                    <h3 style={{ color: 'var(--color-text-main)', fontWeight: 800, margin: 0, fontSize: '1rem' }}>{plan.name}</h3>
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                     <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>السعر الشهري ($)</label>
-                                        <input type="number" value={plan.monthlyPrice} onChange={e => { const u = [...pricing]; u[idx].monthlyPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white' }} />
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>السعر الشهري ($)</label>
+                                        <input type="number" value={plan.monthlyPrice} onChange={e => { const u = [...pricing]; u[idx].monthlyPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)' }} />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>السعر السنوي ($/شهر)</label>
-                                        <input type="number" value={plan.yearlyPrice} onChange={e => { const u = [...pricing]; u[idx].yearlyPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white' }} />
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>السعر السنوي ($/شهر)</label>
+                                        <input type="number" value={plan.yearlyPrice} onChange={e => { const u = [...pricing]; u[idx].yearlyPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)' }} />
                                     </div>
                                     <div>
                                         <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.75rem', marginBottom: '5px' }}>سعر التجربة (3 شهور)</label>
@@ -1632,15 +1632,15 @@ export default function AdminDashboard() {
                                     </div>
                                     <div>
                                         <label style={{ display: 'block', color: '#10B981', fontSize: '0.75rem', marginBottom: '5px' }}>عدد النقاط (شهرياً)</label>
-                                        <input type="number" value={plan.credits || 0} onChange={e => { const u = [...pricing]; u[idx].credits = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10B981' }} />
+                                        <input type="number" value={plan.credits || 0} onChange={e => { const u = [...pricing]; u[idx].credits = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10B981' }} />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>أقصى عدد موظفين</label>
-                                        <input type="number" value={plan.agentsLimit || 0} onChange={e => { const u = [...pricing]; u[idx].agentsLimit = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white' }} />
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>أقصى عدد موظفين</label>
+                                        <input type="number" value={plan.agentsLimit || 0} onChange={e => { const u = [...pricing]; u[idx].agentsLimit = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)' }} />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '5px' }}>أدوات/قنوات لكل موظف</label>
-                                        <input type="number" value={plan.toolsLimit || 0} onChange={e => { const u = [...pricing]; u[idx].toolsLimit = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white' }} />
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>أدوات/قنوات لكل موظف</label>
+                                        <input type="number" value={plan.toolsLimit || 0} onChange={e => { const u = [...pricing]; u[idx].toolsLimit = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)' }} />
                                     </div>
                                 </div>
                             </>} />
@@ -1649,7 +1649,7 @@ export default function AdminDashboard() {
 
                     {/* Add-ons Section */}
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <h3 style={{ color: 'white', fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.5rem' }}>باقات الشحن السريع (Add-ons)</h3>
+                        <h3 style={{ color: 'var(--color-text-main)', fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.5rem' }}>باقات الشحن السريع (Add-ons)</h3>
                         <p style={{ color: '#6B7280', fontSize: '0.8rem', marginBottom: '1rem' }}>تحكم في أسعار "Refill" التي تظهر للعملاء في لوحة التحكم</p>
                         
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
@@ -1658,27 +1658,27 @@ export default function AdminDashboard() {
                                 const idx = pricing.findIndex(p => p.id === addonId);
                                 
                                 return (
-                                    <Card key={addonId} s={{ background: '#1F293760' }} c={<>
+                                    <Card key={addonId} s={{ background: 'var(--color-bg-input)60' }} c={<>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                                             <div style={{ fontWeight: 700, color: '#A78BFA' }}>{addon.name}</div>
                                             <div style={{ fontSize: '0.7rem', background: '#A78BFA20', color: '#A78BFA', padding: '2px 8px', borderRadius: '20px' }}>شحن رصيد</div>
                                         </div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                                             <div>
-                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.7rem', marginBottom: '3px' }}>السعر ($)</label>
+                                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.7rem', marginBottom: '3px' }}>السعر ($)</label>
                                                 <input type="number" value={addon.monthlyPrice} onChange={e => {
                                                     const val = Number(e.target.value);
                                                     if (idx === -1) setPricing(p => [...p, { ...addon, monthlyPrice: val }]);
                                                     else { const u = [...pricing]; u[idx].monthlyPrice = val; setPricing(u); }
-                                                }} style={{ width: '100%', padding: '8px', background: '#0D1117', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', color: 'white' }} />
+                                                }} style={{ width: '100%', padding: '8px', background: '#0D1117', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)' }} />
                                             </div>
                                             <div>
-                                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.7rem', marginBottom: '3px' }}>النقاط</label>
+                                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.7rem', marginBottom: '3px' }}>النقاط</label>
                                                 <input type="number" value={addon.credits} onChange={e => {
                                                     const val = Number(e.target.value);
                                                     if (idx === -1) setPricing(p => [...p, { ...addon, credits: val }]);
                                                     else { const u = [...pricing]; u[idx].credits = val; setPricing(u); }
-                                                }} style={{ width: '100%', padding: '8px', background: '#0D1117', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', color: 'white' }} />
+                                                }} style={{ width: '100%', padding: '8px', background: '#0D1117', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)' }} />
                                             </div>
                                         </div>
                                     </>} />
@@ -1691,23 +1691,23 @@ export default function AdminDashboard() {
                 {/* ── INTEGRATIONS ── */}
                 {
                     tab === 'integrations' && <div>
-                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 1.1rem' }}>الربط التقني</h1>
-                        <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: '#111827', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 1.1rem' }}>الربط التقني</h1>
+                        <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: 'var(--color-bg-surface)', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
                             {[['platform', '⚙️ مفاتيح المنصة'], ['client', '👤 مفاتيح العملاء']].map(([id, lbl]) => <button key={id} onClick={() => setIntTab(id)} style={{ padding: '7px 18px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', background: intTab === id ? '#8B5CF6' : 'transparent', color: intTab === id ? 'white' : '#6B7280' }}>
                                 {lbl}
                             </button>)}
                         </div>
 
                         {intTab === 'platform' && <div>
-                            <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.82rem' }}>هذه المفاتيح تخدم المنصة بأكملها — OpenAI لتشغيل الذكاء الاصطناعي، n8n لأتمتة العمليات. تُخزَّن في جدول <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>platform_settings</code>.</p>
+                            <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.82rem' }}>هذه المفاتيح تخدم المنصة بأكملها — OpenAI لتشغيل الذكاء الاصطناعي، n8n لأتمتة العمليات. تُخزَّن في جدول <code style={{ background: 'var(--color-bg-input)', padding: '1px 5px', borderRadius: '4px' }}>platform_settings</code>.</p>
                             
                             {/* Platform Telegram Bot (New) */}
                             <div style={{ marginBottom: '2rem', background: 'rgba(0,136,204,0.05)', borderRadius: '13px', border: '1px solid rgba(0,136,204,0.2)', padding: '1.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
                                     <MessageSquare size={20} color="#0088cc" />
-                                    <h3 style={{ color: 'white', margin: 0, fontWeight: 700, fontSize: '1rem' }}>بوت التيليجرام الخاص بالمنصة (Platform Main Bot)</h3>
+                                    <h3 style={{ color: 'var(--color-text-main)', margin: 0, fontWeight: 700, fontSize: '1rem' }}>بوت التيليجرام الخاص بالمنصة (Platform Main Bot)</h3>
                                 </div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '8px' }}>توكن البوت الرئيسي (يستخدم للإشعارات الإدارية والمستشار الذكي)</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '8px' }}>توكن البوت الرئيسي (يستخدم للإشعارات الإدارية والمستشار الذكي)</label>
                                 <Input 
                                     type="password" 
                                     value={platformTelegramToken} 
@@ -1721,9 +1721,9 @@ export default function AdminDashboard() {
                             <div style={{ marginBottom: '2rem', background: 'rgba(139,92,246,0.05)', borderRadius: '13px', border: '1px solid rgba(139,92,246,0.2)', padding: '1.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
                                     <CreditCard size={20} color="#A78BFA" />
-                                    <h3 style={{ color: 'white', margin: 0, fontWeight: 700, fontSize: '1rem' }}>إعدادات الدفع للأكاديمية (Stripe Academy)</h3>
+                                    <h3 style={{ color: 'var(--color-text-main)', margin: 0, fontWeight: 700, fontSize: '1rem' }}>إعدادات الدفع للأكاديمية (Stripe Academy)</h3>
                                 </div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '8px' }}>Stripe Price ID (للاشتراك الـ 20 دولار في الأكاديمية)</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '8px' }}>Stripe Price ID (للاشتراك الـ 20 دولار في الأكاديمية)</label>
                                 <Input 
                                     value={academyPriceId} 
                                     placeholder="price_1TLQyRAW..." 
@@ -1735,18 +1735,18 @@ export default function AdminDashboard() {
                             {integrations.map((integ, idx) => {
                                 const conn = integ.status === 'Connected';
                                 return (
-                                    <div key={integ.id} style={{ marginBottom: '0.9rem', background: '#111827', borderRadius: '13px', border: `1px solid ${conn ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}`, padding: '1.1rem' }}>
+                                    <div key={integ.id} style={{ marginBottom: '0.9rem', background: 'var(--color-bg-surface)', borderRadius: '13px', border: `1px solid ${conn ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}`, padding: '1.1rem' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
-                                            <h3 style={{ color: 'white', margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{integ.name}</h3>
+                                            <h3 style={{ color: 'var(--color-text-main)', margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{integ.name}</h3>
                                             <select value={integ.status} onChange={e => { const u = [...integrations]; u[idx].status = e.target.value; setIntegrations(u); }} style={{ background: conn ? '#10B98120' : '#EF444420', color: conn ? '#10B981' : '#EF4444', border: 'none', borderRadius: '6px', padding: '2px 9px', fontWeight: 600, cursor: 'pointer', fontSize: '0.75rem' }}>
                                                 <option value="Disconnected">غير متصل ❌</option>
                                                 <option value="Connected">متصل ✅</option>
                                             </select>
                                         </div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-                                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>Webhook URL</label>
+                                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>Webhook URL</label>
                                                 <Input value={integ.url} placeholder="https://..." onChange={e => { const u = [...integrations]; u[idx].url = e.target.value; setIntegrations(u); }} /></div>
-                                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>API Key / Token</label>
+                                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>API Key / Token</label>
                                                 <Input type="password" value={integ.key} placeholder="sk-..." onChange={e => { const u = [...integrations]; u[idx].key = e.target.value; setIntegrations(u); }} /></div>
                                         </div>
                                     </div>
@@ -1754,18 +1754,18 @@ export default function AdminDashboard() {
                             })}
 
                             <Btn onClick={savePlatformInteg} disabled={saving} style={{ marginTop: '0.75rem' }}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ مفاتيح المنصة'}</Btn>
-                            <p style={{ color: '#4B5563', fontSize: '0.72rem', marginTop: '0.6rem' }}>💡 إذا ظهر خطأ: تأكد من وجود جدول <code style={{ background: '#1F2937', padding: '1px 4px', borderRadius: '3px' }}>platform_settings</code> في Supabase.</p>
+                            <p style={{ color: '#4B5563', fontSize: '0.72rem', marginTop: '0.6rem' }}>💡 إذا ظهر خطأ: تأكد من وجود جدول <code style={{ background: 'var(--color-bg-input)', padding: '1px 4px', borderRadius: '3px' }}>platform_settings</code> في Supabase.</p>
                         </div>}
 
                         {intTab === 'client' && <div>
-                            <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>أضف مفاتيح الربط لعميل معين — تُخزَّن في <code style={{ background: '#1F2937', padding: '1px 5px', borderRadius: '4px' }}>entities</code></p>
-                            <select value={selIntClient || ''} onChange={e => setSelIntClient(e.target.value || null)} style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', padding: '8px 12px', fontSize: '0.83rem', minWidth: '260px', marginBottom: '1rem' }}>
+                            <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>أضف مفاتيح الربط لعميل معين — تُخزَّن في <code style={{ background: 'var(--color-bg-input)', padding: '1px 5px', borderRadius: '4px' }}>entities</code></p>
+                            <select value={selIntClient || ''} onChange={e => setSelIntClient(e.target.value || null)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '8px 12px', fontSize: '0.83rem', minWidth: '260px', marginBottom: '1rem' }}>
                                 <option value="">اختر عميلاً...</option>
                                 {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
                             </select>
-                            {selIntClient && <div style={{ maxWidth: '500px', background: '#111827', borderRadius: '13px', border: '1px solid rgba(255,255,255,0.06)', padding: '1.1rem' }}>
+                            {selIntClient && <div style={{ maxWidth: '500px', background: 'var(--color-bg-surface)', borderRadius: '13px', border: '1px solid var(--color-border-subtle)', padding: '1.1rem' }}>
                                 {[['telegram_token', '🤖 Telegram Bot Token', 'توكن البوت من @BotFather'], ['whatsapp_number', '📱 رقم WhatsApp', 'مثال: 966501234567'], ['whatsapp_api_key', '🔑 WhatsApp API Key', 'مفتاح الوصول لـ API']].map(([f, l, hint]) => <div key={f} style={{ marginBottom: '0.9rem' }}>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.78rem', marginBottom: '3px' }}>{l}</label>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.78rem', marginBottom: '3px' }}>{l}</label>
                                     <div style={{ fontSize: '0.7rem', color: '#4B5563', marginBottom: '5px' }}>{hint}</div>
                                     <Input type={f.includes('key') || f.includes('token') ? 'password' : 'text'} value={clientKeys[selIntClient]?.[f] || ''} placeholder="—" onChange={e => setClientKeys(p => ({ ...p, [selIntClient]: { ...(p[selIntClient] || {}), [f]: e.target.value } }))} />
                                 </div>)}
@@ -1780,22 +1780,22 @@ export default function AdminDashboard() {
                 {/* ── CONCIERGE CHATS ── */}
                 {tab === 'concierge-chats' && <div style={{ display: 'flex', gap: '1.5rem' }}>
                     <div style={{ flex: 1 }}>
-                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>محادثات نورة</h1>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>محادثات نورة</h1>
                         <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>سجل المحادثات بين العمال والمنصة والمستشارة الذكية</p>
                         
                         <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                 {['العميل', 'آخر رسالة', 'التحديث', 'الإجراء'].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
                             </tr></thead>
                             <tbody>
                                 {conciergeChats.length === 0 ? <tr><td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>لا يوجد سجل محادثات حالياً</td></tr>
                                     : conciergeChats.map(chat => (
-                                        <tr key={chat.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: selChat?.id === chat.id ? 'rgba(139,92,246,0.06)' : 'transparent' }}>
+                                        <tr key={chat.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', background: selChat?.id === chat.id ? 'rgba(139,92,246,0.06)' : 'transparent' }}>
                                             <td style={{ padding: '0.75rem 0.9rem' }}>
-                                                <div style={{ fontWeight: 700, color: 'white', fontSize: '0.84rem' }}>{chat.user_name || '—'}</div>
+                                                <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.84rem' }}>{chat.user_name || '—'}</div>
                                                 <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{chat.user_email}</div>
                                             </td>
-                                            <td style={{ padding: '0.75rem 0.9rem', color: '#9CA3AF', fontSize: '0.8rem', maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-secondary)', fontSize: '0.8rem', maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                 {chat.last_message || '—'}
                                             </td>
                                             <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>
@@ -1812,7 +1812,7 @@ export default function AdminDashboard() {
 
                     {selChat && <div style={{ width: '400px', flexShrink: 0, height: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontWeight: 800, color: 'white', fontSize: '0.9rem' }}>💬 تفاصيل المحادثة وتحليل العميل</div>
+                            <div style={{ fontWeight: 800, color: 'var(--color-text-main)', fontSize: '0.9rem' }}>💬 تفاصيل المحادثة وتحليل العميل</div>
                             <button onClick={() => setSelChat(null)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }}><X size={16} /></button>
                         </div>
 
@@ -1825,7 +1825,7 @@ export default function AdminDashboard() {
                                         <div style={{ 
                                             fontSize: '0.65rem', 
                                             background: selChat.metadata.insights.interest_level === 'high' ? '#10B981' : '#F59E0B',
-                                            color: 'white',
+                                            color: 'var(--color-text-main)',
                                             padding: '2px 8px',
                                             borderRadius: '10px',
                                             fontWeight: 800
@@ -1834,8 +1834,8 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.75rem' }}>
-                                        <div style={{ color: '#9CA3AF' }}>النشاط: <span style={{ color: 'white' }}>{selChat.metadata.insights.business_type || 'غير محدد'}</span></div>
-                                        <div style={{ color: '#9CA3AF' }}>الحالة: <span style={{ color: 'white' }}>{selChat.metadata.insights.lead_status || 'استفسار'}</span></div>
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>النشاط: <span style={{ color: 'var(--color-text-main)' }}>{selChat.metadata.insights.business_type || 'غير محدد'}</span></div>
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>الحالة: <span style={{ color: 'var(--color-text-main)' }}>{selChat.metadata.insights.lead_status || 'استفسار'}</span></div>
                                     </div>
                                     <div style={{ marginTop: '0.5rem', color: '#A78BFA', fontSize: '0.75rem', fontWeight: 600 }}>
                                         💡 {selChat.metadata.insights.primary_need}
@@ -1873,7 +1873,7 @@ export default function AdminDashboard() {
                 {tab === 'interview-agents' && <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                         <div>
-                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>🎙️ قوالب موظفي المقابلة (الموصى بهم)</h1>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>🎙️ قوالب موظفي المقابلة (الموصى بهم)</h1>
                             <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>قم بإدارة النماذج والشخصيات الجاهزة التي يتم عرضها للعملاء في غرفة المقابلة</p>
                         </div>
                         <Btn onClick={() => setShowAddTemplate(!showAddTemplate)}><Plus size={14} />إضافة قالب شخصية جديد</Btn>
@@ -1881,26 +1881,26 @@ export default function AdminDashboard() {
 
                     {showAddTemplate && <Card s={{ marginBottom: '1rem', border: '1px solid #8B5CF640' }} c={<div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>اسم القالب (عربي)</label>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>اسم القالب (عربي)</label>
                                 <Input value={newTemplate.name} onChange={e => setNewTemplate(p => ({ ...p, name: e.target.value }))} placeholder="مثال: منسقة حجوزات ذكية" /></div>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>اسم القالب (إنجليزي)</label>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>اسم القالب (إنجليزي)</label>
                                 <Input value={newTemplate.name_en} onChange={e => setNewTemplate(p => ({ ...p, name_en: e.target.value }))} placeholder="e.g. Smart Booking Coordinator" dir="ltr" /></div>
 
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>التخصص</label>
-                                <select value={newTemplate.specialty} onChange={e => setNewTemplate(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151' }}>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>التخصص</label>
+                                <select value={newTemplate.specialty} onChange={e => setNewTemplate(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', color: 'var(--color-text-main)', borderRadius: '7px', border: '1px solid var(--color-border-subtle)' }}>
                                     {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
                                 </select></div>
-                            <div><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>القطاع</label>
-                                <select value={newTemplate.business_type} onChange={e => setNewTemplate(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151' }}>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>القطاع</label>
+                                <select value={newTemplate.business_type} onChange={e => setNewTemplate(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', color: 'var(--color-text-main)', borderRadius: '7px', border: '1px solid var(--color-border-subtle)' }}>
                                     {Object.entries(sectors).map(([k, v]) => <option key={k} value={k}>{v.e} {v.l}</option>)}
                                 </select></div>
 
-                            <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (عربي)</label>
-                                <textarea value={newTemplate.description} onChange={e => setNewTemplate(p => ({ ...p, description: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151', minHeight: '60px' }} placeholder="اشرح مهام هذه الموظفة بالعربية..." /></div>
-                            <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (إنجليزي)</label>
-                                <textarea value={newTemplate.description_en} onChange={e => setNewTemplate(p => ({ ...p, description_en: e.target.value }))} style={{ width: '100%', padding: '8px', background: '#1F2937', color: 'white', borderRadius: '7px', border: '1px solid #374151', minHeight: '60px' }} placeholder="Explain this agent's tasks in English..." dir="ltr" /></div>
+                            <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (عربي)</label>
+                                <textarea value={newTemplate.description} onChange={e => setNewTemplate(p => ({ ...p, description: e.target.value }))} style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', color: 'var(--color-text-main)', borderRadius: '7px', border: '1px solid var(--color-border-subtle)', minHeight: '60px' }} placeholder="اشرح مهام هذه الموظفة بالعربية..." /></div>
+                            <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>الوصف (إنجليزي)</label>
+                                <textarea value={newTemplate.description_en} onChange={e => setNewTemplate(p => ({ ...p, description_en: e.target.value }))} style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', color: 'var(--color-text-main)', borderRadius: '7px', border: '1px solid var(--color-border-subtle)', minHeight: '60px' }} placeholder="Explain this agent's tasks in English..." dir="ltr" /></div>
                             <div style={{ gridColumn: 'span 2' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.73rem', marginBottom: '6px' }}>صورة الموظفة (صورة حقيقية)</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '6px' }}>صورة الموظفة (صورة حقيقية)</label>
                                 <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '8px' }}>
                                     {REALISTIC_AVATARS.map((url, i) => (
                                         <img 
@@ -1932,19 +1932,19 @@ export default function AdminDashboard() {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <img src={getRealisticAvatar(t.avatar)} alt="Avatar" style={{ width: '38px', height: '38px', borderRadius: '10px', objectFit: 'cover' }} />
                                         <div>
-                                            <div style={{ fontWeight: 700, color: 'white', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
                                                 {isEnglish ? (t.name_en || t.name) : t.name}
                                             </div>
-                                            <div style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>{t.name_en && !isEnglish ? t.name_en : ''}</div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>{t.name_en && !isEnglish ? t.name_en : ''}</div>
                                         </div>
                                     </div>
                                     <button onClick={() => deleteTemplate(t.id)} style={{ color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={13} /></button>
                                 </div>
                                 <div style={{ display: 'flex', gap: '4px', marginBottom: '0.5rem' }}>
                                     <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: '#3B82F620', color: '#3B82F6' }}>{roles[t.specialty]?.l || t.specialty}</span>
-                                    <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: '#9CA3AF' }}>{sectors[t.business_type]?.l || t.business_type}</span>
+                                    <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)' }}>{sectors[t.business_type]?.l || t.business_type}</span>
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginBottom: '4px', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginBottom: '4px', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
                                     {isEnglish ? (t.description_en || t.description) : t.description}
                                 </div>
                             </div>} />
@@ -1956,28 +1956,28 @@ export default function AdminDashboard() {
                 {
                     tab === 'ai-settings' && <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                            <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>المستشارة الذكية</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>إعدادات الذكاء الاصطناعي الخاص بنورة</p></div>
+                            <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>المستشارة الذكية</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>إعدادات الذكاء الاصطناعي الخاص بنورة</p></div>
                             <Btn onClick={saveAiConfig} disabled={saving}><Save size={14} />{saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}</Btn>
                         </div>
                         <Card c={<div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>1. قاعدة المعرفة (Knowledge Base)</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>1. قاعدة المعرفة (Knowledge Base)</label>
                                 <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>جميع المعلومات التي تستند إليها المستشارة عن منصة 24Shift (الأسعار، الخدمات، الشروط)</p>
-                                <textarea value={aiConfig.knowledge || ''} onChange={e => setAiConfig({ ...aiConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '180px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل بيانات المنصة هنا..." />
+                                <textarea value={aiConfig.knowledge || ''} onChange={e => setAiConfig({ ...aiConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '180px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل بيانات المنصة هنا..." />
                             </div>
                             <div>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
                                     <Lock size={14} color="#10B981" /> 2. التوجيهات الخاصة (System Prompt) - عربي
                                     <span style={{ fontSize: '0.65rem', background: '#10B98120', color: '#10B981', padding: '2px 6px', borderRadius: '4px' }}>هوية محمية</span>
                                 </label>
                                 <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>تعليمات الشخصية وأسلوب التحدث بالعربية. (ملاحظة: اسم نورة ودورها كمستشارة للمنصة مقفلان برمجياً لحماية الهوية).</p>
-                                <textarea value={aiConfig.prompt_ar || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_ar: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل التعليمات الإضافية هنا..." />
+                                <textarea value={aiConfig.prompt_ar || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_ar: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="أدخل التعليمات الإضافية هنا..." />
                             </div>
                             <div>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
                                     <Lock size={14} color="#10B981" /> 2. التوجيهات الخاصة (System Prompt) - إنجليزي
                                 </label>
-                                <textarea dir="ltr" value={aiConfig.prompt_en || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_en: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="Add additional english instructions here..." />
+                                <textarea dir="ltr" value={aiConfig.prompt_en || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_en: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="Add additional english instructions here..." />
                             </div>
                             <div>
                                 <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>3. الحد الأقصى لطول الرد (حروف)</label>
@@ -1987,7 +1987,7 @@ export default function AdminDashboard() {
                         </div>} />
 
                         <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                            <div><h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>⚙️ إعدادات المستشار الإداري (Smart Advisor)</h3></div>
+                            <div><h3 style={{ color: 'var(--color-text-main)', fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>⚙️ إعدادات المستشار الإداري (Smart Advisor)</h3></div>
                             <Btn onClick={async () => {
                                 setSaving(true);
                                 await adminService.updatePlatformSettings('admin_advisor_config', advisorConfig);
@@ -1997,12 +1997,12 @@ export default function AdminDashboard() {
                         </div>
                         <Card c={<div>
                             <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '6px' }}>تعليمات الشخصية (System Prompt)</label>
-                                <textarea value={advisorConfig.prompt || ''} onChange={e => setAdvisorConfig({ ...advisorConfig, prompt: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '100px', fontSize: '0.85rem' }} placeholder="أنت مستشار إداري خبير في منصات AI..." />
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '6px' }}>تعليمات الشخصية (System Prompt)</label>
+                                <textarea value={advisorConfig.prompt || ''} onChange={e => setAdvisorConfig({ ...advisorConfig, prompt: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '100px', fontSize: '0.85rem' }} placeholder="أنت مستشار إداري خبير في منصات AI..." />
                             </div>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '6px' }}>قاعدة المعرفة الإدارية</label>
-                                <textarea value={advisorConfig.knowledge || ''} onChange={e => setAdvisorConfig({ ...advisorConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: 'white', minHeight: '100px', fontSize: '0.85rem' }} placeholder="أدخل معلومات سرية أو استراتيجية تخص إدارة المنصة..." />
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '6px' }}>قاعدة المعرفة الإدارية</label>
+                                <textarea value={advisorConfig.knowledge || ''} onChange={e => setAdvisorConfig({ ...advisorConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '100px', fontSize: '0.85rem' }} placeholder="أدخل معلومات سرية أو استراتيجية تخص إدارة المنصة..." />
                             </div>
                         </div>} />
                     </div>
@@ -2012,19 +2012,19 @@ export default function AdminDashboard() {
                 {tab === 'admin-advisor' && (
                     <div style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div>
-                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>🎙️ {isEnglish ? 'Smart Advisor' : 'المستشار الذكي للأدمن'}</h1>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>🎙️ {isEnglish ? 'Smart Advisor' : 'المستشار الذكي للأدمن'}</h1>
                             <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>{isEnglish ? 'Discuss platform strategies, request data analysis, and improve agent performance.' : 'ناقش استراتيجيات المنصة، واطلب تحليل البيانات، وحسّن أداء "الموظفات الأذكياء".'}</p>
                         </div>
 
                         <div style={{ flex: 1, display: 'flex', gap: '1.5rem', overflow: 'hidden' }}>
                             {/* Chat Interface */}
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0D1117', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0D1117', borderRadius: '15px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
                                 <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     {(advisorMessages || []).map((m, i) => (
                                         <div key={i} style={{ 
                                             alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
                                             maxWidth: '80%',
-                                            background: m.role === 'user' ? '#1F2937' : 'rgba(139,92,246,0.1)',
+                                            background: m.role === 'user' ? 'var(--color-bg-input)' : 'rgba(139,92,246,0.1)',
                                             color: m.role === 'user' ? 'white' : '#A78BFA',
                                             padding: '12px 16px',
                                             borderRadius: '15px',
@@ -2036,7 +2036,7 @@ export default function AdminDashboard() {
                                         </div>
                                     ))}
                                 </div>
-                                <div style={{ padding: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+                                <div style={{ padding: '1.25rem', borderTop: '1px solid var(--color-border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
                                     <form style={{ display: 'flex', gap: '0.75rem' }} onSubmit={async (e) => {
                                         e.preventDefault();
                                         if (!advisorInput?.trim() || saving) return;
@@ -2060,9 +2060,9 @@ export default function AdminDashboard() {
                                             value={advisorInput || ''} 
                                             onChange={e => setAdvisorInput(e.target.value)} 
                                             placeholder={isEnglish ? 'Ask your consultant...' : 'اسأل مستشارك الذكي...'}
-                                            style={{ flex: 1, background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white', padding: '12px 16px', fontSize: '0.9rem', outline: 'none' }}
+                                            style={{ flex: 1, background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)', padding: '12px 16px', fontSize: '0.9rem', outline: 'none' }}
                                         />
-                                        <button type="submit" disabled={saving} style={{ background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '10px', padding: '0 1.5rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <button type="submit" disabled={saving} style={{ background: '#8B5CF6', color: 'var(--color-text-main)', border: 'none', borderRadius: '10px', padding: '0 1.5rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             {saving ? <RefreshCw size={18} className="animate-spin" /> : <Zap size={18} />}
                                             {isEnglish ? 'Send' : 'إرسال'}
                                         </button>
@@ -2075,13 +2075,13 @@ export default function AdminDashboard() {
                                 <Card s={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.1)' }} c={
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 800, marginBottom: '0.5rem' }}>{isEnglish ? 'Strategic Suggestion' : 'مقترح استراتيجي'}</div>
-                                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>{isEnglish ? '"Based on data, salon sector is growing fast. We suggest increasing marketing campaigns here."' : '"بناءً على البيانات، قطاع الصالونات ينمو بسرعة. ننصح بزيادة حملات التسويق لهذا القطاع."'}</p>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: 0 }}>{isEnglish ? '"Based on data, salon sector is growing fast. We suggest increasing marketing campaigns here."' : '"بناءً على البيانات، قطاع الصالونات ينمو بسرعة. ننصح بزيادة حملات التسويق لهذا القطاع."'}</p>
                                     </div>
                                 } />
                                 <Card s={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)' }} c={
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '0.7rem', color: '#3B82F6', fontWeight: 800, marginBottom: '0.5rem' }}>{isEnglish ? 'Performance Analysis' : 'تحليل الأداء'}</div>
-                                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>{isEnglish ? 'Visitor to subscriber conversion rate increased by 12% this month.' : 'معدل تحويل الزوار لمشتركين ارتفع بنسبة 12% هذا الشهر.'}</p>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: 0 }}>{isEnglish ? 'Visitor to subscriber conversion rate increased by 12% this month.' : 'معدل تحويل الزوار لمشتركين ارتفع بنسبة 12% هذا الشهر.'}</p>
                                     </div>
                                 } />
                             </div>
@@ -2166,7 +2166,7 @@ const WhiteLabelManager = ({ isEnglish, flash, fetchData }) => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', margin: 0 }}>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>
                         {isEnglish ? 'White-Label Branding Requests' : 'طلبات الهوية المخصصة'}
                     </h1>
                     <p style={{ color: '#6B7280', fontSize: '0.85rem', marginTop: '4px' }}>
@@ -2183,7 +2183,7 @@ const WhiteLabelManager = ({ isEnglish, flash, fetchData }) => {
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
                         <thead>
-                            <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'AGENCY' : 'الوكالة'}</th>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'BRANDING' : 'تفاصيل الهوية'}</th>
                                 <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'DOMAIN' : 'النطاق'}</th>
@@ -2200,21 +2200,21 @@ const WhiteLabelManager = ({ isEnglish, flash, fetchData }) => {
                                 </tr>
                             ) : (
                                 requests.map(req => (
-                                    <tr key={req.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                    <tr key={req.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                         <td style={{ padding: '1rem' }}>
-                                            <div style={{ fontWeight: 700, color: 'white' }}>{req.profiles?.business_name || req.profiles?.full_name || '—'}</div>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>{req.profiles?.business_name || req.profiles?.full_name || '—'}</div>
                                             <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{req.profiles?.email}</div>
                                         </td>
                                         <td style={{ padding: '1rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: req.primary_color || '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: req.primary_color || '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--color-border-subtle)' }}>
                                                     {req.logo_url && <img src={req.logo_url} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />}
                                                 </div>
-                                                <div style={{ fontWeight: 600, color: '#E5E7EB' }}>{req.brand_name}</div>
+                                                <div style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{req.brand_name}</div>
                                             </div>
                                         </td>
                                         <td style={{ padding: '1rem' }}>
-                                            <div style={{ fontSize: '0.85rem', color: '#9CA3AF', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <Globe size={14} />
                                                 {req.custom_domain || '—'}
                                             </div>

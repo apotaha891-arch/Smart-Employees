@@ -337,7 +337,7 @@ const Employees = () => {
                         width: '90%',
                         maxWidth: '550px',
                         background: statusMsg.type === 'success' ? '#059669' : '#DC2626',
-                        color: 'white',
+                        color: 'var(--color-text-main)',
                         padding: '1.25rem 2rem',
                         borderRadius: '24px',
                         boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 1), 0 0 30px rgba(139, 92, 246, 0.3)',
@@ -345,7 +345,7 @@ const Employees = () => {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         gap: '15px',
-                        border: '2px solid rgba(255,255,255,0.2)'
+                        border: '2px solid var(--color-border-subtle)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             {statusMsg.type === 'success' ? <CheckCircle2 size={30} /> : <AlertCircle size={30} />}
@@ -354,14 +354,14 @@ const Employees = () => {
                                 <div style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.9 }}>{statusMsg.text}</div>
                             </div>
                         </div>
-                        <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <button onClick={() => setStatusMsg({ type: '', text: '' })} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: 'var(--color-text-main)', cursor: 'pointer', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <X size={24} />
                         </button>
                     </div>
                 )}
                 <button
                     onClick={() => navigate('/hire-agent')}
-                    style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 4px 20px rgba(139, 92, 246, 0.3)', transition: 'transform 0.2s' }}
+                    style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'var(--color-text-main)', border: 'none', borderRadius: '12px', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 4px 20px rgba(139, 92, 246, 0.3)', transition: 'transform 0.2s' }}
                     onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
                     onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                 >
@@ -466,7 +466,7 @@ const Employees = () => {
                         return (
                             <div key={agent.id} style={{ background: 'var(--color-bg-surface)', borderRadius: '20px', border: `1px solid ${isActive ? 'var(--color-accent-border)' : 'var(--color-border-subtle)'}`, overflow: 'hidden', boxShadow: 'var(--shadow-premium)', transition: 'transform 0.3s ease' }}>
                                 {/* Card Header */}
-                                <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                                         <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: `${role.color}15`, border: `1px solid ${role.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem' }}>
                                             {agent.avatar || '👩'}
@@ -517,7 +517,7 @@ const Employees = () => {
                                 </div>
 
                                 {/* Footer Actions */}
-                                <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.03)', display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.1)' }}>
+                                <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--color-border-subtle)', display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.1)' }}>
                                     <button onClick={() => navigate(`/entity-setup?agent=${agent.id}`)}
                                         style={{ flex: 1, background: 'var(--color-bg-input)', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s' }}
                                         onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-glass)'}
@@ -643,14 +643,14 @@ const Employees = () => {
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             <button
                                 onClick={() => setShowLinkModal(false)}
-                                style={{ flex: 1, background: 'transparent', color: '#9CA3AF', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontWeight: 600, cursor: 'pointer' }}
+                                style={{ flex: 1, background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', padding: '12px', fontWeight: 600, cursor: 'pointer' }}
                             >
                                 {t('cancelBtn')}
                             </button>
                             <button
                                 onClick={handleSaveLink}
                                 disabled={!linkToken || savingLink}
-                                style={{ flex: 2, background: 'linear-gradient(135deg, #0088cc, #006699)', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', fontWeight: 700, cursor: (linkToken && !savingLink) ? 'pointer' : 'not-allowed', opacity: (linkToken && !savingLink) ? 1 : 0.6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                style={{ flex: 2, background: 'linear-gradient(135deg, #0088cc, #006699)', color: 'var(--color-text-main)', border: 'none', borderRadius: '12px', padding: '12px', fontWeight: 700, cursor: (linkToken && !savingLink) ? 'pointer' : 'not-allowed', opacity: (linkToken && !savingLink) ? 1 : 0.6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                             >
                                 {savingLink ? '...' : (
                                     <>

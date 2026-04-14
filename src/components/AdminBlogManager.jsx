@@ -139,14 +139,14 @@ const AdminBlogManager = () => {
             <div className="animate-fade-in">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                    <div>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', margin: 0 }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>
                             {editingPost.id ? 'Edit Blog Post' : 'Create New Post'}
                         </h2>
                         <p style={{ color: '#6B7280', fontSize: '0.85rem' }}>{editingPost.slug || 'new-post-slug'}</p>
                    </div>
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <button onClick={() => setEditingPost(null)} style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', border: 'none', borderRadius: '8px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-                        <button onClick={handleSave} style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button onClick={() => setEditingPost(null)} style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)', border: 'none', borderRadius: '8px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+                        <button onClick={handleSave} style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'var(--color-text-main)', border: 'none', borderRadius: '8px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Save size={18} /> Save Post
                         </button>
                     </div>
@@ -154,16 +154,16 @@ const AdminBlogManager = () => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem' }}>
                     {/* Main Editor */}
-                    <div style={{ background: '#111827', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                    <div style={{ background: 'var(--color-bg-surface)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
                         {/* Language Tabs */}
-                        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                        <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
                             <button onClick={() => setEditTab('en')} style={{ padding: '1rem 2rem', border: 'none', background: editTab === 'en' ? 'rgba(139, 92, 246, 0.1)' : 'transparent', color: editTab === 'en' ? '#A78BFA' : '#6B7280', fontWeight: 700, borderBottom: editTab === 'en' ? '2px solid #8B5CF6' : 'none', cursor: 'pointer' }}>English</button>
                             <button onClick={() => setEditTab('ar')} style={{ padding: '1rem 2rem', border: 'none', background: editTab === 'ar' ? 'rgba(139, 92, 246, 0.1)' : 'transparent', color: editTab === 'ar' ? '#A78BFA' : '#6B7280', fontWeight: 700, borderBottom: editTab === 'ar' ? '2px solid #8B5CF6' : 'none', cursor: 'pointer' }}>العربية</button>
                         </div>
                         
                         <div style={{ padding: '1.5rem' }}>
                             <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 600 }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 600 }}>
                                     {editTab === 'en' ? 'Article Title' : 'عنوان المقال'}
                                 </label>
                                 <input 
@@ -177,12 +177,12 @@ const AdminBlogManager = () => {
                                         });
                                     }}
                                     placeholder={editTab === 'en' ? "Enter title..." : "أدخل العنوان..."}
-                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white', fontSize: '1.1rem', fontWeight: 700, direction: editTab === 'ar' ? 'rtl' : 'ltr' }}
+                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)', fontSize: '1.1rem', fontWeight: 700, direction: editTab === 'ar' ? 'rtl' : 'ltr' }}
                                 />
                             </div>
 
                             <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 600 }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 600 }}>
                                     {editTab === 'en' ? 'Excerpt (Brief Summary)' : 'مقتطف (وصف قصير)'}
                                 </label>
                                 <textarea 
@@ -190,12 +190,12 @@ const AdminBlogManager = () => {
                                     value={editTab === 'en' ? editingPost.excerpt_en : editingPost.excerpt_ar}
                                     onChange={(e) => setEditingPost(p => ({ ...p, [editTab === 'en' ? 'excerpt_en' : 'excerpt_ar']: e.target.value }))}
                                     placeholder={editTab === 'en' ? "Short summary for SEO..." : "وصف قصير لمحركات البحث..."}
-                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white', fontSize: '0.9rem', direction: editTab === 'ar' ? 'rtl' : 'ltr', resize: 'vertical' }}
+                                    style={{ width: '100%', padding: '12px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)', fontSize: '0.9rem', direction: editTab === 'ar' ? 'rtl' : 'ltr', resize: 'vertical' }}
                                 />
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 600 }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 600 }}>
                                     {editTab === 'en' ? 'Content (HTML Supported)' : 'المحتوى (يدعم HTML)'}
                                 </label>
                                 <textarea 
@@ -203,7 +203,7 @@ const AdminBlogManager = () => {
                                     value={editTab === 'en' ? editingPost.content_en : editingPost.content_ar}
                                     onChange={(e) => setEditingPost(p => ({ ...p, [editTab === 'en' ? 'content_en' : 'content_ar']: e.target.value }))}
                                     placeholder={editTab === 'en' ? "Write your article here..." : "اكتب مقالك هنا..."}
-                                    style={{ width: '100%', padding: '15px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'white', fontSize: '0.95rem', lineHeight: '1.6', direction: editTab === 'ar' ? 'rtl' : 'ltr', minHeight: '400px', fontFamily: 'monospace' }}
+                                    style={{ width: '100%', padding: '15px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)', fontSize: '0.95rem', lineHeight: '1.6', direction: editTab === 'ar' ? 'rtl' : 'ltr', minHeight: '400px', fontFamily: 'monospace' }}
                                 />
                                 <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#6B7280' }}>
                                     Tip: You can use HTML tags like &lt;h2&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;ul&gt;, etc.
@@ -214,26 +214,26 @@ const AdminBlogManager = () => {
 
                     {/* Sidebar Config */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <div style={{ background: '#111827', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', padding: '1.5rem' }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'white', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ background: 'var(--color-bg-surface)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', padding: '1.5rem' }}>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Settings size={16} color="#8B5CF6" /> Publishing Settings
                             </h3>
                             
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>URL Slug (SEO)</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>URL Slug (SEO)</label>
                                 <input 
                                     value={editingPost.slug}
                                     onChange={(e) => setEditingPost(p => ({ ...p, slug: e.target.value }))}
-                                    style={{ width: '100%', padding: '8px 12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#A78BFA', fontSize: '0.85rem', fontWeight: 600 }}
+                                    style={{ width: '100%', padding: '8px 12px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: '#A78BFA', fontSize: '0.85rem', fontWeight: 600 }}
                                 />
                             </div>
 
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Status</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Status</label>
                                 <select 
                                     value={editingPost.status}
                                     onChange={(e) => setEditingPost(p => ({ ...p, status: e.target.value }))}
-                                    style={{ width: '100%', padding: '8px 12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem' }}
+                                    style={{ width: '100%', padding: '8px 12px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.85rem' }}
                                 >
                                     <option value="draft">Draft</option>
                                     <option value="published">Published</option>
@@ -241,36 +241,36 @@ const AdminBlogManager = () => {
                             </div>
 
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Category</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Category</label>
                                 <input 
                                     value={editingPost.category}
                                     onChange={(e) => setEditingPost(p => ({ ...p, category: e.target.value }))}
                                     placeholder="e.g. Technology"
-                                    style={{ width: '100%', padding: '8px 12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem' }}
+                                    style={{ width: '100%', padding: '8px 12px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.85rem' }}
                                 />
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Featured Image URL</label>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Featured Image URL</label>
                                 <input 
                                     value={editingPost.featured_image}
                                     onChange={(e) => setEditingPost(p => ({ ...p, featured_image: e.target.value }))}
                                     placeholder="https://..."
-                                    style={{ width: '100%', padding: '8px 12px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem' }}
+                                    style={{ width: '100%', padding: '8px 12px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.85rem' }}
                                 />
                                 {editingPost.featured_image && (
-                                    <img src={editingPost.featured_image} alt="Preview" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '8px', marginTop: '0.5rem', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                    <img src={editingPost.featured_image} alt="Preview" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '8px', marginTop: '0.5rem', border: '1px solid var(--color-border-subtle)' }} />
                                 )}
                             </div>
                         </div>
 
-                        <div style={{ background: '#111827', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', padding: '1.5rem' }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'white', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ background: 'var(--color-bg-surface)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)', padding: '1.5rem' }}>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Globe size={16} color="#10B981" /> Advertisement Slots
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                 {Object.entries(editingPost.ad_slots).map(([key, val]) => (
-                                    <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: '#E4E4E7', cursor: 'pointer' }}>
+                                    <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--color-text-main)', cursor: 'pointer' }}>
                                         <input 
                                             type="checkbox" 
                                             checked={val}
@@ -292,7 +292,7 @@ const AdminBlogManager = () => {
         <div className="animate-fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white', margin: 0 }}>Blog Management</h1>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-text-main)', margin: 0 }}>Blog Management</h1>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button 
                             onClick={() => setActiveTab('posts')} 
@@ -327,7 +327,7 @@ const AdminBlogManager = () => {
                     </div>
                 </div>
                 {activeTab === 'posts' && (
-                    <button onClick={handleCreateNew} style={{ background: 'linear-gradient(135deg, #8B5CF6, #3B82F6)', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 24px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(139, 92, 246, 0.2)' }}>
+                    <button onClick={handleCreateNew} style={{ background: 'linear-gradient(135deg, #8B5CF6, #3B82F6)', color: 'var(--color-text-main)', border: 'none', borderRadius: '12px', padding: '12px 24px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(139, 92, 246, 0.2)' }}>
                         <Plus size={20} /> Create New Post
                     </button>
                 )}
@@ -343,8 +343,8 @@ const AdminBlogManager = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', margin: 0 }}>Blog Advertisement Slots</h2>
-                        <button onClick={handleSaveSettings} style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>Blog Advertisement Slots</h2>
+                        <button onClick={handleSaveSettings} style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: 'var(--color-text-main)', border: 'none', borderRadius: '8px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Save size={18} /> Save All Settings
                         </button>
                     </div>
@@ -354,13 +354,13 @@ const AdminBlogManager = () => {
                         { id: 'sidebar', l: 'Sidebar Square Banner', lAr: 'بنر القائمة الجانبية' },
                         { id: 'content', l: 'In-Content Footer Banner', lAr: 'بنر نهاية المحتوى' }
                     ].map(slot => (
-                        <div key={slot.id} style={{ background: '#111827', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)', padding: '2rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+                        <div key={slot.id} style={{ background: 'var(--color-bg-surface)', borderRadius: '24px', border: '1px solid var(--color-border-subtle)', padding: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '1rem' }}>
                                 <div>
-                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white', margin: 0 }}>{slot.l}</h3>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>{slot.l}</h3>
                                     <span style={{ fontSize: '0.8rem', color: '#6B7280' }}>{slot.lAr}</span>
                                 </div>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-main)', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>
                                     <input 
                                         type="checkbox"
                                         checked={settings[`${slot.id}_is_active`]}
@@ -375,19 +375,19 @@ const AdminBlogManager = () => {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                                     <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#A78BFA', margin: 0 }}>English Version</h4>
                                     <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Main Text</label>
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Main Text</label>
                                         <input 
                                             value={settings[`${slot.id}_banner_text_en`]}
                                             onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_text_en`]: e.target.value }))}
-                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.9rem' }}
+                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Subtext Description</label>
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Subtext Description</label>
                                         <textarea 
                                             value={settings[`${slot.id}_banner_subtext_en`]}
                                             onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_subtext_en`]: e.target.value }))}
-                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem', minHeight: '60px' }}
+                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.85rem', minHeight: '60px' }}
                                         />
                                     </div>
                                 </div>
@@ -395,29 +395,29 @@ const AdminBlogManager = () => {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', direction: 'rtl' }}>
                                     <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#A78BFA', margin: 0 }}>النسخة العربية</h4>
                                     <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>النص الرئيسي</label>
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>النص الرئيسي</label>
                                         <input 
                                             value={settings[`${slot.id}_banner_text_ar`]}
                                             onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_text_ar`]: e.target.value }))}
-                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.9rem' }}
+                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>الوصف الفرعي</label>
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>الوصف الفرعي</label>
                                         <textarea 
                                             value={settings[`${slot.id}_banner_subtext_ar`]}
                                             onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_subtext_ar`]: e.target.value }))}
-                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem', minHeight: '60px' }}
+                                            style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.85rem', minHeight: '60px' }}
                                         />
                                     </div>
                                 </div>
 
-                                <div style={{ gridColumn: '1/-1', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.2rem' }}>
-                                    <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Destination Link (URL)</label>
+                                <div style={{ gridColumn: '1/-1', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '1.2rem' }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Destination Link (URL)</label>
                                     <input 
                                         value={settings[`${slot.id}_banner_link`]}
                                         onChange={(e) => setSettings(p => ({ ...p, [`${slot.id}_banner_link`]: e.target.value }))}
-                                        style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#8B5CF6', fontWeight: 700 }}
+                                        style={{ width: '100%', padding: '10px', background: '#0B0F19', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: '#8B5CF6', fontWeight: 700 }}
                                     />
                                 </div>
                             </div>
@@ -427,14 +427,14 @@ const AdminBlogManager = () => {
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
                 {posts.length === 0 ? (
-                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem', background: '#111827', borderRadius: '24px', border: '2px dashed rgba(255,255,255,0.05)' }}>
+                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem', background: 'var(--color-bg-surface)', borderRadius: '24px', border: '2px dashed var(--color-border-subtle)' }}>
                         <Newspaper size={48} color="#374151" style={{ marginBottom: '1rem' }} />
-                        <h3 style={{ color: '#9CA3AF' }}>No blog posts yet.</h3>
+                        <h3 style={{ color: 'var(--color-text-secondary)' }}>No blog posts yet.</h3>
                         <p style={{ color: '#6B7280', fontSize: '0.9rem' }}>Click the button above to start writing.</p>
                     </div>
                 ) : (
                     posts.map(post => (
-                        <div key={post.id} style={{ background: '#111827', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s' }}>
+                        <div key={post.id} style={{ background: 'var(--color-bg-surface)', borderRadius: '20px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s' }}>
                             <div style={{ position: 'relative', height: '160px', background: '#0B0F19' }}>
                                 {post.featured_image ? (
                                     <img src={post.featured_image} alt={post.title_en} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -443,21 +443,21 @@ const AdminBlogManager = () => {
                                         <ImageIcon size={40} />
                                     </div>
                                 )}
-                                <div style={{ position: 'absolute', top: '10px', right: '10px', background: post.status === 'published' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(245, 158, 11, 0.9)', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                                <div style={{ position: 'absolute', top: '10px', right: '10px', background: post.status === 'published' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(245, 158, 11, 0.9)', color: 'var(--color-text-main)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>
                                     {post.status}
                                 </div>
                             </div>
                             <div style={{ padding: '1.5rem', flex: 1 }}>
                                 <div style={{ fontSize: '0.7rem', color: '#8B5CF6', fontWeight: 800, marginBottom: '0.5rem', textTransform: 'uppercase' }}>{post.category || 'Uncategorized'}</div>
-                                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white', marginBottom: '0.75rem', lineHeight: '1.4' }}>{post.title_en}</h3>
-                                <p style={{ fontSize: '0.85rem', color: '#9CA3AF', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.excerpt_en}</p>
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '0.75rem', lineHeight: '1.4' }}>{post.title_en}</h3>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.excerpt_en}</p>
                                 
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--color-border-subtle)' }}>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                                         <button onClick={() => setEditingPost(post)} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#60A5FA', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer' }}><Edit2 size={16} /></button>
                                         <button onClick={() => handleDelete(post.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer' }}><Trash2 size={16} /></button>
                                     </div>
-                                    <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}>
+                                    <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}>
                                         <ExternalLink size={14} /> View
                                     </a>
                                 </div>

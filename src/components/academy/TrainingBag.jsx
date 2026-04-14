@@ -329,10 +329,10 @@ const TrainingBag = () => {
              <div style={{ textAlign: 'center', padding: '10rem 2rem' }}>
                 <Lock size={80} color="#EF4444" style={{ marginBottom: '2rem', filter: 'drop-shadow(0 0 15px rgba(239, 68, 68, 0.3))' }} />
                 <h1 style={{ fontSize: '3.5rem', fontWeight: 950, marginBottom: '1.5rem' }}>{isArabic ? 'بوابة الممارسة مقفلة' : 'Practice Portal Locked'}</h1>
-                <p style={{ color: '#9CA3AF', fontSize: '1.2rem', marginBottom: '3rem' }}>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.2rem', marginBottom: '3rem' }}>
                     {isArabic ? 'التدريب مجاني، لكن الممارسة تتطلب تفعيل حسابك التجريبي (20$).' : 'Training is free, but practice requires activating your test account ($20).'}
                 </p>
-                <button onClick={() => window.location.href = '/opportunity'} style={{ background: '#8B5CF6', color: 'white', padding: '1.25rem 3rem', borderRadius: '16px', fontWeight: 950, border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(139, 92, 246, 0.3)' }}>{isArabic ? 'فعل حساب الممارسة واستلم الرصيد' : 'Activate Practice Account & Get Credits'}</button>
+                <button onClick={() => window.location.href = '/opportunity'} style={{ background: '#8B5CF6', color: 'var(--color-text-main)', padding: '1.25rem 3rem', borderRadius: '16px', fontWeight: 950, border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(139, 92, 246, 0.3)' }}>{isArabic ? 'فعل حساب الممارسة واستلم الرصيد' : 'Activate Practice Account & Get Credits'}</button>
             </div>
         </AcademyLayout>
     );
@@ -342,7 +342,7 @@ const TrainingBag = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '310px 1fr', gap: '2.5rem', minHeight: 'calc(100vh - 200px)' }}>
                 {/* Roadmap Sidebar - Now First for proper RTL/LTR scaling */}
                 <div style={{ position: 'sticky', top: '120px', height: 'fit-content' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--color-border-subtle)', backdropFilter: 'blur(10px)' }}>
                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
                             <div style={{ background: '#8B5CF6', padding: '10px', borderRadius: '12px' }}><Trophy size={20} color="white" /></div>
                             <h3 style={{ fontWeight: 800, fontSize: '1.2rem' }}>{isArabic ? 'خارطة الطريق' : 'Academy Roadmap'}</h3>
@@ -393,7 +393,7 @@ const TrainingBag = () => {
                         <div style={{ marginTop: '3rem', padding: '1.5rem', background: 'rgba(245, 158, 11, 0.05)', borderRadius: '20px', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
                             <Award color="#F59E0B" size={24} style={{ marginBottom: '1rem' }} />
                             <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#F59E0B', marginBottom: '0.5rem' }}>{isArabic ? 'شهادة الأكاديمية' : 'Academy Certificate'}</h4>
-                            <p style={{ fontSize: '0.8rem', color: '#9CA3AF', lineHeight: 1.5 }}>{isArabic ? 'سيتم إصدار وثيقة معتمدة باسمك عند الانتهاء لفتح حسابات العملاء.' : 'A certified document will be issued in your name upon completion to unlock client accounts.'}</p>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>{isArabic ? 'سيتم إصدار وثيقة معتمدة باسمك عند الانتهاء لفتح حسابات العملاء.' : 'A certified document will be issued in your name upon completion to unlock client accounts.'}</p>
                         </div>
                     </div>
                 </div>
@@ -407,7 +407,7 @@ const TrainingBag = () => {
                                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 className="animate-fade-in"
-                                style={{ background: '#111827', borderRadius: '32px', border: '1px solid rgba(139, 92, 246, 0.3)', overflow: 'hidden', boxShadow: '0 25px 60px rgba(139, 92, 246, 0.15)', padding: '5rem 3rem', textAlign: 'center' }}
+                                style={{ background: 'var(--color-bg-surface)', borderRadius: '32px', border: '1px solid rgba(139, 92, 246, 0.3)', overflow: 'hidden', boxShadow: '0 25px 60px rgba(139, 92, 246, 0.15)', padding: '5rem 3rem', textAlign: 'center' }}
                             >
                                 <div style={{ background: 'rgba(139, 92, 246, 0.1)', width: '100px', height: '100px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2.5rem' }}>
                                     <PartyPopper size={50} color="#8B5CF6" />
@@ -415,7 +415,7 @@ const TrainingBag = () => {
                                 <h2 style={{ fontSize: '3.5rem', fontWeight: 950, marginBottom: '1.5rem', background: 'linear-gradient(to right, #8B5CF6, #F59E0B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                     {isArabic ? 'تهانينا.. لقد أتممت التدريب!' : 'Congratulations.. Training Complete!'}
                                 </h2>
-                                <p style={{ fontSize: '1.4rem', color: '#9CA3AF', maxWidth: '700px', margin: '0 auto 3rem', lineHeight: 1.6 }}>
+                                <p style={{ fontSize: '1.4rem', color: 'var(--color-text-secondary)', maxWidth: '700px', margin: '0 auto 3rem', lineHeight: 1.6 }}>
                                     {isArabic 
                                         ? 'أنت الآن مسلح بالمعرفة الكاملة لإدارة أقوى منظومة ذكاء اصطناعي. موظفوك الرقميون بانتظار أوامرك لتحقيق أهدافك.' 
                                         : 'You are now armed with the full knowledge to manage the most powerful AI system. Your digital employees are waiting for your orders.'}
@@ -423,13 +423,13 @@ const TrainingBag = () => {
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
                                     <button 
                                         onClick={() => window.location.href = '/dashboard'}
-                                        style={{ padding: '1.3rem 3rem', borderRadius: '18px', background: 'linear-gradient(45deg, #8B5CF6, #6366F1)', color: 'white', fontWeight: 950, cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.2rem', boxShadow: '0 15px 30px rgba(139, 92, 246, 0.4)' }}
+                                        style={{ padding: '1.3rem 3rem', borderRadius: '18px', background: 'linear-gradient(45deg, #8B5CF6, #6366F1)', color: 'var(--color-text-main)', fontWeight: 950, cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.2rem', boxShadow: '0 15px 30px rgba(139, 92, 246, 0.4)' }}
                                     >
                                         {isArabic ? 'انتقل للوحة التحكم الآن' : 'Go to Dashboard Now'} <Rocket size={24} />
                                     </button>
                                     <button 
                                         onClick={() => setIsCompleted(false)}
-                                        style={{ padding: '1.3rem 3rem', borderRadius: '18px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#9CA3AF', fontWeight: 700, cursor: 'pointer', fontSize: '1.1rem' }}
+                                        style={{ padding: '1.3rem 3rem', borderRadius: '18px', background: 'transparent', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)', fontWeight: 700, cursor: 'pointer', fontSize: '1.1rem' }}
                                     >
                                         {isArabic ? 'مراجعة المنهج' : 'Review Curriculum'}
                                     </button>
@@ -444,8 +444,8 @@ const TrainingBag = () => {
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
                                 className="animate-fade-in"
                             >
-                                <div style={{ background: '#111827', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
-                                    <div style={{ padding: '3rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'linear-gradient(to right, #111827, #1f2937)' }}>
+                                <div style={{ background: 'var(--color-bg-surface)', borderRadius: '32px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+                                    <div style={{ padding: '3rem', borderBottom: '1px solid var(--color-border-subtle)', background: 'linear-gradient(to right, var(--color-bg-surface), var(--color-bg-input))' }}>
                                         <div style={{ color: '#8B5CF6', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', letterSpacing: '1px' }}>
                                             <Sparkles size={18} /> {isArabic ? curriculum[currentStep.stage].title_ar : curriculum[currentStep.stage].title_en}
                                         </div>
@@ -453,7 +453,7 @@ const TrainingBag = () => {
                                     </div>
 
                                     {/* SCREENSHOT PREVIEW */}
-                                    <div style={{ padding: '0', background: '#000', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ padding: '0', background: '#000', borderBottom: '1px solid var(--color-border-subtle)' }}>
                                         <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
                                             <img 
                                                 src={isArabic ? activeLesson.image_ar : activeLesson.image_en} 
@@ -461,19 +461,19 @@ const TrainingBag = () => {
                                                 style={{ width: '100%', height: 'auto', display: 'block', filter: 'brightness(0.9) contrast(1.1)', transition: 'all 0.5s' }} 
                                                 className="hover:scale-105"
                                             />
-                                            <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(5,5,5,0.8)', padding: '8px 16px', borderRadius: '10px', backdropFilter: 'blur(5px)', fontSize: '0.75rem', color: '#9CA3AF', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(5,5,5,0.8)', padding: '8px 16px', borderRadius: '10px', backdropFilter: 'blur(5px)', fontSize: '0.75rem', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <Pointer size={14} /> {isArabic ? 'لقطة شاشة حقيقية من المنصة' : 'Real screenshot from the platform'}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div style={{ padding: '3rem', background: '#09090B' }}>
+                                    <div style={{ padding: '3rem', background: 'var(--color-bg-base)' }}>
                                         <div style={{ marginBottom: '3rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', color: '#8B5CF6' }}>
                                                 <BookOpen size={24} />
                                                 <h3 style={{ fontSize: '1.5rem', fontWeight: 900 }}>{isArabic ? 'الشرح والدليل العلمي' : 'Explanation & Scientific Guide'}</h3>
                                             </div>
-                                            <div style={{ fontSize: '1.2rem', color: '#E5E7EB', lineHeight: 1.8, whiteSpace: 'pre-line', background: 'rgba(255,255,255,0.02)', padding: '2rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div style={{ fontSize: '1.2rem', color: 'var(--color-text-main)', lineHeight: 1.8, whiteSpace: 'pre-line', background: 'rgba(255,255,255,0.02)', padding: '2rem', borderRadius: '20px', border: '1px solid var(--color-border-subtle)' }}>
                                                 {isArabic ? activeLesson.material_ar : activeLesson.material_en}
                                             </div>
                                         </div>
@@ -486,8 +486,8 @@ const TrainingBag = () => {
                                             <div style={{ display: 'grid', gap: '1rem' }}>
                                                 {(isArabic ? activeLesson.steps_ar : activeLesson.steps_en).map((step, idx) => (
                                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '1rem 1.5rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '14px', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
-                                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8rem', fontWeight: 900 }}>{idx + 1}</div>
-                                                        <span style={{ fontSize: '1.1rem', fontWeight: 600, color: '#D1D5DB' }}>{step}</span>
+                                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-main)', fontSize: '0.8rem', fontWeight: 900 }}>{idx + 1}</div>
+                                                        <span style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-main)' }}>{step}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -498,8 +498,8 @@ const TrainingBag = () => {
                                             <h3 style={{ fontSize: '1.4rem', fontWeight: 950, color: '#10B981', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                 <Target size={24} /> {isArabic ? 'مرحلة التطبيق الميداني' : 'Field Practice Milestone'}
                                             </h3>
-                                            <p style={{ color: '#E5E7EB', marginBottom: '1.8rem', fontSize: '1.2rem', lineHeight: 1.6 }}>{isArabic ? activeLesson.practiceTask_ar : activeLesson.practiceTask_en}</p>
-                                            <button onClick={() => window.open('/dashboard', '_blank')} style={{ background: '#10B981', color: 'white', padding: '1.1rem 2.5rem', borderRadius: '16px', border: 'none', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.1rem', boxShadow: '0 10px 20px rgba(16, 185, 129, 0.3)' }}>
+                                            <p style={{ color: 'var(--color-text-main)', marginBottom: '1.8rem', fontSize: '1.2rem', lineHeight: 1.6 }}>{isArabic ? activeLesson.practiceTask_ar : activeLesson.practiceTask_en}</p>
+                                            <button onClick={() => window.open('/dashboard', '_blank')} style={{ background: '#10B981', color: 'var(--color-text-main)', padding: '1.1rem 2.5rem', borderRadius: '16px', border: 'none', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.1rem', boxShadow: '0 10px 20px rgba(16, 185, 129, 0.3)' }}>
                                                 {isArabic ? 'انتقل للوحة التحكم وطبق الآن' : 'Go to Dashboard and Apply Now'} <ArrowUpRight size={22} />
                                             </button>
                                         </div>
@@ -514,7 +514,7 @@ const TrainingBag = () => {
                                                         setCurrentStep({ stage: prevStage, lesson: curriculum[prevStage].lessons.length - 1 });
                                                     }
                                                 }}
-                                                style={{ padding: '1.1rem 2.2rem', borderRadius: '16px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#9CA3AF', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 800 }}
+                                                style={{ padding: '1.1rem 2.2rem', borderRadius: '16px', background: 'transparent', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 800 }}
                                             >
                                                 <ChevronLeft size={22} /> {isArabic ? 'السابق' : 'Previous'}
                                             </button>
@@ -529,7 +529,7 @@ const TrainingBag = () => {
                                                         setIsCompleted(true);
                                                     }
                                                 }}
-                                                style={{ padding: '1.1rem 3rem', borderRadius: '16px', background: 'linear-gradient(45deg, #8B5CF6, #6366F1)', border: 'none', color: 'white', fontWeight: 950, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.1rem', boxShadow: '0 10px 25px rgba(139, 92, 246, 0.4)' }}
+                                                style={{ padding: '1.1rem 3rem', borderRadius: '16px', background: 'linear-gradient(45deg, #8B5CF6, #6366F1)', border: 'none', color: 'var(--color-text-main)', fontWeight: 950, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.1rem', boxShadow: '0 10px 25px rgba(139, 92, 246, 0.4)' }}
                                             >
                                                 {currentStep.stage === curriculum.length - 1 && currentStep.lesson === curriculum[curriculum.length - 1].lessons.length - 1
                                                     ? (isArabic ? 'إنهاء التدريب' : 'Finish Training')

@@ -78,10 +78,10 @@ const SupportTicketManager = () => {
         <div className="animate-fade-in" style={{ padding: '1.5rem', direction: isAr ? 'rtl' : 'ltr' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', marginBottom: '0.5rem' }}>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '0.5rem' }}>
                         {isAr ? 'مركز الدعم والتذاكر' : 'Support Center & Tickets'}
                     </h1>
-                    <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                         {isAr ? 'تابع استفسارات عملائك وحل مشاكلهم بكفاءة عالية' : 'Manage customer inquiries and resolve issues efficiently'}
                     </p>
                 </div>
@@ -101,24 +101,24 @@ const SupportTicketManager = () => {
                     <div style={{ color: '#3B82F6', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>
                         {tickets.filter(t => t.status === 'open').length}
                     </div>
-                    <div style={{ color: 'white', fontWeight: 600 }}>{isAr ? 'تذاكر مفتوحة' : 'Open Tickets'}</div>
+                    <div style={{ color: 'var(--color-text-main)', fontWeight: 600 }}>{isAr ? 'تذاكر مفتوحة' : 'Open Tickets'}</div>
                 </div>
                 <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                     <div style={{ color: '#F59E0B', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>
                         {tickets.filter(t => t.status === 'open' && t.priority === 'high').length}
                     </div>
-                    <div style={{ color: 'white', fontWeight: 600 }}>{isAr ? 'بانتظار الرد' : 'Pending Response'}</div>
+                    <div style={{ color: 'var(--color-text-main)', fontWeight: 600 }}>{isAr ? 'بانتظار الرد' : 'Pending Response'}</div>
                 </div>
                 <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
                     <div style={{ color: '#10B981', fontSize: '2rem', fontWeight: 900, marginBottom: '4px' }}>
                         {tickets.filter(t => t.status === 'closed').length}
                     </div>
-                    <div style={{ color: 'white', fontWeight: 600 }}>{isAr ? 'تذاكر مغلقة' : 'Resolved Tickets'}</div>
+                    <div style={{ color: 'var(--color-text-main)', fontWeight: 600 }}>{isAr ? 'تذاكر مغلقة' : 'Resolved Tickets'}</div>
                 </div>
             </div>
 
             {/* Tab Navigation */}
-            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.5rem', gap: '2rem' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border-subtle)', marginBottom: '1.5rem', gap: '2rem' }}>
                 {['open', 'closed', 'all'].map(t => (
                     <button
                         key={t}
@@ -145,27 +145,27 @@ const SupportTicketManager = () => {
                 {/* Ticket List (Left/Main) */}
                 <div style={{ flex: '1 1 600px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {loading ? (
-                        <div style={{ textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>{isAr ? 'جاري جلب التذاكر...' : 'Loading tickets...'}</div>
+                        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-secondary)' }}>{isAr ? 'جاري جلب التذاكر...' : 'Loading tickets...'}</div>
                     ) : tickets.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '4rem', background: '#111827', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--color-bg-surface)', borderRadius: '16px', border: '1px solid var(--color-border-subtle)' }}>
                             <CheckCircle2 size={48} style={{ color: '#10B981', marginBottom: '1rem', opacity: 0.5 }} />
-                            <h3 style={{ color: 'white', marginBottom: '0.5rem' }}>{isAr ? 'جميع التذاكر مغلقة!' : 'All tickets resolved!'}</h3>
+                            <h3 style={{ color: 'var(--color-text-main)', marginBottom: '0.5rem' }}>{isAr ? 'جميع التذاكر مغلقة!' : 'All tickets resolved!'}</h3>
                             <p style={{ color: '#6B7280' }}>{isAr ? 'فريق الدعم الرقمي قام بعمل رائع اليوم.' : 'Your digital support team has done a great job today.'}</p>
                         </div>
                     ) : tickets.map(ticket => {
                         const priority = getPriorityStyle(ticket.priority);
                         return (
-                            <div key={ticket.id} className="card shadow-premium" style={{ padding: '1.25rem', border: '1px solid rgba(255,255,255,0.03)', background: '#111827', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div key={ticket.id} className="card shadow-premium" style={{ padding: '1.25rem', border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-surface)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
                                     <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
                                         <MessageSquare size={24} />
                                     </div>
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                            <h4 style={{ fontWeight: 700, color: 'white' }}>{ticket.title}</h4>
+                                            <h4 style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>{ticket.title}</h4>
                                             <span style={{ fontSize: '0.7rem', color: '#6B7280', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '4px' }}>#{ticket.id}</span>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.8rem', color: '#9CA3AF' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
                                             <span>{ticket.user_name || ticket.user_email || '—'}</span>
                                             <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#374151' }}></span>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {new Date(ticket.date).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
@@ -179,7 +179,7 @@ const SupportTicketManager = () => {
                                         {priority.label}
                                     </span>
                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', padding: '8px', borderRadius: '8px', cursor: 'pointer' }} title={isAr ? 'رد' : 'Reply'}><Reply size={16} /></button>
+                                        <button style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--color-text-main)', padding: '8px', borderRadius: '8px', cursor: 'pointer' }} title={isAr ? 'رد' : 'Reply'}><Reply size={16} /></button>
                                         <button style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3B82F6', padding: '8px', borderRadius: '8px', cursor: 'pointer' }}><ExternalLink size={16} /></button>
                                     </div>
                                 </div>
@@ -191,7 +191,7 @@ const SupportTicketManager = () => {
                 {/* Sidebar Quick Help (Right) */}
                 <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ background: 'rgba(139, 92, 246, 0.05)', border: '1px solid rgba(139, 92, 246, 0.1)', borderRadius: '20px', padding: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Bot size={20} color="#8B5CF6" />
                             {isAr ? 'مساعدة سريعة' : 'Quick Help'}
                         </h3>
@@ -205,7 +205,7 @@ const SupportTicketManager = () => {
                                 <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#C4B5FD', marginBottom: '4px' }}>
                                     {isAr ? 'كيفية تضمين الموظف في موقعك' : 'How to embed the agent'}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
                                     {isAr ? 'دليل خطوة بخطوة لربط المحادثة بموقعك الإلكتروني.' : 'Step-by-step guide to connect the chat to your site.'}
                                 </div>
                             </div>
@@ -218,23 +218,23 @@ const SupportTicketManager = () => {
                                 <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#C4B5FD', marginBottom: '4px' }}>
                                     {isAr ? 'تحديث بيانات المنشأة' : 'Update Entity Profile'}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
                                     {isAr ? 'تأكد من أن الموظف لديه أحدث المعلومات.' : 'Ensure your agent has the latest information.'}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '1.5rem' }}>
-                        <h4 style={{ fontWeight: 700, color: 'white', marginBottom: '0.5rem' }}>{isAr ? 'هل تحتاج لمساعدة فورية؟' : 'Need instant help?'}</h4>
-                        <p style={{ fontSize: '0.8rem', color: '#9CA3AF', lineHeight: 1.5, marginBottom: '1rem' }}>
+                    <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '20px', padding: '1.5rem' }}>
+                        <h4 style={{ fontWeight: 700, color: 'var(--color-text-main)', marginBottom: '0.5rem' }}>{isAr ? 'هل تحتاج لمساعدة فورية؟' : 'Need instant help?'}</h4>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', lineHeight: 1.5, marginBottom: '1rem' }}>
                             {isAr ? 'فريقنا متاح للرد على أي استفسارات تقنية عبر الواتساب.' : 'Our team is available to answer any technical queries via WhatsApp.'}
                         </p>
                         <a 
                             href="https://wa.me/966530916299" 
                             target="_blank" 
                             rel="noreferrer"
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#22C55E', color: 'white', padding: '10px', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, fontSize: '0.9rem' }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#22C55E', color: 'var(--color-text-main)', padding: '10px', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, fontSize: '0.9rem' }}
                         >
                             <MessageCircle size={18} /> {isAr ? 'واتساب الدعم' : 'WhatsApp Support'}
                         </a>
@@ -245,24 +245,24 @@ const SupportTicketManager = () => {
             {/* Create Ticket Modal */}
             {showCreate && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-                    <div style={{ background: '#111827', padding: '2rem', borderRadius: '20px', width: '100%', maxWidth: '500px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <h2 style={{ color: 'white', marginBottom: '1.5rem' }}>{isAr ? 'إنشاء تذكرة دعم جديدة' : 'Create New Ticket'}</h2>
+                    <div style={{ background: 'var(--color-bg-surface)', padding: '2rem', borderRadius: '20px', width: '100%', maxWidth: '500px', border: '1px solid var(--color-border-subtle)' }}>
+                        <h2 style={{ color: 'var(--color-text-main)', marginBottom: '1.5rem' }}>{isAr ? 'إنشاء تذكرة دعم جديدة' : 'Create New Ticket'}</h2>
                         <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '5px' }}>{isAr ? 'الموضوع' : 'Subject'}</label>
-                                <input required value={newTicket.title} onChange={e => setNewTicket({...newTicket, title: e.target.value})} className="input-field" style={{ background: '#1F2937', border: '1px solid #374151' }} />
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', marginBottom: '5px' }}>{isAr ? 'الموضوع' : 'Subject'}</label>
+                                <input required value={newTicket.title} onChange={e => setNewTicket({...newTicket, title: e.target.value})} className="input-field" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)' }} />
                             </div>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '5px' }}>{isAr ? 'التصنيف' : 'Category'}</label>
-                                <select value={newTicket.category} onChange={e => setNewTicket({...newTicket, category: e.target.value})} className="input-field" style={{ background: '#1F2937', border: '1px solid #374151', color: 'white' }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', marginBottom: '5px' }}>{isAr ? 'التصنيف' : 'Category'}</label>
+                                <select value={newTicket.category} onChange={e => setNewTicket({...newTicket, category: e.target.value})} className="input-field" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-main)' }}>
                                     <option value="General">عام</option>
                                     <option value="Technical">تقني</option>
                                     <option value="Billing">حسابات</option>
                                 </select>
                             </div>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', marginBottom: '5px' }}>{isAr ? 'الوصف' : 'Description'}</label>
-                                <textarea required value={newTicket.description} onChange={e => setNewTicket({...newTicket, description: e.target.value})} className="input-field" style={{ background: '#1F2937', border: '1px solid #374151', minHeight: '100px' }} />
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', marginBottom: '5px' }}>{isAr ? 'الوصف' : 'Description'}</label>
+                                <textarea required value={newTicket.description} onChange={e => setNewTicket({...newTicket, description: e.target.value})} className="input-field" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', minHeight: '100px' }} />
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{isAr ? 'إرسال التذكرة' : 'Submit Ticket'}</button>

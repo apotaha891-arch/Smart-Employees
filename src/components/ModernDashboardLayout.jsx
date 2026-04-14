@@ -187,7 +187,7 @@ return (
         {isImpersonating && (
             <div style={{
                 background: 'linear-gradient(90deg, #8B5CF6, #EC4899)',
-                color: 'white',
+                color: 'var(--color-text-main)',
                 padding: '8px 20px',
                 textAlign: 'center',
                 fontSize: '0.85rem',
@@ -281,7 +281,7 @@ return (
                             </span>
                         )}
                     </Link>
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '0.5rem', display: 'flex' }}>
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: '0.5rem', display: 'flex' }}>
                         <Menu size={20} />
                     </button>
                 </div>
@@ -473,7 +473,7 @@ return (
                                 >
                                     <Zap size={16} color="#8B5CF6" fill="#8B5CF6" />
                                     <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                                        <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'white' }}>{balance.toLocaleString()}</span>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--color-text-main)' }}>{balance.toLocaleString()}</span>
                                         <span style={{ fontSize: '0.65rem', color: '#8B5CF6', fontWeight: 600, textTransform: 'uppercase' }}>{language === 'ar' ? 'نقطة' : 'Credits'}</span>
                                     </div>
                                     <div style={{ marginLeft: language === 'ar' ? 0 : 4, marginRight: language === 'ar' ? 4 : 0, padding: 4, background: '#8B5CF6', borderRadius: 6, display: 'flex' }}>
@@ -488,7 +488,7 @@ return (
                                         top: '110%',
                                         [language === 'ar' ? 'right' : 'left']: 0,
                                         width: '240px',
-                                        background: '#1F2937',
+                                        background: 'var(--color-bg-input)',
                                         border: '1px solid rgba(139, 92, 246, 0.3)',
                                         borderRadius: '12px',
                                         padding: '12px',
@@ -496,19 +496,19 @@ return (
                                         zIndex: 1000,
                                         fontSize: '0.8rem'
                                     }}>
-                                        <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', fontWeight: 700, color: '#A78BFA' }}>
+                                        <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--color-border-subtle)', fontWeight: 700, color: '#A78BFA' }}>
                                             {language === 'ar' ? 'تفاصيل الرصيد' : 'Credits Breakdown'}
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                            <span style={{ color: '#9CA3AF' }}>{language === 'ar' ? 'رصيد الباقة:' : 'Package Plan:'}</span>
+                                            <span style={{ color: 'var(--color-text-secondary)' }}>{language === 'ar' ? 'رصيد الباقة:' : 'Package Plan:'}</span>
                                             <span style={{ fontWeight: 600 }}>{packageBalance.toLocaleString()}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                            <span style={{ color: '#9CA3AF' }}>{language === 'ar' ? 'رصيد الشحن:' : 'Top-up Credits:'}</span>
+                                            <span style={{ color: 'var(--color-text-secondary)' }}>{language === 'ar' ? 'رصيد الشحن:' : 'Top-up Credits:'}</span>
                                             <span style={{ fontWeight: 600, color: '#10B981' }}>{topupBalance.toLocaleString()}</span>
                                         </div>
                                         {renewalDate && (
-                                            <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', color: '#8B5CF6', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px solid var(--color-border-subtle)', color: '#8B5CF6', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                 <Calendar size={12} />
                                                 <span>{language === 'ar' ? `التجديد القادم: ${new Date(renewalDate).toLocaleDateString('ar-EG')}` : `Next Renewal: ${new Date(renewalDate).toLocaleDateString()}`}</span>
                                             </div>

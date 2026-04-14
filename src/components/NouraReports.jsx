@@ -55,7 +55,7 @@ const ExecutiveReports = () => {
                     onClick={generateNewReport}
                     className="btn btn-sm"
                     disabled={isGenerating}
-                    style={{ background: '#0F172A', color: 'white', fontWeight: 700 }}
+                    style={{ background: '#0F172A', color: 'var(--color-text-main)', fontWeight: 700 }}
                 >
                     {isGenerating ? 'جاري التحليل...' : 'إصدار تقرير استراتيجي 📑'}
                 </button>

@@ -81,7 +81,7 @@ const Customers = () => {
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#9CA3AF' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--color-text-secondary)' }}>
                 {t('loading')}
             </div>
         );
@@ -110,15 +110,15 @@ const Customers = () => {
                         <Users size={24} />
                     </div>
                     <div>
-                        <h1 style={{ color: 'white', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>{t('customersTitle')}</h1>
-                        <p style={{ color: '#9CA3AF', fontSize: '0.9rem', margin: '4px 0 0 0' }}>{t('customersSubtitle')}</p>
+                        <h1 style={{ color: 'var(--color-text-main)', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>{t('customersTitle')}</h1>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', margin: '4px 0 0 0' }}>{t('customersSubtitle')}</p>
                     </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button style={{
-                        background: '#1F2937', color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: 'var(--color-bg-input)', color: 'var(--color-text-main)',
+                        border: '1px solid var(--color-border-subtle)',
                         borderRadius: '8px', padding: '10px 16px',
                         display: 'flex', alignItems: 'center', gap: '8px',
                         cursor: 'pointer', fontSize: '0.9rem'
@@ -127,7 +127,7 @@ const Customers = () => {
                         {t('exportData')}
                     </button>
                     <button style={{
-                        background: '#8B5CF6', color: 'white', border: 'none',
+                        background: '#8B5CF6', color: 'var(--color-text-main)', border: 'none',
                         borderRadius: '8px', padding: '10px 20px',
                         display: 'flex', alignItems: 'center', gap: '8px',
                         cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem'
@@ -140,16 +140,16 @@ const Customers = () => {
 
             {/* Stats Summary (Optional) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>{t('totalCustomers')}</div>
-                    <div style={{ color: 'white', fontSize: '1.8rem', fontWeight: 700 }}>{customers.length}</div>
+                <div style={{ background: 'var(--color-bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--color-border-subtle)' }}>
+                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '8px' }}>{t('totalCustomers')}</div>
+                    <div style={{ color: 'var(--color-text-main)', fontSize: '1.8rem', fontWeight: 700 }}>{customers.length}</div>
                 </div>
-                <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>{t('activeWhatsapp')}</div>
+                <div style={{ background: 'var(--color-bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--color-border-subtle)' }}>
+                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '8px' }}>{t('activeWhatsapp')}</div>
                     <div style={{ color: '#10B981', fontSize: '1.8rem', fontWeight: 700 }}>{customers.filter(c => c.customer_phone).length}</div>
                 </div>
-                <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <div style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: '8px' }}>{t('activeInstagram')}</div>
+                <div style={{ background: 'var(--color-bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--color-border-subtle)' }}>
+                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '8px' }}>{t('activeInstagram')}</div>
                     <div style={{ color: '#EC4899', fontSize: '1.8rem', fontWeight: 700 }}>{customers.filter(c => c.instagram_id).length}</div>
                 </div>
             </div>

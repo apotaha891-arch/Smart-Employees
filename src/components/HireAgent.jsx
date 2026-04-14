@@ -222,7 +222,7 @@ const HireAgent = () => {
     // ── Styles ──────────────────────────────────────────────────────────────
     const page = {
         minHeight: '100%',
-        color: 'white',
+        color: 'var(--color-text-main)',
         padding: '2rem',
         fontFamily: 'Inter, Tajawal, sans-serif',
         direction: isAr ? 'rtl' : 'ltr',
@@ -238,16 +238,16 @@ const HireAgent = () => {
         width: '100%',
         textAlign: isAr ? 'right' : 'left',
         boxSizing: 'border-box',
-        color: 'white',
+        color: 'var(--color-text-main)',
     });
 
     const inputStyle = {
         width: '100%',
         padding: '11px 14px',
-        background: '#1F2937',
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: 'var(--color-bg-input)',
+        border: '1px solid var(--color-border-subtle)',
         borderRadius: '10px',
-        color: 'white',
+        color: 'var(--color-text-main)',
         fontSize: '0.95rem',
         boxSizing: 'border-box',
         outline: 'none',
@@ -257,7 +257,7 @@ const HireAgent = () => {
     if (entityReady === null) {
         return (
             <div style={{ ...page, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-                <div style={{ color: '#9CA3AF', fontSize: '0.95rem' }}>
+                <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
                     {isAr ? '⏳ جارٍ التحقق...' : '⏳ Checking setup...'}
                 </div>
             </div>
@@ -271,10 +271,10 @@ const HireAgent = () => {
                     🏢
                 </div>
                 <div>
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 0.5rem', color: '#E5E7EB' }}>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--color-text-main)' }}>
                         {isAr ? 'أكمل إعداد المنشأة أولاً' : 'Complete Entity Setup First'}
                     </h2>
-                    <p style={{ color: '#9CA3AF', fontSize: '0.9rem', maxWidth: 380, margin: '0 auto', lineHeight: 1.7 }}>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', maxWidth: 380, margin: '0 auto', lineHeight: 1.7 }}>
                         {isAr
                             ? 'قبل توظيف موظف ذكي، يحتاج موظفنا أن يعرف منشأتك — ارفع ملفاتك أو أضف بياناتها الأساسية في صفحة إعداد المنشأة.'
                             : 'Before hiring an AI agent, they need to know your business. Please complete your entity profile so they can represent you accurately.'}
@@ -283,13 +283,13 @@ const HireAgent = () => {
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button
                         onClick={() => navigate('/entity-setup')}
-                        style={{ padding: '12px 28px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)', color: 'white', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
+                        style={{ padding: '12px 28px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)', color: 'var(--color-text-main)', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
                     >
                         {isAr ? '🏢 إعداد المنشأة الآن' : '🏢 Set Up Entity Now'}
                     </button>
                     <button
                         onClick={() => navigate('/agents')}
-                        style={{ padding: '12px 24px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#9CA3AF', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}
+                        style={{ padding: '12px 24px', borderRadius: 12, border: '1px solid var(--color-border-subtle)', background: 'transparent', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}
                     >
                         {isAr ? 'رجوع' : 'Go Back'}
                     </button>
@@ -306,7 +306,7 @@ const HireAgent = () => {
                     <Check size={36} color="#10B981" />
                 </div>
                 <h2 style={{ fontSize: '1.4rem', fontWeight: 700 }}>{isAr ? 'تم تعيين الموظف بنجاح! 🎉' : 'Agent hired successfully! 🎉'}</h2>
-                <p style={{ color: '#9CA3AF' }}>{isAr ? 'جاري التوجيه...' : 'Redirecting...'}</p>
+                <p style={{ color: 'var(--color-text-secondary)' }}>{isAr ? 'جاري التوجيه...' : 'Redirecting...'}</p>
             </div>
         );
     }
@@ -317,7 +317,7 @@ const HireAgent = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
                 <button
                     onClick={() => step === 1 ? navigate('/agents') : setStep(1)}
-                    style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: 'white', borderRadius: '10px', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                    style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: 'var(--color-text-main)', borderRadius: '10px', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
                 >
                     {isAr ? <ArrowRight size={18} /> : <ArrowLeft size={18} />}
                 </button>
@@ -325,12 +325,12 @@ const HireAgent = () => {
                     <h1 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>
                         {isAr ? 'توظيف موظف ذكي جديد' : 'Hire a New AI Agent'}
                     </h1>
-                    <p style={{ color: '#9CA3AF', fontSize: '0.85rem', margin: '4px 0 0' }}>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', margin: '4px 0 0' }}>
                         {isAr ? `الخطوة ${step} من 2` : `Step ${step} of 2`}
                     </p>
                 </div>
                 {/* Progress */}
-                <div style={{ flex: 1, height: 4, background: '#1F2937', borderRadius: 99, overflow: 'hidden', marginInlineStart: '1rem' }}>
+                <div style={{ flex: 1, height: 4, background: 'var(--color-bg-input)', borderRadius: 99, overflow: 'hidden', marginInlineStart: '1rem' }}>
                     <div style={{ height: '100%', width: `${step * 50}%`, background: 'linear-gradient(90deg,#8B5CF6,#6D28D9)', borderRadius: 99, transition: 'width 0.35s' }} />
                 </div>
             </div>
@@ -378,7 +378,7 @@ const HireAgent = () => {
                     {packageBalance < 1000 && (
                         <button 
                             onClick={() => navigate('/pricing')}
-                            style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#3B82F6', color: 'white', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                            style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#3B82F6', color: 'var(--color-text-main)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
                         >
                             {isAr ? 'اشترك لتفعيل التوظيف' : 'Subscribe to Hire'}
                         </button>
@@ -390,7 +390,7 @@ const HireAgent = () => {
             {/* ── Step 1: Choose Role ── */}
             {step === 1 && (
                 <div>
-                    <h2 style={{ fontSize: '1.05rem', fontWeight: 600, marginBottom: '1.25rem', color: '#D1D5DB' }}>
+                    <h2 style={{ fontSize: '1.05rem', fontWeight: 600, marginBottom: '1.25rem', color: 'var(--color-text-main)' }}>
                         {isAr ? 'اختر دور الموظف' : 'Choose Agent Role'}
                     </h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
@@ -421,7 +421,7 @@ const HireAgent = () => {
                                                     {billingRates?.agent_provision_fee || 1000} {isAr ? 'نقطة' : 'Pts'}
                                                 </div>
                                             </div>
-                                            <div style={{ color: '#9CA3AF', fontSize: '0.82rem', marginBottom: 10, lineHeight: 1.5 }}>
+                                            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.82rem', marginBottom: 10, lineHeight: 1.5 }}>
                                                 {isAr ? meta.descAr : meta.descEn}
                                             </div>
                                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -449,7 +449,7 @@ const HireAgent = () => {
                                 <h3 style={{ fontSize: '1rem', margin: '0 0 4px', color: '#60A5FA' }}>
                                     {isAr ? 'لم تجد دور الموظف المطلوب؟' : 'Cannot find the required role?'}
                                 </h3>
-                                <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: 0 }}>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', margin: 0 }}>
                                     {isAr
                                         ? 'يسعدنا تلقي طلبات الموظفين المخصصين لمهام متخصصة غير مدرجة هنا.'
                                         : 'We are happy to receive requests for custom employees for specialized tasks not listed here.'}
@@ -457,7 +457,7 @@ const HireAgent = () => {
                             </div>
                             <button
                                 onClick={() => navigate('/custom-request')}
-                                style={{ background: '#3B82F6', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap' }}
+                                style={{ background: '#3B82F6', color: 'var(--color-text-main)', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap' }}
                             >
                                 {isAr ? 'طلب موظف مخصص' : 'Request Custom Agent'}
                             </button>
@@ -476,17 +476,17 @@ const HireAgent = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '1rem 1.25rem', borderRadius: 14, background: `${v?.color}15`, border: `1px solid ${v?.color}40`, marginBottom: '1.75rem' }}>
                             <span style={{ fontSize: '1.6rem' }}>{meta.emoji}</span>
                             <div>
-                                <div style={{ fontWeight: 700, color: '#E5E7EB' }}>{isAr ? meta.titleAr : meta.titleEn}</div>
-                                <div style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>{isAr ? meta.descAr : meta.descEn}</div>
+                                <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>{isAr ? meta.titleAr : meta.titleEn}</div>
+                                <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>{isAr ? meta.descAr : meta.descEn}</div>
                             </div>
                         </div>
 
-                        <h2 style={{ fontSize: '1.05rem', fontWeight: 600, marginBottom: '1.25rem', color: '#D1D5DB' }}>
+                        <h2 style={{ fontSize: '1.05rem', fontWeight: 600, marginBottom: '1.25rem', color: 'var(--color-text-main)' }}>
                             {isAr ? 'تفاصيل الموظف' : 'Agent Details'}
                         </h2>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: 6 }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: 6 }}>
                                     {isAr ? 'اسم الموظف *' : 'Agent Name *'}
                                 </label>
                                 <input
@@ -498,7 +498,7 @@ const HireAgent = () => {
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: 6 }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: 6 }}>
                                     {isAr ? 'وصف مختصر (اختياري)' : 'Short Description (optional)'}
                                 </label>
                                 <textarea
@@ -509,7 +509,7 @@ const HireAgent = () => {
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', color: '#9CA3AF', fontSize: '0.85rem', marginBottom: 6 }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: 6 }}>
                                     {isAr ? 'المنصات والأدوات المدعومة' : 'Platforms & Integrations'}
                                     <span style={{ fontSize: '0.75rem', fontWeight: 'bold', marginInlineStart: '0.5rem', color: form.platforms.length >= maxTools ? '#F87171' : '#10B981' }}>
                                         ({form.platforms.length} / {maxTools})
@@ -538,7 +538,7 @@ const HireAgent = () => {
                                                 style={{
                                                     padding: '10px 14px',
                                                     borderRadius: '10px',
-                                                    background: isSelected ? 'rgba(139, 92, 246, 0.15)' : '#1F2937',
+                                                    background: isSelected ? 'rgba(139, 92, 246, 0.15)' : 'var(--color-bg-input)',
                                                     border: isSelected ? '1px solid #8B5CF6' : '1px solid rgba(255,255,255,0.05)',
                                                     cursor: isDisabled ? 'not-allowed' : 'pointer',
                                                     opacity: isDisabled ? 0.5 : 1,
@@ -572,7 +572,7 @@ const HireAgent = () => {
                                     borderRadius: 12,
                                     border: 'none',
                                     background: !form.name ? '#374151' : `linear-gradient(135deg, ${v?.color}, ${v?.color}cc)`,
-                                    color: 'white',
+                                    color: 'var(--color-text-main)',
                                     fontWeight: 700,
                                     fontSize: '1rem',
                                     cursor: !form.name ? 'not-allowed' : 'pointer',

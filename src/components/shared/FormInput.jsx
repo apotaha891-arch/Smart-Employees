@@ -29,7 +29,7 @@ const FormInput = React.forwardRef(({
         background: 'rgba(255,255,255,0.03)',
         border: `1px solid ${error ? '#FCA5A5' : 'rgba(255,255,255,0.1)'}`,
         borderRadius: '8px',
-        color: 'white',
+        color: 'var(--color-text-main)',
         fontSize: '0.95rem',
         fontFamily: 'inherit',
         transition: 'all 0.2s ease',

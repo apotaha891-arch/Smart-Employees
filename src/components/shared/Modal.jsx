@@ -45,7 +45,7 @@ const Modal = ({
     const modalStyle = {
         background: 'var(--shift-surface-card, rgba(15, 15, 30, 0.95))',
         borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.1)',
+        border: '1px solid var(--color-border-subtle)',
         boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
         display: 'flex',
         flexDirection: 'column',
@@ -60,13 +60,13 @@ const Modal = ({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '1.5rem',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: '1px solid var(--color-border-subtle)',
     };
 
     const titleStyle = {
         fontSize: '1.25rem',
         fontWeight: 900,
-        color: 'white',
+        color: 'var(--color-text-main)',
         margin: 0,
     };
 
@@ -92,7 +92,7 @@ const Modal = ({
         gap: '1rem',
         justifyContent: 'flex-end',
         padding: '1.5rem',
-        borderTop: '1px solid rgba(255,255,255,0.1)',
+        borderTop: '1px solid var(--color-border-subtle)',
         background: 'rgba(0, 0, 0, 0.2)',
     };
 

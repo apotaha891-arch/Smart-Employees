@@ -801,7 +801,7 @@ ${industryPrivacyRules}
                 <div className="container" style={{ position: 'relative', zIndex: 1, paddingBottom: '4rem', paddingTop: '4rem', maxWidth: '600px', margin: '0 auto' }}>
                     <div className="card p-xl" style={{
                         background: '#18181B',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        border: '1px solid var(--color-border-subtle)',
                         borderRadius: '24px',
                         boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
                     }}>
@@ -809,14 +809,14 @@ ${industryPrivacyRules}
                             <div style={{ width: '64px', height: '64px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
                                 <Settings size={32} color="#8B5CF6" />
                             </div>
-                            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>{t('interviewSetupTitle')}</h2>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--color-text-main)' }}>{t('interviewSetupTitle')}</h2>
                             <p style={{ color: '#A1A1AA' }}>{t('interviewSetupDesc')}</p>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: isArabic ? 'right' : 'left' }}>
                             {/* Sector badge with optional edit */}
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('industryLabel')}</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-text-main)' }}>{t('industryLabel')}</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                     <div style={{
                                         flex: 1, padding: '14px 16px',
@@ -837,7 +837,7 @@ ${industryPrivacyRules}
                                             padding: '10px 16px', borderRadius: '10px',
                                             background: showIndustryEdit ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.06)',
                                             color: showIndustryEdit ? '#F87171' : '#A1A1AA',
-                                            border: '1px solid rgba(255,255,255,0.08)',
+                                            border: '1px solid var(--color-border-subtle)',
                                             cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
                                             whiteSpace: 'nowrap'
                                         }}
@@ -857,7 +857,7 @@ ${industryPrivacyRules}
                                         }}
                                         style={{
                                             marginTop: '0.5rem', width: '100%', padding: '14px 16px', background: '#27272A',
-                                            border: '1px solid rgba(139,92,246,0.4)', borderRadius: '12px', color: 'white', outline: 'none',
+                                            border: '1px solid rgba(139,92,246,0.4)', borderRadius: '12px', color: 'var(--color-text-main)', outline: 'none',
                                             fontSize: '1rem'
                                         }}
                                     >
@@ -872,7 +872,7 @@ ${industryPrivacyRules}
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('jobTitleLabel')}</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-text-main)' }}>{t('jobTitleLabel')}</label>
                                 {!profileLoaded ? (
                                     <div style={{ padding: '14px', color: '#6B7280', fontSize: '0.9rem' }}>{t('loadingCandidates')}</div>
                                 ) : (
@@ -881,7 +881,7 @@ ${industryPrivacyRules}
                                         onChange={(e) => setSetupConfig({ ...setupConfig, agentType: e.target.value })}
                                         style={{
                                             width: '100%', padding: '14px 16px', background: '#27272A',
-                                            border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', outline: 'none',
+                                            border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)', outline: 'none',
                                             fontSize: '1rem'
                                         }}
                                     >
@@ -896,13 +896,13 @@ ${industryPrivacyRules}
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#E4E4E7' }}>{t('toneLabel')}</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-text-main)' }}>{t('toneLabel')}</label>
                                 <select
                                     value={setupConfig.tone}
                                     onChange={(e) => setSetupConfig({ ...setupConfig, tone: e.target.value })}
                                     style={{
                                         width: '100%', padding: '14px 16px', background: '#27272A',
-                                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', outline: 'none',
+                                        border: '1px solid var(--color-border-subtle)', borderRadius: '12px', color: 'var(--color-text-main)', outline: 'none',
                                         fontSize: '1rem'
                                     }}
                                 >
@@ -918,7 +918,7 @@ ${industryPrivacyRules}
                                 onClick={handleStartConfiguredInterview}
                                 className="btn"
                                 style={{
-                                    width: '100%', padding: '16px', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'white',
+                                    width: '100%', padding: '16px', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'var(--color-text-main)',
                                     borderRadius: '12px', fontWeight: 800, fontSize: '1.1rem', marginTop: '1rem', border: 'none', cursor: 'pointer',
                                     boxShadow: '0 10px 20px rgba(139, 92, 246, 0.3)'
                                 }}
@@ -944,7 +944,7 @@ ${industryPrivacyRules}
                                     className="btn"
                                     style={{
                                         width: '100%', padding: '14px', background: 'transparent', color: '#A1A1AA',
-                                        borderRadius: '12px', fontWeight: 600, fontSize: '1rem', marginTop: '0.25rem', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer'
+                                        borderRadius: '12px', fontWeight: 600, fontSize: '1rem', marginTop: '0.25rem', border: '1px solid var(--color-border-subtle)', cursor: 'pointer'
                                     }}
                                 >
                                     {t('cancelReturnBtn')}
@@ -1004,15 +1004,15 @@ ${industryPrivacyRules}
                         display: 'flex',
                         flexDirection: 'column',
                         overflow: 'hidden',
-                        background: '#09090B',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        background: 'var(--color-bg-base)',
+                        border: '1px solid var(--color-border-subtle)',
                         borderRadius: '24px',
                         boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
                     }}>
-                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: '#09090B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-base)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div className="flex align-center gap-sm">
                                 <Sparkles size={20} color="#F97316" />
-                                <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'white' }}>
+                                <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--color-text-main)' }}>
                                     {(() => {
                                         const rawName = template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || 'AI Agent'));
                                         const parts = rawName.split('|').map(s => s.trim());
@@ -1026,7 +1026,7 @@ ${industryPrivacyRules}
                             </div>
                         </div>
 
-                        <div className="chat-messages" style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', background: '#09090B' }}>
+                        <div className="chat-messages" style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', background: 'var(--color-bg-base)' }}>
                             {messages.map((message, index) => {
                                 const isUser = message.role === 'user';
 
@@ -1096,7 +1096,7 @@ ${industryPrivacyRules}
                                             padding: '1rem 1.25rem',
                                             borderRadius: isArabic ? '4px 24px 24px 24px' : '24px 24px 24px 4px',
                                             background: '#1E1E24',
-                                            border: '1px solid rgba(255,255,255,0.05)',
+                                            border: '1px solid var(--color-border-subtle)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
@@ -1139,8 +1139,8 @@ ${industryPrivacyRules}
                                         onClick={(e) => handleSendMessage(e, query)}
                                         style={{
                                             background: 'rgba(255,255,255,0.03)',
-                                            border: '1px solid rgba(255,255,255,0.1)',
-                                            color: '#E4E4E7',
+                                            border: '1px solid var(--color-border-subtle)',
+                                            color: 'var(--color-text-main)',
                                             padding: '0.75rem 1.25rem',
                                             borderRadius: '20px',
                                             fontSize: '0.9rem',
@@ -1169,7 +1169,7 @@ ${industryPrivacyRules}
                             </div>
                         )}
 
-                        <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', background: '#09090B' }}>
+                        <div style={{ padding: '1.5rem', borderTop: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-base)' }}>
                             <form onSubmit={handleSendMessage} style={{
                                 display: 'flex',
                                 gap: '0.5rem',
@@ -1196,7 +1196,7 @@ ${industryPrivacyRules}
                                             flex: 1,
                                             background: 'transparent',
                                             border: 'none',
-                                            color: 'white',
+                                            color: 'var(--color-text-main)',
                                             paddingRight: isArabic ? '1rem' : '0.5rem',
                                             paddingLeft: isArabic ? '0.5rem' : '1rem',
                                             outline: 'none',
@@ -1236,12 +1236,12 @@ ${industryPrivacyRules}
                     {/* Candidate Sidebar */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div className="card p-xl" style={{
-                            border: '1px solid rgba(255,255,255,0.08)',
+                            border: '1px solid var(--color-border-subtle)',
                             background: '#18181B',
                             borderRadius: '24px',
                             boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
                         }}>
-                            <h4 style={{ marginBottom: '1.5rem', fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.75rem', color: '#A1A1AA', textAlign: isArabic ? 'right' : 'left' }}>
+                            <h4 style={{ marginBottom: '1.5rem', fontSize: '1rem', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '0.75rem', color: '#A1A1AA', textAlign: isArabic ? 'right' : 'left' }}>
                                 {isOfficeMode ? (isArabic ? 'ملف الموظف الرقمي' : 'Active Employee Profile') : t('candidateProfileLabel')}
                             </h4>
 
@@ -1255,7 +1255,7 @@ ${industryPrivacyRules}
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    border: '1px solid var(--color-border-subtle)',
                                     overflow: 'hidden'
                                 }}>
                                     {(() => {
@@ -1290,7 +1290,7 @@ ${industryPrivacyRules}
                                                 : template?.services;
 
                                             return servicesToRendar && servicesToRendar.length > 0 ? servicesToRendar.map((s, i) => (
-                                                <span key={i} style={{ padding: '0.4rem 0.75rem', background: '#27272A', color: '#E4E4E7', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.05)' }}>{s}</span>
+                                                <span key={i} style={{ padding: '0.4rem 0.75rem', background: '#27272A', color: 'var(--color-text-main)', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 500, border: '1px solid var(--color-border-subtle)' }}>{s}</span>
                                             )) : (
                                                 <span style={{ color: '#71717A', fontSize: '0.8rem' }}>{t('waitingTasksLabel')}</span>
                                             );
@@ -1302,7 +1302,7 @@ ${industryPrivacyRules}
                                         <Clock size={14} />
                                         {t('scheduleLabel')}
                                     </label>
-                                    <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, color: '#E4E4E7' }}>{t('fullCoverageLabel')}</p>
+                                    <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, color: 'var(--color-text-main)' }}>{t('fullCoverageLabel')}</p>
                                 </div>
                                 <div>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#A1A1AA', fontWeight: 600, marginBottom: '0.75rem' }}>
@@ -1328,7 +1328,7 @@ ${industryPrivacyRules}
                         {!isOfficeMode && (
                             <div className="card p-xl" style={{
                                 background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-                                color: 'white',
+                                color: 'var(--color-text-main)',
                                 borderRadius: '24px',
                                 textAlign: 'center',
                                 border: 'none',
@@ -1358,7 +1358,7 @@ ${industryPrivacyRules}
                                     </div>
                                 </div>
 
-                                <h3 style={{ color: 'white', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>{t('hiringDecisionTitle')}</h3>
+                                <h3 style={{ color: 'var(--color-text-main)', marginBottom: '0.75rem', fontSize: '1.4rem', fontWeight: 900 }}>{t('hiringDecisionTitle')}</h3>
                                 <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
                                     {t('hiringDecisionDesc').replace('{title}', template?.id && getAgentMap(isArabic)[template?.id]?.title ? getAgentMap(isArabic)[template.id].title : (!isArabic && template?.name_en ? template.name_en : (template?.title || template?.name || '')))}
                                 </p>
@@ -1426,7 +1426,7 @@ ${industryPrivacyRules}
                     }}>
                         <Sparkles size={34} color="white" fill="white" />
                     </div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.75rem', color: 'white' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.75rem', color: 'var(--color-text-main)' }}>
                         {isArabic ? '🤔 ما رأيك بالمرشح؟' : '🤔 What do you think?'}
                     </h2>
                     <p style={{ color: '#A1A1AA', marginBottom: '2rem', lineHeight: 1.6, fontSize: '0.95rem' }}>
@@ -1439,7 +1439,7 @@ ${industryPrivacyRules}
                             onClick={() => { setShowHiringModal(false); handleHireAgent(); }}
                             style={{
                                 background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                                color: 'white',
+                                color: 'var(--color-text-main)',
                                 border: 'none',
                                 padding: '1rem',
                                 borderRadius: '14px',
@@ -1455,8 +1455,8 @@ ${industryPrivacyRules}
                             onClick={() => setShowHiringModal(false)}
                             style={{
                                 background: 'rgba(255,255,255,0.05)',
-                                color: '#E4E4E7',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: 'var(--color-text-main)',
+                                border: '1px solid var(--color-border-subtle)',
                                 padding: '0.85rem',
                                 borderRadius: '14px',
                                 fontWeight: 700,

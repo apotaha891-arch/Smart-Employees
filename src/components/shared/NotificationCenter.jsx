@@ -97,10 +97,10 @@ const NotificationCenter = ({ userId }) => {
                 onClick={() => setIsOpen(!isOpen)}
                 style={{ 
                     background: 'rgba(255,255,255,0.05)', 
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    border: '1px solid var(--color-border-subtle)',
                     borderRadius: '10px', 
                     padding: '10px',
-                    color: '#9CA3AF',
+                    color: 'var(--color-text-secondary)',
                     cursor: 'pointer',
                     position: 'relative',
                     transition: 'all 0.2s',
@@ -118,7 +118,7 @@ const NotificationCenter = ({ userId }) => {
                         top: '-5px', 
                         right: '-5px', 
                         background: '#EF4444', 
-                        color: 'white', 
+                        color: 'var(--color-text-main)', 
                         fontSize: '10px', 
                         fontWeight: 'bold',
                         padding: '2px 6px',
@@ -140,8 +140,8 @@ const NotificationCenter = ({ userId }) => {
                     left: language === 'ar' ? '0' : 'auto',
                     width: '350px', 
                     maxHeight: '500px',
-                    background: '#1F2937', 
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'var(--color-bg-input)', 
+                    border: '1px solid var(--color-border-subtle)',
                     borderRadius: '16px',
                     boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
                     zIndex: 1000,
@@ -150,7 +150,7 @@ const NotificationCenter = ({ userId }) => {
                     overflow: 'hidden'
                 }}>
                     {/* Header */}
-                    <div style={{ padding: '15px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ padding: '15px 20px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontWeight: 800, fontSize: '1rem' }}>{language === 'ar' ? 'الإشعارات' : 'Notifications'}</span>
                         {unreadCount > 0 && (
                             <button 
@@ -176,7 +176,7 @@ const NotificationCenter = ({ userId }) => {
                                     onClick={() => !n.is_read && markAsRead(n.id)}
                                     style={{ 
                                         padding: '15px 20px', 
-                                        borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                        borderBottom: '1px solid var(--color-border-subtle)',
                                         background: n.is_read ? 'transparent' : 'rgba(139, 92, 246, 0.05)',
                                         cursor: 'pointer',
                                         transition: 'background 0.2s',
@@ -212,7 +212,7 @@ const NotificationCenter = ({ userId }) => {
                                                     </span>
                                                 )}
                                             </div>
-                                            <div style={{ fontSize: '0.75rem', color: '#9CA3AF', lineHeight: 1.4 }}>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
                                                 {language === 'ar' ? n.message_ar : n.message_en}
                                             </div>
                                             <div style={{ fontSize: '0.65rem', color: '#6B7280', marginTop: '6px' }}>
@@ -229,8 +229,8 @@ const NotificationCenter = ({ userId }) => {
                     </div>
 
                     {/* Footer */}
-                    <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                        <button style={{ background: 'none', border: 'none', color: '#9CA3AF', fontSize: '0.75rem', cursor: 'default' }}>
+                    <div style={{ padding: '12px', borderTop: '1px solid var(--color-border-subtle)', textAlign: 'center' }}>
+                        <button style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '0.75rem', cursor: 'default' }}>
                             {language === 'ar' ? 'عرض السجل الكامل' : 'View all history'}
                         </button>
                     </div>

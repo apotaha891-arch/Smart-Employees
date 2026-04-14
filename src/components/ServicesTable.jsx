@@ -12,8 +12,8 @@ const SERVICE_TYPES = {
 };
 
 const inp = {
-    background: '#111827', border: '1px solid rgba(255,255,255,0.1)',
-    color: 'white', padding: '7px 10px', borderRadius: '7px', width: '100%',
+    background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)',
+    color: 'var(--color-text-main)', padding: '7px 10px', borderRadius: '7px', width: '100%',
     fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box',
 };
 
@@ -38,13 +38,13 @@ const ServicesTable = ({
     const showNewPrice = currentType.needsPrice;
     const showNewDuration = currentType.needsDuration;
 
-    const th = { padding: '0.75rem 1rem', textAlign: language === 'ar' ? 'right' : 'left', color: '#9CA3AF', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap' };
-    const td = { padding: '0.75rem 1rem', color: '#E5E7EB', fontSize: '0.9rem', verticalAlign: 'middle' };
+    const th = { padding: '0.75rem 1rem', textAlign: language === 'ar' ? 'right' : 'left', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap' };
+    const td = { padding: '0.75rem 1rem', color: 'var(--color-text-main)', fontSize: '0.9rem', verticalAlign: 'middle' };
 
     return (
-        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', marginBottom: '1.5rem' }}>
+        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--color-border-subtle)', marginBottom: '1.5rem' }}>
             {/* Column legend / type picker hint */}
-            <div style={{ background: '#111827', padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ background: 'var(--color-bg-surface)', padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap', gap: 8 }}>
                 <span style={{ color: '#6B7280', fontSize: '0.78rem' }}>
                     {language === 'ar'
                         ? '💡 السعر والمدة اختياريان ويُحدَّدان حسب نوع الخدمة'
@@ -52,16 +52,16 @@ const ServicesTable = ({
                 </span>
                 <button
                     onClick={() => setShowTypeHint(p => !p)}
-                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#9CA3AF', fontSize: '0.75rem', padding: '3px 10px', borderRadius: 99, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    style={{ background: 'transparent', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)', fontSize: '0.75rem', padding: '3px 10px', borderRadius: 99, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                     {language === 'ar' ? 'أنواع الخدمات' : 'Service Types'} <ChevronDown size={12} />
                 </button>
             </div>
 
             {/* Type hint panel */}
             {showTypeHint && (
-                <div style={{ background: '#0B0F19', padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                <div style={{ background: '#0B0F19', padding: '0.75rem 1rem', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {Object.entries(SERVICE_TYPES).map(([key, def]) => (
-                        <span key={key} style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: 99, fontSize: '0.75rem', color: '#9CA3AF' }}>
+                        <span key={key} style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: 99, fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
                             {language === 'ar' ? def.labelAr : def.labelEn}
                             {def.needsPrice ? ' · 💰' : ''}
                             {def.needsDuration ? ' · ⏱' : ''}
@@ -72,7 +72,7 @@ const ServicesTable = ({
 
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                    <tr style={{ background: '#1F2937', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <tr style={{ background: 'var(--color-bg-input)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                         <th style={th}>{language === 'ar' ? 'الخدمة / المنتج' : 'Service / Product'}</th>
                         <th style={th}>{language === 'ar' ? 'النوع' : 'Type'}</th>
                         {hasAnyPrice && <th style={th}>{language === 'ar' ? 'السعر' : 'Price'}</th>}
@@ -84,7 +84,7 @@ const ServicesTable = ({
                     {services.map(service => {
                         const stype = SERVICE_TYPES[service.service_type] || SERVICE_TYPES.booking;
                         return (
-                            <tr key={service.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <tr key={service.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                 {editingService?.id === service.id ? (
                                     <>
                                         <td style={td}>
@@ -121,11 +121,11 @@ const ServicesTable = ({
                                         )}
                                         <td style={{ ...td, textAlign: 'center' }}>
                                             <button onClick={() => onUpdate(service.id)}
-                                                style={{ background: '#10B981', color: 'white', border: 'none', padding: '5px 10px', borderRadius: 6, cursor: 'pointer', marginLeft: 6 }}>
+                                                style={{ background: '#10B981', color: 'var(--color-text-main)', border: 'none', padding: '5px 10px', borderRadius: 6, cursor: 'pointer', marginLeft: 6 }}>
                                                 <Save size={14} />
                                             </button>
                                             <button onClick={() => setEditingService(null)}
-                                                style={{ background: '#374151', color: 'white', border: 'none', padding: '5px 10px', borderRadius: 6, cursor: 'pointer' }}>
+                                                style={{ background: '#374151', color: 'var(--color-text-main)', border: 'none', padding: '5px 10px', borderRadius: 6, cursor: 'pointer' }}>
                                                 <X size={14} />
                                             </button>
                                         </td>
@@ -142,11 +142,11 @@ const ServicesTable = ({
                                         {hasAnyDuration && <td style={td}>{service.duration_minutes ? `${service.duration_minutes} ${language === 'ar' ? 'د' : 'min'}` : <span style={{ color: '#4B5563' }}>—</span>}</td>}
                                         <td style={{ ...td, textAlign: 'center' }}>
                                             <button onClick={() => setEditingService(service)}
-                                                style={{ background: '#3B82F6', color: 'white', border: 'none', padding: '5px 10px', borderRadius: 6, cursor: 'pointer', marginLeft: 6 }}>
+                                                style={{ background: '#3B82F6', color: 'var(--color-text-main)', border: 'none', padding: '5px 10px', borderRadius: 6, cursor: 'pointer', marginLeft: 6 }}>
                                                 <Edit2 size={14} />
                                             </button>
                                             <button onClick={() => onDelete(service.id)}
-                                                style={{ background: '#EF4444', color: 'white', border: 'none', padding: '5px 10px', borderRadius: 6, cursor: 'pointer' }}>
+                                                style={{ background: '#EF4444', color: 'var(--color-text-main)', border: 'none', padding: '5px 10px', borderRadius: 6, cursor: 'pointer' }}>
                                                 <Trash2 size={14} />
                                             </button>
                                         </td>
@@ -157,7 +157,7 @@ const ServicesTable = ({
                     })}
 
                     {/* ── Add new service row ── */}
-                    <tr style={{ background: '#111827', borderTop: '2px solid rgba(99,102,241,0.15)' }}>
+                    <tr style={{ background: 'var(--color-bg-surface)', borderTop: '2px solid rgba(99,102,241,0.15)' }}>
                         <td style={{ padding: '0.75rem 1rem' }}>
                             <input type="text"
                                 placeholder={language === 'ar' ? 'اسم الخدمة / المنتج' : 'Service / product name'}
@@ -196,7 +196,7 @@ const ServicesTable = ({
                         )}
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
                             <button onClick={onAdd}
-                                style={{ background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', color: 'white', border: 'none', padding: '7px 16px', borderRadius: 7, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 600, fontSize: '0.85rem' }}>
+                                style={{ background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', color: 'var(--color-text-main)', border: 'none', padding: '7px 16px', borderRadius: 7, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 600, fontSize: '0.85rem' }}>
                                 <Plus size={15} /> {language === 'ar' ? 'إضافة' : 'Add'}
                             </button>
                         </td>

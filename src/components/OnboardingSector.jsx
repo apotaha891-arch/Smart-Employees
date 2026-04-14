@@ -93,7 +93,7 @@ const OnboardingSector = () => {
 
     return (
         <div style={{
-            minHeight: '100vh', background: '#070B14',
+            minHeight: '100vh', background: 'var(--color-bg-base)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '2rem', fontFamily: "'Inter', 'Segoe UI', sans-serif"
         }}>
@@ -106,14 +106,14 @@ const OnboardingSector = () => {
                 {/* Logo */}
                 <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
-                        <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg, #10B981, #3B82F6)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '1.1rem' }}>24</div>
+                        <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg, #10B981, #3B82F6)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-main)', fontWeight: 900, fontSize: '1.1rem' }}>24</div>
                         <span style={{ fontSize: '1.6rem', fontWeight: 900, background: 'linear-gradient(90deg, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>24Shift</span>
                     </div>
 
-                    <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'white', marginBottom: '0.75rem', lineHeight: 1.2 }}>
+                    <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '0.75rem', lineHeight: 1.2 }}>
                         ما هو قطاع نشاطك؟
                     </h1>
-                    <p style={{ color: '#9CA3AF', fontSize: '1rem', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6 }}>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6 }}>
                         سنُخصِّص موظفيك الرقميين وخدماتهم بناءً على قطاعك تلقائياً
                     </p>
                 </div>
@@ -134,7 +134,7 @@ const OnboardingSector = () => {
                                     borderRadius: '16px',
                                     border: `2px solid ${isSelected ? s.color : isHovered ? `${s.color}50` : 'rgba(255,255,255,0.07)'}`,
                                     background: isSelected ? s.gradient : isHovered ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
-                                    color: 'white',
+                                    color: 'var(--color-text-main)',
                                     cursor: 'pointer',
                                     textAlign: 'right',
                                     transition: 'all 0.25s ease',
@@ -160,7 +160,7 @@ const OnboardingSector = () => {
                         onClick={handleContinue}
                         disabled={!selected || saving}
                         style={{
-                            background: selected ? `linear-gradient(135deg, ${sector.color}, ${sector.color}cc)` : '#1F2937',
+                            background: selected ? `linear-gradient(135deg, ${sector.color}, ${sector.color}cc)` : 'var(--color-bg-input)',
                             color: selected ? 'white' : '#4B5563',
                             border: 'none',
                             borderRadius: '14px',

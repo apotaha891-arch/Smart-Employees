@@ -218,7 +218,7 @@ const PlatformConcierge = () => {
                     height: '64px',
                     borderRadius: '50%',
                     backgroundColor: 'var(--primary)',
-                    color: 'white',
+                    color: 'var(--color-text-main)',
                     fontSize: '1.75rem',
                     border: 'none',
                     boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
@@ -263,7 +263,7 @@ const PlatformConcierge = () => {
             <div style={{
                 padding: '1.5rem',
                 backgroundColor: 'rgba(39, 39, 42, 0.9)', // Slightly lighter header
-                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                borderBottom: '1px solid var(--color-border-subtle)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center'
@@ -282,7 +282,7 @@ const PlatformConcierge = () => {
                         <img src="/noura_avatar.png" alt="Noura" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div>
-                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'white' }}>{language === 'ar' ? 'نورة' : 'Noura'}</h4>
+                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-main)' }}>{language === 'ar' ? 'نورة' : 'Noura'}</h4>
                         <p style={{ margin: 0, fontSize: '0.75rem', color: '#10B981', fontWeight: 600 }}>{t('nouraStatus')}</p>
                     </div>
                 </div>
@@ -295,7 +295,7 @@ const PlatformConcierge = () => {
             </div>
 
             {/* Chat Body */}
-            <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', background: '#09090B' }}>
+            <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', background: 'var(--color-bg-base)' }}>
                 {messages.map((msg, i) => (
                     <div key={i} style={{
                         display: 'flex',
@@ -325,12 +325,12 @@ const PlatformConcierge = () => {
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSend} style={{ padding: '1rem', background: '#18181B', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <form onSubmit={handleSend} style={{ padding: '1rem', background: '#18181B', borderTop: '1px solid var(--color-border-subtle)' }}>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <input
                         type="text"
                         className="input-field"
-                        style={{ marginTop: 0, paddingRight: '1rem', paddingLeft: '1rem', background: '#27272A', border: '1px solid rgba(255,255,255,0.1)', textAlign: language === 'ar' ? 'right' : 'left' }}
+                        style={{ marginTop: 0, paddingRight: '1rem', paddingLeft: '1rem', background: '#27272A', border: '1px solid var(--color-border-subtle)', textAlign: language === 'ar' ? 'right' : 'left' }}
                         placeholder={t('nouraPlaceholder')}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
@@ -344,7 +344,7 @@ const PlatformConcierge = () => {
             </form>
             {/* Branding Footer */}
             {!branding.hide_credits && (
-                <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.65rem', color: '#71717A', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.1)' }}>
+                <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.65rem', color: '#71717A', borderTop: '1px solid var(--color-border-subtle)', background: 'rgba(0,0,0,0.1)' }}>
                     Powered by <span style={{ color: '#8B5CF6', fontWeight: 700 }}>24Shift</span>
                 </div>
             )}

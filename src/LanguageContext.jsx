@@ -18,8 +18,8 @@ const getNestedTranslation = (obj, path) => {
 
 export const LanguageProvider = ({ children }) => {
     const [language, setLanguage] = useState(() => {
-        // Get saved language from localStorage or default to Arabic
-        return localStorage.getItem('appLanguage') || 'ar';
+        // Get saved language from localStorage or default to English
+        return localStorage.getItem('appLanguage') || 'en';
     });
 
     const t = (key) => {

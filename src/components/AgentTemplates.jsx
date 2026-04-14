@@ -197,7 +197,7 @@ const AgentTemplates = () => {
                         onClick={() => setShowSectorConfirm(true)}
                         style={{
                             background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            border: '1px solid var(--color-border-subtle)',
                             borderRadius: '12px',
                             padding: '0.6rem 1.25rem',
                             color: '#A1A1AA',
@@ -249,7 +249,7 @@ const AgentTemplates = () => {
                                                 <h4 className="shift-card-title" style={{ margin: 0, fontSize: '1.1rem' }}>{displayName}</h4>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                                                     <span style={{ display: 'flex', alignItems: 'center', color: '#8B5CF6' }}>{ui.icon}</span>
-                                                    <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{displayRole}</span>
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{displayRole}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -276,7 +276,7 @@ const AgentTemplates = () => {
                                                 left: '1.25rem',
                                                 padding: '0.2rem 0.5rem',
                                                 background: '#8B5CF6',
-                                                color: 'white',
+                                                color: 'var(--color-text-main)',
                                                 borderRadius: '4px',
                                                 fontSize: '0.6rem',
                                                 fontWeight: 900,
@@ -297,13 +297,13 @@ const AgentTemplates = () => {
                             <h3 style={{ fontSize: '1.1rem', margin: '0 0 6px', color: '#60A5FA' }}>
                                 {t('templates.customTitle')}
                             </h3>
-                            <p style={{ fontSize: '0.9rem', color: '#9CA3AF', margin: 0 }}>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', margin: 0 }}>
                                 {t('templates.customDesc')}
                             </p>
                         </div>
                         <button
                             onClick={() => navigate('/custom-request')}
-                            style={{ background: '#3B82F6', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap', transition: 'all 0.3s' }}
+                            style={{ background: '#3B82F6', color: 'var(--color-text-main)', border: 'none', padding: '12px 24px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap', transition: 'all 0.3s' }}
                         >
                             {t('templates.customAction')}
                         </button>
@@ -312,7 +312,7 @@ const AgentTemplates = () => {
 
                 {/* Personality/Tone Selection */}
                 {selectedTemplate && (
-                    <div ref={toneSectionRef} className="animate-fade-in" style={{ marginTop: '6rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '5rem', paddingBottom: '6rem' }}>
+                    <div ref={toneSectionRef} className="animate-fade-in" style={{ marginTop: '6rem', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '5rem', paddingBottom: '6rem' }}>
                         <div className="text-center" style={{ marginBottom: '3.5rem' }}>
                             <div style={{
                                 background: 'rgba(139, 92, 246, 0.15)',
@@ -325,7 +325,7 @@ const AgentTemplates = () => {
                                 marginBottom: '1.25rem',
                                 border: '1px solid rgba(139, 92, 246, 0.2)'
                             }}>{t('templates.step2')}</div>
-                            <h3 style={{ fontSize: '1.85rem', marginBottom: '1rem', fontWeight: 900, color: 'white' }}>{t('templates.determinePersonality')}</h3>
+                            <h3 style={{ fontSize: '1.85rem', marginBottom: '1rem', fontWeight: 900, color: 'var(--color-text-main)' }}>{t('templates.determinePersonality')}</h3>
                             <p style={{ color: '#A1A1AA', fontSize: '1rem' }}>{t('templates.howToTalk').replace('{name}', t.language === 'en' ? (selectedTemplate.name_en || selectedTemplate.name) : selectedTemplate.name)}</p>
                         </div>
 
@@ -352,7 +352,7 @@ const AgentTemplates = () => {
                                         {tone.icon}
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                        <span style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>{t(`templates.${tone.id}`)}</span>
+                                        <span style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.95rem' }}>{t(`templates.${tone.id}`)}</span>
                                     </div>
                                     {selectedTone === tone.id && <CheckCircle2 size={18} color="white" />}
                                 </div>
@@ -365,7 +365,7 @@ const AgentTemplates = () => {
                                 onClick={handleHireAgent}
                                 style={{
                                     background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
-                                    color: 'white',
+                                    color: 'var(--color-text-main)',
                                     padding: '1.25rem 4rem',
                                     fontSize: '1.15rem',
                                     borderRadius: '16px',

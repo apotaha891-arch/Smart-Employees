@@ -234,7 +234,7 @@ const BusinessSetup = () => {
                                 <Sparkles size={24} />
                             </div>
                             <div>
-                                <h3 style={{ margin: 0, color: 'white' }}>{language === 'ar' ? 'الإعداد الذكي بالذكاء الاصطناعي' : 'AI Smart Setup'}</h3>
+                                <h3 style={{ margin: 0, color: 'var(--color-text-main)' }}>{language === 'ar' ? 'الإعداد الذكي بالذكاء الاصطناعي' : 'AI Smart Setup'}</h3>
                                 <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{language === 'ar' ? 'ارفع ملفات أو أضف روابط لتدريب موظفك الرقمي فوراً' : 'Upload files or add links to train your digital agent immediately'}</p>
                             </div>
                         </div>
@@ -243,7 +243,7 @@ const BusinessSetup = () => {
                             <label className="label"><span>📁</span> {language === 'ar' ? 'رفع ملفات (PDF, Excel, Word)' : 'Upload Files (PDF, Excel, Word)'}</label>
                             <div
                                 style={{
-                                    border: '2px dashed rgba(255,255,255,0.1)',
+                                    border: '2px dashed var(--color-border-subtle)',
                                     borderRadius: '12px',
                                     padding: '2rem',
                                     textAlign: 'center',
@@ -254,7 +254,7 @@ const BusinessSetup = () => {
                                 onClick={() => document.getElementById('ai-file-upload').click()}
                             >
                                 <Upload size={32} color="#9CA3AF" style={{ marginBottom: '1rem' }} />
-                                <p style={{ margin: 0, color: '#9CA3AF', fontSize: '0.9rem' }}>{language === 'ar' ? 'اضغط لاختيار الملفات أو اسحبها هنا' : 'Click to select files or drag them here'}</p>
+                                <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>{language === 'ar' ? 'اضغط لاختيار الملفات أو اسحبها هنا' : 'Click to select files or drag them here'}</p>
                                 <input
                                     id="ai-file-upload"
                                     type="file"
@@ -269,7 +269,7 @@ const BusinessSetup = () => {
                                 <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                     {aiFiles.map((f, i) => (
                                         <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '0.85rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-main)', fontSize: '0.85rem' }}>
                                                 <FileText size={16} color="#8B5CF6" /> {f.name}
                                             </div>
                                             <X size={16} color="#EF4444" style={{ cursor: 'pointer' }} onClick={() => removeFile(i)} />
@@ -283,7 +283,7 @@ const BusinessSetup = () => {
                             <label className="label"><span>🔗</span> {language === 'ar' ? 'روابط الصفحات وقواعد البيانات' : 'Page Links & Databases'}</label>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 <div style={{ position: 'relative', flex: 1 }}>
-                                    <LinkIcon size={18} style={{ position: 'absolute', [language === 'ar' ? 'right' : 'left']: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                                    <LinkIcon size={18} style={{ position: 'absolute', [language === 'ar' ? 'right' : 'left']: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
                                     <input
                                         type="url"
                                         className="input-field"
@@ -294,7 +294,7 @@ const BusinessSetup = () => {
                                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddUrl())}
                                     />
                                 </div>
-                                <button onClick={handleAddUrl} className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>{language === 'ar' ? 'إضافة' : 'Add'}</button>
+                                <button onClick={handleAddUrl} className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-text-main)' }}>{language === 'ar' ? 'إضافة' : 'Add'}</button>
                             </div>
 
                             {aiUrlsList.length > 0 && (
@@ -318,7 +318,7 @@ const BusinessSetup = () => {
                             disabled={aiLoading || (aiFiles.length === 0 && aiUrlsList.length === 0)}
                             style={{
                                 background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-                                color: 'white',
+                                color: 'var(--color-text-main)',
                                 opacity: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 0.5 : 1,
                                 pointerEvents: (aiFiles.length === 0 && aiUrlsList.length === 0) ? 'none' : 'auto'
                             }}
@@ -332,13 +332,13 @@ const BusinessSetup = () => {
 
                     {/* Tips Panel immediately below AI Panel */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <h3 style={{ color: 'white', marginBottom: '0.5rem', fontSize: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>💡 {language === 'ar' ? 'كيف سيساعدك موظفك الذكي؟' : 'How will your smart agent help?'}</h3>
+                        <h3 style={{ color: 'var(--color-text-main)', marginBottom: '0.5rem', fontSize: '1.25rem', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '1rem' }}>💡 {language === 'ar' ? 'كيف سيساعدك موظفك الذكي؟' : 'How will your smart agent help?'}</h3>
 
                         <div className="card" style={{ [language === 'ar' ? 'borderRight' : 'borderLeft']: '4px solid #8B5CF6', background: 'rgba(139, 92, 246, 0.05)', padding: '1.5rem' }}>
                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
                                 <div style={{ fontSize: '1.75rem', background: '#8B5CF620', padding: '10px', borderRadius: '12px', display: 'flex' }}>⏱️</div>
                                 <div>
-                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>{language === 'ar' ? 'تغطية فورية 24/7' : 'Instant 24/7 Coverage'}</h4>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'var(--color-text-main)', fontSize: '1.1rem' }}>{language === 'ar' ? 'تغطية فورية 24/7' : 'Instant 24/7 Coverage'}</h4>
                                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
                                         {language === 'ar' ? 'موظفك لا ينام ولا يأخذ إجازات. سيقوم بالرد على استفسارات عملائك وحجز مواعيدهم في أي وقت من اليوم، حتى خارج أوقات العمل الرسمية.' : 'Your employee never sleeps or takes vacations. They will respond to customer inquiries and book appointments anytime, even outside official working hours.'}
                                     </p>
@@ -350,7 +350,7 @@ const BusinessSetup = () => {
                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
                                 <div style={{ fontSize: '1.75rem', background: '#10B98120', padding: '10px', borderRadius: '12px', display: 'flex' }}>🎯</div>
                                 <div>
-                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>{language === 'ar' ? 'دقة واحترافية متناهية' : 'Extreme Accuracy & Professionalism'}</h4>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'var(--color-text-main)', fontSize: '1.1rem' }}>{language === 'ar' ? 'دقة واحترافية متناهية' : 'Extreme Accuracy & Professionalism'}</h4>
                                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
                                         {language === 'ar' ? 'ابنِ قاعدة معرفية قوية لموظفك. سيلتزم تماماً بالتعليمات والأسعار والخدمات التي تقدمها، ولن يرتكب الأخطاء البشرية الشائعة.' : 'Build a strong knowledge base for your employee. They will strictly adhere to your instructions, prices, and services, eliminating common human errors.'}
                                     </p>
@@ -362,7 +362,7 @@ const BusinessSetup = () => {
                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'start' }}>
                                 <div style={{ fontSize: '1.75rem', background: '#F59E0B20', padding: '10px', borderRadius: '12px', display: 'flex' }}>💰</div>
                                 <div>
-                                    <h4 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.1rem' }}>{language === 'ar' ? 'توفير التكاليف ومضاعفة المبيعات' : 'Cost Savings & Doubled Sales'}</h4>
+                                    <h4 style={{ marginBottom: '0.5rem', color: 'var(--color-text-main)', fontSize: '1.1rem' }}>{language === 'ar' ? 'توفير التكاليف ومضاعفة المبيعات' : 'Cost Savings & Doubled Sales'}</h4>
                                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
                                         {language === 'ar' ? 'بدلاً من توظيف فريق دعم كبير، سيتولى الذكاء الاصطناعي المهام الروتينية ليتفرغ فريقك للمبيعات والإدارة، مما يعود بالنفع على إيراداتك.' : 'Instead of hiring a large support team, AI handles routine tasks so your team can focus on sales and management, benefiting your revenue.'}
                                     </p>
@@ -370,7 +370,7 @@ const BusinessSetup = () => {
                             </div>
                         </div>
 
-                        <div className="card" style={{ background: 'linear-gradient(45deg, #18181B, #09090B)', border: '1px dashed var(--accent)', padding: '1.5rem', textAlign: 'center' }}>
+                        <div className="card" style={{ background: 'linear-gradient(45deg, #18181B, var(--color-bg-base))', border: '1px dashed var(--accent)', padding: '1.5rem', textAlign: 'center' }}>
                             <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🚀</div>
                             <h4 style={{ color: 'var(--secondary-accent)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>{language === 'ar' ? 'جاهز للانطلاق؟' : 'Ready to launch?'}</h4>
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
@@ -383,7 +383,7 @@ const BusinessSetup = () => {
                 {/* Left Column: Manual Setup Panel */}
                 <div className="card">
                     <form onSubmit={handleSubmit}>
-                        <h3 style={{ margin: '0 0 1.5rem', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>{language === 'ar' ? 'وثيقة الإعداد اليدوي' : 'Manual Setup Document'}</h3>
+                        <h3 style={{ margin: '0 0 1.5rem', color: 'var(--color-text-main)', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '1rem' }}>{language === 'ar' ? 'وثيقة الإعداد اليدوي' : 'Manual Setup Document'}</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
                             <div>
                                 <label className="label"><span>🏢</span> {language === 'ar' ? 'اسم المنشأة' : 'Business Name'}</label>
@@ -440,15 +440,15 @@ const BusinessSetup = () => {
                                 value={formData.branding_tone}
                                 onChange={(e) => setFormData({ ...formData, branding_tone: e.target.value })}
                                 style={{
-                                    color: 'white',
-                                    background: '#1F2937',
-                                    border: '1px solid rgba(255,255,255,0.1)'
+                                    color: 'var(--color-text-main)',
+                                    background: 'var(--color-bg-input)',
+                                    border: '1px solid var(--color-border-subtle)'
                                 }}
                             >
-                                <option value="professional" style={{ color: 'white', background: '#1F2937' }}>{language === 'ar' ? 'رسمي واحترافي' : 'Official & Professional'}</option>
-                                <option value="friendly" style={{ color: 'white', background: '#1F2937' }}>{language === 'ar' ? 'ودود وشبابي' : 'Friendly & Youthful'}</option>
-                                <option value="fast" style={{ color: 'white', background: '#1F2937' }}>{language === 'ar' ? 'سريع ومباشر' : 'Fast & Direct'}</option>
-                                <option value="luxury" style={{ color: 'white', background: '#1F2937' }}>{language === 'ar' ? 'راقي وفاخر' : 'Luxury & Refined'}</option>
+                                <option value="professional" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{language === 'ar' ? 'رسمي واحترافي' : 'Official & Professional'}</option>
+                                <option value="friendly" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{language === 'ar' ? 'ودود وشبابي' : 'Friendly & Youthful'}</option>
+                                <option value="fast" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{language === 'ar' ? 'سريع ومباشر' : 'Fast & Direct'}</option>
+                                <option value="luxury" style={{ color: 'var(--color-text-main)', background: 'var(--color-bg-input)' }}>{language === 'ar' ? 'راقي وفاخر' : 'Luxury & Refined'}</option>
                             </select>
                         </div>
 

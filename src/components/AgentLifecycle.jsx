@@ -124,7 +124,7 @@ const AgentLifecycle = () => {
                             margin: '0 0 0.25rem 0',
                             fontSize: '1rem',
                             fontWeight: 800,
-                            color: 'white',
+                            color: 'var(--color-text-main)',
                         }}>
                             {step.label}
                         </h4>
