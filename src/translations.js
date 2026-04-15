@@ -857,10 +857,13 @@ export const translations = {
         },
 
         // Agent Templates Page
+        templates: {
             customAction: "Submit Custom Request",
             aiConsultant: "AI Consultant",
             aiConsultantFem: "AI Consultant"
         },
+
+
         interview: {
             title: "Personal Interview Room",
             subtitle: "You are now in a professional evaluation session with the selected candidate",

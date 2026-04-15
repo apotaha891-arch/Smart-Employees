@@ -1,0 +1,2286 @@
+﻿import React, { useState, useEffect, useMemo } from 'react';
+import { supabase } from '../services/supabaseService';
+import * as adminService from '../services/adminService';
+import {
+    LayoutDashboard, Users, Bot, Calendar, Globe, CreditCard,
+    Link as LinkIcon, Save, Power, Edit2, Check, X, TrendingUp,
+    LogOut, Eye, Key, Plus, Bell, Mail, MessageSquare, Zap, Trash2, RefreshCw,
+    Search, Download, Newspaper, Megaphone, Settings, Star, BookOpen, ArrowRight, Sparkles, Lock
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
+import { signOut } from '../services/supabaseService';
+import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import AdminBlogManager from './AdminBlogManager';
+import { REALISTIC_AVATARS, getRealisticAvatar } from '../utils/avatars';
+
+// ÔöÇÔöÇ Icon Mapping for Dynamic Configs ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+const ICON_MAP = { Mail, MessageSquare, Bell, Zap, Globe, Bot, Users, Calendar };
+
+// ÔöÇÔöÇ Tiny UI helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+const Card = ({ c, s = {} }) => <div style={{ background: 'var(--color-bg-surface)', borderRadius: '13px', border: '1px solid var(--color-border-subtle)', padding: '1.1rem', ...s }}>{c}</div>;
+const Btn = ({ onClick, disabled, children, color = '#8B5CF6', style = {} }) => (
+    <button onClick={onClick} disabled={disabled} style={{ background: `linear-gradient(135deg,${color},${color}cc)`, color: 'var(--color-text-main)', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, fontSize: '0.83rem', opacity: disabled ? 0.6 : 1, ...style }}>{children}</button>
+);
+const Input = ({ value, onChange, placeholder, type = 'text' }) => (
+    <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={{ width: '100%', padding: '8px 10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', boxSizing: 'border-box', fontSize: '0.82rem', fontFamily: type === 'password' ? 'monospace' : 'inherit' }} />
+);
+const StatCard = ({ icon: Icon, label, value, color, sub }) => (
+    <Card c={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div><div style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '5px' }}>{label}</div>
+            <div style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--color-text-main)' }}>{value}</div>
+            {sub && <div style={{ fontSize: '0.73rem', color, marginTop: '3px' }}>{sub}</div>}
+        </div>
+        <div style={{ width: '40px', height: '40px', borderRadius: '9px', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={18} color={color} /></div>
+    </div>} />
+);
+const NewsletterSubscribers = () => {
+    const [subs, setSubs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        const loadSubs = async () => {
+            const { data } = await supabase.from('newsletter_subscriptions').select('*').order('created_at', { ascending: false });
+            setSubs(data || []);
+            setLoading(false);
+        };
+        loadSubs();
+    }, []);
+    return (
+        <div>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 1rem' }}>┘àÏ┤Ï¬Ï▒┘â┘è Ïº┘ä┘åÏ┤Ï▒Ï® Ïº┘äÏ¿Ï▒┘èÏ»┘èÏ®</h1>
+            <Card s={{ padding: 0, overflow: 'hidden' }} c={
+                loading ? <div style={{ padding: '2rem', textAlign: 'center' }}>Ï¼ÏºÏ▒┘è Ïº┘äÏ¬Ï¡┘à┘è┘ä...</div> :
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                    <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                        <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontSize: '0.77rem' }}>Ïº┘äÏ¿Ï▒┘èÏ» Ïº┘äÏÑ┘ä┘âÏ¬Ï▒┘ê┘å┘è</th>
+                        <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontSize: '0.77rem' }}>Ï¬ÏºÏ▒┘èÏ« Ïº┘äÏºÏ┤Ï¬Ï▒Ïº┘â</th>
+                    </tr></thead>
+                    <tbody>
+                        {subs.length === 0 ? <tr><td colSpan={2} style={{ padding: '2rem', textAlign: 'center' }}>┘äÏº ┘è┘êÏ¼Ï» ┘àÏ┤Ï¬Ï▒┘â┘è┘å Ï¡Ïº┘ä┘èÏº┘ï</td></tr> :
+                        subs.map(s => <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                            <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-main)' }}>{s.email}</td>
+                            <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280' }}>{new Date(s.created_at).toLocaleDateString('ar-EG')}</td>
+                        </tr>)}
+                    </tbody>
+                </table>
+            } />
+        </div>
+    );
+};
+
+// ÔöÇÔöÇ Main ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+export default function AdminDashboard() {
+    const navigate = useNavigate();
+    const { isEnglish, t } = useLanguage();
+    const [tab, setTab] = useState('overview');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [msg, setMsg] = useState('');
+
+    // Dynamic Configs
+    const [sectors, setSectors] = useState({
+        telecom_it: { l: 'ÏºÏ¬ÏÁÏº┘äÏºÏ¬ ┘êÏ¬┘é┘å┘èÏ®', e: '­ƒôí', c: '#EF4444', on: true },
+        banking: { l: 'Ï¿┘å┘ê┘â ┘ê┘àÏº┘ä┘èÏ®', e: '­ƒÅª', c: '#8B5CF6', on: true },
+        retail_ecommerce: { l: 'Ï¬Ï¼Ï▓ÏªÏ® ┘ê┘àÏ¬ÏºÏ¼Ï▒', e: '­ƒøì', c: '#10B981', on: true },
+        call_center: { l: 'Ï«Ï»┘àÏºÏ¬ Ïº┘äÏ╣┘à┘äÏºÏí', e: '­ƒÄº', c: '#06B6D4', on: true },
+        medical: { l: 'ÏÀÏ¿┘è ┘êÏÁÏ¡┘è', e: '­ƒ®║', c: '#3B82F6', on: true },
+        beauty: { l: 'Ï¬Ï¼┘à┘è┘ä ┘êÏ╣┘åÏº┘èÏ®', e: '­ƒî©', c: '#EC4899', on: true },
+        restaurant: { l: '┘àÏÀÏºÏ╣┘à ┘êÏÂ┘èÏº┘üÏ®', e: '­ƒì¢', c: '#F59E0B', on: true },
+        real_estate: { l: 'Ï╣┘éÏºÏ▒ÏºÏ¬', e: '­ƒÅá', c: '#D946EF', on: true },
+        general: { l: 'Ï╣Ïº┘à', e: '­ƒÅó', c: '#6B7280', on: true }
+    });
+    const [roles, setRoles] = useState({
+        booking: { l: '┘à┘åÏ│┘éÏ® Ï¡Ï¼┘êÏ▓ÏºÏ¬', c: '#8B5CF6' },
+        support: { l: 'Ï«Ï»┘àÏ® Ï╣┘à┘äÏºÏí', c: '#10B981' },
+        sales: { l: '┘àÏ¿┘èÏ╣ÏºÏ¬', c: '#F59E0B' },
+        hr: { l: '┘à┘êÏºÏ▒Ï» Ï¿Ï┤Ï▒┘èÏ®', c: '#3B82F6' },
+        email: { l: '┘à┘åÏ│┘é Ï¿Ï▒┘èÏ»', c: '#EC4899' },
+        followup: { l: '┘àÏ¬ÏºÏ¿Ï╣Ï®', c: '#06B6D4' }
+    });
+    const [agentAppsConfig, setAgentAppsConfig] = useState([
+        { id: 'email_notify', icon: 'Mail', label: 'ÏÑÏ┤Ï╣ÏºÏ▒ Ï¿Ï▒┘èÏ» ÏÑ┘ä┘âÏ¬Ï▒┘ê┘å┘è', desc: 'Ï¬┘åÏ¿┘è┘ç ┘ä┘ä┘àÏ»┘èÏ▒ Ï╣┘åÏ» Ïº┘äÏ¡Ï¼┘êÏ▓ÏºÏ¬ Ïú┘ê Ïº┘ä┘àÏ¡ÏºÏ»Ï½ÏºÏ¬ Ïº┘äÏ¼Ï»┘èÏ»Ï®' },
+        { id: 'sms_notify', icon: 'MessageSquare', label: 'ÏÑÏ┤Ï╣ÏºÏ▒ SMS', desc: 'Ï▒Ï│Ïº┘äÏ® ┘åÏÁ┘èÏ® ┘ä┘äÏ╣┘à┘è┘ä Ï¿Ï¬Ïú┘â┘èÏ» Ï¡Ï¼Ï▓┘ç' },
+        { id: 'reminder', icon: 'Bell', label: 'Ï¬Ï░┘â┘èÏ▒ ┘éÏ¿┘ä Ïº┘ä┘à┘êÏ╣Ï»', desc: 'Ï¬Ï░┘â┘èÏ▒ Ïó┘ä┘è ┘éÏ¿┘ä Ïº┘ä┘à┘êÏ╣Ï» Ï¿Ï│ÏºÏ╣Ï®' },
+        { id: 'followup', icon: 'Zap', label: '┘àÏ¬ÏºÏ¿Ï╣Ï® Ï¿Ï╣Ï» Ïº┘äÏ«Ï»┘àÏ®', desc: 'Ï▒Ï│Ïº┘äÏ® ┘àÏ¬ÏºÏ¿Ï╣Ï® Ï¿Ï╣Ï» 24 Ï│ÏºÏ╣Ï® ┘à┘å Ïº┘ä┘à┘êÏ╣Ï»' },
+    ]);
+    const STATUSES = { pending: { bg: '#F59E0B20', t: '#F59E0B', l: '┘àÏ╣┘ä┘é' }, confirmed: { bg: '#10B98120', t: '#10B981', l: '┘àÏñ┘âÏ»' }, completed: { bg: '#3B82F620', t: '#3B82F6', l: '┘à┘âÏ¬┘à┘ä' }, cancelled: { bg: '#EF444420', t: '#EF4444', l: '┘à┘äÏ║┘è' } };
+    
+    // Data
+    const [clients, setClients] = useState([]);
+    const [agents, setAgents] = useState([]);
+    const [bookings, setBookings] = useState([]);
+    const [pricing, setPricing] = useState([]);
+    const [integrations, setIntegrations] = useState([]);
+    const [platformTelegramToken, setPlatformTelegramToken] = useState('');
+    const [academyPriceId, setAcademyPriceId] = useState('');
+    const [conciergeChats, setConciergeChats] = useState([]);
+    const [selChat, setSelChat] = useState(null);
+    const [notifications, setNotifications] = useState([]);
+    const [customRequests, setCustomRequests] = useState([]);
+    
+    // Academy & Affiliates State
+    const [academyLeads, setAcademyLeads] = useState([]);
+    const [affiliates, setAffiliates] = useState([]);
+    const [academyLoading, setAcademyLoading] = useState(false);
+
+    // Generate dynamic PLANS mapping from pricing state
+    const PLANS = useMemo(() => {
+        const pMap = {
+            free: { bg: '#37415120', t: '#9CA3AF', l: 'Ï¬Ï¼Ï▒┘èÏ¿┘è' },
+            basic: { bg: '#37415120', t: '#9CA3AF', l: 'Ï¬Ï¼Ï▒┘èÏ¿┘è' }
+        };
+        (pricing || []).forEach(p => {
+            const color = p.id === 'pro' ? '#A78BFA' : (p.id === 'starter' ? '#10B981' : (p.id === 'enterprise' ? '#F59E0B' : '#6B7280'));
+            pMap[p.id] = {
+                bg: `${color}20`,
+                t: color,
+                l: p.name
+            };
+        });
+        return pMap;
+    }, [pricing]);
+    const [clientKeys, setClientKeys] = useState({});
+    const [logs, setLogs] = useState([]);
+    const [logParams, setLogParams] = useState({ category: '', level: '', limit: 50 });
+    const { 
+        user: authUser, 
+        userRole, 
+        isAdmin, 
+        isAuthenticated, 
+        impersonateUser 
+    } = useAuth();
+    const [templates, setTemplates] = useState([]);
+    const [endCustomers, setEndCustomers] = useState([]);
+    const [newTemplate, setNewTemplate] = useState({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '­ƒæ®' });
+    const [showAddTemplate, setShowAddTemplate] = useState(false);
+    
+    // ÔöÇÔöÇ Interview Room Agents Config ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    const DEFAULT_INTERVIEW_AGENTS = [
+        { id: 'support-agent',          nameAr: 'Ï╣Ï¿Ï»Ïº┘äÏ▒Ï¡┘à┘å', nameEn: 'Adam',          gender: 'male',   avatar: '­ƒºæÔÇì­ƒÆ╝', tone: 'friendly',     titleAr: '┘à┘àÏ½┘ä Ï«Ï»┘àÏ® Ïº┘äÏ╣┘à┘äÏºÏí',  titleEn: 'Customer Support Agent' },
+        { id: 'sales-lead-gen',         nameAr: 'ÏúÏ│Ï¬ÏºÏ░ ┘ü┘çÏ»',  nameEn: 'Mr. James',    gender: 'male',   avatar: '­ƒñÁ',    tone: 'professional', titleAr: 'ÏúÏ«ÏÁÏºÏª┘è ┘àÏ¿┘èÏ╣ÏºÏ¬',        titleEn: 'Sales Specialist' },
+        { id: 'dental-receptionist',    nameAr: 'Ï». Ï│ÏºÏ▒Ï®',   nameEn: 'Dr. Sarah',    gender: 'female', avatar: '­ƒæ®ÔÇìÔÜò´©Å', tone: 'professional', titleAr: '┘à┘êÏ©┘üÏ® ÏºÏ│Ï¬┘éÏ¿Ïº┘ä',        titleEn: 'Receptionist' },
+        { id: 'medical-clinic',         nameAr: 'Ï». ┘ç┘åÏ»',    nameEn: 'Dr. Emily',    gender: 'female', avatar: '­ƒæ®ÔÇìÔÜò´©Å', tone: 'professional', titleAr: '┘àÏ│Ï¬┘éÏ¿┘É┘äÏ® Ï╣┘èÏºÏ»Ï®',       titleEn: 'Clinic Receptionist' },
+        { id: 'beauty-salon',           nameAr: '┘å┘êÏ▒Ï®',      nameEn: 'Emma',         gender: 'female', avatar: '­ƒÆà',    tone: 'luxury',       titleAr: '┘à┘åÏ│┘éÏ® ┘à┘êÏºÏ╣┘èÏ»',         titleEn: 'Appointment Coordinator' },
+        { id: 'real-estate-marketing',  nameAr: 'ÏúÏ│Ï¬ÏºÏ░ ÏÀÏºÏ▒┘é', nameEn: 'Mr. Robert',  gender: 'male',   avatar: '­ƒÅó',    tone: 'professional', titleAr: '┘àÏ│┘ê┘æ┘é Ï╣┘éÏºÏ▒┘è',          titleEn: 'Real Estate Marketer' },
+        { id: 'restaurant-reservations',nameAr: 'ÏúÏ¡┘àÏ»',      nameEn: 'Alex',         gender: 'male',   avatar: '­ƒì¢´©Å',   tone: 'friendly',     titleAr: '┘àÏ│Ïñ┘ê┘ä Ï¡Ï¼┘êÏ▓ÏºÏ¬',         titleEn: 'Reservations Officer' },
+        { id: 'gym-coordinator',        nameAr: '┘âÏºÏ¿Ï¬┘å Ï«Ïº┘äÏ»',nameEn: 'Coach Chris',  gender: 'male',   avatar: '­ƒÆ¬',    tone: 'enthusiastic', titleAr: '┘à┘åÏ│┘é ÏºÏ┤Ï¬Ï▒Ïº┘âÏºÏ¬',        titleEn: 'Memberships Coordinator' },
+    ];
+    const [interviewAgents, setInterviewAgents] = useState(() => {
+        try {
+            const stored = localStorage.getItem('admin_interview_agents');
+            return stored ? JSON.parse(stored) : DEFAULT_INTERVIEW_AGENTS;
+        } catch { return DEFAULT_INTERVIEW_AGENTS; }
+    });
+    const [savingInterview, setSavingInterview] = useState(false);
+    const saveInterviewAgents = () => {
+        setSavingInterview(true);
+        localStorage.setItem('admin_interview_agents', JSON.stringify(interviewAgents));
+        setTimeout(() => { setSavingInterview(false); flash('Ô£à Ï¬┘à Ï¡┘üÏ© ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ ┘à┘êÏ©┘ü┘è Ïº┘ä┘à┘éÏºÏ¿┘äÏ®'); }, 600);
+    };
+    const resetInterviewAgents = () => {
+        if (!confirm('ÏÑÏ╣ÏºÏ»Ï® ÏÂÏ¿ÏÀ Ï¼┘à┘èÏ╣ ┘à┘êÏ©┘ü┘è Ïº┘ä┘à┘éÏºÏ¿┘äÏ® ┘ä┘äÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘äÏº┘üÏ¬Ï▒ÏºÏÂ┘èÏ®Ïƒ')) return;
+        setInterviewAgents(DEFAULT_INTERVIEW_AGENTS);
+        localStorage.removeItem('admin_interview_agents');
+        flash('Ôå®´©Å Ï¬┘à Ïº┘äÏÑÏ╣ÏºÏ»Ï® ┘ä┘äÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘äÏº┘üÏ¬Ï▒ÏºÏÂ┘èÏ®');
+    };
+    // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    const [cSearch, setCSearch] = useState('');
+    const [cFilter, setCFilter] = useState('');
+    const [aSearch, setASearch] = useState('');
+    const [aFilter, setAFilter] = useState('');
+    const [bSearch, setBSearch] = useState('');
+    
+    // Notification Filters
+    const [notifTypeFilter, setNotifTypeFilter] = useState('');
+    const [notifClientFilter, setNotifClientFilter] = useState('');
+
+    const handleExport = (data, fileName) => {
+        if (!data || data.length === 0) return flash('ÔÜá´©Å ┘äÏº ┘è┘êÏ¼Ï» Ï¿┘èÏº┘åÏºÏ¬ ┘ä┘äÏ¬ÏÁÏ»┘èÏ▒');
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+        XLSX.writeFile(wb, `24shift_${fileName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        flash(`Ô£à Ï¬┘à Ï¬ÏÁÏ»┘èÏ▒ ${data.length} Ï│Ï¼┘äÏºÏ¬ Ï¿┘åÏ¼ÏºÏ¡`);
+    };
+    const [aiConfig, setAiConfig] = useState({ knowledge: '', prompt_ar: '', prompt_en: '', max_length: 150 });
+
+    // UI
+    const [selClient, setSelClient] = useState(null);
+    const [bFilter, setBFilter] = useState('');
+    const [editAgent, setEditAgent] = useState(null);
+    const [intTab, setIntTab] = useState('platform');
+    const [selIntClient, setSelIntClient] = useState(null);
+    const [showAddAgent, setShowAddAgent] = useState(false);
+    const [newAgent, setNewAgent] = useState({ name: '', specialty: 'booking', business_type: 'telecom_it', user_id: '' });
+    const [agentApps, setAgentApps] = useState({}); // {agentId: {appId: bool}}
+    const [loadProgress, setLoadProgress] = useState({ clients: 0, agents: 0, bookings: 0, chats: 0 });
+    const [advisorMessages, setAdvisorMessages] = useState([{ role: 'assistant', content: isEnglish ? 'Hello Admin, I am your smart consultant. How can I help you manage the platform today?' : 'Ïú┘ç┘äÏº┘ï Ï¿┘â Ïú┘è┘çÏº Ïº┘ä┘àÏ»┘èÏ▒Ïî Ïú┘åÏº ┘àÏ│Ï¬Ï┤ÏºÏ▒┘â Ïº┘äÏ░┘â┘è. ┘â┘è┘ü ┘è┘à┘â┘å┘å┘è ┘àÏ│ÏºÏ╣Ï»Ï¬┘â ┘ü┘è ÏÑÏ»ÏºÏ▒Ï® Ïº┘ä┘à┘åÏÁÏ® Ïº┘ä┘è┘ê┘àÏƒ' }]);
+    const [advisorInput, setAdvisorInput] = useState('');
+    const [advisorConfig, setAdvisorConfig] = useState({ prompt: '', knowledge: '' });
+
+    useEffect(() => { load(); }, []);
+
+    const load = async () => {
+        setLoading(true);
+        console.log("AdminDashboard: Starting optimized data load...");
+        try {
+            // Priority 1: Meta-data & Configs (Fastest)
+            const [plans, integ, dbSectors, dbRoles, dbApps, dbAiConfig] = await Promise.allSettled([
+                adminService.getPlatformSettings('pricing_plans'),
+                adminService.getPlatformSettings('external_integrations'),
+                adminService.getPlatformSettings('system_sectors'),
+                adminService.getPlatformSettings('system_roles'),
+                adminService.getPlatformSettings('system_agent_apps'),
+                adminService.getPlatformSettings('manager_ai_config'),
+            ]).then(res => res.map(r => r.status === 'fulfilled' ? r.value : null));
+
+            setPricing(plans || []);
+            setIntegrations(integ || []);
+            
+            // Fetch platform settings
+            const [tgToken, priceId] = await Promise.all([
+                adminService.getPlatformSettings('platform_telegram_token'),
+                adminService.getPlatformSettings('academy_price_id')
+            ]);
+            if (tgToken) setPlatformTelegramToken(tgToken);
+            if (priceId) setAcademyPriceId(priceId);
+
+            if (dbSectors) setSectors(dbSectors);
+            if (dbRoles) setRoles(dbRoles);
+            if (dbApps) setAgentAppsConfig(dbApps);
+            if (dbAiConfig) setAiConfig(dbAiConfig);
+
+            const advCfg = await adminService.getPlatformSettings('admin_advisor_config');
+            if (advCfg) setAdvisorConfig(advCfg);
+
+            // Priority 2: Core Business Data (Larger)
+            const results = await Promise.allSettled([
+                adminService.getAllCustomers(),
+                adminService.getAllAgents(),
+                adminService.getAllBookings(),
+                adminService.getAllEntities(),
+                adminService.getAllConciergeConversations(),
+                adminService.getAllNotifications(),
+                adminService.getAllEndCustomers(),
+                adminService.getAllCustomRequests()
+            ]);
+
+            const [profilesRes, agRes, bkRes, keyRes, chatsRes, notifsRes, endCustRes, custReqRes] = results;
+
+            const profiles = profilesRes.status === 'fulfilled' ? profilesRes.value : [];
+            const ag       = agRes.status === 'fulfilled'       ? agRes.value       : [];
+            const bk       = bkRes.status === 'fulfilled'       ? bkRes.value       : [];
+            const keyData  = keyRes.status === 'fulfilled'      ? keyRes.value      : [];
+            const chats    = chatsRes.status === 'fulfilled'    ? chatsRes.value    : [];
+            const notifs   = notifsRes.status === 'fulfilled'   ? notifsRes.value   : [];
+            const endCust  = endCustRes.status === 'fulfilled'  ? endCustRes.value  : [];
+            const custReq  = custReqRes.status === 'fulfilled'  ? custReqRes.value  : [];
+
+            setLoadProgress({ 
+                clients: profiles.length, 
+                agents: ag.length, 
+                bookings: bk.length, 
+                chats: chats.length 
+            });
+
+            // Merge Profile + SalonConfig data
+            const clientMap = {};
+            (profiles || []).forEach(p => {
+                const uid = p.id || p.user_id;
+                if (!uid) return;
+                clientMap[uid] = { 
+                    ...p, 
+                    id: uid,
+                    full_name: p.full_name || p.business_name || 'ÔÇö', 
+                    email: p.email || 'ÔÇö' 
+                };
+            });
+            (keyData || []).forEach(k => {
+                if (clientMap[k.user_id]) clientMap[k.user_id] = { ...clientMap[k.user_id], entityId: k.id };
+            });
+            
+            setClients(Object.values(clientMap));
+            setAgents(ag || []);
+            setBookings(bk || []);
+            setConciergeChats(chats || []);
+            setNotifications(notifs || []);
+            setEndCustomers(endCust || []);
+            setCustomRequests(custReq || []);
+
+            // Setup keys & apps mapping
+            const kmap = {};
+            (keyData || []).forEach(k => { kmap[k.user_id] = { telegram_token: k.telegram_token || '', whatsapp_number: k.whatsapp_number || '', whatsapp_api_key: k.whatsapp_api_key || '' }; });
+            setClientKeys(kmap);
+
+            const appMap = {};
+            (ag || []).forEach(a => { if (a.metadata?.apps) appMap[a.id] = a.metadata.apps; });
+            setAgentApps(appMap);
+
+            try {
+                const channel = supabase.channel('platform_notifications')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'platform_notifications' }, (payload) => {
+                        setNotifications(prev => [payload.new, ...prev].slice(0, 50));
+                    })
+                    .subscribe();
+                window.__adminDashboardChannel = channel;
+            } catch (rtErr) { console.warn('Realtime failed:', rtErr.message); }
+
+            fetchTemplates();
+            adminService.logSystemEvent('info', 'system', 'Admin dashboard loaded successfully');
+        } catch (e) {
+            console.error('Admin load fatal error:', e);
+            flash('ÔØî Ï«ÏÀÏú ┘ü┘è Ïº┘äÏ¬Ï¡┘à┘è┘ä: ' + e.message);
+        }
+        setLoading(false);
+    };
+
+    const fetchLogs = async () => {
+        let q = supabase.from('system_logs').select('*').order('created_at', { ascending: false }).limit(logParams.limit);
+        if (logParams.category) q = q.eq('category', logParams.category);
+        if (logParams.level) q = q.eq('level', logParams.level);
+        const { data, error } = await q;
+        if (!error) setLogs(data || []);
+    };
+
+    const fetchTemplates = async () => {
+        try {
+            const data = await adminService.getTemplates();
+            setTemplates(data || []);
+        } catch (e) {
+            console.warn('Templates fetch failed:', e.message);
+        }
+    };
+
+    const addTemplate = async () => {
+        if (!newTemplate.name || !newTemplate.name_en) return flash('ÔØî ÏúÏ»Ï«┘ä ÏºÏ│┘à Ïº┘ä┘éÏº┘äÏ¿ Ï¿Ïº┘ä┘äÏ║Ï¬┘è┘å');
+        try {
+            const data = await adminService.saveTemplate({
+                name: newTemplate.name,
+                name_en: newTemplate.name_en,
+                description: newTemplate.description,
+                description_en: newTemplate.description_en,
+                specialty: newTemplate.specialty,
+                business_type: newTemplate.business_type,
+                avatar: newTemplate.avatar
+            });
+            setTemplates(p => [data, ...p]);
+            setShowAddTemplate(false);
+            setNewTemplate({ name: '', name_en: '', specialty: 'booking', business_type: 'telecom_it', description: '', description_en: '', avatar: '­ƒæ®' });
+            flash('Ô£à Ï¬┘à ÏÑ┘åÏ┤ÏºÏí ┘éÏº┘äÏ¿ Ïº┘ä┘à┘êÏ©┘üÏ®');
+        } catch (err) { flash('ÔØî ┘üÏ┤┘ä ÏÑ┘åÏ┤ÏºÏí Ïº┘ä┘éÏº┘äÏ¿: ' + err.message); }
+    };
+
+    const deleteTemplate = async (id) => {
+        if (!confirm('Ï¡Ï░┘ü ┘çÏ░Ïº Ïº┘ä┘éÏº┘äÏ¿Ïƒ')) return;
+        try {
+            await adminService.deleteTemplate(id);
+            setTemplates(p => p.filter(t => t.id !== id));
+            flash('Ô£à Ï¬┘à Ï¡Ï░┘ü Ïº┘ä┘éÏº┘äÏ¿');
+        } catch (err) { flash('ÔØî ┘üÏ┤┘ä Ïº┘äÏ¡Ï░┘ü'); }
+    };
+
+    useEffect(() => {
+        if (tab === 'infrastructure') fetchLogs();
+    }, [tab, logParams.category, logParams.level]);
+
+    const flash = (m) => { setMsg(m); setTimeout(() => setMsg(''), 3000); };
+    const updateClientPlan = async (id, plan) => {
+        try {
+            await adminService.updateClientPlan(id, plan);
+            setClients(p => p.map(c => c.id === id ? { ...c, subscription_tier: plan } : c));
+            flash('Ô£à Ï¬┘à Ï¬Ï¡Ï»┘èÏ½ Ïº┘äÏºÏ┤Ï¬Ï▒Ïº┘â');
+        } catch (err) {
+            flash('ÔØî ┘üÏ┤┘ä Ï¬Ï¡Ï»┘èÏ½ Ïº┘äÏºÏ┤Ï¬Ï▒Ïº┘â: ' + err.message);
+        }
+    };
+
+    const toggleAgent = async (a) => {
+        const s = a.status === 'active' ? 'inactive' : 'active';
+        try {
+            const { error } = await supabase.from('agents').update({ status: s }).eq('id', a.id);
+            if (error) throw error;
+            setAgents(p => p.map(x => x.id === a.id ? { ...x, status: s } : x));
+            flash('Ô£à Ï¬┘à Ï¬Ï¡Ï»┘èÏ½ Ï¡Ïº┘äÏ® Ïº┘ä┘à┘êÏ©┘üÏ®');
+        } catch (err) {
+            flash('ÔØî ┘üÏ┤┘ä Ïº┘äÏ¬Ï¡Ï»┘èÏ½: ' + err.message);
+        }
+    };
+
+    const saveAgentEdit = async (a) => {
+        try {
+            const { error } = await supabase.from('agents').update({
+                name: a.name,
+                specialty: a.specialty,
+                business_type: a.business_type,
+                telegram_token: a.telegram_token,
+                whatsapp_settings: a.whatsapp_settings || {}
+            }).eq('id', a.id);
+
+            if (error) throw error;
+            setAgents(p => p.map(x => x.id === a.id ? a : x));
+            setEditAgent(null);
+            flash('Ô£à Ï¬┘à Ï¡┘üÏ© Ïº┘äÏ¬Ï╣Ï»┘è┘äÏºÏ¬');
+        } catch (err) {
+            flash('ÔØî ┘üÏ┤┘ä Ïº┘äÏ¡┘üÏ©: ' + err.message);
+        }
+    };
+
+    const deleteAgent = async (id) => {
+        if (!confirm('Ï¡Ï░┘ü ┘çÏ░┘ç Ïº┘ä┘à┘êÏ©┘üÏ®Ïƒ')) return;
+        try {
+            const { error } = await supabase.from('agents').delete().eq('id', id);
+            if (error) throw error;
+            setAgents(p => p.filter(a => a.id !== id));
+            flash('Ô£à Ï¬┘à Ïº┘äÏ¡Ï░┘ü');
+        } catch (err) {
+            flash('ÔØî ┘üÏ┤┘ä Ïº┘äÏ¡Ï░┘ü: ' + err.message);
+        }
+    };
+    const addAgent = async () => {
+        if (!newAgent.name || !newAgent.user_id) return flash('ÔØî ÏºÏ«Ï¬Ï▒ Ïº┘äÏ╣┘à┘è┘ä ┘êÏúÏ»Ï«┘ä Ïº┘äÏºÏ│┘à');
+        const client = clients.find(c => c.id === newAgent.user_id);
+        const { data, error } = await supabase.from('agents').insert({
+            name: newAgent.name,
+            specialty: newAgent.specialty,
+            business_type: newAgent.business_type,
+            user_id: newAgent.user_id,
+            entity_id: client?.entityId || null,
+            status: 'active',
+            created_at: new Date().toISOString()
+        }).select().single();
+
+        if (error) return flash('ÔØî Ï«ÏÀÏú: ' + error.message);
+        setAgents(p => [data, ...p]);
+        setShowAddAgent(false);
+        setNewAgent({ name: '', specialty: 'booking', business_type: 'beauty', user_id: '' });
+        flash('Ô£à Ï¬┘àÏ¬ ÏÑÏÂÏº┘üÏ® Ïº┘ä┘à┘êÏ©┘üÏ®');
+    };
+    const toggleApp = async (agentId, appId) => {
+        const current = agentApps[agentId] || {};
+        const updated = { ...current, [appId]: !current[appId] };
+        setAgentApps(p => ({ ...p, [agentId]: updated }));
+        await supabase.from('agents').update({ metadata: { apps: updated } }).eq('id', agentId);
+    };
+    const updateBookingStatus = async (id, status) => {
+        try {
+            console.log(`AdminDashboard: Updating booking ${id} status to ${status}...`);
+            const { error } = await supabase.from('bookings').update({ status }).eq('id', id);
+            if (error) throw error;
+            
+            setBookings(p => p.map(b => b.id === id ? { ...b, status } : b));
+            flash(status === 'confirmed' ? 'Ô£à Ï¬┘à Ï¬Ïú┘â┘èÏ» Ïº┘äÏ¡Ï¼Ï▓ ┘êÏÑÏ▒Ï│Ïº┘ä ÏÑÏ┤Ï╣ÏºÏ▒' : 'Ô£à Ï¬┘à Ï¬Ï¡Ï»┘èÏ½ Ï¡Ïº┘äÏ® Ïº┘äÏ¡Ï¼Ï▓');
+            
+            // Trigger Automated Notification to Customer
+            if (status === 'confirmed' || status === 'cancelled') {
+                await adminService.sendBookingNotification(id, status);
+            }
+        } catch (err) { 
+            console.error('Update Booking Error:', err);
+            flash('ÔØî ┘üÏ┤┘ä Ï¬Ï¡Ï»┘èÏ½ Ïº┘äÏ¡Ï¼Ï▓'); 
+        }
+    };
+    const savePlatformInteg = async () => { 
+        setSaving(true); 
+        await Promise.all([
+            adminService.updatePlatformSettings('external_integrations', integrations),
+            adminService.updatePlatformSettings('platform_telegram_token', platformTelegramToken),
+            adminService.updatePlatformSettings('academy_price_id', academyPriceId)
+        ]);
+        setSaving(false); 
+        flash('Ô£à Ï¬┘à Ï¡┘üÏ© ┘à┘üÏºÏ¬┘èÏ¡ Ïº┘ä┘à┘åÏÁÏ®'); 
+    };
+    const saveClientKey = async (uid) => {
+        setSaving(true);
+        const k = clientKeys[uid] || {};
+        const { data: config, error } = await supabase.from('entities').update({ 
+            telegram_token: k.telegram_token || null, 
+            whatsapp_number: k.whatsapp_number || null, 
+            whatsapp_api_key: k.whatsapp_api_key || null 
+        }).eq('user_id', uid).select('id').single();
+
+        if (error) {
+            flash('ÔØî Ï«ÏÀÏú ┘ü┘è Ïº┘äÏ¡┘üÏ©: ' + error.message);
+            setSaving(false);
+            return;
+        }
+
+        // --- ­ƒöæ Automated Telegram Webhook Setup for Admins ---
+        if (k.telegram_token) {
+            try {
+                // Find first active agent for this user to link the bot
+                const { data: ag } = await supabase.from('agents').select('id').eq('user_id', uid).limit(1).maybeSingle();
+                
+                if (ag) {
+                    const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-webhook?agent_id=${ag.id}`;
+                    console.log('Admin setting webhook:', webhookUrl);
+                    const tgRes = await fetch(`https://api.telegram.org/bot${k.telegram_token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`);
+                    const tgData = await tgRes.json();
+                    
+                    if (tgData.ok) {
+                        flash('Ô£à Ï¬┘à Ïº┘äÏ¡┘üÏ© ┘êÏ¬┘üÏ╣┘è┘ä Ï¿┘êÏ¬ Ïº┘äÏ¬┘è┘ä┘èÏ¼Ï▒Ïº┘à Ï¿┘åÏ¼ÏºÏ¡');
+                    } else {
+                        flash(`ÔÜá´©Å Ï¬┘à Ï¡┘üÏ© Ïº┘äÏ¬┘ê┘â┘å ┘ä┘â┘å ┘üÏ┤┘ä Ï¬┘üÏ╣┘è┘ä Ïº┘äÏ¿┘êÏ¬: ${tgData.description}`);
+                    }
+                } else {
+                    flash('Ô£à Ï¬┘à Ï¡┘üÏ© Ïº┘äÏ¬┘ê┘â┘å (Ï¬┘åÏ¿┘è┘ç: ┘äÏº ┘è┘êÏ¼Ï» ┘à┘êÏ©┘ü ┘àÏ▒Ï¬Ï¿ÏÀ Ï¡Ïº┘ä┘èÏº┘ï ┘äÏ¬┘üÏ╣┘è┘ä Ïº┘äÏ¿┘êÏ¬)');
+                }
+            } catch (e) {
+                console.error('Webhook error:', e);
+                flash('Ô£à Ï¬┘à Ï¡┘üÏ© Ïº┘äÏ¬┘ê┘â┘å (Ï¡Ï»Ï½ Ï«ÏÀÏú ┘ü┘è ÏÀ┘äÏ¿ Ïº┘äÏ▒Ï¿ÏÀ Ïº┘äÏó┘ä┘è)');
+            }
+        } else {
+            flash('Ô£à Ï¬┘à Ï¡┘üÏ© ┘à┘üÏºÏ¬┘èÏ¡ Ïº┘äÏ╣┘à┘è┘ä');
+        }
+        setSaving(false);
+    };
+    const saveAiConfig = async () => { setSaving(true); await adminService.updatePlatformSettings('manager_ai_config', aiConfig); setSaving(false); flash('Ô£à Ï¬┘à Ï¡┘üÏ© ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒Ï® Ïº┘äÏ░┘â┘èÏ®'); };
+    const handleLogout = async () => { await signOut(); navigate('/login'); };
+
+    const remoteLogin = async (targetClient) => {
+        if (!targetClient || !targetClient.id) return flash('ÔØî Ï¬Ï╣Ï░Ï▒ Ïº┘äÏ╣Ï½┘êÏ▒ Ï╣┘ä┘ë Ï¿Ï▒┘ê┘üÏº┘è┘ä Ïº┘äÏ╣┘à┘è┘ä');
+        setSaving(true);
+        try {
+            // Impersonate using the full client object
+            impersonateUser(targetClient);
+            
+            // Navigate to Dashboard
+            flash(`­ƒÜÇ Ï¬┘à Ïº┘äÏ»Ï«┘ê┘ä ┘âÏ»Ï╣┘à ┘ü┘å┘è ┘ä┘Ç: ${targetClient.business_name || targetClient.full_name || 'Ïº┘äÏ╣┘à┘è┘ä'}`);
+            setTimeout(() => navigate('/dashboard'), 500);
+        } catch (e) {
+            flash('ÔØî ┘üÏ┤┘ä Ïº┘äÏ»Ï«┘ê┘ä ┘âÏ»Ï╣┘à ┘ü┘å┘è: ' + e.message);
+        }
+        setSaving(false);
+    };
+
+    const cl = (uid) => agents.filter(a => a.user_id === uid || a.entity_id === clients.find(c => c.id === uid)?.entityId);
+    const bl = (uid) => bookings.filter(b => b.user_id === uid || b.entity_id === clients.find(c => c.id === uid)?.entityId);
+
+    useEffect(() => {
+        if (tab === 'academy') {
+            loadAcademyData();
+        }
+    }, [tab]);
+
+    const loadAcademyData = async () => {
+        setAcademyLoading(true);
+        try {
+            const [leadsData, affsData] = await Promise.all([
+                adminService.getAllAcademyLeads(),
+                adminService.getAllAffiliates()
+            ]);
+            setAcademyLeads(leadsData);
+            setAffiliates(affsData);
+        } catch (e) {
+            console.error('Error loading academy data:', e);
+        } finally {
+            setAcademyLoading(false);
+        }
+    };
+
+    const handleGrantAcademyAccess = async (leadId) => {
+        if (!confirm(isEnglish ? 'Grant full access to this lead?' : '┘ç┘ä Ï¬Ï▒┘èÏ» ┘à┘åÏ¡ Ïº┘ä┘êÏÁ┘ê┘ä Ïº┘ä┘âÏº┘à┘ä ┘ä┘çÏ░Ïº Ïº┘äÏ╣┘à┘è┘äÏƒ')) return;
+        const ok = await adminService.updateAcademyLeadStatus(leadId, 'paid');
+        if (ok) {
+            setAcademyLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: 'paid' } : l));
+            setMsg(isEnglish ? 'Access granted!' : 'Ï¬┘à ┘à┘åÏ¡ Ïº┘ä┘êÏÁ┘ê┘ä Ï¿┘åÏ¼ÏºÏ¡!');
+        }
+    };
+
+    const AcademyView = () => (
+        <div className="animate-fade-in" style={{ padding: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h1 style={{ fontSize: '1.8rem', fontWeight: 950, color: 'var(--color-text-main)', margin: 0 }}>{isEnglish ? 'Academy & Affiliates' : 'Ïº┘äÏú┘âÏºÏ»┘è┘à┘èÏ® ┘êÏº┘ä┘àÏ│┘ê┘é┘è┘å'}</h1>
+                <Btn onClick={loadAcademyData} disabled={academyLoading}><RefreshCw size={16} className={academyLoading ? 'animate-spin' : ''} /> {isEnglish ? 'Refresh' : 'Ï¬Ï¡Ï»┘èÏ½'}</Btn>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+                <StatCard icon={Users} label={isEnglish ? 'Academy Leads' : 'Ï╣┘à┘äÏºÏí Ïº┘äÏú┘âÏºÏ»┘è┘à┘èÏ®'} value={academyLeads.length} color="#8B5CF6" />
+                <StatCard icon={Zap} label={isEnglish ? 'Active Affiliates' : 'Ïº┘ä┘àÏ│┘ê┘é┘è┘å Ïº┘ä┘åÏ┤ÏÀ┘è┘å'} value={affiliates.length} color="#10B981" />
+            </div>
+
+            {/* Leads Table */}
+            <div style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Star size={20} color="#F59E0B" /> {isEnglish ? 'Academy Leads' : 'ÏÀ┘äÏ¿ÏºÏ¬ Ïº┘äÏ¡┘é┘èÏ¿Ï® Ïº┘äÏ¬Ï»Ï▒┘èÏ¿┘èÏ®'}</h2>
+                <Card s={{ padding: 0, overflow: 'hidden' }} c={
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Name' : 'Ïº┘äÏºÏ│┘à'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Contact' : 'Ïº┘äÏ¬┘êÏºÏÁ┘ä'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Referrer' : 'Ïº┘ä┘àÏ│┘ê┘é'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Status' : 'Ïº┘äÏ¡Ïº┘äÏ®'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Actions' : 'ÏÑÏ¼Ï▒ÏºÏíÏºÏ¬'}</th>
+                            </tr></thead>
+                            <tbody>
+                                {academyLeads.length === 0 ? <tr><td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: '#4B5563' }}>{isEnglish ? 'No leads found' : '┘äÏº ┘è┘êÏ¼Ï» ÏÀ┘äÏ¿ÏºÏ¬ Ï¡Ïº┘ä┘èÏº┘ï'}</td></tr> :
+                                academyLeads.map(l => (
+                                    <tr key={l.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>{l.full_name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{l.user_type} ÔÇó {l.industry}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontSize: '0.85rem' }}>{l.whatsapp}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{l.email}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            {l.referrer_code ? (
+                                                <div style={{ color: '#10B981', fontWeight: 600, fontSize: '0.85rem' }}>{l.referrer_code} <span style={{ fontSize: '0.7rem', color: '#4B5563' }}>({l.referrer_name})</span></div>
+                                            ) : <span style={{ color: '#4B5563', fontSize: '0.8rem' }}>Direct</span>}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{ 
+                                                padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800,
+                                                background: l.status === 'paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                                color: l.status === 'paid' ? '#10B981' : '#F59E0B',
+                                                textTransform: 'uppercase'
+                                            }}>
+                                                {l.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            {l.status !== 'paid' && (
+                                                <Btn onClick={() => handleGrantAcademyAccess(l.id)} color="#10B981" style={{ padding: '6px 12px' }}><Check size={14} /> {isEnglish ? 'Grant Access' : '┘à┘åÏ¡ Ïº┘ä┘êÏÁ┘ê┘ä'}</Btn>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                } />
+            </div>
+
+            {/* Affiliates Table */}
+            <div>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Zap size={20} color="#10B981" /> {isEnglish ? 'Affiliate Partners' : 'Ï┤Ï▒┘âÏºÏí Ïº┘äÏ¬Ï│┘ê┘è┘é Ï¿Ïº┘äÏ╣┘à┘ê┘äÏ®'}</h2>
+                <Card s={{ padding: 0, overflow: 'hidden' }} c={
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Partner' : 'Ïº┘äÏ┤Ï▒┘è┘â'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Ref Code' : '┘â┘êÏ» Ïº┘äÏÑÏ¡Ïº┘äÏ®'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Total Commission' : 'ÏÑÏ¼┘àÏº┘ä┘è Ïº┘äÏ╣┘à┘ê┘äÏºÏ¬'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.8rem' }}>{isEnglish ? 'Status' : 'Ïº┘äÏ¡Ïº┘äÏ®'}</th>
+                            </tr></thead>
+                            <tbody>
+                                {affiliates.length === 0 ? <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: '#4B5563' }}>{isEnglish ? 'No affiliates registered' : '┘äÏº ┘è┘êÏ¼Ï» ┘àÏ│┘ê┘é┘è┘å Ï¡Ïº┘ä┘èÏº┘ï'}</td></tr> :
+                                affiliates.map(a => (
+                                    <tr key={a.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>{a.profiles?.full_name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{a.profiles?.email}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <code style={{ padding: '4px 8px', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.1)', color: '#A78BFA', fontWeight: 800 }}>{a.affiliate_code}</code>
+                                        </td>
+                                        <td style={{ padding: '1rem', fontWeight: 700, color: 'var(--color-text-main)' }}>${a.commission_rate_fixed}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{ 
+                                                display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem',
+                                                color: a.status === 'active' ? '#10B981' : '#EF4444' 
+                                            }}>
+                                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: a.status === 'active' ? '#10B981' : '#EF4444' }} />
+                                                {a.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                } />
+            </div>
+        </div>
+    );
+
+    const MarketingManager = () => {
+        const [targetEntity, setTargetEntity] = useState('');
+        const [broadcasting, setBroadcasting] = useState(false);
+        const [broadcastTitle, setBroadcastTitle] = useState('');
+        const [broadcastText, setBroadcastText] = useState('');
+        const [sending, setSending] = useState(false);
+
+        const handleSendBroadcast = async () => {
+            if (!broadcastText || !targetEntity) {
+                flash(isEnglish ? "Please select a business and enter a message" : "┘èÏ▒Ï¼┘ë ÏºÏ«Ï¬┘èÏºÏ▒ Ïº┘ä┘à┘åÏ┤ÏúÏ® ┘ê┘âÏ¬ÏºÏ¿Ï® Ïº┘äÏ▒Ï│Ïº┘äÏ®");
+                return;
+            }
+
+            setSending(true);
+            try {
+                // 1. Create campaign record
+                await adminService.createBroadcast({
+                    entity_id: targetEntity,
+                    title: broadcastTitle || 'Marketing Message',
+                    message: broadcastText,
+                    status: 'sent'
+                });
+
+                // 2. Call Edge Function (Broadcasting to all telegram IDs for this entity)
+                const res = await adminService.sendCustomerMessage({
+                    entityId: targetEntity,
+                    message: broadcastText,
+                    platform: 'telegram'
+                });
+
+                if (res.success) {
+                    flash(isEnglish ? "Ô£à Broadcast sent successfully!" : "Ô£à Ï¬┘à ÏÑÏ▒Ï│Ïº┘ä Ïº┘äÏ¿Ï½ Ï¿┘åÏ¼ÏºÏ¡!");
+                    setBroadcastText('');
+                    setBroadcastTitle('');
+                } else {
+                    throw new Error(res.error);
+                }
+            } catch (err) {
+                flash("ÔØî Error: " + err.message);
+            } finally {
+                setSending(false);
+            }
+        };
+
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>
+                    {isEnglish ? 'Marketing & Broadcasts' : 'Ïº┘äÏ¬Ï│┘ê┘è┘é ┘êÏº┘äÏ¿Ï½ Ïº┘ä┘àÏ¿ÏºÏ┤Ï▒'}
+                </h1>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <Card c={
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <h3 style={{ margin: 0, color: 'var(--color-text-main)', fontSize: '1rem' }}>
+                                {isEnglish ? 'Create New Broadcast' : 'ÏÑ┘åÏ┤ÏºÏí Ï▒Ï│Ïº┘äÏ® Ï¿Ï½ Ï¼Ï»┘èÏ»Ï®'}
+                            </h3>
+                            
+                            <div>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>
+                                    {isEnglish ? 'Target Business' : 'Ïº┘ä┘à┘åÏ┤ÏúÏ® Ïº┘ä┘àÏ│Ï¬┘çÏ»┘üÏ®'}
+                                </label>
+                                <select 
+                                    value={targetEntity}
+                                    onChange={(e) => setTargetEntity(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)' }}
+                                >
+                                    <option value="">{isEnglish ? 'Select Business' : 'ÏºÏ«Ï¬Ï▒ Ïº┘ä┘à┘åÏ┤ÏúÏ®'}</option>
+                                    {clients.map(e => <option key={e.id} value={e.id}>{e.full_name || e.business_type}</option>)}
+                                </select>
+                            </div>
+
+                            <Input 
+                                placeholder={isEnglish ? "Campaign Title (Internal)" : "Ï╣┘å┘êÏº┘å Ïº┘äÏ¡┘à┘äÏ® (Ï»ÏºÏ«┘ä┘è)"} 
+                                value={broadcastTitle}
+                                onChange={(e) => setBroadcastTitle(e.target.value)}
+                            />
+
+                            <textarea 
+                                placeholder={isEnglish ? "Your marketing message..." : "Ïº┘âÏ¬Ï¿ Ï▒Ï│Ïº┘äÏ¬┘â Ïº┘äÏ¬Ï│┘ê┘è┘é┘èÏ® ┘ç┘åÏº..."}
+                                value={broadcastText}
+                                onChange={(e) => setBroadcastText(e.target.value)}
+                                style={{ width: '100%', height: '120px', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', resize: 'none', fontFamily: 'inherit' }}
+                            />
+
+                            <Btn disabled={sending} onClick={handleSendBroadcast}>
+                                <Megaphone size={16} />
+                                {sending ? (isEnglish ? 'Sending...' : 'Ï¼ÏºÏ▒┘è Ïº┘äÏÑÏ▒Ï│Ïº┘ä...') : (isEnglish ? 'Send to All Customers' : 'ÏÑÏ▒Ï│Ïº┘ä ┘äÏ¼┘à┘èÏ╣ Ïº┘äÏ╣┘à┘äÏºÏí')}
+                            </Btn>
+                        </div>
+                    } />
+
+                    <Card c={
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <h3 style={{ margin: 0, color: 'var(--color-text-main)', fontSize: '1rem' }}>
+                                {isEnglish ? 'Reach Distribution' : 'Ï¬┘êÏ▓┘èÏ╣ Ïº┘ä┘êÏÁ┘ê┘ä'}
+                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-around', padding: '1rem 0' }}>
+                                <div style={{ textAlign: 'center' }}>
+                                    <div style={{ color: '#8B5CF6', fontSize: '1.5rem', fontWeight: 800 }}>
+                                        {endCustomers.filter(c => !!c.telegram_id).length}
+                                    </div>
+                                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.7rem' }}>Telegram</div>
+                                </div>
+                                <div style={{ textAlign: 'center' }}>
+                                    <div style={{ color: '#EC4899', fontSize: '1.5rem', fontWeight: 800 }}>
+                                        {endCustomers.filter(c => !!c.instagram_id).length}
+                                    </div>
+                                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.7rem' }}>Instagram</div>
+                                </div>
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#6B7280', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px' }}>
+                                {isEnglish ? 'Only customers with linked social IDs will receive the broadcast.' : 'Ï│┘èÏ│Ï¬┘ä┘à Ïº┘äÏ¿Ï▒┘êÏ»┘âÏºÏ│Ï¬ ┘ü┘éÏÀ Ïº┘äÏ╣┘à┘äÏºÏí Ïº┘äÏ░┘è┘å Ï¬┘à Ï▒Ï¿ÏÀ ┘àÏ╣Ï▒┘üÏºÏ¬┘ç┘à Ïº┘äÏºÏ¼Ï¬┘àÏºÏ╣┘èÏ®.'}
+                            </div>
+                        </div>
+                    } />
+                </div>
+            </div>
+        );
+    };
+    
+    // Filtering Logic
+    const filteredClients = (clients || []).filter(c => {
+        const matchesSearch = (c.full_name || '').toLowerCase().includes(cSearch.toLowerCase()) || 
+                             (c.business_name || '').toLowerCase().includes(cSearch.toLowerCase()) ||
+                             (c.email || '').toLowerCase().includes(cSearch.toLowerCase());
+        
+        let matchesFilter = true;
+        if (cFilter === 'agencies') matchesFilter = c.is_agency;
+        else if (cFilter === 'independent') matchesFilter = !c.is_agency && !c.agency_id;
+        else if (cFilter === 'sub-accounts') matchesFilter = !c.is_agency && !!c.agency_id;
+        else if (cFilter) matchesFilter = c.id === cFilter;
+        
+        return matchesSearch && matchesFilter;
+    });
+
+    const filteredAgents = (agents || []).filter(a => {
+        const client = clients.find(c => c.id === a.user_id);
+        const ownerName = client?.full_name || client?.email || '';
+        const matchesSearch = (a.name || '').toLowerCase().includes(aSearch.toLowerCase()) || 
+                               ownerName.toLowerCase().includes(aSearch.toLowerCase());
+        const matchesFilter = !aFilter || a.user_id === aFilter;
+        return matchesSearch && matchesFilter;
+    });
+
+    const baseBookings = bFilter ? bookings.filter(b => b.user_id === bFilter || b.entity_id === bFilter) : bookings;
+    const filtBk = baseBookings.filter(b => 
+        (b.customer_name || '').toLowerCase().includes(bSearch.toLowerCase()) || 
+        (b.customer_phone || '').toLowerCase().includes(bSearch.toLowerCase()) ||
+        (b.service_requested || '').toLowerCase().includes(bSearch.toLowerCase())
+    );
+
+    const unreadChats = notifications.filter(n => !n.is_read && n.type === 'new_chat').length;
+
+    const filteredNotifications = notifications.filter(n => {
+        const matchesClient = !notifClientFilter || n.user_id === notifClientFilter;
+        const matchesType = !notifTypeFilter || n.type === notifTypeFilter;
+        return matchesClient && matchesType;
+    });
+
+    const NAV = [
+        { id: 'overview', i: LayoutDashboard, l: t('admin.overview') },
+        { id: 'clients', i: Users, l: t('admin.clients') },
+        { id: 'end-customers', i: Users, l: t('admin.endCustomers') },
+        { id: 'agents', i: Bot, l: t('admin.agents') },
+        { id: 'interview-agents', i: Users, l: t('admin.templates') },
+        { id: 'bookings', i: Calendar, l: t('admin.bookings') },
+        { id: 'pricing', i: CreditCard, l: t('admin.pricing') },
+        { id: 'integrations', i: LinkIcon, l: t('admin.integrations') },
+        { id: 'notifications', i: Bell, l: t('admin.notifications'), badge: notifications.filter(n => !n.is_read).length },
+        { id: 'concierge-chats', i: MessageSquare, l: t('admin.concierge'), badge: unreadChats },
+        { id: 'ai-settings', i: Bot, l: t('admin.aiSettings') },
+        { id: 'subscribers', i: Mail, l: t('admin.subscribers') },
+        { id: 'marketing', i: Megaphone, l: isEnglish ? 'Broadcasting' : 'Ïº┘äÏ¿Ï½ Ïº┘ä┘àÏ¿ÏºÏ┤Ï▒' },
+        { id: 'academy', i: Star, l: isEnglish ? 'Academy Leads' : 'ÏÀ┘äÏ¿ÏºÏ¬ Ïº┘äÏú┘âÏºÏ»┘è┘à┘èÏ®' },
+        { id: 'custom-requests', i: Zap, l: isEnglish ? 'Custom Requests' : 'ÏÀ┘äÏ¿ÏºÏ¬ Ïº┘äÏ¬┘êÏ©┘è┘ü', badge: customRequests.filter(r => r.status === 'pending').length },
+        { id: 'white-label-requests', i: Globe, l: isEnglish ? 'White-Label Requests' : 'ÏÀ┘äÏ¿ÏºÏ¬ Ïº┘ä┘ç┘ê┘èÏ®', badge: 0 },
+        { id: 'admin-advisor', i: Sparkles, l: isEnglish ? 'Smart Advisor' : 'Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒ Ïº┘äÏ░┘â┘è' },
+    ];
+
+    if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '1rem', gap: '10px' }}><RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />{t('admin.loading')}</div>;
+
+    const isRtl = !isEnglish;
+
+    return (
+        <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-base)', direction: isRtl ? 'rtl' : 'ltr', color: 'var(--color-text-main)', fontFamily: "'Inter','Tajawal',sans-serif" }}>
+            {/* Flash message */}
+            {msg && <div style={{ position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-main)', padding: '10px 20px', borderRadius: '10px', zIndex: 9999, fontWeight: 600, fontSize: '0.9rem' }}>{msg}</div>}
+
+            {/* Sidebar */}
+            <aside style={{ 
+                width: '230px', 
+                background: '#0D1117', 
+                borderLeft: isRtl ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                borderRight: !isRtl ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                display: 'flex', 
+                flexDirection: 'column', 
+                position: 'fixed', 
+                height: '100vh', 
+                right: isRtl ? 0 : 'auto',
+                left: !isRtl ? 0 : 'auto', 
+                zIndex: 50 
+            }}>
+                <div style={{ padding: '1.1rem', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: '9px' }}>
+                    <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg,#10B981,#3B82F6)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.8rem' }}>24</div>
+                    <div><div style={{ fontWeight: 900, fontSize: '0.95rem', background: 'linear-gradient(90deg,#fff,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{t('brand.name')}</div>
+                        <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 700 }}>ÔÜí ADMIN</div></div>
+                </div>
+
+                {/* Direct Academy Bag Link for Admin */}
+                <div style={{ padding: '0.6rem' }}>
+                    <button 
+                        onClick={() => window.open('/academy/bag', '_blank')}
+                        style={{ 
+                            width: '100%', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '9px', 
+                            padding: '12px 11px', 
+                            borderRadius: '12px', 
+                            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2))', 
+                            color: '#A78BFA', 
+                            border: '1px solid rgba(139, 92, 246, 0.3)', 
+                            cursor: 'pointer', 
+                            fontWeight: 800, 
+                            fontSize: '0.85rem' 
+                        }}
+                    >
+                        <BookOpen size={16} />
+                        <span>{isEnglish ? 'View Training Bag' : 'Ï»Ï«┘ê┘ä Ïº┘äÏ¡┘é┘èÏ¿Ï® Ïº┘äÏ¬Ï»Ï▒┘èÏ¿┘èÏ®'}</span>
+                        <ArrowRight size={14} style={{ marginLeft: isRtl ? 0 : 'auto', marginRight: isRtl ? 'auto' : 0 }} />
+                    </button>
+                </div>
+
+                <nav style={{ flex: 1, padding: '0.6rem', overflowY: 'auto' }}>
+                    {NAV.map(({ id, i: Icon, l, badge }) => {
+                        const a = tab === id; return (
+                            <button key={id} onClick={() => { setTab(id); if (id === 'concierge-chats' || id === 'notifications') notifications.filter(n => !n.is_read).forEach(n => adminService.markNotificationAsRead(n.id)); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '9px', padding: '9px 11px', borderRadius: '8px', background: a ? 'rgba(139,92,246,0.12)' : 'transparent', color: a ? '#A78BFA' : '#6B7280', border: 'none', cursor: 'pointer', fontWeight: a ? 700 : 400, fontSize: '0.84rem', marginBottom: '2px', borderRight: (isRtl && a) ? '3px solid #8B5CF6' : '3px solid transparent', borderLeft: (!isRtl && a) ? '3px solid #8B5CF6' : '3px solid transparent', transition: 'all 0.15s', position: 'relative', textAlign: isRtl ? 'right' : 'left' }}>
+                                <Icon size={16} />
+                                <span>{l}</span>
+                                {badge > 0 && <span style={{ position: 'absolute', left: isRtl ? '10px' : 'auto', right: !isRtl ? '10px' : 'auto', top: '50%', transform: 'translateY(-50%)', background: '#EF4444', color: 'var(--color-text-main)', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>{badge}</span>}
+                            </button>
+                        );
+                    })}
+                </nav>
+                <div style={{ padding: '0.6rem', borderTop: '1px solid var(--color-border-subtle)' }}>
+                    <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 11px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: 'none', cursor: 'pointer', fontSize: '0.83rem', textAlign: isRtl ? 'right' : 'left' }}>
+                        <LogOut size={14} />{t('admin.logout')}
+                    </button>
+                </div>
+            </aside>
+
+            {/* Content */}
+            <main style={{ flex: 1, marginRight: isRtl ? '230px' : 0, marginLeft: !isRtl ? '230px' : 0, padding: '1.75rem 2rem', overflowX: 'hidden', minWidth: 0 }}>
+
+                {/* ÔöÇÔöÇ OVERVIEW ÔöÇÔöÇ */}
+                {tab === 'overview' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>{t('admin.overview')}</h1>
+                    <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.85rem' }}>{isEnglish ? 'Comprehensive overview of 24Shift performance' : '┘åÏ©Ï▒Ï® Ï┤Ïº┘à┘äÏ® Ï╣┘ä┘ë ÏúÏ»ÏºÏí ┘à┘åÏÁÏ® 24Shift'}</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(175px,1fr))', gap: '0.9rem', marginBottom: '1.75rem' }}>
+                        <StatCard icon={Users} label={t('admin.totalClients')} value={clients.length} color="#10B981" sub={`+${clients.filter(c => new Date(c.created_at) > new Date(Date.now() - 30 * 24 * 3600 * 1000)).length} ${isEnglish ? 'new clients' : 'Ï╣┘à┘äÏºÏí Ï¼Ï»Ï»'}`} />
+                        <StatCard icon={Bot} label={isEnglish ? 'Active Agents' : '┘à┘êÏ©┘üÏºÏ¬ ┘åÏ┤ÏÀÏ®'} value={agents.filter(a => a.status === 'active').length} color="#8B5CF6" />
+                        <StatCard icon={Calendar} label={isEnglish ? 'Pending Bookings' : 'Ï¡Ï¼┘êÏ▓ÏºÏ¬ ┘àÏ╣┘ä┘éÏ®'} value={bookings.filter(b => b.status === 'pending').length} color="#F59E0B" sub={isEnglish ? 'Requires review' : 'Ï¬Ï¡Ï¬ÏºÏ¼ ┘àÏ▒ÏºÏ¼Ï╣Ï®'} />
+                        <StatCard icon={Zap} label={isEnglish ? 'Custom Requests' : 'ÏÀ┘äÏ¿ÏºÏ¬ Ïº┘äÏ¬┘êÏ©┘è┘ü'} value={customRequests.filter(r => r.status === 'pending').length} color="#A78BFA" sub={isEnglish ? 'New lead requests' : 'ÏÀ┘äÏ¿ÏºÏ¬ Ï¬┘êÏ©┘è┘ü Ï¼Ï»┘èÏ»Ï®'} />
+                        {(() => {
+                            const avgPrice = pricing.find(p => p.id === 'pro')?.monthlyPrice || 69;
+                            const estRev = clients.length * avgPrice;
+                            return <StatCard icon={TrendingUp} label={isEnglish ? 'Estimated Revenue' : 'ÏÑ┘èÏ▒ÏºÏ» ┘àÏ¬┘ê┘éÏ╣'} value={`${estRev.toLocaleString()} $`} color="#3B82F6" sub={isEnglish ? 'Monthly Est.' : 'Ï┤┘çÏ▒┘è Ï¬┘éÏ»┘èÏ▒┘è'} />;
+                        })()}
+                    </div>
+                    <h3 style={{ color: 'var(--color-text-main)', marginBottom: '0.9rem', fontSize: '0.9rem', fontWeight: 700 }}>{isEnglish ? 'Client Sector Distribution' : 'Ï¬┘êÏ▓┘èÏ╣ Ïº┘äÏ╣┘à┘äÏºÏí Ï¿Ïº┘ä┘éÏÀÏºÏ╣ÏºÏ¬'}</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: '0.75rem' }}>
+                        {Object.entries(sectors).map(([k, v]) => {
+                            // Normalize business_type to sector key
+                            const normalizeSector = (bt) => {
+                                if (!bt) return 'general';
+                                const map = {
+                                    'beauty-salon': 'beauty', 'beauty': 'beauty',
+                                    'medical-clinic': 'medical', 'dental-receptionist': 'medical', 'medical': 'medical',
+                                    'restaurant-reservations': 'restaurant', 'restaurant': 'restaurant',
+                                    'real-estate-marketing': 'real_estate', 'real_estate': 'real_estate',
+                                    'gym-coordinator': 'call_center', 'gym': 'call_center',
+                                    'support-agent': 'call_center', 'call_center': 'call_center',
+                                    'sales-lead-gen': 'retail_ecommerce', 'retail_ecommerce': 'retail_ecommerce',
+                                    'telecom_it': 'telecom_it', 'banking': 'banking', 'general': 'general'
+                                };
+                                return map[bt] || map[bt.toLowerCase()] || 'general';
+                            };
+                            const cnt = clients.filter(c => normalizeSector(c.business_type) === k).length;
+                            return <Card key={k} s={{ padding: '0.9rem', border: `1px solid ${v.c}25`, opacity: v.on ? 1 : 0.5 }} c={<>
+                                <div style={{ fontSize: '1.3rem', marginBottom: '4px' }}>{v.e}</div>
+                                <div style={{ color: v.c, fontWeight: 700, fontSize: '0.77rem' }}>{v.l}</div>
+                                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-text-main)' }}>{cnt}</div>
+                            </>} />;
+                        })}
+                    </div>
+                </div>}
+
+                {/* ÔöÇÔöÇ CLIENTS ÔöÇÔöÇ */}
+                {tab === 'clients' && <div style={{ display: 'flex', gap: '1.25rem' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>{t('admin.clients')}</h1>
+                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{filteredClients.length} {isEnglish ? 'clients matched' : 'Ï╣┘à┘è┘ä ┘àÏÀÏºÏ¿┘é'}</p>
+                        
+                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                            <select value={cFilter} onChange={e => setCFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                                <option value="">{isEnglish ? 'All Clients' : '┘â┘ä Ïº┘äÏ╣┘à┘äÏºÏí'}</option>
+                                {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
+                            </select>
+                            <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                                <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                                <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="Ï¿Ï¡Ï½ Ï¿Ïº┘äÏºÏ│┘à Ïú┘ê Ïº┘äÏÑ┘è┘à┘è┘ä..." style={{ width: '100%', padding: '8px 30px 8px 10px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.82rem' }} />
+                            </div>
+                            <Btn onClick={() => handleExport(filteredClients, 'clients')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />Ï¬ÏÁÏ»┘èÏ▒ Excel</Btn>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', overflowX: 'auto', paddingBottom: '10px' }}>
+                            {[
+                                { id: '', l: 'Ïº┘ä┘â┘ä', c: '#9CA3AF' },
+                                { id: 'agencies', l: 'Ïº┘ä┘ê┘âÏº┘äÏºÏ¬ ­ƒñØ', c: '#8B5CF6' },
+                                { id: 'independent', l: '┘à┘åÏ┤ÏóÏ¬ ┘àÏ│Ï¬┘é┘äÏ® ­ƒÅó', c: '#10B981' },
+                                { id: 'sub-accounts', l: 'Ï╣┘à┘äÏºÏí Ï¬ÏºÏ¿Ï╣┘è┘å ­ƒæñ', c: '#3B82F6' }
+                            ].map(f => (
+                                <button key={f.id} onClick={() => setCFilter(f.id)} style={{ 
+                                    padding: '8px 16px', borderRadius: '99px', border: '1px solid var(--color-border-subtle)',
+                                    background: cFilter === f.id ? f.c : 'transparent',
+                                    color: cFilter === f.id ? 'white' : '#9CA3AF',
+                                    fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
+                                }}>{f.l}</button>
+                            ))}
+                        </div>
+
+                        <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>{t('admin.clients')}</th>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>Ïº┘ä┘å┘êÏ╣ / Ïº┘äÏ¬Ï¿┘èÏ╣Ï®</th>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>Ïº┘ä┘à┘êÏºÏ▒Ï» (┘à┘êÏ©┘üÏ®/ÏÀ┘äÏ¿)</th>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>Ïº┘äÏ▒ÏÁ┘èÏ» / Ïº┘äÏ¿Ïº┘éÏ®</th>
+                                <th style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.75rem' }}>{t('admin.clientDetails')}</th>
+                            </tr></thead>
+                            <tbody>
+                                {filteredClients.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>┘äÏº ┘è┘êÏ¼Ï» Ï¿┘èÏº┘åÏºÏ¬ ┘àÏÀÏºÏ¿┘éÏ®</td></tr>
+                                    : filteredClients.map(c => {
+                                        const isAgency = c.is_agency;
+                                        const isSubAccount = !!c.agency_id;
+                                        const plan = PLANS[c.subscription_tier || 'basic'] || PLANS.basic;
+                                        
+                                        // Visual Type configuration
+                                        const typeInfo = isAgency ? { l: '┘ê┘âÏº┘äÏ® ┘åÏ┤ÏÀÏ®', c: '#8B5CF6', e: '­ƒñØ' } 
+                                                       : (isSubAccount ? { l: `Ï¬ÏºÏ¿Ï╣ ┘ä┘Ç ${c.agency_name || '┘ê┘âÏº┘äÏ®'}`, c: '#3B82F6', e: '­ƒæñ' } 
+                                                       : { l: '┘à┘åÏ┤ÏúÏ® ┘àÏ│Ï¬┘é┘äÏ®', c: '#10B981', e: '­ƒÅó' });
+
+                                        return <tr key={c.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', transition: 'background 0.2s' }}>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ fontWeight: 800, color: 'var(--color-text-main)', fontSize: '0.86rem' }}>{c.business_name && c.business_name !== 'ÔÇö' ? c.business_name : (c.full_name || 'ÔÇö')}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{c.email}</div>
+                                                <div style={{ fontSize: '0.65rem', color: '#4B5563', marginTop: '2px' }}>ID: {c.id.slice(0,8)}</div>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: typeInfo.c, fontWeight: 700, fontSize: '0.75rem' }}>
+                                                    <span>{typeInfo.e}</span>
+                                                    <span>{typeInfo.l}</span>
+                                                </div>
+                                                <div style={{ fontSize: '0.68rem', color: '#6B7280', marginTop: '3px' }}>{sectors[c.business_type]?.l || '┘éÏÀÏºÏ╣ Ï╣Ïº┘à'}</div>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ display: 'flex', gap: '6px' }}>
+                                                    <div style={{ background: 'rgba(139,92,246,0.08)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(139,92,246,0.1)' }}>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#A78BFA', textAlign: 'center' }}>{c.agents_count || 0}</div>
+                                                        <div style={{ fontSize: '0.55rem', color: '#6B7280', textTransform: 'uppercase' }}>┘à┘êÏ©┘üÏ®</div>
+                                                    </div>
+                                                    <div style={{ background: 'rgba(59,130,246,0.08)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.1)' }}>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#60A5FA', textAlign: 'center' }}>{c.bookings_count || 0}</div>
+                                                        <div style={{ fontSize: '0.55rem', color: '#6B7280', textTransform: 'uppercase' }}>ÏÀ┘äÏ¿</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ color: '#FCD34D', fontWeight: 900, fontSize: '0.95rem', marginBottom: '2px' }}>
+                                                    {(c.wallet_balance || 0).toLocaleString()} <span style={{ fontSize: '0.6rem', color: 'var(--color-text-secondary)' }}>┘å┘éÏÀÏ®</span>
+                                                </div>
+                                                <select value={c.subscription_tier || 'basic'} onChange={e => updateClientPlan(c.id, e.target.value)} style={{ background: plan.bg, color: plan.t, border: 'none', borderRadius: '6px', padding: '1px 7px', fontWeight: 700, fontSize: '0.7rem', cursor: 'pointer' }}>
+                                                    {Object.entries(PLANS).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
+                                                </select>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 0.9rem' }}>
+                                                <div style={{ display: 'flex', gap: '5px' }}>
+                                                    <button onClick={() => setSelClient(c)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', transition: '0.2s' }} title="ÏÑÏ»ÏºÏ▒Ï® ┘à┘üÏÁ┘äÏ®"><Settings size={14} /></button>
+                                                    <button onClick={() => remoteLogin(c)} style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer' }} title="Ï»Ï«┘ê┘ä Ïº┘äÏ»Ï╣┘à"><LogOut size={14} style={{ transform: isRtl ? 'rotate(180deg)' : 'none' }} /></button>
+                                                </div>
+                                            </td>
+                                        </tr>;
+                                    })}
+                            </tbody>
+                        </table>} />
+                    </div>
+                    {/* Client panel */}
+                    {selClient && <div style={{ width: '340px', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
+                            <div style={{ fontWeight: 900, color: 'var(--color-text-main)', fontSize: '1rem' }}>ÔÜÖ´©Å ÏÑÏ»ÏºÏ▒Ï® Ïº┘äÏ¬Ï¡┘â┘à Ïº┘ä┘âÏº┘à┘ä</div>
+                            <button onClick={() => setSelClient(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#6B7280', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={16} /></button>
+                        </div>
+                        
+                        {/* Profile Summary */}
+                        <Card s={{ marginBottom: '1rem', border: '1px solid rgba(139,92,246,0.2)' }} c={<>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg,#8B5CF6,#3B82F6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                                    {selClient.is_agency ? '­ƒñØ' : '­ƒÅó'}
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: 900, color: 'var(--color-text-main)', fontSize: '0.9rem' }}>{selClient.business_name || selClient.full_name}</div>
+                                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.72rem' }}>{selClient.email}</div>
+                                </div>
+                            </div>
+                        </>} />
+
+                        {/* Identity Controls */}
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘ä┘ç┘ê┘èÏ® ┘êÏº┘äÏ¬Ï¿┘èÏ╣Ï®</div>
+                        <Card s={{ marginBottom: '1rem' }} c={<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '4px' }}>┘å┘êÏ╣ Ïº┘äÏ¡Ï│ÏºÏ¿ Ïº┘äÏ▒Ïª┘èÏ│┘è</label>
+                                <div style={{ display: 'flex', background: 'var(--color-bg-surface)', borderRadius: '8px', padding: '3px' }}>
+                                    <button onClick={() => adminService.changeClientIdentity(selClient.id, true).then(load)} 
+                                        style={{ flex: 1, padding: '6px', borderRadius: '6px', border: 'none', background: selClient.is_agency ? '#8B5CF6' : 'transparent', color: selClient.is_agency ? 'white' : '#6B7280', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>┘ê┘âÏº┘äÏ®</button>
+                                    <button onClick={() => adminService.changeClientIdentity(selClient.id, false).then(load)} 
+                                        style={{ flex: 1, padding: '6px', borderRadius: '6px', border: 'none', background: !selClient.is_agency ? '#10B981' : 'transparent', color: !selClient.is_agency ? 'white' : '#6B7280', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>Ï╣┘à┘è┘ä ┘àÏ¿ÏºÏ┤Ï▒</button>
+                                </div>
+                            </div>
+
+                            {!selClient.is_agency && (
+                                <div>
+                                    <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '4px' }}>Ïº┘äÏ¬Ï¿Ï╣┘èÏ® (Ïº┘ä┘ê┘âÏº┘äÏ® Ïº┘äÏú┘à)</label>
+                                    <select 
+                                        value={selClient.agency_id || ''} 
+                                        onChange={(e) => adminService.changeClientIdentity(selClient.id, false, e.target.value === '' ? null : e.target.value).then(load)}
+                                        style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', fontSize: '0.75rem' }}
+                                    >
+                                        <option value="">ÔÇö ┘à┘åÏ┤ÏúÏ® ┘àÏ│Ï¬┘é┘äÏ® (Ï¿Ï»┘ê┘å ┘ê┘âÏº┘äÏ®) ÔÇö</option>
+                                        {clients.filter(x => x.is_agency && x.id !== selClient.id).map(a => (
+                                            <option key={a.id} value={a.id}>┘ê┘âÏº┘äÏ®: {a.business_name || a.full_name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>} />
+
+                        {/* Financials */}
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>ÏÑÏ»ÏºÏ▒Ï® Ïº┘äÏ▒ÏÁ┘èÏ» (Ïº┘ä┘àÏ¡┘üÏ©Ï®)</div>
+                        <Card s={{ marginBottom: '1rem', border: '1px solid rgba(252,211,77,0.2)' }} c={<>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Ïº┘äÏ▒ÏÁ┘èÏ» Ïº┘äÏ¡Ïº┘ä┘è:</div>
+                                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FCD34D' }}>{selClient.wallet_balance || 0} <small style={{ fontSize: '0.6rem' }}>┘å┘éÏÀÏ®</small></div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                                <button onClick={() => {
+                                    const amt = prompt('ÏúÏ»Ï«┘ä Ï╣Ï»Ï» Ïº┘ä┘å┘éÏºÏÀ ┘ä┘äÏÑÏÂÏº┘üÏ® (+):');
+                                    if(amt) supabase.rpc('transfer_wallet_credits', { p_client_id: selClient.id, p_amount: parseInt(amt) }).then(load);
+                                }} style={{ flex: 1, background: '#10B98120', color: '#10B981', border: '1px solid #10B98130', borderRadius: '7px', padding: '8px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>+ ÏÑÏÂÏº┘üÏ® Ï▒ÏÁ┘èÏ»</button>
+                                <button onClick={() => {
+                                    const amt = prompt('ÏúÏ»Ï«┘ä Ï╣Ï»Ï» Ïº┘ä┘å┘éÏºÏÀ ┘ä┘äÏ«ÏÁ┘à (-):');
+                                    if(amt) supabase.rpc('deduct_wallet_credits', { p_client_id: selClient.id, p_amount: parseInt(amt) }).then(load);
+                                }} style={{ flex: 1, background: '#EF444420', color: '#EF4444', border: '1px solid #EF444430', borderRadius: '7px', padding: '8px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>- Ï«ÏÁ┘à Ï▒ÏÁ┘èÏ»</button>
+                            </div>
+                        </>} />
+
+                        {/* Integration Keys */}
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>­ƒöæ ┘à┘üÏºÏ¬┘èÏ¡ Ïº┘äÏ▒Ï¿ÏÀ Ïº┘äÏ¿Ï▒┘àÏ¼┘èÏ®</div>
+                        <Card c={<>
+                            {[['telegram_token', 'Telegram Token'], ['whatsapp_number', 'Ï▒┘é┘à WhatsApp'], ['whatsapp_api_key', 'WhatsApp Key']].map(([f, l]) => <div key={f} style={{ marginBottom: '0.6rem' }}>
+                                <label style={{ display: 'block', color: '#6B7280', fontSize: '0.7rem', marginBottom: '3px' }}>{l}</label>
+                                <Input type={f.includes('token') || f.includes('key') ? 'password' : 'text'} value={clientKeys[selClient.id]?.[f] || ''} placeholder="ÔÇö" onChange={e => setClientKeys(p => ({ ...p, [selClient.id]: { ...(p[selClient.id] || {}), [f]: e.target.value } }))} />
+                            </div>)}
+                            <Btn onClick={() => saveClientKey(selClient.id)} style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}><Key size={13} />Ï¡┘üÏ© Ïº┘äÏ¬Ï║┘è┘èÏ▒ÏºÏ¬</Btn>
+                        </>} />
+                    </div>}
+                </div>}
+
+                {/* ÔöÇÔöÇ END CUSTOMERS (Total Database) ÔöÇÔöÇ */}
+                {tab === 'end-customers' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>{t('admin.endCustomers')}</h1>
+                    <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{endCustomers.length} {isEnglish ? 'total registered customers' : 'ÏÑÏ¼┘àÏº┘ä┘è Ïº┘äÏ╣┘à┘äÏºÏí Ïº┘ä┘àÏ│Ï¼┘ä┘è┘å'}</p>
+                    
+                    <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
+                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                            {['ID', t('fullName'), t('phoneLabel'), 'Instagram', 'Telegram', t('lastUpdate')].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                        </tr></thead>
+                        <tbody>
+                            {endCustomers.length === 0 ? <tr><td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>{isEnglish ? 'No customers found' : '┘äÏº ┘è┘êÏ¼Ï» Ï▓Ï¿ÏºÏª┘å ┘àÏ│Ï¼┘ä┘è┘å'}</td></tr>
+                                : endCustomers.map(c => (
+                                    <tr key={c.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.65rem' }}>{c.id.slice(0, 8)}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-main)', fontWeight: 600 }}>{c.customer_name || 'ÔÇö'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-secondary)' }}>{c.customer_phone || 'ÔÇö'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-secondary)' }}>{c.instagram_id || 'ÔÇö'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-secondary)' }}>{c.telegram_id || 'ÔÇö'}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(c.updated_at).toLocaleDateString(isEnglish ? 'en-US' : 'ar-EG')}</td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>} />
+                </div>}
+
+                {/* ÔöÇÔöÇ CUSTOM REQUESTS ÔöÇÔöÇ */}
+                {tab === 'custom-requests' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>{isEnglish ? 'Custom Employee Requests' : 'ÏÀ┘äÏ¿ÏºÏ¬ Ïº┘äÏ¬┘êÏ©┘è┘ü Ïº┘ä┘àÏ«ÏÁÏÁÏ®'}</h1>
+                    <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>{customRequests.length} {isEnglish ? 'total requests' : 'ÏÑÏ¼┘àÏº┘ä┘è Ïº┘äÏÀ┘äÏ¿ÏºÏ¬ Ïº┘ä┘àÏ│Ï¬┘ä┘àÏ®'}</p>
+
+                    <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
+                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                            {[(isEnglish ? 'Date' : 'Ïº┘äÏ¬ÏºÏ▒┘èÏ«'), (isEnglish ? 'Contact' : 'Ï¿┘èÏº┘åÏºÏ¬ Ïº┘äÏ¬┘êÏºÏÁ┘ä'), (isEnglish ? 'Requirements' : 'Ïº┘ä┘àÏ¬ÏÀ┘äÏ¿ÏºÏ¬'), (isEnglish ? 'Status' : 'Ïº┘äÏ¡Ïº┘äÏ®'), (isEnglish ? 'Actions' : 'ÏÑÏ¼Ï▒ÏºÏíÏºÏ¬')].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                        </tr></thead>
+                        <tbody>
+                            {customRequests.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>┘äÏº ┘è┘êÏ¼Ï» ÏÀ┘äÏ¿ÏºÏ¬ Ï¡Ïº┘ä┘èÏº┘ï</td></tr>
+                            : customRequests.map(r => {
+                                const st = r.status === 'completed' ? { c: '#10B981', bg: '#10B98120', l: (!isEnglish ? '┘à┘âÏ¬┘à┘ä' : 'Completed') } : { c: '#F59E0B', bg: '#F59E0B20', l: (!isEnglish ? '┘é┘èÏ» Ïº┘ä┘àÏ▒ÏºÏ¼Ï╣Ï®' : 'Pending') };
+                                return (
+                                    <tr key={r.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                        <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>{new Date(r.created_at).toLocaleDateString(!isEnglish ? 'ar-EG' : 'en-US')}</td>
+                                        <td style={{ padding: '0.75rem 0.9rem' }}>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.85rem' }}>{r.contact_name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#A78BFA' }}>{r.contact_phone}</div>
+                                            <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{r.contact_email}</div>
+                                        </td>
+                                        <td style={{ padding: '0.75rem 0.9rem', maxWidth: '300px' }}>
+                                            <div style={{ fontSize: '0.78rem', color: 'var(--color-text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={r.required_tasks}>
+                                                <strong>{r.business_type}</strong>: {r.required_tasks}
+                                            </div>
+                                            <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{isEnglish ? 'Integrations' : 'Ï▒Ï¿ÏÀ'}: {r.integrations || 'ÔÇö'}</div>
+                                        </td>
+                                        <td style={{ padding: '0.75rem 0.9rem' }}>
+                                            <span style={{ background: st.bg, color: st.c, padding: '2px 8px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700 }}>{st.l}</span>
+                                        </td>
+                                        <td style={{ padding: '0.75rem 0.9rem', display: 'flex', gap: '6px' }}>
+                                            <button onClick={() => window.open(`https://wa.me/${r.contact_phone.replace(/\D/g,'')}`, '_blank')} style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem' }}>WhatsApp</button>
+                                            <button onClick={() => adminService.updateCustomRequestStatus(r.id, r.status === 'completed' ? 'pending' : 'completed').then(() => load())} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '4px 9px', cursor: 'pointer', fontSize: '0.75rem' }}>{r.status === 'completed' ? 'Undo' : 'Done'}</button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>} />
+                </div>}
+
+                {/* ÔöÇÔöÇ NOTIFICATIONS ÔöÇÔöÇ */}
+                {tab === 'notifications' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 1.25rem' }}>{t('admin.notifications')}</h1>
+                    
+                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                        <select value={notifClientFilter} onChange={e => setNotifClientFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                            <option value="">{isEnglish ? 'All Clients' : '┘â┘ä Ïº┘äÏ╣┘à┘äÏºÏí'}</option>
+                            {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
+                        </select>
+                        <select value={notifTypeFilter} onChange={e => setNotifTypeFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '8px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                            <option value="">{isEnglish ? 'All Types' : '┘â┘ä Ïº┘äÏú┘å┘êÏºÏ╣'}</option>
+                            <option value="new_booking">{isEnglish ? 'New Bookings' : 'Ï¡Ï¼┘êÏ▓ÏºÏ¬ Ï¼Ï»┘èÏ»Ï®'}</option>
+                            <option value="booking_update">{isEnglish ? 'Booking Updates' : 'Ï¬Ï¡Ï»┘èÏ½ÏºÏ¬ Ïº┘äÏ¡Ï¼┘êÏ▓ÏºÏ¬'}</option>
+                            <option value="new_chat">{isEnglish ? 'New Chats' : '┘àÏ¡ÏºÏ»Ï½ÏºÏ¬ Ï¼Ï»┘èÏ»Ï®'}</option>
+                            <option value="custom_request">{isEnglish ? 'Custom Requests' : 'ÏÀ┘äÏ¿ÏºÏ¬ ┘àÏ«ÏÁÏÁÏ®'}</option>
+                            <option value="wallet">{isEnglish ? 'Wallet Alerts' : 'Ï¬┘åÏ¿┘è┘çÏºÏ¬ Ïº┘ä┘àÏ¡┘üÏ©Ï®'}</option>
+                            <option value="system">{isEnglish ? 'System Alerts' : 'Ï¬┘åÏ¿┘è┘çÏºÏ¬ Ïº┘ä┘åÏ©Ïº┘à'}</option>
+                        </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {filteredNotifications.length === 0 ? <Card c={<div style={{ textAlign: 'center', color: '#6B7280', padding: '2rem' }}>{t('admin.noNotifications')}</div>} />
+                        : filteredNotifications.map(n => (
+                            <Card key={n.id} s={{ background: n.is_read ? 'var(--color-bg-surface)' : 'rgba(139,92,246,0.08)', borderLeft: n.is_read ? '1px solid rgba(255,255,255,0.06)' : '4px solid #8B5CF6' }} c={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={18} color={n.is_read ? '#6B7280' : '#8B5CF6'} /></div>
+                                    <div>
+                                        <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.9rem' }}>{n.title}</div>
+                                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>{n.message}</div>
+                                        <div style={{ color: '#6B7280', fontSize: '0.7rem', marginTop: '4px' }}>{new Date(n.created_at).toLocaleString(isEnglish ? 'en-US' : 'ar-EG')}</div>
+                                    </div>
+                                </div>
+                                {!n.is_read && <button onClick={() => adminService.markNotificationAsRead(n.id).then(() => setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x)))} style={{ background: 'none', border: 'none', color: '#8B5CF6', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>{t('admin.markRead')}</button>}
+                            </div>} />
+                        ))}
+                    </div>
+                </div>}
+
+                {/* ÔöÇÔöÇ AGENTS ÔöÇÔöÇ */}
+                {tab === 'agents' && <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                        <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>{t('admin.agents')}</h1>
+                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>{filteredAgents.length} {isEnglish ? 'matching agents' : '┘à┘êÏ©┘üÏ® ┘àÏÀÏºÏ¿┘éÏ®'}</p></div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <Btn onClick={() => handleExport(filteredAgents, 'agents')} color="#10B981"><Download size={14} />{isEnglish ? 'Export' : 'Ï¬ÏÁÏ»┘èÏ▒'}</Btn>
+                            <Btn onClick={() => setShowAddAgent(!showAddAgent)}><Plus size={15} />{isEnglish ? 'Add Agent' : 'ÏÑÏÂÏº┘üÏ® ┘à┘êÏ©┘üÏ®'}</Btn>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+                        <select value={aFilter} onChange={e => setAFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '9px', color: 'var(--color-text-main)', padding: '9px 11px', fontSize: '0.85rem', minWidth: '200px' }}>
+                            <option value="">{isEnglish ? 'All Clients' : '┘â┘ä Ïº┘äÏ╣┘à┘äÏºÏí'} ({agents.length})</option>
+                            {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email} ({cl(c.id).length})</option>)}
+                        </select>
+                        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                            <Search size={14} style={{ position: 'absolute', [isRtl ? 'right' : 'left']: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                            <input value={aSearch} onChange={e => setASearch(e.target.value)} placeholder={isEnglish ? 'Search agent or owner...' : 'Ï¿Ï¡Ï½ Ï¿ÏºÏ│┘à Ïº┘ä┘à┘êÏ©┘üÏ® Ïú┘ê Ïº┘ä┘àÏº┘ä┘â...'} style={{ width: '100%', padding: isRtl ? '9px 30px 9px 10px' : '9px 10px 9px 30px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '9px', color: 'var(--color-text-main)', fontSize: '0.85rem' }} />
+                        </div>
+                    </div>
+
+                    {/* Add agent form */}
+                    {showAddAgent && <Card s={{ marginBottom: '1.25rem', border: '1px solid rgba(139,92,246,0.3)' }} c={<div>
+                        <div style={{ fontWeight: 700, color: '#A78BFA', marginBottom: '1rem', fontSize: '0.9rem' }}>Ô×ò {isEnglish ? 'Register New Digital Agent' : 'Ï¬Ï│Ï¼┘è┘ä ┘à┘êÏ©┘üÏ® Ï¼Ï»┘èÏ»Ï®'}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '4px' }}>{isEnglish ? 'Agent Name *' : 'ÏºÏ│┘à Ïº┘ä┘à┘êÏ©┘üÏ® *'}</label>
+                                <Input value={newAgent.name} onChange={e => setNewAgent(p => ({ ...p, name: e.target.value }))} placeholder={isEnglish ? 'e.g. Sarah' : '┘àÏ½Ïº┘ä: Ï│ÏºÏ▒Ï®'} /></div>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '4px' }}>{t('specialtyLabel')}</label>
+                                <select value={newAgent.specialty} onChange={e => setNewAgent(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', fontSize: '0.82rem' }}>
+                                    {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{isEnglish ? k.toUpperCase() : v.l}</option>)}
+                                </select></div>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '4px' }}>{t('home.sectorTitle')}</label>
+                                <select value={newAgent.business_type} onChange={e => setNewAgent(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', fontSize: '0.82rem' }}>
+                                    {Object.entries(sectors).map(([k, v]) => <option key={k} value={k}>{v.e} {isEnglish ? k.toUpperCase() : v.l}</option>)}
+                                </select></div>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '4px' }}>{isEnglish ? 'Assign to Client *' : 'ÏúÏ│┘åÏ» ┘ä┘äÏ╣┘à┘è┘ä *'}</label>
+                                <select value={newAgent.user_id} onChange={e => setNewAgent(p => ({ ...p, user_id: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', fontSize: '0.82rem' }}>
+                                    <option value="">{isEnglish ? 'Select client...' : 'ÏºÏ«Ï¬Ï▒ Ï╣┘à┘è┘ä...'}</option>
+                                    {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
+                                </select></div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.6rem' }}>
+                            <Btn onClick={addAgent}><Check size={14} />{isEnglish ? 'Create Agent' : 'ÏÑ┘åÏ┤ÏºÏí Ïº┘ä┘à┘êÏ©┘üÏ®'}</Btn>
+                            <button onClick={() => setShowAddAgent(false)} style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.83rem' }}>{t('templates.cancelBtn')}</button>
+                        </div>
+                    </div>} />}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
+                        {filteredAgents.length === 0 ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: '#6B7280', background: 'rgba(255,255,255,0.02)', borderRadius: '15px' }}>┘äÏº Ï¬┘êÏ¼Ï» ┘à┘êÏ©┘üÏºÏ¬ ┘àÏÀÏºÏ¿┘éÏ® ┘ä┘çÏ░Ïº Ïº┘äÏ¿Ï¡Ï½</div>
+                            : filteredAgents.map(agent => {
+                            const role = roles[agent.specialty || 'booking'] || roles.booking || { l: 'ÔÇö', c: '#6B7280' };
+                            const isActive = agent.status === 'active';
+                            const isEd = editAgent?.id === agent.id;
+                            const apps = agentApps[agent.id] || {};
+                            const client = clients.find(c => c.id === agent.user_id);
+
+                            return <Card key={agent.id} s={{ border: `1px solid ${isActive ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)'}` }} c={<>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '7px' }}>
+                                    <div style={{ flex: 1 }}>
+                                        {isEd ? <input value={editAgent.name} onChange={e => setEditAgent({ ...editAgent, name: e.target.value })} style={{ background: 'var(--color-bg-input)', border: '1px solid #8B5CF6', borderRadius: '5px', color: 'var(--color-text-main)', padding: '2px 7px', fontWeight: 700, width: '100%', fontSize: '0.85rem', marginBottom: '4px' }} />
+                                            : <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.87rem' }}>{agent.name}</div>}
+                                        <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>┘àÏº┘ä┘â: <span style={{ color: '#A78BFA' }}>{client?.full_name || client?.email || 'ÔÇö'}</span></div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '3px' }}>
+                                        {isEd ? <><button onClick={() => saveAgentEdit(editAgent)} style={{ background: '#10B98120', color: '#10B981', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Check size={12} /></button><button onClick={() => setEditAgent(null)} style={{ background: '#EF444420', color: '#EF4444', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><X size={12} /></button></>
+                                            : <><button onClick={() => setEditAgent({ ...agent })} style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Edit2 size={12} /></button>
+                                                <button onClick={() => deleteAgent(agent.id)} style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: 'none', borderRadius: '5px', padding: '3px 5px', cursor: 'pointer' }}><Trash2 size={12} /></button></>}
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                                    {isEd ? (
+                                        <select value={editAgent.specialty} onChange={e => setEditAgent({ ...editAgent, specialty: e.target.value })} style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '4px', color: 'var(--color-text-main)', fontSize: '0.7rem', padding: '2px' }}>
+                                            {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
+                                        </select>
+                                    ) : <span style={{ background: `${role.c}20`, color: role.c, padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{role.l}</span>}
+                                    <span style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)', padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem' }}>{sectors[agent.business_type]?.e || '­ƒÅó'}</span>
+                                </div>
+
+                                {/* Integration Settings */}
+                                <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '8px', marginBottom: '10px', fontSize: '0.75rem', border: '1px solid var(--color-border-subtle)' }}>
+                                    <div style={{ marginBottom: '6px' }}>
+                                        <label style={{ color: '#0088cc', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                            <MessageSquare size={10} /> Telegram Token
+                                        </label>
+                                        {isEd ? <Input value={editAgent.telegram_token || ''} onChange={e => setEditAgent({ ...editAgent, telegram_token: e.target.value })} placeholder="7434105220:..." />
+                                            : <div style={{ color: 'var(--color-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.telegram_token || 'ÔØî Ï║┘èÏ▒ ┘àÏ▒Ï¬Ï¿ÏÀ'}</div>}
+                                    </div>
+                                    <div>
+                                        <label style={{ color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                            <Zap size={10} /> WhatsApp Enabled
+                                        </label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: agent.whatsapp_settings?.enabled ? '#10B981' : '#374151' }} />
+                                            <span style={{ color: 'var(--color-text-secondary)' }}>{agent.whatsapp_settings?.enabled ? '┘åÏ┤ÏÀ' : '┘àÏ╣ÏÀ┘ä'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Agent Apps */}
+                                <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: '8px', marginBottom: '8px' }}>
+                                    <div style={{ fontSize: '0.7rem', color: '#6B7280', marginBottom: '5px', fontWeight: 600 }}>Ïº┘äÏ¬ÏÀÏ¿┘è┘éÏºÏ¬ ┘êÏº┘äÏÑÏÂÏº┘üÏºÏ¬:</div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                                        {agentAppsConfig.map(app => {
+                                            const Icon = ICON_MAP[app.icon] || Bot; const on = !!apps[app.id];
+                                            return <button key={app.id} onClick={() => toggleApp(agent.id, app.id)} title={app.desc}
+                                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 7px', borderRadius: '6px', background: on ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.06)'}`, color: on ? '#A78BFA' : '#4B5563', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 600 }}>
+                                                <Icon size={11} />{app.label}
+                                            </button>;
+                                        })}
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '6px', height: '6px', borderRadius: '50%', background: isActive ? '#10B981' : '#374151' }} /><span style={{ fontSize: '0.72rem', color: isActive ? '#10B981' : '#6B7280' }}>{isActive ? '┘åÏ┤ÏÀÏ®' : '┘àÏ¬┘ê┘é┘üÏ®'}</span></div>
+                                    <button onClick={() => toggleAgent(agent)} style={{ background: isActive ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', color: isActive ? '#EF4444' : '#10B981', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                        <Power size={11} />{isActive ? 'ÏÑ┘è┘éÏº┘ü' : 'Ï¬┘üÏ╣┘è┘ä'}
+                                    </button>
+                                </div>
+                            </>} />;
+                        })}
+                    </div>
+                </div>}
+
+                {/* ÔöÇÔöÇ BOOKINGS ÔöÇÔöÇ */}
+                {tab === 'bookings' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>Ïº┘äÏ¡Ï¼┘êÏ▓ÏºÏ¬</h1>
+                    <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.83rem' }}>{filtBk.length} Ï¡Ï¼Ï▓ ┘àÏÀÏºÏ¿┘é</p>
+                    <div style={{ marginBottom: '0.9rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <select value={bFilter} onChange={e => setBFilter(e.target.value)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '7px 11px', fontSize: '0.82rem', minWidth: '200px' }}>
+                            <option value="">┘â┘ä Ïº┘äÏ╣┘à┘äÏºÏí ({bookings.length})</option>
+                            {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email} ({bl(c.id).length})</option>)}
+                        </select>
+                        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                            <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+                            <input value={bSearch} onChange={e => setBSearch(e.target.value)} placeholder="Ï¿Ï¡Ï½ Ï¿ÏºÏ│┘à Ïº┘äÏ▓Ï¿┘ê┘åÏ® Ïú┘ê Ïº┘äÏ¼┘êÏº┘ä..." style={{ width: '100%', padding: '7px 30px 7px 10px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', fontSize: '0.82rem' }} />
+                        </div>
+                        <Btn onClick={() => handleExport(filtBk, 'bookings')} color="#10B981" style={{ fontSize: '0.75rem' }}><Download size={14} />Ï¬ÏÁÏ»┘èÏ▒ Excel</Btn>
+                        {bFilter && <button onClick={() => setBFilter('')} style={{ background: 'rgba(255,255,255,0.05)', color: '#EF4444', border: 'none', borderRadius: '7px', padding: '6px 11px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>ÏÑ┘äÏ║ÏºÏí ┘ü┘ä┘üÏ▒ Ïº┘äÏ╣┘à┘è┘ä</button>}
+                    </div>
+                    <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                        <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                            {['Ïº┘äÏ╣┘à┘è┘ä', 'Ïº┘äÏ«Ï»┘àÏ®', 'Ïº┘äÏ¬ÏºÏ▒┘èÏ«', 'Ïº┘ä┘ê┘éÏ¬', 'Ïº┘äÏ¡Ïº┘äÏ®'].map(h => <th key={h} style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                        </tr></thead>
+                        <tbody>
+                            {filtBk.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>┘äÏº Ï¬┘êÏ¼Ï» Ï¡Ï¼┘êÏ▓ÏºÏ¬</td></tr>
+                                : filtBk.map(b => {
+                                    const sc = STATUSES[b.status] || STATUSES.pending; return <tr key={b.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                        <td style={{ padding: '0.7rem 0.9rem' }}><div style={{ fontWeight: 600, color: 'var(--color-text-main)', fontSize: '0.82rem' }}>{b.customer_name || 'ÔÇö'}</div><div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{b.customer_phone}</div></td>
+                                        <td style={{ padding: '0.7rem 0.9rem', color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>{b.service_requested || 'ÔÇö'}</td>
+                                        <td style={{ padding: '0.7rem 0.9rem', color: 'var(--color-text-secondary)', fontSize: '0.79rem' }}>{b.booking_date}</td>
+                                        <td style={{ padding: '0.7rem 0.9rem', color: 'var(--color-text-secondary)', fontSize: '0.79rem' }}>{b.booking_time?.slice(0, 5)}</td>
+                                        <td style={{ padding: '0.7rem 0.9rem' }}><select value={b.status} onChange={e => updateBookingStatus(b.id, e.target.value)} style={{ background: sc.bg, color: sc.t, border: 'none', borderRadius: '6px', padding: '2px 8px', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer' }}>
+                                            {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
+                                        </select></td>
+                                    </tr>;
+                                })}
+                        </tbody>
+                    </table>} />
+                </div>}
+
+                {/* ÔöÇÔöÇ BLOG ÔöÇÔöÇ */}
+                {tab === 'blog' && <AdminBlogManager />}
+
+                {/* ÔöÇÔöÇ INFRASTRUCTURE ÔöÇÔöÇ */}
+                {tab === 'infrastructure' && <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>Ïº┘äÏ¿┘å┘èÏ® Ïº┘äÏ¬Ï¡Ï¬┘èÏ®</h1>
+                    <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>ÏÑÏ»ÏºÏ▒Ï® Ïº┘ä┘éÏÀÏºÏ╣ÏºÏ¬ ┘êÏº┘äÏúÏ»┘êÏºÏ▒ ┘êÏ│Ï¼┘äÏºÏ¬ Ïº┘ä┘åÏ©Ïº┘à</p>
+
+                    <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: 'var(--color-bg-surface)', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
+                        {[['cfg', 'ÔÜÖ´©Å Ïº┘äÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬'], ['logs', '­ƒôï Ïº┘äÏ│Ï¼┘äÏºÏ¬']].map(([id, lbl]) => <button key={id} onClick={() => setIntTab(id)} style={{ padding: '7px 18px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', background: intTab === id ? '#8B5CF6' : 'transparent', color: intTab === id ? 'white' : '#6B7280' }}>
+                            {lbl}
+                        </button>)}
+                    </div>
+
+                    {intTab === 'cfg' && <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <div>
+                                <h3 style={{ color: 'var(--color-text-main)', fontSize: '1rem', fontWeight: 800 }}>Ï¬Ï«ÏÁ┘èÏÁ Ïº┘ä┘à┘åÏÁÏ®</h3>
+                                <p style={{ color: '#6B7280', fontSize: '0.8rem', margin: 0 }}>Ï¬Ï¡┘â┘à ┘ü┘è Ïº┘ä┘éÏÀÏºÏ╣ÏºÏ¬ ┘êÏº┘äÏúÏ»┘êÏºÏ▒ Ïº┘ä┘êÏ©┘è┘ü┘èÏ® Ïº┘ä┘àÏ¬ÏºÏ¡Ï® Ï╣Ï¿Ï▒ Ïº┘ä┘à┘åÏÁÏ®</p>
+                            </div>
+                            <Btn onClick={async () => {
+                                setSaving(true);
+                                await Promise.all([
+                                    adminService.updatePlatformSettings('system_sectors', sectors),
+                                    adminService.updatePlatformSettings('system_roles', roles)
+                                ]);
+                                setSaving(false);
+                                flash('Ô£à Ï¬┘à Ï¡┘üÏ© ┘âÏº┘üÏ® ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘äÏ¿┘å┘èÏ® Ïº┘äÏ¬Ï¡Ï¬┘èÏ®');
+                            }} disabled={saving}><Save size={14} />{saving ? 'Ï¼ÏºÏ▒┘è Ïº┘äÏ¡┘üÏ©...' : 'Ï¡┘üÏ© Ïº┘äÏ¬Ï║┘è┘èÏ▒ÏºÏ¬ Ïº┘äÏ┤Ïº┘à┘äÏ®'}</Btn>
+                        </div>
+
+                        {/* SECTORS SECTION */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 700 }}>1. Ïº┘ä┘éÏÀÏºÏ╣ÏºÏ¬ Ïº┘ä┘àÏ¬ÏºÏ¡Ï® (Sectors)</h3>
+                            <button onClick={() => {
+                                const newId = `sec_${Date.now()}`;
+                                setSectors(p => ({ ...p, [newId]: { l: '┘éÏÀÏºÏ╣ Ï¼Ï»┘èÏ»', e: '­ƒôü', c: '#10B981', on: true } }));
+                            }} style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>+ ÏÑÏÂÏº┘üÏ® ┘éÏÀÏºÏ╣</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+                            {Object.entries(sectors).map(([sk, sec]) => (
+                                <Card key={sk} s={{ border: `1px solid ${sec.on ? sec.c + '30' : 'rgba(255,255,255,0.05)'}` }} c={<>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <input value={sec.e} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, e: e.target.value } }))} style={{ width: '30px', background: 'transparent', border: 'none', fontSize: '1.3rem', color: 'var(--color-text-main)', textAlign: 'center' }} />
+                                            <div>
+                                                <input value={sec.l} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, l: e.target.value } }))} style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.87rem', background: 'transparent', border: 'none' }} />
+                                                <input type="color" value={sec.c} onChange={e => setSectors(p => ({ ...p, [sk]: { ...sec, c: e.target.value } }))} style={{ width: '30px', height: '15px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'block' }} />
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                            <button onClick={() => setSectors(p => ({ ...p, [sk]: { ...sec, on: !sec.on } }))} style={{ background: sec.on ? '#10B98120' : 'rgba(255,255,255,0.05)', color: sec.on ? '#10B981' : '#6B7280', border: 'none', borderRadius: '99px', padding: '3px 11px', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem' }}>
+                                                {sec.on ? 'Ô£à ┘åÏ┤ÏÀ' : 'ÔÅ© ┘à┘ê┘é┘ê┘ü'}
+                                            </button>
+                                            <button onClick={() => {
+                                                const { [sk]: _, ...rest } = sectors;
+                                                setSectors(rest);
+                                            }} style={{ color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={13} /></button>
+                                        </div>
+                                    </div>
+                                </>} />
+                            ))}
+                        </div>
+
+                        {/* roles SECTION */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 700 }}>2. Ïº┘äÏúÏ»┘êÏºÏ▒ Ïº┘ä┘êÏ©┘è┘ü┘èÏ® (Roles)</h3>
+                            <button onClick={() => {
+                                const newId = `role_${Date.now()}`;
+                                setRoles(p => ({ ...p, [newId]: { l: 'Ï»┘êÏ▒ Ï¼Ï»┘èÏ»', c: '#8B5CF6', on: true } }));
+                            }} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>+ ÏÑÏÂÏº┘üÏ® Ï»┘êÏ▒</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                            {Object.entries(roles).map(([rk, rol]) => (
+                                <Card key={rk} s={{ border: `1px solid ${rol.on !== false ? rol.c + '30' : 'rgba(255,255,255,0.05)'}` }} c={<>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: rol.c }} />
+                                            <div>
+                                                <input value={rol.l} onChange={e => setRoles(p => ({ ...p, [rk]: { ...rol, l: e.target.value } }))} style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.87rem', background: 'transparent', border: 'none' }} />
+                                                <input type="color" value={rol.c} onChange={e => setRoles(p => ({ ...p, [rk]: { ...rol, c: e.target.value } }))} style={{ width: '30px', height: '15px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'block' }} />
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                            <button onClick={() => setRoles(p => ({ ...p, [rk]: { ...rol, on: rol.on === false ? true : false } }))} style={{ background: rol.on !== false ? '#10B98120' : 'rgba(255,255,255,0.05)', color: rol.on !== false ? '#10B981' : '#6B7280', border: 'none', borderRadius: '99px', padding: '3px 11px', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem' }}>
+                                                {rol.on !== false ? 'Ô£à ┘åÏ┤ÏÀ' : 'ÔÅ© ┘à┘ê┘é┘ê┘ü'}
+                                            </button>
+                                            <button onClick={() => {
+                                                const { [rk]: _, ...rest } = roles;
+                                                setRoles(rest);
+                                            }} style={{ color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={13} /></button>
+                                        </div>
+                                    </div>
+                                </>} />
+                            ))}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 700 }}>ÏÑÏ»ÏºÏ▒Ï® Ï¬ÏÀÏ¿┘è┘éÏºÏ¬ Ïº┘ä┘à┘êÏ©┘üÏºÏ¬</h3>
+                            <Btn onClick={async () => {
+                                setSaving(true);
+                                await adminService.updatePlatformSettings('system_agent_apps', agentAppsConfig);
+                                setSaving(false);
+                                flash('Ô£à Ï¬┘à Ï¡┘üÏ© ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘äÏ¬ÏÀÏ¿┘è┘éÏºÏ¬');
+                            }} disabled={saving}><Save size={14} />Ï¡┘üÏ© Ïº┘äÏ¬ÏÀÏ¿┘è┘éÏºÏ¬</Btn>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                            {agentAppsConfig.map((app, idx) => (
+                                <Card key={app.id} c={<div>
+                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                        <select value={app.icon} onChange={e => { const u = [...agentAppsConfig]; u[idx].icon = e.target.value; setAgentAppsConfig(u); }} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)', borderRadius: '5px' }}>
+                                            {Object.keys(ICON_MAP).map(i => <option key={i} value={i}>{i}</option>)}
+                                        </select>
+                                        <Input value={app.label} onChange={e => { const u = [...agentAppsConfig]; u[idx].label = e.target.value; setAgentAppsConfig(u); }} />
+                                    </div>
+                                    <Input value={app.desc} onChange={e => { const u = [...agentAppsConfig]; u[idx].desc = e.target.value; setAgentAppsConfig(u); }} />
+                                </div>} />
+                            ))}
+                        </div>
+                    </div>}
+
+                    {intTab === 'logs' && <div>
+                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', alignItems: 'center' }}>
+                            <select value={logParams.category} onChange={e => setLogParams(p => ({ ...p, category: e.target.value }))} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-main)', borderRadius: '7px', padding: '6px' }}>
+                                <option value="">┘â┘ä Ïº┘äÏ¬ÏÁ┘å┘è┘üÏºÏ¬</option>
+                                <option value="system">┘åÏ©Ïº┘à</option>
+                                <option value="auth">┘ç┘ê┘èÏ®</option>
+                                <option value="agent">Ï░┘âÏºÏí ÏºÏÁÏÀ┘åÏºÏ╣┘è</option>
+                            </select>
+                            <Btn onClick={fetchLogs}><RefreshCw size={13} />Ï¬Ï¡Ï»┘èÏ½</Btn>
+                        </div>
+                        <Card s={{ padding: 0 }} c={<div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', textAlign: 'right' }}>
+                                <thead><tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                    <th style={{ padding: '0.6rem' }}>Ïº┘ä┘ê┘éÏ¬</th>
+                                    <th style={{ padding: '0.6rem' }}>Ïº┘ä┘àÏ│Ï¬┘ê┘ë</th>
+                                    <th style={{ padding: '0.6rem' }}>Ïº┘äÏ¬ÏÁ┘å┘è┘ü</th>
+                                    <th style={{ padding: '0.6rem' }}>Ïº┘äÏ▒Ï│Ïº┘äÏ®</th>
+                                </tr></thead>
+                                <tbody>
+                                    {logs.length === 0 ? <tr><td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>┘äÏº Ï¬┘êÏ¼Ï» Ï│Ï¼┘äÏºÏ¬</td></tr>
+                                        : logs.map(l => (
+                                            <tr key={l.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                                <td style={{ padding: '0.6rem', color: '#6B7280' }}>{new Date(l.created_at).toLocaleString('ar-EG')}</td>
+                                                <td style={{ padding: '0.6rem' }}><span style={{ color: l.level === 'error' ? '#EF4444' : l.level === 'warn' ? '#F59E0B' : '#3B82F6' }}>{l.level}</span></td>
+                                                <td style={{ padding: '0.6rem', color: 'var(--color-text-secondary)' }}>{l.category}</td>
+                                                <td style={{ padding: '0.6rem', color: 'var(--color-text-main)' }}>{l.message}</td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                        </div>} />
+                    </div>}
+                </div>}
+
+                {/* ÔöÇÔöÇ PRICING ÔöÇÔöÇ */}
+                {tab === 'pricing' && <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                        <div>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>Ïº┘äÏ¿Ïº┘éÏºÏ¬ ┘êÏº┘äÏúÏ│Ï╣ÏºÏ▒</h1>
+                            <p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>Ï¬Ï╣Ï»┘è┘ä ÏºÏ│Ï¬Ï▒ÏºÏ¬┘èÏ¼┘èÏ® Ïº┘äÏ¬Ï│Ï╣┘èÏ▒ ┘êÏº┘ä┘à┘à┘èÏ▓ÏºÏ¬ Ïº┘äÏ¬┘é┘å┘èÏ® ┘ä┘â┘ä ┘üÏªÏ®</p>
+                        </div>
+                        <Btn onClick={async () => { 
+                            setSaving(true); 
+                            await adminService.updatePlatformSettings('pricing_plans', pricing); 
+                            setSaving(false); 
+                            flash('Ô£à Ï¬┘à Ï¡┘üÏ© ┘âÏº┘üÏ® ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘äÏ¬Ï│Ï╣┘èÏ▒'); 
+                        }} disabled={saving}>
+                            <Save size={14} />{saving ? 'Ï¼ÏºÏ▒┘è Ïº┘äÏ¡┘üÏ©...' : 'Ï¡┘üÏ© Ïº┘ä┘â┘ä'}
+                        </Btn>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+                        {pricing.map((plan, idx) => (
+                            <Card key={plan.id} s={{ border: '1px solid rgba(139, 92, 246, 0.2)', position: 'relative' }} c={<>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.25rem' }}>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#8B5CF620', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Zap size={16} color="#8B5CF6" />
+                                    </div>
+                                    <h3 style={{ color: 'var(--color-text-main)', fontWeight: 800, margin: 0, fontSize: '1rem' }}>{plan.name}</h3>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>Ïº┘äÏ│Ï╣Ï▒ Ïº┘äÏ┤┘çÏ▒┘è ($)</label>
+                                        <input type="number" value={plan.monthlyPrice} onChange={e => { const u = [...pricing]; u[idx].monthlyPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>Ïº┘äÏ│Ï╣Ï▒ Ïº┘äÏ│┘å┘ê┘è ($/Ï┤┘çÏ▒)</label>
+                                        <input type="number" value={plan.yearlyPrice} onChange={e => { const u = [...pricing]; u[idx].yearlyPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.75rem', marginBottom: '5px' }}>Ï│Ï╣Ï▒ Ïº┘äÏ¬Ï¼Ï▒Ï¿Ï® (3 Ï┤┘ç┘êÏ▒)</label>
+                                        <input type="number" value={plan.trialPrice || 0} onChange={e => { const u = [...pricing]; u[idx].trialPrice = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '10px', color: '#A78BFA', fontWeight: 'bold' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#10B981', fontSize: '0.75rem', marginBottom: '5px' }}>Ï╣Ï»Ï» Ïº┘ä┘å┘éÏºÏÀ (Ï┤┘çÏ▒┘èÏº┘ï)</label>
+                                        <input type="number" value={plan.credits || 0} onChange={e => { const u = [...pricing]; u[idx].credits = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10B981' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>Ïú┘éÏÁ┘ë Ï╣Ï»Ï» ┘à┘êÏ©┘ü┘è┘å</label>
+                                        <input type="number" value={plan.agentsLimit || 0} onChange={e => { const u = [...pricing]; u[idx].agentsLimit = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '5px' }}>ÏúÏ»┘êÏºÏ¬/┘é┘å┘êÏºÏ¬ ┘ä┘â┘ä ┘à┘êÏ©┘ü</label>
+                                        <input type="number" value={plan.toolsLimit || 0} onChange={e => { const u = [...pricing]; u[idx].toolsLimit = Number(e.target.value); setPricing(u); }} style={{ width: '100%', padding: '10px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)' }} />
+                                    </div>
+                                </div>
+                            </>} />
+                        ))}
+                    </div>
+
+                    {/* Add-ons Section */}
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <h3 style={{ color: 'var(--color-text-main)', fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.5rem' }}>Ï¿Ïº┘éÏºÏ¬ Ïº┘äÏ┤Ï¡┘å Ïº┘äÏ│Ï▒┘èÏ╣ (Add-ons)</h3>
+                        <p style={{ color: '#6B7280', fontSize: '0.8rem', marginBottom: '1rem' }}>Ï¬Ï¡┘â┘à ┘ü┘è ÏúÏ│Ï╣ÏºÏ▒ "Refill" Ïº┘äÏ¬┘è Ï¬Ï©┘çÏ▒ ┘ä┘äÏ╣┘à┘äÏºÏí ┘ü┘è ┘ä┘êÏ¡Ï® Ïº┘äÏ¬Ï¡┘â┘à</p>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+                            {['addon_1k', 'addon_5k'].map(addonId => {
+                                const addon = pricing.find(p => p.id === addonId) || { id: addonId, name: addonId === 'addon_1k' ? '1,000 Credits' : '5,000 Credits', monthlyPrice: addonId === 'addon_1k' ? 10 : 35, credits: addonId === 'addon_1k' ? 1000 : 5000 };
+                                const idx = pricing.findIndex(p => p.id === addonId);
+                                
+                                return (
+                                    <Card key={addonId} s={{ background: 'var(--color-bg-input)60' }} c={<>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                            <div style={{ fontWeight: 700, color: '#A78BFA' }}>{addon.name}</div>
+                                            <div style={{ fontSize: '0.7rem', background: '#A78BFA20', color: '#A78BFA', padding: '2px 8px', borderRadius: '20px' }}>Ï┤Ï¡┘å Ï▒ÏÁ┘èÏ»</div>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                            <div>
+                                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.7rem', marginBottom: '3px' }}>Ïº┘äÏ│Ï╣Ï▒ ($)</label>
+                                                <input type="number" value={addon.monthlyPrice} onChange={e => {
+                                                    const val = Number(e.target.value);
+                                                    if (idx === -1) setPricing(p => [...p, { ...addon, monthlyPrice: val }]);
+                                                    else { const u = [...pricing]; u[idx].monthlyPrice = val; setPricing(u); }
+                                                }} style={{ width: '100%', padding: '8px', background: '#0D1117', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)' }} />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.7rem', marginBottom: '3px' }}>Ïº┘ä┘å┘éÏºÏÀ</label>
+                                                <input type="number" value={addon.credits} onChange={e => {
+                                                    const val = Number(e.target.value);
+                                                    if (idx === -1) setPricing(p => [...p, { ...addon, credits: val }]);
+                                                    else { const u = [...pricing]; u[idx].credits = val; setPricing(u); }
+                                                }} style={{ width: '100%', padding: '8px', background: '#0D1117', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)' }} />
+                                            </div>
+                                        </div>
+                                    </>} />
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>}
+
+                {/* ÔöÇÔöÇ INTEGRATIONS ÔöÇÔöÇ */}
+                {
+                    tab === 'integrations' && <div>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 1.1rem' }}>Ïº┘äÏ▒Ï¿ÏÀ Ïº┘äÏ¬┘é┘å┘è</h1>
+                        <div style={{ display: 'flex', gap: '0', marginBottom: '1.25rem', background: 'var(--color-bg-surface)', padding: '3px', borderRadius: '9px', width: 'fit-content' }}>
+                            {[['platform', 'ÔÜÖ´©Å ┘à┘üÏºÏ¬┘èÏ¡ Ïº┘ä┘à┘åÏÁÏ®'], ['client', '­ƒæñ ┘à┘üÏºÏ¬┘èÏ¡ Ïº┘äÏ╣┘à┘äÏºÏí']].map(([id, lbl]) => <button key={id} onClick={() => setIntTab(id)} style={{ padding: '7px 18px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', background: intTab === id ? '#8B5CF6' : 'transparent', color: intTab === id ? 'white' : '#6B7280' }}>
+                                {lbl}
+                            </button>)}
+                        </div>
+
+                        {intTab === 'platform' && <div>
+                            <p style={{ color: '#6B7280', marginBottom: '1.5rem', fontSize: '0.82rem' }}>┘çÏ░┘ç Ïº┘ä┘à┘üÏºÏ¬┘èÏ¡ Ï¬Ï«Ï»┘à Ïº┘ä┘à┘åÏÁÏ® Ï¿Ïú┘â┘à┘ä┘çÏº ÔÇö OpenAI ┘äÏ¬Ï┤Ï║┘è┘ä Ïº┘äÏ░┘âÏºÏí Ïº┘äÏºÏÁÏÀ┘åÏºÏ╣┘èÏî n8n ┘äÏúÏ¬┘àÏ¬Ï® Ïº┘äÏ╣┘à┘ä┘èÏºÏ¬. Ï¬┘ÅÏ«Ï▓┘Ä┘æ┘å ┘ü┘è Ï¼Ï»┘ê┘ä <code style={{ background: 'var(--color-bg-input)', padding: '1px 5px', borderRadius: '4px' }}>platform_settings</code>.</p>
+                            
+                            {/* Platform Telegram Bot (New) */}
+                            <div style={{ marginBottom: '2rem', background: 'rgba(0,136,204,0.05)', borderRadius: '13px', border: '1px solid rgba(0,136,204,0.2)', padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                                    <MessageSquare size={20} color="#0088cc" />
+                                    <h3 style={{ color: 'var(--color-text-main)', margin: 0, fontWeight: 700, fontSize: '1rem' }}>Ï¿┘êÏ¬ Ïº┘äÏ¬┘è┘ä┘èÏ¼Ï▒Ïº┘à Ïº┘äÏ«ÏºÏÁ Ï¿Ïº┘ä┘à┘åÏÁÏ® (Platform Main Bot)</h3>
+                                </div>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '8px' }}>Ï¬┘ê┘â┘å Ïº┘äÏ¿┘êÏ¬ Ïº┘äÏ▒Ïª┘èÏ│┘è (┘èÏ│Ï¬Ï«Ï»┘à ┘ä┘äÏÑÏ┤Ï╣ÏºÏ▒ÏºÏ¬ Ïº┘äÏÑÏ»ÏºÏ▒┘èÏ® ┘êÏº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒ Ïº┘äÏ░┘â┘è)</label>
+                                <Input 
+                                    type="password" 
+                                    value={platformTelegramToken} 
+                                    placeholder="7434105220:..." 
+                                    onChange={e => setPlatformTelegramToken(e.target.value)} 
+                                />
+                                <p style={{ color: '#4B5563', fontSize: '0.7rem', marginTop: '8px' }}>­ƒÆí ┘çÏ░Ïº Ïº┘äÏ¿┘êÏ¬ ┘àÏ«ÏÁÏÁ ┘äÏÑÏ»ÏºÏ▒Ï® Ïº┘ä┘à┘åÏÁÏ® ┘êÏº┘äÏ¬┘êÏºÏÁ┘ä ┘àÏ╣ Ïº┘äÏúÏ»┘à┘å ┘àÏ¿ÏºÏ┤Ï▒Ï®.</p>
+                            </div>
+
+                            {/* Academy Pricing (New) */}
+                            <div style={{ marginBottom: '2rem', background: 'rgba(139,92,246,0.05)', borderRadius: '13px', border: '1px solid rgba(139,92,246,0.2)', padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                                    <CreditCard size={20} color="#A78BFA" />
+                                    <h3 style={{ color: 'var(--color-text-main)', margin: 0, fontWeight: 700, fontSize: '1rem' }}>ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘äÏ»┘üÏ╣ ┘ä┘äÏú┘âÏºÏ»┘è┘à┘èÏ® (Stripe Academy)</h3>
+                                </div>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '8px' }}>Stripe Price ID (┘ä┘äÏºÏ┤Ï¬Ï▒Ïº┘â Ïº┘ä┘Ç 20 Ï»┘ê┘äÏºÏ▒ ┘ü┘è Ïº┘äÏú┘âÏºÏ»┘è┘à┘èÏ®)</label>
+                                <Input 
+                                    value={academyPriceId} 
+                                    placeholder="price_1TLQyRAW..." 
+                                    onChange={e => setAcademyPriceId(e.target.value)} 
+                                />
+                                <p style={{ color: '#4B5563', fontSize: '0.7rem', marginTop: '8px' }}>­ƒÆí ┘çÏ░Ïº Ïº┘ä┘àÏ╣Ï▒┘ü ┘èÏ¡Ï»Ï» Ïº┘ä┘à┘åÏ¬Ï¼ ┘êÏº┘äÏ│Ï╣Ï▒ ┘ü┘è Stripe Checkout ┘ä┘äÏú┘âÏºÏ»┘è┘à┘èÏ®.</p>
+                            </div>
+
+                            {integrations.map((integ, idx) => {
+                                const conn = integ.status === 'Connected';
+                                return (
+                                    <div key={integ.id} style={{ marginBottom: '0.9rem', background: 'var(--color-bg-surface)', borderRadius: '13px', border: `1px solid ${conn ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}`, padding: '1.1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
+                                            <h3 style={{ color: 'var(--color-text-main)', margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{integ.name}</h3>
+                                            <select value={integ.status} onChange={e => { const u = [...integrations]; u[idx].status = e.target.value; setIntegrations(u); }} style={{ background: conn ? '#10B98120' : '#EF444420', color: conn ? '#10B981' : '#EF4444', border: 'none', borderRadius: '6px', padding: '2px 9px', fontWeight: 600, cursor: 'pointer', fontSize: '0.75rem' }}>
+                                                <option value="Disconnected">Ï║┘èÏ▒ ┘àÏ¬ÏÁ┘ä ÔØî</option>
+                                                <option value="Connected">┘àÏ¬ÏÁ┘ä Ô£à</option>
+                                            </select>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+                                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>Webhook URL</label>
+                                                <Input value={integ.url} placeholder="https://..." onChange={e => { const u = [...integrations]; u[idx].url = e.target.value; setIntegrations(u); }} /></div>
+                                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>API Key / Token</label>
+                                                <Input type="password" value={integ.key} placeholder="sk-..." onChange={e => { const u = [...integrations]; u[idx].key = e.target.value; setIntegrations(u); }} /></div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+
+                            <Btn onClick={savePlatformInteg} disabled={saving} style={{ marginTop: '0.75rem' }}><Save size={14} />{saving ? 'Ï¼ÏºÏ▒┘è Ïº┘äÏ¡┘üÏ©...' : 'Ï¡┘üÏ© ┘à┘üÏºÏ¬┘èÏ¡ Ïº┘ä┘à┘åÏÁÏ®'}</Btn>
+                            <p style={{ color: '#4B5563', fontSize: '0.72rem', marginTop: '0.6rem' }}>­ƒÆí ÏÑÏ░Ïº Ï©┘çÏ▒ Ï«ÏÀÏú: Ï¬Ïú┘âÏ» ┘à┘å ┘êÏ¼┘êÏ» Ï¼Ï»┘ê┘ä <code style={{ background: 'var(--color-bg-input)', padding: '1px 4px', borderRadius: '3px' }}>platform_settings</code> ┘ü┘è Supabase.</p>
+                        </div>}
+
+                        {intTab === 'client' && <div>
+                            <p style={{ color: '#6B7280', marginBottom: '1rem', fontSize: '0.82rem' }}>ÏúÏÂ┘ü ┘à┘üÏºÏ¬┘èÏ¡ Ïº┘äÏ▒Ï¿ÏÀ ┘äÏ╣┘à┘è┘ä ┘àÏ╣┘è┘å ÔÇö Ï¬┘ÅÏ«Ï▓┘Ä┘æ┘å ┘ü┘è <code style={{ background: 'var(--color-bg-input)', padding: '1px 5px', borderRadius: '4px' }}>entities</code></p>
+                            <select value={selIntClient || ''} onChange={e => setSelIntClient(e.target.value || null)} style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: '8px', color: 'var(--color-text-main)', padding: '8px 12px', fontSize: '0.83rem', minWidth: '260px', marginBottom: '1rem' }}>
+                                <option value="">ÏºÏ«Ï¬Ï▒ Ï╣┘à┘è┘äÏº┘ï...</option>
+                                {clients.map(c => <option key={c.id} value={c.id}>{c.full_name || c.email}</option>)}
+                            </select>
+                            {selIntClient && <div style={{ maxWidth: '500px', background: 'var(--color-bg-surface)', borderRadius: '13px', border: '1px solid var(--color-border-subtle)', padding: '1.1rem' }}>
+                                {[['telegram_token', '­ƒñû Telegram Bot Token', 'Ï¬┘ê┘â┘å Ïº┘äÏ¿┘êÏ¬ ┘à┘å @BotFather'], ['whatsapp_number', '­ƒô▒ Ï▒┘é┘à WhatsApp', '┘àÏ½Ïº┘ä: 966501234567'], ['whatsapp_api_key', '­ƒöæ WhatsApp API Key', '┘à┘üÏ¬ÏºÏ¡ Ïº┘ä┘êÏÁ┘ê┘ä ┘ä┘Ç API']].map(([f, l, hint]) => <div key={f} style={{ marginBottom: '0.9rem' }}>
+                                    <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.78rem', marginBottom: '3px' }}>{l}</label>
+                                    <div style={{ fontSize: '0.7rem', color: '#4B5563', marginBottom: '5px' }}>{hint}</div>
+                                    <Input type={f.includes('key') || f.includes('token') ? 'password' : 'text'} value={clientKeys[selIntClient]?.[f] || ''} placeholder="ÔÇö" onChange={e => setClientKeys(p => ({ ...p, [selIntClient]: { ...(p[selIntClient] || {}), [f]: e.target.value } }))} />
+                                </div>)}
+                                <Btn onClick={() => saveClientKey(selIntClient)} style={{ width: '100%', justifyContent: 'center' }}><Key size={14} />Ï¡┘üÏ© ┘à┘üÏºÏ¬┘èÏ¡ Ïº┘äÏ╣┘à┘è┘ä</Btn>
+                            </div>}
+
+                        </div>}
+
+                    </div>
+                }
+
+                {/* ÔöÇÔöÇ CONCIERGE CHATS ÔöÇÔöÇ */}
+                {tab === 'concierge-chats' && <div style={{ display: 'flex', gap: '1.5rem' }}>
+                    <div style={{ flex: 1 }}>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: '0 0 4px' }}>┘àÏ¡ÏºÏ»Ï½ÏºÏ¬ ┘å┘êÏ▒Ï®</h1>
+                        <p style={{ color: '#6B7280', marginBottom: '1.25rem', fontSize: '0.83rem' }}>Ï│Ï¼┘ä Ïº┘ä┘àÏ¡ÏºÏ»Ï½ÏºÏ¬ Ï¿┘è┘å Ïº┘äÏ╣┘àÏº┘ä ┘êÏº┘ä┘à┘åÏÁÏ® ┘êÏº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒Ï® Ïº┘äÏ░┘â┘èÏ®</p>
+                        
+                        <Card s={{ padding: 0, overflow: 'hidden' }} c={<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                            <thead><tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                {['Ïº┘äÏ╣┘à┘è┘ä', 'ÏóÏ«Ï▒ Ï▒Ï│Ïº┘äÏ®', 'Ïº┘äÏ¬Ï¡Ï»┘èÏ½', 'Ïº┘äÏÑÏ¼Ï▒ÏºÏí'].map(h => <th key={h} style={{ padding: '0.8rem 0.9rem', color: '#6B7280', fontWeight: 600, fontSize: '0.77rem' }}>{h}</th>)}
+                            </tr></thead>
+                            <tbody>
+                                {conciergeChats.length === 0 ? <tr><td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>┘äÏº ┘è┘êÏ¼Ï» Ï│Ï¼┘ä ┘àÏ¡ÏºÏ»Ï½ÏºÏ¬ Ï¡Ïº┘ä┘èÏº┘ï</td></tr>
+                                    : conciergeChats.map(chat => (
+                                        <tr key={chat.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', background: selChat?.id === chat.id ? 'rgba(139,92,246,0.06)' : 'transparent' }}>
+                                            <td style={{ padding: '0.75rem 0.9rem' }}>
+                                                <div style={{ fontWeight: 700, color: 'var(--color-text-main)', fontSize: '0.84rem' }}>{chat.user_name || 'ÔÇö'}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{chat.user_email}</div>
+                                            </td>
+                                            <td style={{ padding: '0.75rem 0.9rem', color: 'var(--color-text-secondary)', fontSize: '0.8rem', maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {chat.last_message || 'ÔÇö'}
+                                            </td>
+                                            <td style={{ padding: '0.75rem 0.9rem', color: '#6B7280', fontSize: '0.75rem' }}>
+                                                {new Date(chat.updated_at).toLocaleString('ar-EG')}
+                                            </td>
+                                            <td style={{ padding: '0.75rem 0.9rem' }}>
+                                                <button onClick={() => setSelChat(chat)} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>┘üÏ¬Ï¡ Ïº┘ä┘àÏ¡ÏºÏ»Ï½Ï®</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>} />
+                    </div>
+
+                    {selChat && <div style={{ width: '400px', flexShrink: 0, height: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: 800, color: 'var(--color-text-main)', fontSize: '0.9rem' }}>­ƒÆ¼ Ï¬┘üÏºÏÁ┘è┘ä Ïº┘ä┘àÏ¡ÏºÏ»Ï½Ï® ┘êÏ¬Ï¡┘ä┘è┘ä Ïº┘äÏ╣┘à┘è┘ä</div>
+                            <button onClick={() => setSelChat(null)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }}><X size={16} /></button>
+                        </div>
+
+                        {/* AI Insights Card */}
+                        {selChat.metadata?.insights && (
+                            <Card s={{ background: 'rgba(139,92,246,0.05)', border: '1px solid rgba(139,92,246,0.2)', padding: '1rem' }} c={
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#A78BFA', fontWeight: 800 }}>ÔÜí Ï¬Ï¡┘ä┘è┘ä ┘å┘êÏ▒Ï® ┘ä┘äÏ╣┘à┘è┘ä</div>
+                                        <div style={{ 
+                                            fontSize: '0.65rem', 
+                                            background: selChat.metadata.insights.interest_level === 'high' ? '#10B981' : '#F59E0B',
+                                            color: 'var(--color-text-main)',
+                                            padding: '2px 8px',
+                                            borderRadius: '10px',
+                                            fontWeight: 800
+                                        }}>
+                                            {selChat.metadata.insights.interest_level === 'high' ? 'Ïº┘çÏ¬┘àÏº┘à Ï╣Ïº┘ä┘è' : 'Ïº┘çÏ¬┘àÏº┘à ┘àÏ¬┘êÏ│ÏÀ'}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.75rem' }}>
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>Ïº┘ä┘åÏ┤ÏºÏÀ: <span style={{ color: 'var(--color-text-main)' }}>{selChat.metadata.insights.business_type || 'Ï║┘èÏ▒ ┘àÏ¡Ï»Ï»'}</span></div>
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>Ïº┘äÏ¡Ïº┘äÏ®: <span style={{ color: 'var(--color-text-main)' }}>{selChat.metadata.insights.lead_status || 'ÏºÏ│Ï¬┘üÏ│ÏºÏ▒'}</span></div>
+                                    </div>
+                                    <div style={{ marginTop: '0.5rem', color: '#A78BFA', fontSize: '0.75rem', fontWeight: 600 }}>
+                                        ­ƒÆí {selChat.metadata.insights.primary_need}
+                                    </div>
+                                </div>
+                            } />
+                        )}
+
+                        <Card s={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '1rem' }} c={
+                            selChat.messages?.map((m, i) => (
+                                <div key={i} style={{ 
+                                    alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                                    background: m.role === 'user' ? '#1E293B' : '#8B5CF620',
+                                    color: m.role === 'user' ? '#E2E8F0' : '#A78BFA',
+                                    padding: '8px 12px',
+                                    borderRadius: '12px',
+                                    maxWidth: '85%',
+                                    fontSize: '0.8rem',
+                                    border: `1px solid ${m.role === 'user' ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.2)'}`
+                                }}>
+                                    <div style={{ fontWeight: 800, fontSize: '0.65rem', marginBottom: '3px', opacity: 0.6 }}>{m.role === 'user' ? selChat.user_name : '┘å┘êÏ▒Ï® (Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒Ï®)'}</div>
+                                    {m.content}
+                                </div>
+                            ))
+                        } />
+                        {selChat.ticket_id && (
+                            <div style={{ marginTop: '0.8rem', padding: '0.8rem', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', fontSize: '0.75rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Check size={14} /> ┘àÏ▒Ï¬Ï¿ÏÀÏ® Ï¬Ï░┘âÏ▒Ï® Ï»Ï╣┘à #{selChat.ticket_id.slice(0, 8)}
+                            </div>
+                        )}
+                    </div>}
+                </div>}
+
+                {/* ÔöÇÔöÇ INTERVIEW AGENTS (TEMPLATES) ÔöÇÔöÇ */}
+                {tab === 'interview-agents' && <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                        <div>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>­ƒÄÖ´©Å ┘é┘êÏº┘äÏ¿ ┘à┘êÏ©┘ü┘è Ïº┘ä┘à┘éÏºÏ¿┘äÏ® (Ïº┘ä┘à┘êÏÁ┘ë Ï¿┘ç┘à)</h1>
+                            <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>┘é┘à Ï¿ÏÑÏ»ÏºÏ▒Ï® Ïº┘ä┘å┘àÏºÏ░Ï¼ ┘êÏº┘äÏ┤Ï«ÏÁ┘èÏºÏ¬ Ïº┘äÏ¼Ïº┘çÏ▓Ï® Ïº┘äÏ¬┘è ┘èÏ¬┘à Ï╣Ï▒ÏÂ┘çÏº ┘ä┘äÏ╣┘à┘äÏºÏí ┘ü┘è Ï║Ï▒┘üÏ® Ïº┘ä┘à┘éÏºÏ¿┘äÏ®</p>
+                        </div>
+                        <Btn onClick={() => setShowAddTemplate(!showAddTemplate)}><Plus size={14} />ÏÑÏÂÏº┘üÏ® ┘éÏº┘äÏ¿ Ï┤Ï«ÏÁ┘èÏ® Ï¼Ï»┘èÏ»</Btn>
+                    </div>
+
+                    {showAddTemplate && <Card s={{ marginBottom: '1rem', border: '1px solid #8B5CF640' }} c={<div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>ÏºÏ│┘à Ïº┘ä┘éÏº┘äÏ¿ (Ï╣Ï▒Ï¿┘è)</label>
+                                <Input value={newTemplate.name} onChange={e => setNewTemplate(p => ({ ...p, name: e.target.value }))} placeholder="┘àÏ½Ïº┘ä: ┘à┘åÏ│┘éÏ® Ï¡Ï¼┘êÏ▓ÏºÏ¬ Ï░┘â┘èÏ®" /></div>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>ÏºÏ│┘à Ïº┘ä┘éÏº┘äÏ¿ (ÏÑ┘åÏ¼┘ä┘èÏ▓┘è)</label>
+                                <Input value={newTemplate.name_en} onChange={e => setNewTemplate(p => ({ ...p, name_en: e.target.value }))} placeholder="e.g. Smart Booking Coordinator" dir="ltr" /></div>
+
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>Ïº┘äÏ¬Ï«ÏÁÏÁ</label>
+                                <select value={newTemplate.specialty} onChange={e => setNewTemplate(p => ({ ...p, specialty: e.target.value }))} style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', color: 'var(--color-text-main)', borderRadius: '7px', border: '1px solid var(--color-border-subtle)' }}>
+                                    {Object.entries(roles).map(([k, v]) => <option key={k} value={k}>{v.l}</option>)}
+                                </select></div>
+                            <div><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>Ïº┘ä┘éÏÀÏºÏ╣</label>
+                                <select value={newTemplate.business_type} onChange={e => setNewTemplate(p => ({ ...p, business_type: e.target.value }))} style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', color: 'var(--color-text-main)', borderRadius: '7px', border: '1px solid var(--color-border-subtle)' }}>
+                                    {Object.entries(sectors).map(([k, v]) => <option key={k} value={k}>{v.e} {v.l}</option>)}
+                                </select></div>
+
+                            <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>Ïº┘ä┘êÏÁ┘ü (Ï╣Ï▒Ï¿┘è)</label>
+                                <textarea value={newTemplate.description} onChange={e => setNewTemplate(p => ({ ...p, description: e.target.value }))} style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', color: 'var(--color-text-main)', borderRadius: '7px', border: '1px solid var(--color-border-subtle)', minHeight: '60px' }} placeholder="ÏºÏ┤Ï▒Ï¡ ┘à┘çÏº┘à ┘çÏ░┘ç Ïº┘ä┘à┘êÏ©┘üÏ® Ï¿Ïº┘äÏ╣Ï▒Ï¿┘èÏ®..." /></div>
+                            <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '4px' }}>Ïº┘ä┘êÏÁ┘ü (ÏÑ┘åÏ¼┘ä┘èÏ▓┘è)</label>
+                                <textarea value={newTemplate.description_en} onChange={e => setNewTemplate(p => ({ ...p, description_en: e.target.value }))} style={{ width: '100%', padding: '8px', background: 'var(--color-bg-input)', color: 'var(--color-text-main)', borderRadius: '7px', border: '1px solid var(--color-border-subtle)', minHeight: '60px' }} placeholder="Explain this agent's tasks in English..." dir="ltr" /></div>
+                            <div style={{ gridColumn: 'span 2' }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.73rem', marginBottom: '6px' }}>ÏÁ┘êÏ▒Ï® Ïº┘ä┘à┘êÏ©┘üÏ® (ÏÁ┘êÏ▒Ï® Ï¡┘é┘è┘é┘èÏ®)</label>
+                                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '8px' }}>
+                                    {REALISTIC_AVATARS.map((url, i) => (
+                                        <img 
+                                            key={i} 
+                                            src={url} 
+                                            onClick={() => setNewTemplate(p => ({ ...p, avatar: url }))}
+                                            style={{ 
+                                                cursor: 'pointer',
+                                                width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover',
+                                                border: newTemplate.avatar === url ? '2px solid #8B5CF6' : '2px solid transparent',
+                                                opacity: newTemplate.avatar === url ? 1 : 0.6,
+                                                transition: 'all 0.2s'
+                                            }} 
+                                        />
+                                    ))}
+                                </div>
+                                <Input value={newTemplate.avatar} onChange={e => setNewTemplate(p => ({ ...p, avatar: e.target.value }))} placeholder="Ïú┘ê ÏúÏ»Ï«┘ä Ï▒ÏºÏ¿ÏÀ ÏÁ┘êÏ▒Ï® ┘àÏ«ÏÁÏÁÏ®..." />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                            <Btn onClick={addTemplate}><Check size={14} />Ï¡┘üÏ© Ïº┘ä┘éÏº┘äÏ¿ Ïº┘äÏ¼Ï»┘èÏ»</Btn>
+                            <button onClick={() => setShowAddTemplate(false)} style={{ background: 'transparent', color: '#6B7280', border: 'none', cursor: 'pointer' }}>ÏÑ┘äÏ║ÏºÏí</button>
+                        </div>
+                    </div>} />}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
+                        {templates.map(t => (
+                            <Card key={t.id} c={<div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <img src={getRealisticAvatar(t.avatar)} alt="Avatar" style={{ width: '38px', height: '38px', borderRadius: '10px', objectFit: 'cover' }} />
+                                        <div>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
+                                                {isEnglish ? (t.name_en || t.name) : t.name}
+                                            </div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>{t.name_en && !isEnglish ? t.name_en : ''}</div>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => deleteTemplate(t.id)} style={{ color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={13} /></button>
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px', marginBottom: '0.5rem' }}>
+                                    <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: '#3B82F620', color: '#3B82F6' }}>{roles[t.specialty]?.l || t.specialty}</span>
+                                    <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-secondary)' }}>{sectors[t.business_type]?.l || t.business_type}</span>
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginBottom: '4px', direction: isEnglish ? 'ltr' : 'rtl', textAlign: isEnglish ? 'left' : 'right' }}>
+                                    {isEnglish ? (t.description_en || t.description) : t.description}
+                                </div>
+                            </div>} />
+                        ))}
+                    </div>
+                </div>}
+
+                {/* ÔöÇÔöÇ AI SETTINGS ÔöÇÔöÇ */}
+                {
+                    tab === 'ai-settings' && <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div><h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒Ï® Ïº┘äÏ░┘â┘èÏ®</h1><p style={{ color: '#6B7280', margin: '3px 0 0', fontSize: '0.83rem' }}>ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘äÏ░┘âÏºÏí Ïº┘äÏºÏÁÏÀ┘åÏºÏ╣┘è Ïº┘äÏ«ÏºÏÁ Ï¿┘å┘êÏ▒Ï®</p></div>
+                            <Btn onClick={saveAiConfig} disabled={saving}><Save size={14} />{saving ? 'Ï¼ÏºÏ▒┘è Ïº┘äÏ¡┘üÏ©...' : 'Ï¡┘üÏ© Ïº┘äÏ¬Ï║┘è┘èÏ▒ÏºÏ¬'}</Btn>
+                        </div>
+                        <Card c={<div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                            <div>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>1. ┘éÏºÏ╣Ï»Ï® Ïº┘ä┘àÏ╣Ï▒┘üÏ® (Knowledge Base)</label>
+                                <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>Ï¼┘à┘èÏ╣ Ïº┘ä┘àÏ╣┘ä┘ê┘àÏºÏ¬ Ïº┘äÏ¬┘è Ï¬Ï│Ï¬┘åÏ» ÏÑ┘ä┘è┘çÏº Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒Ï® Ï╣┘å ┘à┘åÏÁÏ® 24Shift (Ïº┘äÏúÏ│Ï╣ÏºÏ▒Ïî Ïº┘äÏ«Ï»┘àÏºÏ¬Ïî Ïº┘äÏ┤Ï▒┘êÏÀ)</p>
+                                <textarea value={aiConfig.knowledge || ''} onChange={e => setAiConfig({ ...aiConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '180px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="ÏúÏ»Ï«┘ä Ï¿┘èÏº┘åÏºÏ¬ Ïº┘ä┘à┘åÏÁÏ® ┘ç┘åÏº..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+                                    <Lock size={14} color="#10B981" /> 2. Ïº┘äÏ¬┘êÏ¼┘è┘çÏºÏ¬ Ïº┘äÏ«ÏºÏÁÏ® (System Prompt) - Ï╣Ï▒Ï¿┘è
+                                    <span style={{ fontSize: '0.65rem', background: '#10B98120', color: '#10B981', padding: '2px 6px', borderRadius: '4px' }}>┘ç┘ê┘èÏ® ┘àÏ¡┘à┘èÏ®</span>
+                                </label>
+                                <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>Ï¬Ï╣┘ä┘è┘àÏºÏ¬ Ïº┘äÏ┤Ï«ÏÁ┘èÏ® ┘êÏúÏ│┘ä┘êÏ¿ Ïº┘äÏ¬Ï¡Ï»Ï½ Ï¿Ïº┘äÏ╣Ï▒Ï¿┘èÏ®. (┘à┘äÏºÏ¡Ï©Ï®: ÏºÏ│┘à ┘å┘êÏ▒Ï® ┘êÏ»┘êÏ▒┘çÏº ┘â┘àÏ│Ï¬Ï┤ÏºÏ▒Ï® ┘ä┘ä┘à┘åÏÁÏ® ┘à┘é┘ü┘äÏº┘å Ï¿Ï▒┘àÏ¼┘èÏº┘ï ┘äÏ¡┘àÏº┘èÏ® Ïº┘ä┘ç┘ê┘èÏ®).</p>
+                                <textarea value={aiConfig.prompt_ar || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_ar: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="ÏúÏ»Ï«┘ä Ïº┘äÏ¬Ï╣┘ä┘è┘àÏºÏ¬ Ïº┘äÏÑÏÂÏº┘ü┘èÏ® ┘ç┘åÏº..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+                                    <Lock size={14} color="#10B981" /> 2. Ïº┘äÏ¬┘êÏ¼┘è┘çÏºÏ¬ Ïº┘äÏ«ÏºÏÁÏ® (System Prompt) - ÏÑ┘åÏ¼┘ä┘èÏ▓┘è
+                                </label>
+                                <textarea dir="ltr" value={aiConfig.prompt_en || ''} onChange={e => setAiConfig({ ...aiConfig, prompt_en: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '120px', fontFamily: 'inherit', fontSize: '0.85rem' }} placeholder="Add additional english instructions here..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#A78BFA', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>3. Ïº┘äÏ¡Ï» Ïº┘äÏú┘éÏÁ┘ë ┘äÏÀ┘ê┘ä Ïº┘äÏ▒Ï» (Ï¡Ï▒┘ê┘ü)</label>
+                                <p style={{ color: '#6B7280', fontSize: '0.75rem', marginBottom: '8px' }}>┘äÏÑÏ¼Ï¿ÏºÏ▒ Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒Ï® Ï╣┘ä┘ë Ïº┘äÏ▒Ï»┘êÏ» Ïº┘ä┘éÏÁ┘èÏ▒Ï® ┘êÏº┘ä┘àÏ¿ÏºÏ┤Ï▒Ï®Ïî ÏºÏ│Ï¬Ï«Ï»┘à ┘é┘è┘àÏ® Ï¿┘è┘å 100 ┘ê 300</p>
+                                <Input type="number" value={aiConfig.max_length || 150} onChange={e => setAiConfig({ ...aiConfig, max_length: Number(e.target.value) })} />
+                            </div>
+                        </div>} />
+
+                        <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div><h3 style={{ color: 'var(--color-text-main)', fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>ÔÜÖ´©Å ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒ Ïº┘äÏÑÏ»ÏºÏ▒┘è (Smart Advisor)</h3></div>
+                            <Btn onClick={async () => {
+                                setSaving(true);
+                                await adminService.updatePlatformSettings('admin_advisor_config', advisorConfig);
+                                setSaving(false);
+                                flash('Ô£à Ï¬┘à Ï¡┘üÏ© ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒ Ïº┘äÏÑÏ»ÏºÏ▒┘è');
+                            }} disabled={saving}><Save size={14} />Ï¡┘üÏ© ÏÑÏ╣Ï»ÏºÏ»ÏºÏ¬ Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒</Btn>
+                        </div>
+                        <Card c={<div>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '6px' }}>Ï¬Ï╣┘ä┘è┘àÏºÏ¬ Ïº┘äÏ┤Ï«ÏÁ┘èÏ® (System Prompt)</label>
+                                <textarea value={advisorConfig.prompt || ''} onChange={e => setAdvisorConfig({ ...advisorConfig, prompt: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '100px', fontSize: '0.85rem' }} placeholder="Ïú┘åÏ¬ ┘àÏ│Ï¬Ï┤ÏºÏ▒ ÏÑÏ»ÏºÏ▒┘è Ï«Ï¿┘èÏ▒ ┘ü┘è ┘à┘åÏÁÏºÏ¬ AI..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '6px' }}>┘éÏºÏ╣Ï»Ï® Ïº┘ä┘àÏ╣Ï▒┘üÏ® Ïº┘äÏÑÏ»ÏºÏ▒┘èÏ®</label>
+                                <textarea value={advisorConfig.knowledge || ''} onChange={e => setAdvisorConfig({ ...advisorConfig, knowledge: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '7px', color: 'var(--color-text-main)', minHeight: '100px', fontSize: '0.85rem' }} placeholder="ÏúÏ»Ï«┘ä ┘àÏ╣┘ä┘ê┘àÏºÏ¬ Ï│Ï▒┘èÏ® Ïú┘ê ÏºÏ│Ï¬Ï▒ÏºÏ¬┘èÏ¼┘èÏ® Ï¬Ï«ÏÁ ÏÑÏ»ÏºÏ▒Ï® Ïº┘ä┘à┘åÏÁÏ®..." />
+                            </div>
+                        </div>} />
+                    </div>
+                }
+
+                {/* ÔöÇÔöÇ ADMIN ADVISOR ÔöÇÔöÇ */}
+                {tab === 'admin-advisor' && (
+                    <div style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div>
+                            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>­ƒÄÖ´©Å {isEnglish ? 'Smart Advisor' : 'Ïº┘ä┘àÏ│Ï¬Ï┤ÏºÏ▒ Ïº┘äÏ░┘â┘è ┘ä┘äÏúÏ»┘à┘å'}</h1>
+                            <p style={{ color: '#6B7280', margin: '4px 0 0', fontSize: '0.83rem' }}>{isEnglish ? 'Discuss platform strategies, request data analysis, and improve agent performance.' : '┘åÏº┘éÏ┤ ÏºÏ│Ï¬Ï▒ÏºÏ¬┘èÏ¼┘èÏºÏ¬ Ïº┘ä┘à┘åÏÁÏ®Ïî ┘êÏºÏÀ┘äÏ¿ Ï¬Ï¡┘ä┘è┘ä Ïº┘äÏ¿┘èÏº┘åÏºÏ¬Ïî ┘êÏ¡Ï│┘æ┘å ÏúÏ»ÏºÏí "Ïº┘ä┘à┘êÏ©┘üÏºÏ¬ Ïº┘äÏúÏ░┘â┘èÏºÏí".'}</p>
+                        </div>
+
+                        <div style={{ flex: 1, display: 'flex', gap: '1.5rem', overflow: 'hidden' }}>
+                            {/* Chat Interface */}
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0D1117', borderRadius: '15px', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
+                                <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {(advisorMessages || []).map((m, i) => (
+                                        <div key={i} style={{ 
+                                            alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                                            maxWidth: '80%',
+                                            background: m.role === 'user' ? 'var(--color-bg-input)' : 'rgba(139,92,246,0.1)',
+                                            color: m.role === 'user' ? 'white' : '#A78BFA',
+                                            padding: '12px 16px',
+                                            borderRadius: '15px',
+                                            fontSize: '0.9rem',
+                                            lineHeight: 1.5,
+                                            border: `1px solid ${m.role === 'user' ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.2)'}`
+                                        }}>
+                                            {m.content}
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ padding: '1.25rem', borderTop: '1px solid var(--color-border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
+                                    <form style={{ display: 'flex', gap: '0.75rem' }} onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        if (!advisorInput?.trim() || saving) return;
+                                        
+                                        const userMsg = advisorInput.trim();
+                                        setAdvisorInput('');
+                                        setAdvisorMessages(p => [...p, { role: 'user', content: userMsg }]);
+                                        
+                                        setSaving(true);
+                                        try {
+                                            const context = `Platform Stats: ${clients.length} Clients, ${agents.length} Agents, ${bookings.length} Bookings.`;
+                                            const response = await adminService.chatWithAdvisor(userMsg, advisorMessages, advisorConfig, context);
+                                            setAdvisorMessages(p => [...p, { role: 'assistant', content: response }]);
+                                        } catch (e) {
+                                            setAdvisorMessages(p => [...p, { role: 'assistant', content: isEnglish ? 'I encountered an error. Please check the logs.' : 'Ï╣Ï░Ï▒Ïº┘ïÏî Ï¡Ï»Ï½ Ï«ÏÀÏú ÏúÏ½┘åÏºÏí ┘àÏ╣Ïº┘äÏ¼Ï® ÏÀ┘äÏ¿┘â.' }]);
+                                        } finally {
+                                            setSaving(false);
+                                        }
+                                    }}>
+                                        <input 
+                                            value={advisorInput || ''} 
+                                            onChange={e => setAdvisorInput(e.target.value)} 
+                                            placeholder={isEnglish ? 'Ask your consultant...' : 'ÏºÏ│Ïú┘ä ┘àÏ│Ï¬Ï┤ÏºÏ▒┘â Ïº┘äÏ░┘â┘è...'}
+                                            style={{ flex: 1, background: 'var(--color-bg-input)', border: '1px solid var(--color-border-subtle)', borderRadius: '10px', color: 'var(--color-text-main)', padding: '12px 16px', fontSize: '0.9rem', outline: 'none' }}
+                                        />
+                                        <button type="submit" disabled={saving} style={{ background: '#8B5CF6', color: 'var(--color-text-main)', border: 'none', borderRadius: '10px', padding: '0 1.5rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            {saving ? <RefreshCw size={18} className="animate-spin" /> : <Zap size={18} />}
+                                            {isEnglish ? 'Send' : 'ÏÑÏ▒Ï│Ïº┘ä'}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            {/* Perspective Cards */}
+                            <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <Card s={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.1)' }} c={
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 800, marginBottom: '0.5rem' }}>{isEnglish ? 'Strategic Suggestion' : '┘à┘éÏ¬Ï▒Ï¡ ÏºÏ│Ï¬Ï▒ÏºÏ¬┘èÏ¼┘è'}</div>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: 0 }}>{isEnglish ? '"Based on data, salon sector is growing fast. We suggest increasing marketing campaigns here."' : '"Ï¿┘åÏºÏí┘ï Ï╣┘ä┘ë Ïº┘äÏ¿┘èÏº┘åÏºÏ¬Ïî ┘éÏÀÏºÏ╣ Ïº┘äÏÁÏº┘ä┘ê┘åÏºÏ¬ ┘è┘å┘à┘ê Ï¿Ï│Ï▒Ï╣Ï®. ┘å┘åÏÁÏ¡ Ï¿Ï▓┘èÏºÏ»Ï® Ï¡┘à┘äÏºÏ¬ Ïº┘äÏ¬Ï│┘ê┘è┘é ┘ä┘çÏ░Ïº Ïº┘ä┘éÏÀÏºÏ╣."'}</p>
+                                    </div>
+                                } />
+                                <Card s={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)' }} c={
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#3B82F6', fontWeight: 800, marginBottom: '0.5rem' }}>{isEnglish ? 'Performance Analysis' : 'Ï¬Ï¡┘ä┘è┘ä Ïº┘äÏúÏ»ÏºÏí'}</div>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: 0 }}>{isEnglish ? 'Visitor to subscriber conversion rate increased by 12% this month.' : '┘àÏ╣Ï»┘ä Ï¬Ï¡┘ê┘è┘ä Ïº┘äÏ▓┘êÏºÏ▒ ┘ä┘àÏ┤Ï¬Ï▒┘â┘è┘å ÏºÏ▒Ï¬┘üÏ╣ Ï¿┘åÏ│Ï¿Ï® 12% ┘çÏ░Ïº Ïº┘äÏ┤┘çÏ▒.'}</p>
+                                    </div>
+                                } />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ÔöÇÔöÇ ACADEMY ÔöÇÔöÇ */}
+                {tab === 'academy' && <AcademyView />}
+
+                {/* ÔöÇÔöÇ NEWSLETTERS ÔöÇÔöÇ */}
+                {tab === 'newsletters' && <NewsletterSubscribers />}
+
+                {/* ÔöÇÔöÇ BLOG ÔöÇÔöÇ */}
+                {tab === 'blog' && <AdminBlogManager />}
+
+                {/* ÔöÇÔöÇ BROADCASTING ÔöÇÔöÇ */}
+                {tab === 'marketing' && <MarketingManager />}
+
+                {/* ÔöÇÔöÇ WHITE LABEL REQUESTS ÔöÇÔöÇ */}
+                {tab === 'white-label-requests' && (
+                    <WhiteLabelManager 
+                        isEnglish={isEnglish} 
+                        flash={flash} 
+                        fetchData={load}
+                    />
+                )}
+            </main >
+        </div >
+    );
+}
+
+const WhiteLabelManager = ({ isEnglish, flash, fetchData }) => {
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(null);
+
+    const loadRequests = async () => {
+        setLoading(true);
+        try {
+            const data = await adminService.getAllWhiteLabelRequests();
+            setRequests(data);
+        } catch (e) {
+            flash('Error loading requests: ' + e.message);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        loadRequests();
+    }, []);
+
+    const handleApprove = async (id) => {
+        if (!confirm(isEnglish ? 'Approve this branding request?' : '┘ç┘ä Ïú┘åÏ¬ ┘àÏ¬Ïú┘âÏ» ┘à┘å ÏºÏ╣Ï¬┘àÏºÏ» ┘çÏ░┘ç Ïº┘ä┘ç┘ê┘èÏ®Ïƒ')) return;
+        setActionLoading(id);
+        const res = await adminService.approveWhiteLabelRequest(id);
+        if (res.success) {
+            flash(isEnglish ? 'Branding approved! Profile updated.' : 'Ï¬┘à ÏºÏ╣Ï¬┘àÏºÏ» Ïº┘ä┘ç┘ê┘èÏ® ┘êÏ¬Ï¡Ï»┘èÏ½ Ïº┘äÏ¿Ï▒┘ê┘üÏº┘è┘ä Ï¿┘åÏ¼ÏºÏ¡!');
+            loadRequests();
+            fetchData();
+        } else {
+            flash('Error: ' + res.error);
+        }
+        setActionLoading(null);
+    };
+
+    const handleReject = async (id) => {
+        const notes = prompt(isEnglish ? 'Reason for rejection:' : 'Ï│Ï¿Ï¿ Ïº┘äÏ▒┘üÏÂ:');
+        if (notes === null) return;
+        setActionLoading(id);
+        try {
+            await adminService.rejectWhiteLabelRequest(id, notes);
+            flash(isEnglish ? 'Request rejected' : 'Ï¬┘à Ï▒┘üÏÂ Ïº┘äÏÀ┘äÏ¿');
+            loadRequests();
+        } catch (e) {
+            flash('Error: ' + e.message);
+        }
+        setActionLoading(null);
+    };
+
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <div>
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-main)', margin: 0 }}>
+                        {isEnglish ? 'White-Label Branding Requests' : 'ÏÀ┘äÏ¿ÏºÏ¬ Ïº┘ä┘ç┘ê┘èÏ® Ïº┘ä┘àÏ«ÏÁÏÁÏ®'}
+                    </h1>
+                    <p style={{ color: '#6B7280', fontSize: '0.85rem', marginTop: '4px' }}>
+                        {isEnglish ? 'Manage agency requests for custom platform branding' : 'ÏÑÏ»ÏºÏ▒Ï® ÏÀ┘äÏ¿ÏºÏ¬ Ïº┘ä┘ê┘â┘äÏºÏí ┘ä┘äÏ¡ÏÁ┘ê┘ä Ï╣┘ä┘ë Ï¡┘é┘ê┘é Ïº┘ä┘à┘ä┘â┘èÏ® Ïº┘äÏ«ÏºÏÁÏ® ┘ä┘äÏ╣┘äÏº┘àÏ® Ïº┘äÏ¬Ï¼ÏºÏ▒┘èÏ®'}
+                    </p>
+                </div>
+                <button onClick={loadRequests} style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA', border: 'none', padding: '10px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+                </button>
+            </div>
+
+            <Card s={{ padding: 0, overflow: 'hidden' }} c={
+                loading ? <div style={{ padding: '3rem', textAlign: 'center' }}><RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 10px' }} /> {isEnglish ? 'Loading requests...' : 'Ï¼ÏºÏ▒┘è Ï¬Ï¡┘à┘è┘ä Ïº┘äÏÀ┘äÏ¿ÏºÏ¬...'}</div> :
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isEnglish ? 'left' : 'right' }}>
+                        <thead>
+                            <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'AGENCY' : 'Ïº┘ä┘ê┘âÏº┘äÏ®'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'BRANDING' : 'Ï¬┘üÏºÏÁ┘è┘ä Ïº┘ä┘ç┘ê┘èÏ®'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'DOMAIN' : 'Ïº┘ä┘åÏÀÏº┘é'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700 }}>{isEnglish ? 'STATUS' : 'Ïº┘äÏ¡Ïº┘äÏ®'}</th>
+                                <th style={{ padding: '1rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700, textAlign: 'center' }}>{isEnglish ? 'ACTIONS' : 'Ïº┘äÏÑÏ¼Ï▒ÏºÏíÏºÏ¬'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {requests.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} style={{ padding: '4rem', textAlign: 'center' }}>
+                                        <div style={{ color: '#4B5563', fontSize: '0.9rem' }}>{isEnglish ? 'No requests found' : '┘äÏº Ï¬┘êÏ¼Ï» ÏÀ┘äÏ¿ÏºÏ¬ Ï¡Ïº┘ä┘èÏº┘ï'}</div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                requests.map(req => (
+                                    <tr key={req.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>{req.profiles?.business_name || req.profiles?.full_name || 'ÔÇö'}</div>
+                                            <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{req.profiles?.email}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: req.primary_color || '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--color-border-subtle)' }}>
+                                                    {req.logo_url && <img src={req.logo_url} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />}
+                                                </div>
+                                                <div style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{req.brand_name}</div>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Globe size={14} />
+                                                {req.custom_domain || 'ÔÇö'}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{ 
+                                                padding: '4px 10px', 
+                                                borderRadius: '20px', 
+                                                fontSize: '0.7rem', 
+                                                fontWeight: 700,
+                                                background: req.status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : (req.status === 'rejected' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)'),
+                                                color: req.status === 'approved' ? '#10B981' : (req.status === 'rejected' ? '#EF4444' : '#F59E0B')
+                                            }}>
+                                                {req.status === 'approved' ? (isEnglish ? 'Approved' : 'Ï¬┘à Ïº┘äÏºÏ╣Ï¬┘àÏºÏ»') : (req.status === 'rejected' ? (isEnglish ? 'Rejected' : '┘àÏ▒┘ü┘êÏÂ') : (isEnglish ? 'Pending' : '┘é┘èÏ» Ïº┘äÏº┘åÏ¬Ï©ÏºÏ▒'))}
+                                            </span>
+                                            {req.rejection_notes && req.status === 'rejected' && (
+                                                <div style={{ fontSize: '0.65rem', color: '#EF4444', marginTop: '4px', maxWidth: '150px' }}>
+                                                    {isEnglish ? 'Notes: ' : '┘à┘äÏºÏ¡Ï©ÏºÏ¬: '}{req.rejection_notes}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                                {req.status === 'pending' && (
+                                                    <>
+                                                        <Btn 
+                                                            disabled={actionLoading === req.id}
+                                                            onClick={() => handleApprove(req.id)}
+                                                            color="#10B981"
+                                                            style={{ padding: '6px 12px' }}
+                                                        >
+                                                            {actionLoading === req.id ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />}
+                                                            {isEnglish ? 'Approve' : 'ÏºÏ╣Ï¬┘àÏºÏ»'}
+                                                        </Btn>
+                                                        <button 
+                                                            disabled={actionLoading === req.id}
+                                                            onClick={() => handleReject(req.id)}
+                                                            style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#EF4444', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}
+                                                        >
+                                                            <X size={14} />
+                                                            {isEnglish ? 'Reject' : 'Ï▒┘üÏÂ'}
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {req.status === 'approved' && (
+                                                    <span style={{ color: '#10B981', fontSize: '0.75rem', fontWeight: 700 }}>Ô£ô {isEnglish ? 'ACTIVE' : '┘åÏ┤ÏÀ'}</span>
+                                                )}
+                                                {req.status === 'rejected' && (
+                                                    <Btn 
+                                                        onClick={() => handleApprove(req.id)}
+                                                        color="#6B7280"
+                                                        style={{ padding: '4px 8px', fontSize: '0.7rem' }}
+                                                    >
+                                                        {isEnglish ? 'Re-Approve' : 'ÏÑÏ╣ÏºÏ»Ï® ÏºÏ╣Ï¬┘àÏºÏ»'}
+                                                    </Btn>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            } />
+        </div>
+    );
+};
+
