@@ -766,7 +766,7 @@ export const getProfile = async (userId) => {
         // Try to get all extended fields
         const { data, error } = await supabase
             .from('profiles')
-            .select('role, total_credits, credits_used, subscription_tier, message_limit, subscription_plan, business_type, business_name, phone, email, position')
+            .select('role, subscription_tier, message_limit, subscription_plan, business_type, business_name, phone, email, position')
             .eq('id', userId)
             .maybeSingle();
 
@@ -806,25 +806,35 @@ export const getWalletBalance = async (userId) => {
         return { success: false, balance: 0, error: error.message };
     }
 };
+export const getWalletLedger = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('wallet_ledger')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+            
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error fetching wallet ledger:', error);
+        return { success: false, data: [], error: error.message };
+    }
+};
 
 export const checkAndDeductCredit = async (userId, cost = 1) => {
     try {
-        // Use wallet_credits system
-        const { data: wallet, error: getError } = await supabase
-            .from('wallet_credits')
-            .select('balance')
-            .eq('user_id', userId)
-            .maybeSingle();
+        // Use the unified tiered deduction RPC (Package first, then Top-up)
+        const { data, error } = await supabase.rpc('deduct_wallet_credits', {
+            p_user_id: userId,
+            p_amount: cost,
+            p_reason: 'AI Interaction / Message Usage',
+            p_platform: 'internal'
+        });
 
-        if (getError) {
-            console.warn('Wallet fetch error:', getError);
-            // Don't block chat on a read error, but don't deduct either
-            return { success: true, remaining: 100, isLow: false };
-        }
-
-        let currentBalance = wallet?.balance !== undefined ? wallet.balance : 50; // Default to 50 for legacy users
-
-        if (currentBalance < cost && wallet !== null) {
+        if (error || !data.success) {
+            console.warn('Credit deduction error:', error || data?.error);
             return {
                 success: false,
                 error: 'لقد انتهى رصيد الموظف الرقمي. يرجى المتابعة لترقية باقتك.',
@@ -832,29 +842,10 @@ export const checkAndDeductCredit = async (userId, cost = 1) => {
             };
         }
 
-        const newBalance = currentBalance - cost;
-
-        if (wallet) {
-            // Only update if wallet exists
-            const { error: updateError } = await supabase
-                .from('wallet_credits')
-                .update({ balance: newBalance })
-                .eq('user_id', userId);
-
-            if (updateError) console.warn('Credit deduction update error (RLS?):', updateError);
-        } else {
-            // Attempt to create wallet safely, suppress RLS failures
-            const { error: insertError } = await supabase
-                .from('wallet_credits')
-                .insert([{ user_id: userId, balance: newBalance }]);
-
-            if (insertError) console.warn('Credit wallet insert error (RLS?):', insertError);
-        }
-
         return {
             success: true,
-            remaining: newBalance,
-            isLow: newBalance <= 5
+            remaining: data.remaining_balance,
+            isLow: data.remaining_balance <= 5
         };
     } catch (error) {
         console.error('Credit Check Error:', error);
@@ -863,6 +854,7 @@ export const checkAndDeductCredit = async (userId, cost = 1) => {
 };
 
 // ==================== CUSTOM REQUESTS ====================
+// (Forced trigger to clear Vite cache)
 
 export const submitCustomRequest = async (requestData) => {
     // DIAGNOSTIC LOGGING - Check this in your browser console!
@@ -947,6 +939,22 @@ export const getUserEntities = async (userId) => {
     } catch (error) {
         console.error('getUserEntities error:', error);
         return { success: false, error: error.message, data: [] };
+    }
+};
+
+export const getEntityConfig = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('entities')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('getEntityConfig error:', error);
+        return { success: false, error: error.message };
     }
 };
 
@@ -1476,3 +1484,10 @@ export const submitWhiteLabelRequest = async (userId, requestData) => {
         return { success: false, error: error.message };
     }
 };
+
+// --- Backward Compatibility Aliases ---
+export { getServices as getEntityServices };
+export { addService as addEntityService };
+export { updateService as updateEntityService };
+export { deleteService as deleteEntityService };
+export { submitWhiteLabelRequest as sendWhiteLabelRequest };

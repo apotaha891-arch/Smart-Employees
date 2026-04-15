@@ -227,8 +227,8 @@ const AgentTemplates = () => {
                             {filteredTemplates.map((template) => {
                                 const ui = getTemplateUI(template);
                                 const isEnglish = language === 'en';
-                                const displayName = isEnglish ? (template.name_en || template.name) : template.name;
-                                const displayDesc = isEnglish ? (template.description_en || template.description) : template.description;
+                                const displayName = isEnglish ? (template.name_en || (t('templates.aiConsultant'))) : template.name;
+                                const displayDesc = isEnglish ? (template.description_en || '') : template.description;
                                 const displayRole = t(`roles.${template.specialty}`) || template.specialty;
 
                                 return (
@@ -326,7 +326,9 @@ const AgentTemplates = () => {
                                 border: '1px solid rgba(139, 92, 246, 0.2)'
                             }}>{t('templates.step2')}</div>
                             <h3 style={{ fontSize: '1.85rem', marginBottom: '1rem', fontWeight: 900, color: 'var(--color-text-main)' }}>{t('templates.determinePersonality')}</h3>
-                            <p style={{ color: '#A1A1AA', fontSize: '1rem' }}>{t('templates.howToTalk').replace('{name}', t.language === 'en' ? (selectedTemplate.name_en || selectedTemplate.name) : selectedTemplate.name)}</p>
+                            <p style={{ color: '#A1A1AA', fontSize: '1rem' }}>
+                                {t('templates.howToTalk').replace('{name}', language === 'en' ? (selectedTemplate.name_en || t('templates.aiConsultant')) : selectedTemplate.name)}
+                            </p>
                         </div>
 
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginBottom: '4rem' }}>

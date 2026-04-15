@@ -64,7 +64,7 @@ const AgentManagement = () => {
         try {
             const templateDetails = templates.find(t => t.id === templateId);
             const result = await agentService.hireAgent(user.id, templateId, {
-                name: `موظف جديد ${agents.length + 1}`,
+                name: `${t('management.newAgentDefault')} ${agents.length + 1}`,
                 specialty: templateDetails?.specialty || 'General',
                 tone: 'professional'
             });
@@ -74,11 +74,11 @@ const AgentManagement = () => {
                 setShowAddModal(false);
             } else {
                 console.error("Failed to hire:", result.error);
-                alert("فشل إنشاء الموظف: " + result.error);
+                alert(t('management.hireError').replace('{error}', result.error));
             }
         } catch (error) {
             console.error('Error adding agent:', error);
-            alert("حدث خطأ أثناء الإنشاء");
+            alert(t('management.generalError'));
         }
     };
 
@@ -174,9 +174,7 @@ const AgentManagement = () => {
         setShowCommandModal(true);
         const welcomeMsg = { 
             role: 'assistant', 
-            content: isEnglish 
-                ? `Ready for your orders, Director. How can I assist you with the business today?` 
-                : `جاهز لأوامرك يا مدير. كيف يمكنني مساعدتك في إدارة العمل اليوم؟` 
+            content: t('management.commandWelcome')
         };
         setCommandMessages([welcomeMsg]);
         
@@ -205,14 +203,14 @@ const AgentManagement = () => {
         // Define Tool Handlers
         const handlers = {
             update_agent_config: async (args) => {
-                setCurrentToolAction(isEnglish ? 'Updating business rules...' : 'جاري تحديث قواعد العمل والأسعار...');
+                setCurrentToolAction(t('management.updatingRules'));
                 const { success } = await agentService.updateAgentConfiguration(commandingAgent.id, {
                     knowledge: args.newKnowledge
                 });
                 return success ? "Configuration updated successfully in the database." : "Failed to update configuration.";
             },
             update_booking_status: async (args) => {
-                setCurrentToolAction(isEnglish ? `Updating booking ${args.bookingId}...` : `جاري تحديث حالة الحجز ${args.bookingId}...`);
+                setCurrentToolAction(t('management.updatingBooking').replace('{id}', args.bookingId));
                 const { success } = await adminService.updateBookingStatus(args.bookingId, args.status);
                 if (success && args.customerMessage) {
                     await adminService.sendBookingNotification(args.bookingId, args.status);
@@ -220,7 +218,7 @@ const AgentManagement = () => {
                 return success ? `Booking ${args.bookingId} status changed to ${args.status}.` : "Booking update failed.";
             },
             get_business_stats: async (args) => {
-                setCurrentToolAction(isEnglish ? 'Fetching live metrics...' : 'جاري استخراج إحصائيات العمل...');
+                setCurrentToolAction(t('management.fetchingStats'));
                 // Direct Supabase query for immediate stats
                 const { data: bks } = await supabase.from('bookings').select('id, status').eq('user_id', authUser.id);
                 const { data: custs } = await supabase.from('customers').select('id').eq('entity_id', commandingAgent.entity_id);
@@ -400,7 +398,7 @@ const AgentManagement = () => {
                                 fontSize: '0.75rem',
                                 fontWeight: 700,
                             }}>
-                                {agent.status === 'active' ? 'Active' : 'Paused'}
+                                {agent.status === 'active' ? t('management.active') : t('management.paused')}
                             </div>
 
                             {/* Agent Icon */}
@@ -415,7 +413,7 @@ const AgentManagement = () => {
 
                             {/* Agent Type */}
                             <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                {agent.templateName || t('standardEmployee')}
+                                {agent.templateName || t('management.standardEmployee')}
                             </p>
 
                             {/* Stats */}
@@ -438,7 +436,7 @@ const AgentManagement = () => {
                                 </div>
                                 <div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                                        {t('efficiencyLabel')}
+                                        {t('management.efficiency')}
                                     </div>
                                     <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#10B981' }}>
                                         {agent.efficiency || 99}%
@@ -542,7 +540,7 @@ const AgentManagement = () => {
                                         e.currentTarget.style.transform = 'scale(1)';
                                     }}
                                 >
-                                    <Terminal size={15} /> {isEnglish ? 'Command Agent' : 'أمر الموظف الذكي ⚡'}
+                                    <Terminal size={15} /> {t('management.commandCenter')}
                                 </button>
 
                                 <button
@@ -795,7 +793,7 @@ const AgentManagement = () => {
                                         {commandingAgent.name || commandingAgent.customName}
                                     </h3>
                                     <div style={{ fontSize: '0.75rem', color: '#A78BFA', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                        <Terminal size={12} /> {isEnglish ? 'ADMIN COMMAND CENTER' : 'مركز القيادة الإداري'}
+                                        <Terminal size={12} /> {t('management.commandCenter')}
                                     </div>
                                 </div>
                             </div>

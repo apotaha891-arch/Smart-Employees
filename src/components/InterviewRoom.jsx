@@ -372,47 +372,15 @@ ${industryPrivacyRules}
 
             const roleTitle = isArabic
                 ? (adminTitleAr || activeAgentMap[targetId]?.title || templateTitle || genericRoleTitle)
-                : (adminTitleEn || targetTemplate.name_en || activeAgentMap[targetId]?.title || templateTitle || genericRoleTitle);
+                : (adminTitleEn || targetTemplate.name_en || (t('templates.aiConsultant')) || genericRoleTitle);
 
             const initialMessages = {
-                medical: isFemale
-                    ? (isArabic 
-                        ? `مرحباً بك! أنا ${agentName}، المساعدة الذكية من فريق "24Shift"، ومرشحة للعمل كـ "${roleTitle}". أدرك أهمية حساسية المواعيد الطبية، وأنا جاهزة للعمل على مدار الساعة لخدمتكم. تفضل باختباري! 🩺` 
-                        : `Welcome! I am ${agentName}, from the 24Shift family, nominated to work as a "${roleTitle}". I understand the sensitivity of medical appointments and I'm ready to work around the clock. Please test me! 🩺`)
-                    : (isArabic 
-                        ? `مرحباً بك! أنا ${agentName}، المساعد الذكي من فريق "24Shift"، ومرشح للعمل كـ "${roleTitle}". أدرك أهمية حساسية المواعيد الطبية، وأنا جاهز للعمل على مدار الساعة لخدمتكم. تفضل باختباري! 🩺` 
-                        : `Welcome! I am ${agentName}, from the 24Shift family, nominated to work as a "${roleTitle}". I understand the sensitivity of medical appointments and I'm ready to work around the clock. Please test me! 🩺`),
-                realestate: isFemale
-                    ? (isArabic 
-                        ? `أهلاً بك! أنا ${agentName}، المسوقة الذكية من "24Shift"، مرشحة للعمل معك كـ "${roleTitle}". جاهزة للرد على عملائك في أي وقت، فوردية 24Shift لا تنتهي. كيف تحب أن نبدأ المقابلة؟ 🏢` 
-                        : `Hello! I am ${agentName}, the smart marketer from 24Shift, nominated to work as a "${roleTitle}". Ready to respond to your clients anytime. How would you like to start? 🏢`)
-                    : (isArabic 
-                        ? `أهلاً بك! أنا ${agentName}، المسوق الذكي من "24Shift"، مرشح للعمل معك كـ "${roleTitle}". جاهز للرد على عملائك في أي وقت، فوردية 24Shift لا تنتهي. كيف تحب أن نبدأ المقابلة؟ 🏢` 
-                        : `Hello! I am ${agentName}, the smart marketer from 24Shift, nominated to work as a "${roleTitle}". Ready to respond to your clients anytime. How would you like to start? 🏢`),
-                beauty: isArabic 
-                    ? `أهلاً بكِ! أنا ${agentName}، المساعدة الذكية من فريق "24Shift"، مرشحة كـ "${roleTitle}" لمركزكم. ورديتي تعمل أثناء نومكم لتأكيد حجوزات ومواعيد العميلات بسرعة البرق. جاهزة لاختبارك! ✨` 
-                    : `Welcome! I am ${agentName}, the smart assistant from 24Shift, nominated as "${roleTitle}". My shift runs while you sleep to confirm bookings swiftly. Ready for your test! ✨`,
-                restaurant: isFemale
-                    ? (isArabic 
-                        ? `مرحباً! أنا ${agentName}، من فريق "24Shift"، المرشحة لمهام "${roleTitle}". طاولاتكم تحت السيطرة ولن نفوت أي حجز حتى في أوقات الذروة المتأخرة. جاهزة لإثبات كفاءتي، متى نبدأ؟ 🍽️` 
-                        : `Hello! I'm ${agentName} from 24Shift, nominated for "${roleTitle}". Your tables are under control and we won't miss any late bookings. Ready to prove my efficiency, when do we start? 🍽️`)
-                    : (isArabic 
-                        ? `مرحباً! أنا ${agentName}، من فريق "24Shift"، المرشح لمهام "${roleTitle}". طاولاتكم تحت السيطرة ولن نفوت أي حجز حتى في أوقات الذروة المتأخرة. جاهز لإثبات كفاءتي، متى نبدأ؟ 🍽️` 
-                        : `Hello! I'm ${agentName} from 24Shift, nominated for "${roleTitle}". Your tables are under control and we won't miss any late bookings. Ready to prove my efficiency, when do we start? 🍽️`),
-                fitness: isFemale
-                    ? (isArabic 
-                        ? `أهلاً بك! أنا ${agentName}، المساعدة الرياضية من "24Shift"، جاهزة للانضمام لفريقكم كـ "${roleTitle}". في 24Shift طاقتنا لا تنام، وسنحفز المشتركين دائماً. تفضل باختباري! 💪` 
-                        : `Hello! I am ${agentName}, the fitness assistant from 24Shift, ready to join as "${roleTitle}". Our energy never sleeps. Please test me! 💪`)
-                    : (isArabic 
-                        ? `أهلاً يا كابتن! أنا ${agentName}، المساعد الرياضي من "24Shift"، جاهز للانضمام لفريقكم كـ "${roleTitle}". في 24Shift طاقتنا لا تنام، وسنحفز المشتركين دائماً. تفضل باختباري! 💪` 
-                        : `Hello! I am ${agentName}, the fitness assistant from 24Shift, ready to join as "${roleTitle}". Our energy never sleeps. Please test me! 💪`),
-                general: isFemale
-                    ? (isArabic 
-                        ? `تحية طيبة! أنا ${agentName}، المستشارة الذكية من منظومة "24Shift". نحن الموظفون الذين لا ينامون. يسعدني ترشيحي كـ "${roleTitle}". تفضل بطرح أسئلتك لتبدأ جلسة التقييم المهني. 💼` 
-                        : `Greetings! I am ${agentName}, from 24Shift. We are the employees who don't sleep. I'm pleased to be nominated as "${roleTitle}". Please ask your questions to start the evaluation. 💼`)
-                    : (isArabic 
-                        ? `تحية طيبة! أنا ${agentName}، المستشار الذكي من منظومة "24Shift". نحن الموظفون الذين لا ينامون. يسعدني ترشيحي كـ "${roleTitle}". تفضل بطرح أسئلتك لتبدأ جلسة التقييم المهني. 💼` 
-                        : `Greetings! I am ${agentName}, from 24Shift. We are the employees who don't sleep. I'm pleased to be nominated as "${roleTitle}". Please ask your questions to start the evaluation. 💼`)
+                medical: t('interview.greetingMedical').replace('{name}', agentName).replace('{role}', roleTitle),
+                realestate: t('interview.greetingRealEstate').replace('{name}', agentName).replace('{role}', roleTitle),
+                beauty: t('interview.greetingBeauty').replace('{name}', agentName).replace('{role}', roleTitle),
+                restaurant: t('interview.greetingRestaurant').replace('{name}', agentName).replace('{role}', roleTitle),
+                fitness: t('interview.greetingFitness').replace('{name}', agentName).replace('{role}', roleTitle),
+                general: t('interview.greetingGeneral').replace('{name}', agentName).replace('{role}', roleTitle)
             };
 
 
@@ -420,7 +388,7 @@ ${industryPrivacyRules}
                 {
                     role: 'agent',
                     content: isOwnerSession 
-                        ? (isArabic ? `جاهز لأوامرك يا مدير. كيف يمكنني مساعدتك في إدارة العمل اليوم؟` : `Ready for your orders, Director. How can I assist you with the business today?`)
+                        ? t('interview.readyForDuty')
                         : (initialMessages[detectedIndustry] || initialMessages.general),
                     timestamp: new Date(),
                 }
@@ -594,7 +562,7 @@ ${industryPrivacyRules}
                         ...prev,
                         {
                             role: 'agent',
-                            content: `أيها المدير، لقد أنجزتُ الكثير اليوم! رصيدي الرقمي أوشك على النفاد(بقي ${creditResult.remaining} وحدات)، هل يمكننا تجديد العقد لنستمر في تنظيم أعمالك بنجاح؟ 🔋`,
+                            content: t('interview.lowCredit').replace('{credit}', creditResult.remaining),
                             timestamp: new Date(),
                         }
                     ]);
@@ -618,11 +586,11 @@ ${industryPrivacyRules}
                         
                         if (error) {
                             console.error("Booking Error:", error);
-                            return { status: "error", message: `تعذر تسجيل الحجز حقيقة: ${error.message}` };
+                            return { status: "error", message: t('tools.bookingError').replace('{error}', error.message) };
                         }
-                        return { status: "success", message: isArabic ? "تم تسجيل الحجز في قاعدة بياناتك بنجاح ✅" : "Booking successfully recorded in your database ✅" };
+                        return { status: "success", message: t('tools.bookingSuccess') };
                     }
-                    return { status: "success", message: isArabic ? "تم تسجيل الحجز في الأنظمة التجريبية بنجاح ✅" : "Booking successfully recorded in the demo system ✅" };
+                    return { status: "success", message: t('tools.bookingDemoSuccess') };
                 },
                 get_today_bookings: async () => {
                    if (!entityId) return { error: "No entity linked." };
@@ -633,8 +601,8 @@ ${industryPrivacyRules}
                 update_service_price: async (args) => {
                    if (!entityId) return { error: "No entity linked." };
                    const res = await updateServicePrice(entityId, args.serviceName, args.newPrice);
-                   if (res.success) return { status: "success", message: `Price updated for ${args.serviceName} to ${args.newPrice}$ ✅` };
-                   return { error: res.error };
+                   if (res.success) return { status: "success", message: t('tools.priceUpdateSuccess').replace('{service}', args.serviceName).replace('{price}', args.newPrice) };
+                   return { error: t('tools.priceUpdateError').replace('{error}', res.error) };
                 },
                 update_booking_details: async (args) => {
                    const updates = {};
@@ -642,8 +610,8 @@ ${industryPrivacyRules}
                    if (args.newTime) updates.booking_time = args.newTime;
                    if (args.newService) updates.service_requested = args.newService;
                    const res = await updateBookingDetails(args.bookingId, updates);
-                   if (res.success) return { status: "success", message: "Booking updated successfully ✅" };
-                   return { error: res.error };
+                   if (res.success) return { status: "success", message: t('tools.bookingUpdateSuccess') };
+                   return { error: t('tools.bookingUpdateError').replace('{error}', res.error) };
                 },
                 update_customer_notes: async (args) => {
                     console.log("Notes Tool Call:", args);
@@ -659,11 +627,11 @@ ${industryPrivacyRules}
 
                         if (error) {
                             console.error("Notes Error:", error);
-                            return { status: "error", message: `تعذر تحديث الملاحظات: ${error.message}` };
+                            return { status: "error", message: t('tools.customerNotesError').replace('{error}', error.message) };
                         }
-                        return { status: "success", message: isArabic ? "تم تحديث ملاحظات العميل في قاعدة بياناتك بنجاح ✅" : "Customer notes updated successfully in your database ✅" };
+                        return { status: "success", message: t('tools.customerNotesSuccess') };
                     }
-                    return { status: "success", message: isArabic ? "تم تحديث ملاحظات العميل بنجاح ✅" : "Customer notes updated successfully ✅" };
+                    return { status: "success", message: t('tools.customerNotesSuccess') };
                 }
             });
 

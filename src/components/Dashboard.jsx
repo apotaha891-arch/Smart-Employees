@@ -97,7 +97,7 @@ const Dashboard = () => {
                 const integrationsResult = await getIntegrations(user.id);
                 if (integrationsResult.success) setIntegrations(integrationsResult.data);
 
-                const remaining = profileData.wallet_balance !== undefined ? profileData.wallet_balance : ((profileData.total_credits || 0) - (profileData.credits_used || 0));
+                const remaining = profileData.wallet_balance || 0;
                 
                 if (remaining < 10 && remaining > 0 && profileData.subscription_tier !== 'enterprise') {
                     if (!sessionStorage.getItem('lowCreditAlertShown')) setShowLowCreditModal(true);
@@ -172,7 +172,7 @@ const Dashboard = () => {
         <div className="container py-xl animate-fade-in">
             {showLowCreditModal && profile && (
                 <LowCreditModal
-                    remaining={profile.total_credits - profile.credits_used}
+                    remaining={profile.wallet_balance || 0}
                     onClose={() => {
                         setShowLowCreditModal(false);
                         sessionStorage.setItem('lowCreditAlertShown', 'true');

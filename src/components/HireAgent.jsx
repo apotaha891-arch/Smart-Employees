@@ -94,13 +94,13 @@ const HireAgent = () => {
                 // 2. Check if Entity exists for this user
                 const { data: entityData } = await supabase
                     .from('entities')
-                    .select('agent_name, business_type')
+                    .select('agent_name, business_name, business_type')
                     .eq('user_id', contextUser.id)
                     .order('created_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
 
-                if (entityData?.agent_name) {
+                if (entityData?.agent_name || entityData?.business_name) {
                     setSector(entityData.business_type || 'general');
                     setEntityReady(true);
                 } else {
@@ -208,6 +208,9 @@ const HireAgent = () => {
             const { error } = await supabase.from('agents').insert([agentData]);
 
             if (error) throw error;
+            
+            // Force UI balance update specifically
+            window.dispatchEvent(new Event('wallet_updated'));
 
             setSaving(false);
             setDone(true);

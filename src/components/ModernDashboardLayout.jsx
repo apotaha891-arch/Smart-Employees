@@ -12,6 +12,7 @@ import { signOut, supabase, getProfile } from '../services/supabaseService';
 import { useBranding } from '../context/BrandingContext';
 import NotificationCenter from './shared/NotificationCenter';
 import { Globe, Sun, Moon } from 'lucide-react';
+import WalletLedgerModal from './WalletLedgerModal';
 
 const ModernDashboardLayout = ({ children }) => {
     const { t, language, toggleLanguage } = useLanguage();
@@ -25,6 +26,7 @@ const ModernDashboardLayout = ({ children }) => {
     const [balance, setBalance] = useState(0);
     const [packageBalance, setPackageBalance] = useState(0);
     const [topupBalance, setTopupBalance] = useState(0);
+    const [isLedgerOpen, setIsLedgerOpen] = useState(false);
     const [renewalDate, setRenewalDate] = useState(null);
     const [showBreakdown, setShowBreakdown] = useState(false);
 
@@ -50,7 +52,16 @@ const ModernDashboardLayout = ({ children }) => {
                 })
                 .subscribe();
 
-            return () => { supabase.removeChannel(channel); };
+            // Fallback listener for manual trigger
+            const handleWalletUpdate = () => {
+                fetchBalance();
+            };
+            window.addEventListener('wallet_updated', handleWalletUpdate);
+
+            return () => { 
+                supabase.removeChannel(channel); 
+                window.removeEventListener('wallet_updated', handleWalletUpdate);
+            };
         }
     }, [user?.id]); // Re-fetch when user changes (supports impersonation switching)
 
@@ -155,6 +166,12 @@ const customerNavItems = [
     { icon: Settings, label: language === 'ar' ? 'إعداد المنشأة' : 'Entity Setup', path: '/entity-setup' },
     { icon: Puzzle, label: language === 'ar' ? 'أدوات الربط والمنصات' : 'Tools & Connections', path: '/entity-setup?tab=integrations' },
     { icon: CreditCard, label: language === 'ar' ? 'الأسعار والفوترة' : 'Pricing & Billing', path: '/pricing' },
+    ...(!isAgency ? [{
+        icon: Zap,
+        label: language === 'ar' ? 'الترقية لشريك (وكالة)' : 'Upgrade to Agency',
+        path: '/pricing?mode=agency',
+        style: { marginTop: '1rem', borderTop: '1px solid rgba(139, 92, 246, 0.1)', paddingTop: '0.5rem', color: '#8B5CF6' }
+    }] : []),
     { icon: HelpCircle, label: language === 'ar' ? 'مركز المساعدة' : 'Help Center', path: '/help' },
 ];
 
@@ -513,6 +530,29 @@ return (
                                                 <span>{language === 'ar' ? `التجديد القادم: ${new Date(renewalDate).toLocaleDateString('ar-EG')}` : `Next Renewal: ${new Date(renewalDate).toLocaleDateString()}`}</span>
                                             </div>
                                         )}
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsLedgerOpen(true);
+                                            }}
+                                            style={{
+                                                width: '100%',
+                                                marginTop: '12px',
+                                                padding: '8px',
+                                                background: 'rgba(139, 92, 246, 0.1)',
+                                                border: '1px solid rgba(139, 92, 246, 0.3)',
+                                                borderRadius: '8px',
+                                                color: '#A78BFA',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 800,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseOver={(e) => e.target.style.background = 'rgba(139, 92, 246, 0.2)'}
+                                            onMouseOut={(e) => e.target.style.background = 'rgba(139, 92, 246, 0.1)'}
+                                        >
+                                            {language === 'ar' ? 'سجل العمليات والاستهلاك' : 'View Billing History'}
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -568,6 +608,12 @@ return (
                     {children}
                 </div>
             </main>
+
+            <WalletLedgerModal 
+                isOpen={isLedgerOpen} 
+                onClose={() => setIsLedgerOpen(false)} 
+                userId={user?.id}
+            />
         </div>
     </div>
 );

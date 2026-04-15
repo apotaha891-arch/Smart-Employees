@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
 import { Users, Plus, Key, Wallet, ArrowRight, Settings, ExternalLink, ShieldCheck, LayoutDashboard, Palette, ImagePlus, Globe, UploadCloud, CheckCircle2, Zap } from 'lucide-react';
+import { FALLBACK_SECTORS } from '../utils/sectors';
+
 
 const AgencyDashboard = () => {
     const { user, realUser, impersonateUser, isImpersonating } = useAuth();
@@ -736,11 +738,17 @@ const AgencyDashboard = () => {
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                                 <div>
                                     <label className="label">{isEnglish ? 'Sector' : 'نوع النشاط'}</label>
-                                    <select className="input-field" value={newClient.businessType} onChange={e => setNewClient({...newClient, businessType: e.target.value})}>
-                                        <option value="general">{isEnglish ? 'General' : 'نشاط عام'}</option>
-                                        <option value="salon">{isEnglish ? 'Beauty & Salon' : 'صالون وجمال'}</option>
-                                        <option value="dental">{isEnglish ? 'Medical/Dental' : 'مركز طبي/أسنان'}</option>
-                                        <option value="law_firm">{isEnglish ? 'Law Firm' : 'مكتب محاماة'}</option>
+                                    <select 
+                                        className="input-field" 
+                                        value={newClient.businessType} 
+                                        onChange={e => setNewClient({...newClient, businessType: e.target.value})}
+                                        style={{ background: 'var(--color-bg-input)', color: 'var(--color-text-main)', border: '1px solid var(--color-border-subtle)' }}
+                                    >
+                                        {FALLBACK_SECTORS.map(s => (
+                                            <option key={s.value} value={s.value} style={{ background: 'var(--color-bg-surface)', color: 'var(--color-text-main)' }}>
+                                                {s.emoji} {isEnglish ? s.labelEn : s.label}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>

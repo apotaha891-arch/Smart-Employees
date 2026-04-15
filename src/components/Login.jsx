@@ -291,19 +291,6 @@ const Login = () => {
                                             required
                                         />
                                     </div>
-                                    <div className="mb-md">
-                                        <label className="label" style={{ textAlign: language === 'ar' ? 'right' : 'left', marginBottom: '8px', display: 'block' }}>{language === 'ar' ? 'نوع الحساب' : 'Account Type'}</label>
-                                        <div style={{ display: 'flex', gap: '1rem' }}>
-                                            <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '10px', border: `1px solid ${accountType === 'business' ? 'var(--accent)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '8px', background: accountType === 'business' ? 'rgba(139,92,246,0.1)' : 'transparent', transition: 'all 0.2s' }}>
-                                                <input type="radio" name="accountType" value="business" checked={accountType === 'business'} onChange={() => setAccountType('business')} style={{ accentColor: 'var(--accent)' }} />
-                                                <span style={{ fontSize: '0.85rem' }}>{language === 'ar' ? 'صاحب منشأة' : 'Business Owner'}</span>
-                                            </label>
-                                            <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '10px', border: `1px solid ${accountType === 'agency' ? 'var(--accent)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '8px', background: accountType === 'agency' ? 'rgba(139,92,246,0.1)' : 'transparent', transition: 'all 0.2s' }}>
-                                                <input type="radio" name="accountType" value="agency" checked={accountType === 'agency'} onChange={() => setAccountType('agency')} style={{ accentColor: 'var(--accent)' }} />
-                                                <span style={{ fontSize: '0.85rem' }}>{language === 'ar' ? 'مدير الوكالات' : 'Agency Manager'}</span>
-                                            </label>
-                                        </div>
-                                    </div>
                                 </>
                             )}
                             <div className="mb-md">
