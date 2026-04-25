@@ -183,31 +183,28 @@ const Home = () => {
                                 const label = isHardcoded ? t(`home.${type}`) : (isDyn ? isDyn.l : t(`home.${type}`));
                                 const emoji = isDyn ? isDyn.e : '';
 
-                                return (
-                                    <button
-                                        key={type}
-                                        onClick={() => { setIndustry(type); setImgLoaded(false); }}
-                                        className="industry-pill"
-                                        style={{
-                                            padding: '0.55rem 1.25rem',
-                                            borderRadius: '30px',
-                                            border: '1px solid',
-                                            borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border-subtle)',
-                                            background: isActive ? 'var(--color-accent-soft)' : 'var(--color-bg-input)',
-                                            color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
-                                            fontSize: '0.82rem',
-                                            fontWeight: 700,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease',
-                                            whiteSpace: 'nowrap',
-                                            backdropFilter: 'blur(10px)',
-                                            boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
-                                            transform: isActive ? 'translateY(-2px)' : 'none',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.5rem'
-                                        }}
-                                    >
+                                const pillStyle = {
+                                    padding: '0.55rem 1.25rem',
+                                    borderRadius: '30px',
+                                    border: '1px solid',
+                                    borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border-subtle)',
+                                    background: isActive ? 'var(--color-accent-soft)' : 'var(--color-bg-input)',
+                                    color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                                    fontSize: '0.82rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    whiteSpace: 'nowrap',
+                                    backdropFilter: 'blur(10px)',
+                                    boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
+                                    transform: isActive ? 'translateY(-2px)' : 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    textDecoration: 'none',
+                                };
+                                const pillContent = (
+                                    <>
                                         <span style={{
                                             width: '8px',
                                             height: '8px',
@@ -218,6 +215,32 @@ const Home = () => {
                                         {emoji} {label && label !== `home.${type}` ? label : (
                                             type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
                                         )}
+                                    </>
+                                );
+
+                                if (type === 'beauty') {
+                                    return (
+                                        <a
+                                            key={type}
+                                            href="https://digitalsalon.24shift.solutions"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="industry-pill"
+                                            style={pillStyle}
+                                        >
+                                            {pillContent}
+                                        </a>
+                                    );
+                                }
+
+                                return (
+                                    <button
+                                        key={type}
+                                        onClick={() => { setIndustry(type); setImgLoaded(false); }}
+                                        className="industry-pill"
+                                        style={pillStyle}
+                                    >
+                                        {pillContent}
                                     </button>
                                 );
                             })}

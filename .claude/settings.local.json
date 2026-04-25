@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.js$|\\\\.cjs$\")",
+      "Bash(grep \"\\\\.jsx$\")",
+      "Bash(npm run *)",
+      "PowerShell(netstat -ano | Select-String \"LISTENING\" | ForEach-Object { \\($_ -split \"\\\\s+\"\\)[2] } | Sort-Object -Unique | Select-Object -First 60)"
+    ]
+  }
+}

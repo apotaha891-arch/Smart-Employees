@@ -5,13 +5,7 @@ export default defineConfig({
     plugins: [react()],
     server: {
         host: true,
-        port: 5173,
-        strictPort: true,
-        hmr: {
-            protocol: 'ws',
-            host: 'localhost',
-            port: 5173
-        }
+        port: 5175,
     },
     build: {
         chunkSizeWarningLimit: 1000,
